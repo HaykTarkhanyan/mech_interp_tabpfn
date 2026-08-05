@@ -1,0 +1,84 @@
+title = "Mechanistic interpretability literature review: retrieval pipeline and review"
+date = "2026-08-05"
+time = "2300"
+areas = ["scripts/", "lit_review/", "data/", "_learnings/", ".claude/skills/"]
+
+done = """
+- Copied 64 skills from Desktop/physcial_ai/.claude/skills into .claude/skills (675 files,
+  13M, verified identical with diff -rq). Only a skills/ folder existed there - no settings,
+  agents or commands.
+- Established which API keys the literature-review skill actually needs: none. Its own three
+  scripts contain no key references; the paid keys (PARALLEL_API_KEY, OPENROUTER_API_KEY)
+  belong to sibling skills, and the only hard dependency is scientific-schematics for the
+  "mandatory" AI figure, which was replaced by a generated figure (DECISIONS #4).
+- Built a 6-script retrieval-to-verification pipeline (scripts/): search_literature,
+  screen_papers, fetch_web_sources, build_references, verify_references, plot_prisma.
+- Ran the search: 16 themes x 3 databases -> 1,822 records; 1,489 after dedup; 342 passed
+  automated relevance screening.
+- Wrote the review: lit_review/mechanistic_interpretability_review.{md,pdf}, 13pp, 53
+  references, thematically organised across 8 result sections.
+- Verified all 53 references against Crossref / arXiv / publisher URLs: 53/53, 0 failures,
+  0 title mismatches.
+- Recorded 4 decisions in DECISIONS.md and 3 learnings in _learnings/.
+"""
+
+pending = """
+- scripts/non_essential/seed_and_enrich.py never completed: OpenAlex started returning HTTP
+  429 partway through the session and did not recover across ~50 min of backoff. Its two
+  stages (46-title seed search, abstract enrichment for the 49% of records with no abstract)
+  would both strengthen the review. It is resumable via data/processed/seed_cache.json.
+- Once it runs, re-run screen_papers.py WITHOUT --allow-missing-supplementary and rebuild;
+  more records would then survive screening on merit rather than on having an abstract.
+- Nothing is committed yet. .claude/ is not in .gitignore, so `git add .` would commit all
+  675 skill files - decide first whether skills should be versioned with this repo.
+"""
+
+next = """
+- Decide the .gitignore question for .claude/skills, then make the initial commit.
+- If a specific research direction emerges, do a deep dive on one thread (SAEs, circuit
+  discovery, or evaluation) - DECISIONS #1 scoped this one deliberately broad because the
+  repo was empty.
+- The evaluation gap (review section 4.3) is the most under-served area found and the most
+  plausible place for original work.
+"""
+
+files = [
+  "scripts/search_literature.py",
+  "scripts/screen_papers.py",
+  "scripts/fetch_web_sources.py",
+  "scripts/build_references.py",
+  "scripts/verify_references.py",
+  "scripts/plot_prisma.py",
+  "scripts/non_essential/seed_and_enrich.py",
+  "lit_review/mechanistic_interpretability_review.md",
+  "lit_review/mechanistic_interpretability_review.pdf",
+  "lit_review/references.json",
+  "lit_review/verification_report.json",
+  "lit_review/figures/prisma_flow.png",
+  "DECISIONS.md",
+  "README.md",
+]
+
+commits = []
+
+notes = """
+Three external services rate-limited during the session and each needed a different response.
+arXiv's API returned 429 to every request including trivial ones (503 with a browser UA), so
+it was dropped as a search backend - but arxiv.org/abs stayed reachable and serves citation_*
+meta tags, which became the preprint verification path. Semantic Scholar's keyless pool was
+429 throughout. OpenAlex worked for the main sweep (800 records) then began 429-ing after
+roughly 200 requests total.
+
+Two bugs in my own code were found only by inspecting individual records rather than counts:
+dedup left identical DOIs duplicated (two dicts of records merged by a non-mutating helper,
+so the indexes drifted), and the relevance screen was rejecting records for having no
+abstract rather than for being off-topic (49% of records had none). Both are written up in
+_learnings/. The lesson generalises: aggregate counts looked entirely reasonable in both
+cases.
+
+Playwright earned its place - transformer-circuits.pub renders bylines client-side, so
+curl-based extraction returns no authors at all. Three pages also needed wait_until="commit"
+plus an explicit wait for the byline, because "networkidle" never fires on pages with
+streaming visualisations and "domcontentloaded" still timed out on the multi-megabyte
+monosemanticity write-ups.
+"""

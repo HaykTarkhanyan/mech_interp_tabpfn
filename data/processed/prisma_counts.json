@@ -1,0 +1,20 @@
+{
+  "supplementary_status": "SKIPPED - no seed search results available; abstract enrichment SKIPPED",
+  "identification": 1822,
+  "after_deduplication": 1489,
+  "duplicates_merged": 333,
+  "after_relevance_screen": 342,
+  "excluded_total": 1147,
+  "excluded_out_of_scope_domain": 93,
+  "shortlist_size": 250,
+  "database_contribution_unique": {
+    "OpenAlex": 656,
+    "Crossref": 696,
+    "DBLP": 182
+  },
+  "found_by_n_databases": {
+    "1": 1448,
+    "2": 37,
+    "3": 4
+  }
+}

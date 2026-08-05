@@ -1,0 +1,196 @@
+{
+  "search_date": "2026-08-05",
+  "databases_used": [
+    "OpenAlex",
+    "Crossref",
+    "DBLP"
+  ],
+  "databases_unavailable": {
+    "arXiv": "request failed: HTTPSConnectionPool(host='export.arxiv.org', port=443): Read timed out. (read timeout=45)",
+    "SemanticScholar": "HTTP 429"
+  },
+  "results_per_query_per_source": 50,
+  "themes": [
+    "superposition",
+    "sparse_autoencoders",
+    "circuits",
+    "induction_heads",
+    "activation_patching",
+    "causal_abstraction",
+    "linear_representation",
+    "probing",
+    "logit_lens",
+    "knowledge_editing",
+    "steering",
+    "grokking",
+    "transcoders",
+    "auto_interp",
+    "evaluation",
+    "surveys"
+  ],
+  "queries": {
+    "superposition": {
+      "default": "superposition polysemanticity toy models neural network features",
+      "dblp": "superposition polysemanticity"
+    },
+    "sparse_autoencoders": {
+      "default": "sparse autoencoder dictionary learning language model monosemantic features",
+      "dblp": "sparse autoencoder interpretability"
+    },
+    "circuits": {
+      "default": "circuit analysis transformer mechanistic interpretability",
+      "dblp": "circuit transformer interpretability"
+    },
+    "induction_heads": {
+      "default": "induction heads in-context learning attention transformer circuits",
+      "dblp": "induction heads transformer"
+    },
+    "activation_patching": {
+      "default": "activation patching causal tracing localization language model",
+      "dblp": "activation patching"
+    },
+    "causal_abstraction": {
+      "default": "causal abstraction interchange intervention distributed alignment search",
+      "dblp": "causal abstraction neural"
+    },
+    "linear_representation": {
+      "default": "linear representation hypothesis concept directions language model",
+      "dblp": "linear representation language model"
+    },
+    "probing": {
+      "default": "probing classifiers internal representations language models",
+      "dblp": "probing language model representations"
+    },
+    "logit_lens": {
+      "default": "logit lens tuned lens intermediate layer predictions transformer",
+      "dblp": "logit lens transformer"
+    },
+    "knowledge_editing": {
+      "default": "locating and editing factual associations GPT knowledge editing",
+      "dblp": "knowledge editing language model"
+    },
+    "steering": {
+      "default": "activation steering representation engineering controlling language model behavior",
+      "dblp": "activation steering language model"
+    },
+    "grokking": {
+      "default": "grokking phase transitions emergent structure training dynamics interpretability",
+      "dblp": "grokking neural networks"
+    },
+    "transcoders": {
+      "default": "transcoders attribution graphs cross-layer circuit tracing",
+      "dblp": "transcoder interpretability"
+    },
+    "auto_interp": {
+      "default": "automated interpretability explaining neurons language models scaling",
+      "dblp": "automated interpretability neurons"
+    },
+    "evaluation": {
+      "default": "evaluating interpretability methods faithfulness benchmark critique",
+      "dblp": "faithfulness interpretability evaluation"
+    },
+    "surveys": {
+      "default": "mechanistic interpretability survey review open problems",
+      "dblp": "mechanistic interpretability survey"
+    }
+  },
+  "per_theme": [
+    {
+      "theme": "superposition",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 1
+    },
+    {
+      "theme": "sparse_autoencoders",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 29
+    },
+    {
+      "theme": "circuits",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 3
+    },
+    {
+      "theme": "induction_heads",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 9
+    },
+    {
+      "theme": "activation_patching",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 21
+    },
+    {
+      "theme": "causal_abstraction",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 10
+    },
+    {
+      "theme": "linear_representation",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 16
+    },
+    {
+      "theme": "probing",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 14
+    },
+    {
+      "theme": "logit_lens",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 0
+    },
+    {
+      "theme": "knowledge_editing",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 50
+    },
+    {
+      "theme": "steering",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 50
+    },
+    {
+      "theme": "grokking",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 9
+    },
+    {
+      "theme": "transcoders",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 1
+    },
+    {
+      "theme": "auto_interp",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 1
+    },
+    {
+      "theme": "evaluation",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 1
+    },
+    {
+      "theme": "surveys",
+      "OpenAlex": 50,
+      "Crossref": 50,
+      "DBLP": 7
+    }
+  ],
+  "total_records": 1822
+}
