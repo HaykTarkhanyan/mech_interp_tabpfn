@@ -4,6 +4,36 @@ Newest first. Never delete a superseded entry.
 
 ---
 
+## #6 - Version `.claude/skills` with the repository
+
+**Date:** 2026-08-06
+**Status:** active
+
+**Decision:** Track all 64 skills under `.claude/skills/` in git (675 files, ~13 MB) rather
+than gitignoring them.
+
+**Why:** Explicit call by the repo owner. The practical argument for it: the review pipeline
+was built while following the `literature-review` skill, and several decisions here
+(DECISIONS #3, #4) are deliberate departures from what that skill instructs. Those departures
+only make sense to a future reader if the instructions they depart from are in the repo at the
+same commit. Skills also drift upstream, so pinning the versions actually used is what makes
+the work reproducible.
+
+**Alternatives rejected:**
+- Gitignore `.claude/` - keeps the repo small, but detaches the review from the methodology it
+  was produced under and makes DECISIONS #3/#4 read as unmotivated.
+- Track only `literature-review/` - the review touched several skills, and cherry-picking
+  invites the tree and the record diverging later.
+
+**Cost accepted:** ~13 MB and 675 files of the diff surface are third-party content, so
+`git log --stat` and file-count metrics on this repo are dominated by skills rather than by
+project code.
+
+**What would change this:** the skills tree growing large enough to slow clone/checkout, or
+the skills being moved to their own versioned package that this repo could pin by reference.
+
+---
+
 ## #5 - Ship the review without the supplementary retrieval stage, and disclose it
 
 **Date:** 2026-08-06
