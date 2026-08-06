@@ -13,6 +13,14 @@ models**, with a fully reproducible retrieval-to-verification pipeline.
 Searched 2026-08-05 across OpenAlex, Crossref and DBLP: 1,822 records retrieved, 1,489 after
 deduplication, 342 passing automated relevance screening, 53 cited.
 
+## Paper collections
+
+**[`papers/tabpfn/`](papers/tabpfn/)** - 30 TabPFN papers (703 pages, 125 MB), the core model
+line plus analysis, scaling and extension work. Excludes narrow domain applications. Each PDF
+was title-verified against the registry before saving; `manifest.json` has full metadata and
+`README.md` explains scope and provenance. Rebuild with
+`python scripts/download_tabpfn_papers.py`.
+
 ## Pipeline
 
 ```bash
@@ -45,6 +53,7 @@ the outcome in their output rather than skipping them silently.
 
 ```
 lit_review/     review, references, verification report, figures
+papers/tabpfn/  30 verified TabPFN PDFs + manifest
 scripts/        load-bearing pipeline (see above)
   non_essential/  supplementary retrieval, blocked on an external rate limit
 data/raw/       raw search results per database + search parameters

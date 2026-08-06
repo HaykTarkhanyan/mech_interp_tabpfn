@@ -1,0 +1,71 @@
+title = "TabPFN paper collection: retrieval, verification, and download"
+date = "2026-08-06"
+time = "0045"
+areas = ["papers/tabpfn/", "scripts/"]
+
+done = """
+- Scoped the collection with the user: core TabPFN model line plus methodologically
+  significant work (~25-30), excluding the ~40 narrow domain applications DBLP also indexes
+  under "TabPFN" (IoT intrusion detection, drug discovery, insurance pricing, crop yield).
+  DBLP reports 69 papers mentioning TabPFN in total.
+- Resolved arXiv identifiers from DBLP's ee field rather than from recall. Three papers were
+  not in the DBLP "TabPFN" result set and were looked up separately: the PFN origin paper
+  (2112.10510), the Nature v2 paper (DOI 10.1038/s41586-024-08328-6, no arXiv preprint), and
+  TuneTables (2402.11137). The original TabPFN paper has no arXiv link in DBLP at all - only
+  the ICLR'23 entry - so 2207.01848 rested purely on a title check.
+- Wrote scripts/download_tabpfn_papers.py: fetches each arXiv abs page, compares
+  citation_title against the expected title, and only then downloads. Validates %PDF magic
+  and plausible size. Resumable, 3s between requests.
+- Ran a --dry-run over all 29 arXiv ids first, before downloading ~125 MB.
+- Downloaded 30 PDFs, 703 pages, 125.5 MB, 0 failures. All confirmed readable via pypdf.
+- Wrote papers/tabpfn/README.md (scope, per-category tables, provenance) and manifest.json.
+- Committed as baa6927. DECISIONS #7 records the choice to put 125.5 MB of PDFs in history.
+"""
+
+pending = """
+- Nothing outstanding for this collection.
+- If the ~40 excluded domain-application papers are ever wanted, note that roughly half are
+  journal-only (Future Gener. Comput. Syst., Neurocomputing, J. Chem. Inf. Model. and
+  similar) with no arXiv preprint, so they would need publisher access rather than arxiv.org.
+"""
+
+next = """
+- The collection is reading material, not yet analysed. An obvious follow-on is the same
+  treatment the mech interp literature got: screen, synthesise, verify.
+- Three papers in the collection are directly mech-interp-flavoured and connect the two tasks
+  in this repo: "TabPFN Through The Looking Glass" (2601.08181), "Where Computation Lives
+  Inside TabPFN" (2606.12917), and "Does TabPFN Understand Causal Structures?" (2511.07236).
+  Circuit-level analysis of a tabular foundation model is a genuinely underexplored area.
+"""
+
+files = [
+  "scripts/download_tabpfn_papers.py",
+  "papers/tabpfn/README.md",
+  "papers/tabpfn/manifest.json",
+  "DECISIONS.md",
+]
+
+commits = [
+  "baa6927 Add TabPFN paper collection (30 papers, 703 pages)",
+]
+
+notes = """
+The title-match guard paid off twice more, on top of the two catches during the literature
+review. Both cases were papers retitled between arXiv versions while DBLP kept the original
+title: 2501.02945 (DBLP: "The Tabular Foundation Model TabPFN Outperforms Specialized Time
+Series..." -> arXiv: "From Tables to Time: Extending TabPFN-v2 to Time Series Forecasting",
+this is TabPFN-TS) and 2602.04596 (DBLP: "A principled framework for uncertainty
+decomposition in TabPFN" -> arXiv: "Uncertainty Decomposition for Bayes-Filtered Transformers
+via Bayesian Predictive Inference"). Both were checked against their abstracts and confirmed
+to be the intended work before the expected titles were updated. Neither was auto-accepted.
+The general lesson: a bibliography database's title is a snapshot, and preprints are mutable.
+
+One self-inflicted bug worth remembering: naming a local variable `html` inside a function
+that also calls `html.unescape()` shadows the stdlib module and fails with
+"'str' object has no attribute 'unescape'". It only surfaced on the second run, because the
+first run predated the html.unescape() call being added.
+
+arXiv's website remains reachable from this network while its API stays HTTP 429 - the abs
+pages serve citation_* meta tags and /pdf/ downloads work fine. That asymmetry is now load
+bearing for two scripts in this repo.
+"""
