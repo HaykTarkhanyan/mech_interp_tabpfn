@@ -21,6 +21,15 @@ was title-verified against the registry before saving; `manifest.json` has full 
 `README.md` explains scope and provenance. Rebuild with
 `python scripts/download_tabpfn_papers.py`.
 
+## Research directions
+
+**[`research_ideas/tabpfn_mech_interp.md`](research_ideas/tabpfn_mech_interp.md)** - 15 ideas
+for mechanistic interpretability on TabPFN, grouped by ambitiousness and tagged by compute
+tier (laptop CPU through A100). Grounded in what the six existing TabPFN interpretability
+papers already cover, so the ideas are additive. The argument: TabPFN is the one setting where
+mech interp's central problem, having no ground truth for what a correct explanation is, can
+actually be solved.
+
 ## Pipeline
 
 ```bash
@@ -54,6 +63,7 @@ the outcome in their output rather than skipping them silently.
 ```
 lit_review/     review, references, verification report, figures
 papers/tabpfn/  30 verified TabPFN PDFs + manifest
+research_ideas/ research directions, grouped by ambition and compute
 scripts/        load-bearing pipeline (see above)
   non_essential/  supplementary retrieval, blocked on an external rate limit
 data/raw/       raw search results per database + search parameters
