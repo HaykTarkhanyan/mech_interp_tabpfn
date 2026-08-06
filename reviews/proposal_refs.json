@@ -1,0 +1,42 @@
+[
+  {
+    "key": "hollmann2025",
+    "title": "Accurate predictions on small data with a tabular foundation model",
+    "doi": "10.1038/s41586-024-08328-6"
+  },
+  {
+    "key": "rundel2024",
+    "title": "Interpretable Machine Learning for TabPFN",
+    "doi": "10.1007/978-3-031-63797-1_23"
+  },
+  {
+    "key": "apley2020",
+    "title": "Visualizing the Effects of Predictor Variables in Black Box Supervised Learning Models",
+    "doi": "10.1111/rssb.12377"
+  },
+  {
+    "key": "bilos2026",
+    "title": "A Mechanistic Study of Tabular Foundation Models",
+    "arxiv_id": "2605.21288"
+  },
+  {
+    "key": "gupta2026",
+    "title": "Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function",
+    "arxiv_id": "2606.12917"
+  },
+  {
+    "key": "pfefferle2025",
+    "title": "nanoTabPFN: A Lightweight and Educational Reimplementation of TabPFN",
+    "arxiv_id": "2511.03634"
+  },
+  {
+    "key": "hong2025",
+    "title": "DePass: Unified Feature Attributing by Simple Decomposed Forward Pass",
+    "arxiv_id": "2510.18462"
+  },
+  {
+    "key": "sena2026",
+    "title": "Real-Time Explanations for Tabular Foundation Models",
+    "arxiv_id": "2603.29946"
+  }
+]

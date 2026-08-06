@@ -1,0 +1,96 @@
+{
+  "total": 8,
+  "verified": 8,
+  "failures": 0,
+  "title_mismatches": 0,
+  "entries": [
+    {
+      "key": "hollmann2025",
+      "cited_title": "Accurate predictions on small data with a tabular foundation model",
+      "doi": "10.1038/s41586-024-08328-6",
+      "registry": "Crossref",
+      "verified": true,
+      "registry_title": "Accurate predictions on small data with a tabular foundation model",
+      "registry_year": 2025,
+      "registry_venue": "Nature",
+      "title_match": 1.0
+    },
+    {
+      "key": "rundel2024",
+      "cited_title": "Interpretable Machine Learning for TabPFN",
+      "doi": "10.1007/978-3-031-63797-1_23",
+      "registry": "Crossref",
+      "verified": true,
+      "registry_title": "Interpretable Machine Learning for TabPFN",
+      "registry_year": 2024,
+      "registry_venue": "Communications in Computer and Information Science",
+      "title_match": 1.0
+    },
+    {
+      "key": "apley2020",
+      "cited_title": "Visualizing the Effects of Predictor Variables in Black Box Supervised Learning Models",
+      "doi": "10.1111/rssb.12377",
+      "registry": "Crossref",
+      "verified": true,
+      "registry_title": "Visualizing the Effects of Predictor Variables in Black Box Supervised Learning Models",
+      "registry_year": 2020,
+      "registry_venue": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+      "title_match": 1.0
+    },
+    {
+      "key": "bilos2026",
+      "cited_title": "A Mechanistic Study of Tabular Foundation Models",
+      "doi": "",
+      "registry": "arXiv",
+      "verified": true,
+      "registry_title": "A Mechanistic Study of Tabular Foundation Models",
+      "registry_year": "2026",
+      "registry_venue": "arXiv preprint",
+      "title_match": 1.0
+    },
+    {
+      "key": "gupta2026",
+      "cited_title": "Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function",
+      "doi": "",
+      "registry": "arXiv",
+      "verified": true,
+      "registry_title": "Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function",
+      "registry_year": "2026",
+      "registry_venue": "arXiv preprint",
+      "title_match": 1.0
+    },
+    {
+      "key": "pfefferle2025",
+      "cited_title": "nanoTabPFN: A Lightweight and Educational Reimplementation of TabPFN",
+      "doi": "",
+      "registry": "arXiv",
+      "verified": true,
+      "registry_title": "nanoTabPFN: A Lightweight and Educational Reimplementation of TabPFN",
+      "registry_year": "2025",
+      "registry_venue": "arXiv preprint",
+      "title_match": 1.0
+    },
+    {
+      "key": "hong2025",
+      "cited_title": "DePass: Unified Feature Attributing by Simple Decomposed Forward Pass",
+      "doi": "",
+      "registry": "arXiv",
+      "verified": true,
+      "registry_title": "DePass: Unified Feature Attributing by Simple Decomposed Forward Pass",
+      "registry_year": "2025",
+      "registry_venue": "arXiv preprint",
+      "title_match": 1.0
+    },
+    {
+      "key": "sena2026",
+      "cited_title": "Real-Time Explanations for Tabular Foundation Models",
+      "doi": "",
+      "registry": "arXiv",
+      "verified": true,
+      "registry_title": "Real-Time Explanations for Tabular Foundation Models",
+      "registry_year": "2026",
+      "registry_venue": "arXiv preprint",
+      "title_match": 1.0
+    }
+  ]
+}
