@@ -1,7 +1,7 @@
 # TabPFN papers
 
-34 papers on TabPFN and tabular foundation models, retrieved 2026-08-06.
-141.1 MB across 34 PDFs. Every PDF verified: title matched against the registry before
+39 papers on TabPFN and tabular foundation models, retrieved 2026-08-06.
+147.9 MB across 39 PDFs. Every PDF verified: title matched against the registry before
 saving, `%PDF` magic number checked, and confirmed readable.
 
 `manifest.json` carries full metadata per paper - title, authors, date, DOI, arXiv abs URL,
@@ -10,15 +10,18 @@ byte count, and the title-match ratio that admitted it.
 ## Scope
 
 The **core model line plus methodologically significant work**, plus two comparison models
-(TabICL, TabDPT) for cross-architecture work. Deliberately excludes the ~40 narrow domain
+(TabICL, TabDPT) for cross-architecture work, and the PFN theory literature on what these
+models are supposed to be computing. Deliberately excludes the ~40 narrow domain
 applications DBLP also indexes under "TabPFN" (IoT intrusion detection, drug discovery, crop
 yield, insurance pricing, Alzheimer's prediction), which apply TabPFN rather than developing
 or analysing it. DBLP reports 69 papers mentioning TabPFN in total.
 
-**Search-scope warning.** The first pass keyed on "TabPFN" in the title and therefore missed
-two significant mechanistic papers that say "Tabular Foundation Models" instead
-(2605.21288, 2605.06510). Both were added on a second pass. If you extend this collection,
-search by concept, not by product name.
+**Search-scope warning, twice learned.** The first pass keyed on "TabPFN" in the title and
+missed two significant mechanistic papers that say "Tabular Foundation Models" instead
+(2605.21288, 2605.06510). A third pass searching the underlying concept, **"prior-data fitted
+networks"**, surfaced a further ~25 DBLP hits including the theory papers that define what
+TabPFN is supposed to be computing (2305.11097, 2410.01565). Product name, architecture name
+and concept name each retrieve a different slice. Search all three.
 
 
 ### Core model line (6)
@@ -79,6 +82,16 @@ search by concept, not by product name.
 |---|---|---|---|
 | 2024 | [2410.18164](https://arxiv.org/abs/2410.18164) | Ma et al. | TabDPT: Scaling Tabular Foundation Models on Real Data |
 | 2025 | [2502.05564](https://arxiv.org/abs/2502.05564) | Qu et al. | TabICL: A Tabular Foundation Model for In-Context Learning on Large Data |
+
+### PFN theory: what the model is supposed to be computing (5)
+
+| Year | ID | First author | Title |
+|---|---|---|---|
+| 2023 | [2305.11097](https://arxiv.org/abs/2305.11097) | Nagler et al. | Statistical Foundations of Prior-Data Fitted Networks |
+| 2024 | [2410.01565](https://arxiv.org/abs/2410.01565) | Müller et al. | Bayes' Power for Explaining In-Context Learning Generalizations |
+| 2025 | [2503.01256](https://arxiv.org/abs/2503.01256) | Wang et al. | Prior-Fitted Networks Scale to Larger Datasets When Treated as Weak Learners |
+| 2025 | [2509.20950](https://arxiv.org/abs/2509.20950) | Sharma et al. | Decoupled-Value Attention for Prior-Data Fitted Networks: GP Inference for Physical Equations |
+| 2026 | [2603.12037](https://arxiv.org/abs/2603.12037) | Melnychuk et al. | Frequentist Consistency of Prior-Data Fitted Networks for Causal Inference |
 
 ## Provenance and how to reproduce
 

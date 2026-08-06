@@ -63,6 +63,15 @@ PAPERS = [
     # --- comparison models, for cross-architecture universality work ---
     ("2502.05564", "TabICL: A Tabular Foundation Model for In-Context Learning on Large", "comparison"),
     ("2410.18164", "TabDPT: Scaling Tabular Foundation Models", "comparison"),
+
+    # --- PFN theory: what the model is supposed to be computing ---
+    # Found on a third pass by searching the CONCEPT ("prior-data fitted networks", ~25 DBLP
+    # hits) rather than the product name. Bears directly on whether TabPFN is Bayesian.
+    ("2305.11097", "Statistical Foundations of Prior-Data Fitted Networks", "theory"),
+    ("2410.01565", "Bayes' Power for Explaining In-Context Learning Generalizations", "theory"),
+    ("2603.12037", "Frequentist Consistency of Prior-Data Fitted Networks for Causal Inference", "theory"),
+    ("2503.01256", "Prior-Fitted Networks Scale to Larger Datasets When Treated as Weak", "theory"),
+    ("2509.20950", "Decoupled-Value Attention for Prior-Data Fitted Networks", "theory"),
     ("2601.08181", "TabPFN Through The Looking Glass", "analysis"),
     ("2511.18278", "From Tables to Signals", "analysis"),
     # Retitled on arXiv since DBLP indexed it ("A principled framework for uncertainty

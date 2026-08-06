@@ -1,20 +1,30 @@
 # Mechanistic interpretability on TabPFN: research directions
 
-Written 2026-08-06, revised the same day after a second literature pass.
-Grounded in the 34 papers in `papers/tabpfn/` and the field map in
+Written 2026-08-06, revised the same day after a second and third literature pass.
+Grounded in the 39 papers in `papers/tabpfn/` and the field map in
 `lit_review/mechanistic_interpretability_review.md`.
 
 Ideas are grouped by **ambitiousness** (A/B/C) and tagged with **compute tier** (T0-T4)
 calibrated to this machine: 16 GB RAM, Intel Iris Xe integrated graphics, no CUDA, plus
 Colab CLI access in WSL (T4/L4/A100/H100).
 
-> **Revision note.** The first draft of this document claimed several things were untouched.
-> A second search found two 2026 papers the original sweep missed, because it keyed on
-> "TabPFN" in the title while these say "Tabular Foundation Models": Biloš et al.
-> (2605.21288) and Rezaei Balef et al. (2605.06510). Between them they substantially cover
-> what were ideas A2, A4 and B5, and partly anticipate C1. Those entries are now marked and
-> rewritten. This is the exact failure mode the review's `_learnings/` file warns about, and
-> it happened here within a day. **Search by concept, not by product name.**
+> **Revision note, two passes.** The first draft claimed several things were untouched.
+>
+> *Second pass* found two 2026 papers missed because the sweep keyed on "TabPFN" while they
+> say "Tabular Foundation Models": Biloš et al. (2605.21288) and Balef et al.
+> (2605.06510). Between them they substantially cover what were ideas A2, A4 and B5, and
+> partly anticipate C1.
+>
+> *Third pass* searched the underlying concept, **"prior-data fitted networks"**, and found a
+> ~25-paper theory literature that had been entirely absent - including Nagler's *Statistical
+> Foundations of PFNs* and the TabPFN authors' own *Bayes' Power for Explaining ICL
+> Generalizations*. These do not close an idea; they turn B2 from a speculative question into
+> an active three-way dispute that mechanistic interpretability can adjudicate, which is now
+> the strongest item in this document.
+>
+> Product name, architecture name and concept name each retrieve a different slice of a
+> literature. **Search all three.** Superseded entries are struck through and rewritten rather
+> than deleted, so the record of what was wrong stays visible.
 
 ---
 
@@ -67,19 +77,24 @@ draft assumed.
 | Paper | What it did | What it did NOT do |
 |---|---|---|
 | **Biloš et al., *A Mechanistic Study of Tabular Foundation Models*** (2605.21288) | Compares TabPFN v2, TabICLv2, Mitra over a 49-dataset benchmark. Finds architectures **converge in accuracy but realise qualitatively distinct similarity-based readouts** - attention-weighted vote over context labels vs class-conditional mean - each confirmed causally. Traces permutation invariances to specific positional parameters whose removal preserves accuracy. Engineers perturbations against each readout that reproduce predicted failure modes | Does not vary the training prior. Does not explain *why* a similarity readout achieves near-Bayes accuracy. No dictionary learning |
-| **Rezaei Balef et al., *Is One Layer Enough?*** (2605.06510) | First large-scale layerwise study across **6** tabular ICL models. Distinct inference stages, latent dynamics differing from LLMs, substantial **depthwise redundancy**. Builds a looped single-layer model at **20% of parameters** with comparable performance. Code released | Descriptive at the layer level; no head-level or feature-level circuit. Does not connect redundancy to the prior |
+| **Balef et al., *Is One Layer Enough?*** (2605.06510) | First large-scale layerwise study across **6** tabular ICL models. Distinct inference stages, latent dynamics differing from LLMs, substantial **depthwise redundancy**. Builds a looped single-layer model at **20% of parameters** with comparable performance. Code released | Descriptive at the layer level; no head-level or feature-level circuit. Does not connect redundancy to the prior |
 | Gupta et al., *Where Computation Lives Inside TabPFN* (2606.12917) | First causal analysis of TabPFN specifically. Patching, ablation, attention entropy on **feature-wise** heads. One head 2-5x more causally necessary at peak layer. Contrastive steering **fails to transfer across samples** | Feature-wise heads only, **two** datasets, no sample-wise attention, no SAEs |
 | Gupta et al., *Through The Looking Glass* (2601.08181) | Probing for regression coefficients, intermediate values, final answer across layers | Correlational only |
 | Swelam et al., *Does TabPFN Understand Causal Structures?* (2511.07236) | Learned adapter decodes causal adjacency matrices from frozen embeddings; causal info concentrated in mid layers | Decodability, not use |
 | McCarter, *What exactly has TabPFN learned to do?* (2502.08978) | Black-box inductive biases, "brilliant or baffling" | No internals |
 | Zheng et al., *From Tables to Signals* (2511.18278) | Spectral Adaptivity: capacity adapts to in-context sample count, not training epochs | No mechanism |
 | Ye et al., *A Closer Look at TabPFN v2* (2502.17361) | Infers attribute relationships from randomised attribute tokens | Reports, does not explain |
+| **Nagler, *Statistical Foundations of PFNs*** (2305.11097, ICML'23) | Theory. A **purely frequentist** reading of PFNs as pre-tuned but untrained predictors explains their behaviour, including why accuracy improves on datasets larger than any seen in pre-training. Variance vanishes with low per-sample sensitivity; bias vanishes only with localisation around the test feature, and **the architecture ensures only the former** | No mechanistic evidence. The sensitivity and localisation claims are never measured inside a real model |
+| **Müller, Hollmann & Hutter, *Bayes' Power for Explaining ICL Generalizations*** (2410.01565) | Argues the **Bayesian** reading, not MLE, explains ICL generalisation. Written by the TabPFN authors | Also no mechanistic evidence; directly in tension with Nagler |
+| Melnychuk et al., *Frequentist Consistency of PFNs for Causal Inference* (2603.12037) | PFN-based ATE estimators show **prior-induced confounding bias: the prior is not asymptotically overwritten by data**; proposes a one-step posterior correction | Estimator-level, not mechanism-level |
 
-**Frontier in three sentences.** Tabular foundation models implement *similarity-based
+**Frontier in four sentences.** Tabular foundation models implement *similarity-based
 readouts*, not Bayesian inference, and different architectures implement *different* ones
 despite matching accuracy. Their depth is substantially redundant, to the point that a looped
-single layer at 20% of parameters is competitive. Nobody has varied the training prior, and
-nobody has applied dictionary learning to a tabular foundation model.
+single layer at 20% of parameters is competitive. The theory literature is actively split on
+whether a PFN is best understood as Bayesian or frequentist, and **neither side has produced
+mechanistic evidence**. Nobody has varied the training prior, and nobody has applied dictionary
+learning to a tabular foundation model.
 
 ---
 
@@ -164,20 +179,39 @@ are genuinely new rather than transplanted:
 Cheap: small model, low-dimensional activations, no Gemma-Scope-scale infrastructure needed.
 Best novelty-to-compute ratio here.
 
-### B2. Why does a similarity readout achieve near-Bayes accuracy? [T1-T2] - now the sharpest question
-This is the question Biloš et al. opened and did not close. TabPFN is **trained** to
-approximate the posterior predictive, but mechanistically implements an attention-weighted
-vote over context labels. Those are not the same algorithm. So either:
+### B2. Adjudicate the Bayes-vs-frequentist dispute mechanistically [T1-T2] - the strongest item here
+There is a **live three-way disagreement** about what a PFN computes, and mechanistic
+interpretability is the tool that could settle it. The positions:
 
-- the similarity readout is a *good approximation* to Bayes under this specific prior, and you
-  can characterise exactly when it stops being one; or
-- the model is Bayesian in a representation that does not look like inference from outside,
-  and the "similarity readout" is a surrogate that fits behaviour without being the mechanism; or
-- TabPFN is not really doing what its objective asks, and its benchmark performance comes from
-  the prior being unusually forgiving.
+1. **Bayesian.** Müller, Hollmann and Hutter (2410.01565) - the TabPFN authors - argue the
+   Bayesian reading, not the maximum-likelihood one, is what explains in-context learning
+   generalisation.
+2. **Frequentist.** Nagler (2305.11097, ICML 2023) shows "a purely frequentistic
+   interpretation of PFNs as pre-tuned, but untrained predictors explains their behavior",
+   and explains why accuracy improves on datasets *larger* than any seen in pre-training,
+   which the naive Bayesian story does not predict.
+3. **Neither, mechanically.** Biloš et al. (2605.21288) find the implemented readout is a
+   similarity-weighted vote over context labels, confirmed by causal intervention.
 
-All three are testable at small n against exact posteriors. Whichever is true is a headline
-result, and the third would be a genuinely uncomfortable finding about a widely used model.
+**Nagler hands you a directly testable mechanistic claim.** His analysis says a predictor's
+variance vanishes if its sensitivity to individual training samples vanishes, and its bias
+vanishes only if it is **appropriately localised around the test feature** - and that the
+transformer architecture used in current PFNs *ensures only the former*. That is a statement
+about what the architecture can and cannot do, phrased in terms of sensitivity and
+localisation, both of which are measurable directly from attention patterns and patching
+experiments.
+
+So the experiment is well posed: measure sample-sensitivity and test-feature localisation
+inside TabPFN, and check whether the pattern matches Nagler's prediction. If it does, the
+frequentist account gains mechanistic support and the Bayesian framing is a motivating story
+rather than a description. If it does not, Nagler's theory needs revising. Either way the
+result is publishable, and the question is currently being argued in theory papers with no
+mechanistic evidence on either side.
+
+Supporting evidence that the prior does not wash out: the causal-inference PFN paper
+(2603.12037) finds "prior-induced confounding bias: the prior is not asymptotically overwritten
+by data", which is exactly what you would expect if the model is a pre-tuned predictor rather
+than a Bayesian updater.
 
 ### B3. Recover a circuit for a known structural causal model [T2]
 Generate data from a specific known SCM and find the circuit TabPFN uses. Because **you know
@@ -256,13 +290,13 @@ architectures chosen for analytic convenience. TabPFN is the cleanest realistic 
 is its only mode and it is small enough to analyse exhaustively.
 
 Sharpened by both new papers. Biloš et al. say the readout is similarity-based, which does not
-obviously look like GD; Rezaei Balef et al. report **iterative refinement with overlapping
+obviously look like GD; Balef et al. report **iterative refinement with overlapping
 computation across depth**, which does. Those sit in tension, and resolving it is a real
 contribution. The looped single-layer model is an unusually direct probe: if a loop of one
 layer suffices, whatever iteration is happening is simple enough to characterise fully.
 
 ### C3. Mechanistic distillation of TabPFN [T2-T3]
-Rezaei Balef et al. proved the payoff path exists: layer-level insight yielded 20% of
+Balef et al. proved the payoff path exists: layer-level insight yielded 20% of
 parameters at comparable performance. The TabPFN-specific version starts one level deeper -
 from head roles and SAE features rather than layer statistics - and asks how far it compresses.
 This is the most fundable framing here, because it converts interpretability into a number
@@ -303,7 +337,7 @@ Bold: highest value for effort.
 **Tooling does not exist for this.** TransformerLens, nnsight and the rest assume a 1-D token
 stream with a single attention type. TabPFN has two attention types over a 2-D cell grid, so
 hooks have to be written against the TabPFN codebase directly. Budget real time for this; it is
-the main reason the field has one causal paper rather than ten. Rezaei Balef et al. released
+the main reason the field has one causal paper rather than ten. Balef et al. released
 code (`github.com/amirbalef/is_one_layer_enough`), which is the closest thing to a starting
 point and worth reading before writing anything.
 
@@ -317,9 +351,10 @@ getting it wrong invalidates everything downstream.
 released pre-training prior matching what the papers describe. Verify that against the code
 before building on it.
 
-**Read first, in this order.** Nature paper (architecture) → Biloš 2605.21288 (what the
-mechanism is) → Rezaei Balef 2605.06510 (how it is distributed over depth) → Gupta 2606.12917
-(head-level method) → nanoTabPFN 2511.03634 (the experimental lever).
+**Read first, in this order.** Nature paper (architecture) → Nagler 2305.11097 and Müller
+2410.01565 (what it is *supposed* to compute, and the dispute) → Biloš 2605.21288 (what it
+actually computes) → Balef 2605.06510 (how that is distributed over depth) → Gupta
+2606.12917 (head-level method) → nanoTabPFN 2511.03634 (the experimental lever).
 
 ---
 

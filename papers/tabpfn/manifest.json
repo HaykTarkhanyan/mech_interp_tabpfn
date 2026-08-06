@@ -2,9 +2,9 @@
   "collection": "TabPFN papers",
   "retrieved": "2026-08-06",
   "source": "arxiv.org (identifiers from DBLP); Nature paper via Crossref",
-  "n_papers": 34,
-  "n_pdfs": 34,
-  "total_bytes": 147947548,
+  "n_papers": 39,
+  "n_pdfs": 39,
+  "total_bytes": 155131682,
   "failures": [],
   "papers": [
     {
@@ -695,6 +695,94 @@
       "category": "scaling",
       "filename": "2510.06162_tabpfn-wide-continued-pre-training-for-extreme-feature-counts.pdf",
       "bytes": 2528046,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "Statistical Foundations of Prior-Data Fitted Networks",
+      "authors": [
+        "Nagler, Thomas"
+      ],
+      "date": "2023/05/18",
+      "doi": "10.48550/arXiv.2305.11097",
+      "abs_url": "https://arxiv.org/abs/2305.11097",
+      "pdf_url": "https://arxiv.org/pdf/2305.11097",
+      "arxiv_id": "2305.11097",
+      "category": "theory",
+      "filename": "2305.11097_statistical-foundations-of-prior-data-fitted-networks.pdf",
+      "bytes": 461801,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "Bayes' Power for Explaining In-Context Learning Generalizations",
+      "authors": [
+        "Müller, Samuel",
+        "Hollmann, Noah",
+        "Hutter, Frank"
+      ],
+      "date": "2024/10/02",
+      "doi": "10.48550/arXiv.2410.01565",
+      "abs_url": "https://arxiv.org/abs/2410.01565",
+      "pdf_url": "https://arxiv.org/pdf/2410.01565",
+      "arxiv_id": "2410.01565",
+      "category": "theory",
+      "filename": "2410.01565_bayes-power-for-explaining-in-context-learning-generalizations.pdf",
+      "bytes": 702467,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "Prior-Fitted Networks Scale to Larger Datasets When Treated as Weak Learners",
+      "authors": [
+        "Wang, Yuxin",
+        "Jiang, Botian",
+        "Guo, Yiran",
+        "Gan, Quan",
+        "Wipf, David",
+        "Huang, Xuanjing",
+        "Qiu, Xipeng"
+      ],
+      "date": "2025/03/03",
+      "doi": "10.48550/arXiv.2503.01256",
+      "abs_url": "https://arxiv.org/abs/2503.01256",
+      "pdf_url": "https://arxiv.org/pdf/2503.01256",
+      "arxiv_id": "2503.01256",
+      "category": "theory",
+      "filename": "2503.01256_prior-fitted-networks-scale-to-larger-datasets-when-treated-as-weak-le.pdf",
+      "bytes": 2889168,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "Decoupled-Value Attention for Prior-Data Fitted Networks: GP Inference for Physical Equations",
+      "authors": [
+        "Sharma, Kaustubh",
+        "Singh, Simardeep",
+        "Pareek, Parikshit"
+      ],
+      "date": "2025/09/25",
+      "doi": "10.48550/arXiv.2509.20950",
+      "abs_url": "https://arxiv.org/abs/2509.20950",
+      "pdf_url": "https://arxiv.org/pdf/2509.20950",
+      "arxiv_id": "2509.20950",
+      "category": "theory",
+      "filename": "2509.20950_decoupled-value-attention-for-prior-data-fitted-networks-gp-inference-.pdf",
+      "bytes": 1844473,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "Frequentist Consistency of Prior-Data Fitted Networks for Causal Inference",
+      "authors": [
+        "Melnychuk, Valentyn",
+        "Balazadeh, Vahid",
+        "Feuerriegel, Stefan",
+        "Krishnan, Rahul G."
+      ],
+      "date": "2026/03/12",
+      "doi": "10.48550/arXiv.2603.12037",
+      "abs_url": "https://arxiv.org/abs/2603.12037",
+      "pdf_url": "https://arxiv.org/pdf/2603.12037",
+      "arxiv_id": "2603.12037",
+      "category": "theory",
+      "filename": "2603.12037_frequentist-consistency-of-prior-data-fitted-networks-for-causal-infer.pdf",
+      "bytes": 1286225,
       "title_match_ratio": 1.0
     }
   ]

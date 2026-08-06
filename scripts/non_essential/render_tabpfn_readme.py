@@ -19,6 +19,7 @@ CATEGORIES = {
     "scaling": "Scaling and efficiency",
     "extension": "Extensions and adaptations",
     "comparison": "Comparison models (other tabular foundation models)",
+    "theory": "PFN theory: what the model is supposed to be computing",
 }
 
 HEADER = """# TabPFN papers
@@ -33,15 +34,18 @@ byte count, and the title-match ratio that admitted it.
 ## Scope
 
 The **core model line plus methodologically significant work**, plus two comparison models
-(TabICL, TabDPT) for cross-architecture work. Deliberately excludes the ~40 narrow domain
+(TabICL, TabDPT) for cross-architecture work, and the PFN theory literature on what these
+models are supposed to be computing. Deliberately excludes the ~40 narrow domain
 applications DBLP also indexes under "TabPFN" (IoT intrusion detection, drug discovery, crop
 yield, insurance pricing, Alzheimer's prediction), which apply TabPFN rather than developing
 or analysing it. DBLP reports 69 papers mentioning TabPFN in total.
 
-**Search-scope warning.** The first pass keyed on "TabPFN" in the title and therefore missed
-two significant mechanistic papers that say "Tabular Foundation Models" instead
-(2605.21288, 2605.06510). Both were added on a second pass. If you extend this collection,
-search by concept, not by product name.
+**Search-scope warning, twice learned.** The first pass keyed on "TabPFN" in the title and
+missed two significant mechanistic papers that say "Tabular Foundation Models" instead
+(2605.21288, 2605.06510). A third pass searching the underlying concept, **"prior-data fitted
+networks"**, surfaced a further ~25 DBLP hits including the theory papers that define what
+TabPFN is supposed to be computing (2305.11097, 2410.01565). Product name, architecture name
+and concept name each retrieve a different slice. Search all three.
 """
 
 FOOTER = """

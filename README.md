@@ -15,8 +15,9 @@ deduplication, 342 passing automated relevance screening, 53 cited.
 
 ## Paper collections
 
-**[`papers/tabpfn/`](papers/tabpfn/)** - 34 papers (141 MB) on TabPFN and tabular foundation
-models: the core model line, analysis, scaling and extension work, plus two comparison models.
+**[`papers/tabpfn/`](papers/tabpfn/)** - 39 papers (148 MB) on TabPFN and tabular foundation
+models: the core model line, analysis, scaling and extension work, two comparison models, and
+the PFN theory literature.
 Excludes narrow domain applications. Each PDF
 was title-verified against the registry before saving; `manifest.json` has full metadata and
 `README.md` explains scope and provenance. Rebuild with
@@ -63,7 +64,7 @@ the outcome in their output rather than skipping them silently.
 
 ```
 lit_review/     review, references, verification report, figures
-papers/tabpfn/  34 verified PDFs + manifest
+papers/tabpfn/  39 verified PDFs + manifest
 research_ideas/ research directions, grouped by ambition and compute
 scripts/        load-bearing pipeline (see above)
   non_essential/  supplementary retrieval, blocked on an external rate limit
