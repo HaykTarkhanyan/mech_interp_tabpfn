@@ -4,6 +4,37 @@ Newest first. Never delete a superseded entry.
 
 ---
 
+## #7 - Commit the TabPFN PDFs into git history
+
+**Date:** 2026-08-06
+**Status:** active
+
+**Decision:** Track all 30 TabPFN PDFs (125.5 MB, 703 pages) in git rather than gitignoring
+them and relying on `scripts/download_tabpfn_papers.py` to rebuild the collection.
+
+**Why:** Explicit call by the repo owner, made with the trade-off stated. The supporting
+argument: the papers are the working corpus for reading, not a build artefact, and several
+are arXiv preprints that get silently revised - two in this very collection were retitled
+between versions (see `papers/tabpfn/README.md`). Committing the bytes pins the exact
+versions read, which a re-download would not reproduce.
+
+**Alternatives rejected:**
+- Gitignore the PDFs, commit `manifest.json` + README + script - keeps the repo at ~20 MB and
+  the collection is rebuildable in one command, but does not pin preprint *versions*, and
+  arXiv preprints are mutable.
+- Git LFS - solves the size problem properly, but adds a dependency and a server-side quota
+  for a repo that is otherwise plain.
+
+**Cost accepted:** repo grows ~20 MB → ~145 MB. Clone and fetch get slower. The blobs are
+permanent - removing them later requires `git filter-repo` or BFG, which rewrites history and
+invalidates every existing clone.
+
+**What would change this:** the collection growing to a scale where clone time actually hurts
+(the excluded ~40 domain-application papers would roughly double it), or the repo gaining
+collaborators for whom a 145 MB clone is a real cost. Git LFS would be the migration path.
+
+---
+
 ## #6 - Version `.claude/skills` with the repository
 
 **Date:** 2026-08-06
