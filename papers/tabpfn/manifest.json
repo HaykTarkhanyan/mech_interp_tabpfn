@@ -2,9 +2,9 @@
   "collection": "TabPFN papers",
   "retrieved": "2026-08-06",
   "source": "arxiv.org (identifiers from DBLP); Nature paper via Crossref",
-  "n_papers": 30,
-  "n_pdfs": 30,
-  "total_bytes": 131591791,
+  "n_papers": 34,
+  "n_pdfs": 34,
+  "total_bytes": 147947548,
   "failures": [],
   "papers": [
     {
@@ -152,6 +152,41 @@
       "title_match_ratio": 1.0
     },
     {
+      "title": "Is One Layer Enough? Understanding Inference Dynamics in Tabular Foundation Models",
+      "authors": [
+        "Balef, Amir Rezaei",
+        "Koshil, Mykhailo",
+        "Eggensperger, Katharina"
+      ],
+      "date": "2026/05/07",
+      "doi": "10.48550/arXiv.2605.06510",
+      "abs_url": "https://arxiv.org/abs/2605.06510",
+      "pdf_url": "https://arxiv.org/pdf/2605.06510",
+      "arxiv_id": "2605.06510",
+      "category": "analysis",
+      "filename": "2605.06510_is-one-layer-enough-understanding-inference-dynamics-in-tabular-founda.pdf",
+      "bytes": 10364625,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "A Mechanistic Study of Tabular Foundation Models",
+      "authors": [
+        "Biloš, Marin",
+        "Wilson, James T.",
+        "Schneider, Anderson",
+        "Nevmyvaka, Yuriy"
+      ],
+      "date": "2026/05/20",
+      "doi": "10.48550/arXiv.2605.21288",
+      "abs_url": "https://arxiv.org/abs/2605.21288",
+      "pdf_url": "https://arxiv.org/pdf/2605.21288",
+      "arxiv_id": "2605.21288",
+      "category": "analysis",
+      "filename": "2605.21288_a-mechanistic-study-of-tabular-foundation-models.pdf",
+      "bytes": 1060363,
+      "title_match_ratio": 1.0
+    },
+    {
       "title": "Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function",
       "authors": [
         "Gupta, Atharva",
@@ -167,6 +202,48 @@
       "category": "analysis",
       "filename": "2606.12917_where-computation-lives-inside-tabpfn-causal-localisation-of-attention.pdf",
       "bytes": 830362,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "TabDPT: Scaling Tabular Foundation Models on Real Data",
+      "authors": [
+        "Ma, Junwei",
+        "Thomas, Valentin",
+        "Hosseinzadeh, Rasa",
+        "Labach, Alex",
+        "Kamkari, Hamidreza",
+        "Cresswell, Jesse C.",
+        "Golestan, Keyvan",
+        "Yu, Guangwei",
+        "Caterini, Anthony L.",
+        "Volkovs, Maksims"
+      ],
+      "date": "2024/10/23",
+      "doi": "10.48550/arXiv.2410.18164",
+      "abs_url": "https://arxiv.org/abs/2410.18164",
+      "pdf_url": "https://arxiv.org/pdf/2410.18164",
+      "arxiv_id": "2410.18164",
+      "category": "comparison",
+      "filename": "2410.18164_tabdpt-scaling-tabular-foundation-models-on-real-data.pdf",
+      "bytes": 864580,
+      "title_match_ratio": 1.0
+    },
+    {
+      "title": "TabICL: A Tabular Foundation Model for In-Context Learning on Large Data",
+      "authors": [
+        "Qu, Jingang",
+        "Holzmüller, David",
+        "Varoquaux, Gaël",
+        "Morvan, Marine Le"
+      ],
+      "date": "2025/02/08",
+      "doi": "10.48550/arXiv.2502.05564",
+      "abs_url": "https://arxiv.org/abs/2502.05564",
+      "pdf_url": "https://arxiv.org/pdf/2502.05564",
+      "arxiv_id": "2502.05564",
+      "category": "comparison",
+      "filename": "2502.05564_tabicl-a-tabular-foundation-model-for-in-context-learning-on-large-dat.pdf",
+      "bytes": 4066189,
       "title_match_ratio": 1.0
     },
     {

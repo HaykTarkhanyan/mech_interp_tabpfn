@@ -1,19 +1,25 @@
 # TabPFN papers
 
-30 papers on TabPFN (Tabular Prior-Data Fitted Networks), retrieved 2026-08-06.
-703 pages, 125.5 MB. Every PDF verified: title matched against the registry before saving,
-`%PDF` magic number checked, and confirmed readable.
+34 papers on TabPFN and tabular foundation models, retrieved 2026-08-06.
+141.1 MB across 34 PDFs. Every PDF verified: title matched against the registry before
+saving, `%PDF` magic number checked, and confirmed readable.
 
 `manifest.json` carries full metadata per paper - title, authors, date, DOI, arXiv abs URL,
 byte count, and the title-match ratio that admitted it.
 
 ## Scope
 
-The **core model line plus methodologically significant work**. Deliberately excludes the
-~40 narrow domain applications DBLP also indexes under "TabPFN" (IoT intrusion detection,
-drug discovery, crop yield, insurance pricing, Alzheimer's prediction and similar), which
-apply TabPFN rather than developing or analysing it. DBLP reports 69 papers mentioning
-TabPFN in total.
+The **core model line plus methodologically significant work**, plus two comparison models
+(TabICL, TabDPT) for cross-architecture work. Deliberately excludes the ~40 narrow domain
+applications DBLP also indexes under "TabPFN" (IoT intrusion detection, drug discovery, crop
+yield, insurance pricing, Alzheimer's prediction), which apply TabPFN rather than developing
+or analysing it. DBLP reports 69 papers mentioning TabPFN in total.
+
+**Search-scope warning.** The first pass keyed on "TabPFN" in the title and therefore missed
+two significant mechanistic papers that say "Tabular Foundation Models" instead
+(2605.21288, 2605.06510). Both were added on a second pass. If you extend this collection,
+search by concept, not by product name.
+
 
 ### Core model line (6)
 
@@ -26,7 +32,7 @@ TabPFN in total.
 | 2025 | [2511.08667](https://arxiv.org/abs/2511.08667) | Grinsztajn et al. | TabPFN-2.5: Advancing the State of the Art in Tabular Foundation Models |
 | 2026 | [2605.13986](https://arxiv.org/abs/2605.13986) | Grinsztajn et al. | TabPFN-3: Technical Report |
 
-### Analysis: what the model actually does (9)
+### Analysis: what the model actually does (11)
 
 | Year | ID | First author | Title |
 |---|---|---|---|
@@ -38,6 +44,8 @@ TabPFN in total.
 | 2025 | [2511.18278](https://arxiv.org/abs/2511.18278) | Zheng et al. | From Tables to Signals: Revealing Spectral Adaptivity in TabPFN |
 | 2026 | [2601.08181](https://arxiv.org/abs/2601.08181) | Gupta et al. | TabPFN Through The Looking Glass: An interpretability study of TabPFN and its internal representations |
 | 2026 | [2602.04596](https://arxiv.org/abs/2602.04596) | Fortini et al. | Uncertainty Decomposition for Bayes-Filtered Transformers via Bayesian Predictive Inference |
+| 2026 | [2605.06510](https://arxiv.org/abs/2605.06510) | Balef et al. | Is One Layer Enough? Understanding Inference Dynamics in Tabular Foundation Models |
+| 2026 | [2605.21288](https://arxiv.org/abs/2605.21288) | Biloš et al. | A Mechanistic Study of Tabular Foundation Models |
 | 2026 | [2606.12917](https://arxiv.org/abs/2606.12917) | Gupta et al. | Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function |
 
 ### Scaling and efficiency (6)
@@ -65,21 +73,29 @@ TabPFN in total.
 | 2026 | [2605.20234](https://arxiv.org/abs/2605.20234) | Cureton et al. | TabPFN-MT: A Natively Multitask In-Context Learner for Tabular Data |
 | 2026 | [2606.04876](https://arxiv.org/abs/2606.04876) | Tajjar et al. | Towards Pretraining Text Encoders for TabPFN |
 
+### Comparison models (other tabular foundation models) (2)
+
+| Year | ID | First author | Title |
+|---|---|---|---|
+| 2024 | [2410.18164](https://arxiv.org/abs/2410.18164) | Ma et al. | TabDPT: Scaling Tabular Foundation Models on Real Data |
+| 2025 | [2502.05564](https://arxiv.org/abs/2502.05564) | Qu et al. | TabICL: A Tabular Foundation Model for In-Context Learning on Large Data |
+
 ## Provenance and how to reproduce
 
 ```bash
 python scripts/download_tabpfn_papers.py --dry-run   # verify every title, download nothing
 python scripts/download_tabpfn_papers.py             # download; resumable
+python scripts/non_essential/render_tabpfn_readme.py # regenerate this file
 ```
 
-arXiv identifiers come from DBLP's `ee` field, not from recall. The one exception is
-`2207.01848` (the original TabPFN paper): DBLP holds only the ICLR'23 entry with no arXiv
-link, so that identifier is checked purely by title match against the arXiv abs page.
+arXiv identifiers come from DBLP's `ee` field or from OpenAlex, not from recall. The exception
+is `2207.01848` (the original TabPFN paper): DBLP holds only the ICLR'23 entry with no arXiv
+link, so that identifier rests purely on a title match against the arXiv abs page.
 
 The script fetches each abs page and compares `citation_title` against the expected title
 before writing anything, so a wrong identifier cannot save the wrong paper under a
-right-looking name. Two papers tripped this guard because they were **retitled between
-arXiv versions** while DBLP kept the original title:
+right-looking name. Two papers tripped this guard because they were **retitled between arXiv
+versions** while DBLP kept the original title:
 
 | arXiv | DBLP title | Current arXiv title |
 |---|---|---|
@@ -94,7 +110,8 @@ The Nature paper has no arXiv preprint. It is resolved via Crossref
 
 ## Notes
 
-- The arXiv **API** returns HTTP 429 to this network; the **website** serves `citation_*`
-  meta tags and `/pdf/` downloads normally, which is what this uses.
-- Downloads are rate-limited to one request per 3s and the script is resumable - it skips any
-  paper already present in both the manifest and on disk.
+- The arXiv **API** returns HTTP 429 to this network; the **website** serves `citation_*` meta
+  tags and `/pdf/` downloads normally, which is what this uses.
+- Downloads are rate-limited to one request per 3s and the script is resumable.
+- Research directions built on this collection:
+  [`research_ideas/tabpfn_mech_interp.md`](../../research_ideas/tabpfn_mech_interp.md).

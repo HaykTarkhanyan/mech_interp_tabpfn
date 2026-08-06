@@ -33,3 +33,15 @@ picks up where it stopped. Running it and then re-running `screen_papers.py` *wi
 screening on their merits rather than on the presence of an abstract.
 
 Moved here 2026-08-06, reason: blocked on an external rate limit, not on the repo.
+
+## render_tabpfn_readme.py
+
+**What it does.** Regenerates `papers/tabpfn/README.md` from `manifest.json`, so the
+per-category paper tables cannot drift out of sync with what is actually on disk. Prose
+sections live in the script; only the tables are derived.
+
+**When to re-run it.** After adding papers to the collection via
+`scripts/download_tabpfn_papers.py`. It raises if the manifest contains a category the script
+does not know about, so a new category is a deliberate edit rather than a silent omission.
+
+Added 2026-08-06, after the README needed regenerating a second time.

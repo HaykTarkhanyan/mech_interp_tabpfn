@@ -55,6 +55,14 @@ PAPERS = [
     ("2505.20003", "TabPFN: One Model to Rule Them All", "analysis"),
     ("2511.07236", "Does TabPFN Understand Causal Structures", "analysis"),
     ("2606.12917", "Where Computation Lives Inside TabPFN", "analysis"),
+    # Added 2026-08-06 on a second search pass. Both were missed by the original sweep
+    # because it keyed on "TabPFN" in the title and these say "Tabular Foundation Models".
+    ("2605.21288", "A Mechanistic Study of Tabular Foundation Models", "analysis"),
+    ("2605.06510", "Is One Layer Enough? Understanding Inference Dynamics in Tabular", "analysis"),
+
+    # --- comparison models, for cross-architecture universality work ---
+    ("2502.05564", "TabICL: A Tabular Foundation Model for In-Context Learning on Large", "comparison"),
+    ("2410.18164", "TabDPT: Scaling Tabular Foundation Models", "comparison"),
     ("2601.08181", "TabPFN Through The Looking Glass", "analysis"),
     ("2511.18278", "From Tables to Signals", "analysis"),
     # Retitled on arXiv since DBLP indexed it ("A principled framework for uncertainty
