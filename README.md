@@ -1,7 +1,10 @@
-# mech_interp
+# mech_interp_tabpfn
 
-Systematic literature review of **mechanistic interpretability of transformer language
-models**, with a fully reproducible retrieval-to-verification pipeline.
+**Mechanistic interpretability of TabPFN and tabular foundation models.**
+
+Starts from a systematic literature review of mech interp on transformer language models
+(with a fully reproducible retrieval-to-verification pipeline), then narrows onto TabPFN: a
+verified paper collection, research directions, a proposal review, and runnable baselines.
 
 ## The review
 
@@ -66,6 +69,9 @@ the outcome in their output rather than skipping them silently.
 lit_review/     review, references, verification report, figures
 papers/tabpfn/  39 verified PDFs + manifest
 research_ideas/ research directions, grouped by ambition and compute
+reviews/        proposal reviews + their citation-verification output
+tabpfn_benchmark/ TabPFN vs GBDT/RF/LogReg on OpenML German Credit, + HTML reports
+tabpfn_toy_demo/  minimal TabPFN classification example on Iris
 scripts/        load-bearing pipeline (see above)
   non_essential/  supplementary retrieval, blocked on an external rate limit
 data/raw/       raw search results per database + search parameters

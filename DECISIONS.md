@@ -4,6 +4,49 @@ Newest first. Never delete a superseded entry.
 
 ---
 
+## #8 - Rename the repo `mech_interp` → `mech_interp_tabpfn`
+
+**Date:** 2026-09-11
+**Status:** active
+
+**Decision:** Rename the repository, locally and on GitHub, to `mech_interp_tabpfn`, and
+declare TabPFN / tabular foundation models the repo's forward scope. The broad
+language-model mech interp review stays as completed work and as the field map the TabPFN
+work builds on; it is no longer the organising subject.
+
+**Why:** Requested by the repo owner, and it matches what the repo has actually become.
+Of the work now in it, the TabPFN side is the bulk: a 39-paper verified collection, 17
+research directions, a thesis-proposal review, a benchmark and a toy demo. Decision #1
+explicitly named "a stated research direction for this repo" as the thing that would
+change its scope. The rename is that statement, so recording it closes the loop rather
+than leaving #1's trigger condition dangling and unremarked.
+
+**Alternatives rejected:**
+- Keep `mech_interp` - accurate but uninformative; the owner has several repos and the
+  generic name does not distinguish this one, which is now specifically about TabPFN.
+- `tabpfn_interp` or similar, dropping `mech_interp` - loses the connection to the
+  language-model review that is still a third of the repo and still cited by the TabPFN
+  research directions.
+- Split into two repos (review / TabPFN work) - the TabPFN ideas lean on the review's
+  central finding (that evaluation is mech interp's binding constraint), so splitting
+  would separate an argument from its evidence.
+
+**Spelling note:** the rename was requested as `mech_interp_tabpfm`. Confirmed as a typo
+and corrected to `tabpfn` before anything was renamed; the model is TabPFN.
+
+**Cost accepted:** the GitHub URL changes. GitHub serves a permanent redirect from the old
+path, so existing clones keep working and old links resolve, but any hardcoded reference to
+`HaykTarkhanyan/mech_interp` is now relying on that redirect.
+
+**What would change this:** the repo broadening again beyond tabular models - if, say, the
+mech interp methodology work outgrows the TabPFN application, the honest name would go back
+to something general.
+
+**Deliberately not changed:** decision #1's body still reads "the repo is new and named
+`mech_interp`". That was true when #1 was made and the rule here is not to edit history.
+
+---
+
 ## #7 - Commit the TabPFN PDFs into git history
 
 **Date:** 2026-08-06
