@@ -1,0 +1,15 @@
+[project]
+name = "tabpfn-benchmark"
+version = "0.1.0"
+description = "Reproducible tabular-model benchmark on the OpenML German Credit dataset."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "lightgbm==4.7.0",
+    "optuna==4.8.0",
+    "pandas==3.0.5",
+    "python-dotenv==1.2.2",
+    "scikit-learn==1.9.0",
+    "tabpfn==8.2.0",
+    "xgboost==3.4.0",
+]
