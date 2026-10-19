@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VLA steering explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.tok { font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: 0.86rem; }
+.odd { color: var(--red); font-weight: 700; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+.up { color: var(--green); font-weight: 700; }
+.down { color: var(--red); font-weight: 700; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<main>
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Mechanistic Interpretability for Steering Vision-Language-Action Models", explained</h1>
+<p class="sub">Häon, Stocking, Chuang, Tomlin (UC Berkeley). Conference on Robot Learning (CoRL) 2025, arXiv 2509.00328 (Aug 2025). An 8-page paper; 20 pages with appendix. Citations: 1 on OpenAlex (counts the arXiv record only, so likely an undercount); Semantic Scholar was rate-limited when checked on 2026-10-19.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#interp">Part 1: what robot training does to the model's concepts</a></li>
+<li><a href="#method">Part 2: the steering method</a></li>
+<li><a href="#sim">Results in simulation (OpenVLA, LIBERO)</a></li>
+<li><a href="#robot">Results on a real robot (&pi;0-FAST, UR5)</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your TabPFN work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's plots by eye.</p>
+</nav>
+
+<!-- ============================================================ -->
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Vision-language-action (VLA) models are language models fine-tuned to output robot actions. Do they still "think" in human concepts like <i>slow</i> or <i>up</i> internally, and can you use those concepts as knobs to change how the robot moves, without retraining?</p>
+<p><b>What they do.</b></p>
+<ol class="tight">
+<li><b>Read the neurons.</b> Every neuron in a transformer's feed-forward layer writes a fixed vector (its "value vector") into the model. Project that vector onto the vocabulary and you see which words it promotes: one neuron promotes "slow, slowly, Slow, calm", another "fast, faster, quick".</li>
+<li><b>Find that the concepts survive robot training.</b> After VLA training, about as many neurons show clear word patterns as in the original language model. Action tokens appear at every layer, most in the last one.</li>
+<li><b>Turn the concepts into knobs.</b> Pick the neurons whose words match a concept ("slow"), force their activations to a large constant, and run the robot.</li>
+<li><b>It partly works.</b> In simulation (OpenVLA), "fast" neurons make the arm move more than "slow" ones. On a real UR5 arm (&pi;0-FAST), "low" and "slow" visibly lower and slow the robot, more than writing "low" or "slow" into the prompt does. The opposites "high" and "fast" barely differ from no intervention.</li>
+</ol>
+<div class="take"><b>My take, one line.</b> A clean, cheap idea (no extra data, no training) and a convincing proof of concept that language concepts inside a robot policy are causally connected to motion. But the evidence is thin: 10 rollouts per condition, one-sided effects on the robot, no statistics for the robot experiments, task success under steering never reported, and the real-robot speed result is measured on predicted rather than executed actions. Details in <a href="#critique">section 7</a>.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+
+<h3>2.1 Vision-language-action models</h3>
+<p>Take a pretrained vision-language model, which reads images and text and writes text. Reserve a few hundred rarely used vocabulary tokens as <b>action tokens</b>, each meaning a discretized robot command. Fine-tune it on robot demonstrations so that, given a camera image and an instruction like "place the penguin in the basket", it writes action tokens. The two models in the paper:</p>
+<table>
+<colgroup><col style="width:22%"><col style="width:22%"><col style="width:56%"></colgroup>
+<thead><tr><th>Model</th><th>Base language model</th><th>Used for</th></tr></thead>
+<tbody>
+<tr><td>OpenVLA (7B)</td><td>Llama 2 (7B)</td><td>Simulation: LIBERO-Long, ten long-horizon kitchen tasks</td></tr>
+<tr><td>&pi;0 / &pi;0-FAST (3B)</td><td>PaliGemma (3B)</td><td>Interpretability analysis and the real UR5 robot. PaliGemma's large vocabulary makes word patterns easier to read.</td></tr>
+</tbody>
+</table>
+
+<h3>2.2 A feed-forward layer is a sum of fixed "value vectors"</h3>
+<p>Each transformer block has a feed-forward network (FFN). Following Geva et al. (2021, 2022), you can write its output as a weighted sum:</p>
+<p class="eq">FFN(x) = &Sigma;<sub>i</sub> f<sub>i</sub>(x) &middot; w<sub>i</sub></p>
+<p>Here <i>f<sub>i</sub>(x)</i> is neuron <i>i</i>'s activation, which depends on the input, and <i>w<sub>i</sub></i> is that neuron's <b>value vector</b>, a fixed row of the output weight matrix. So each neuron decides <i>how much</i> to write, but always writes the <i>same direction</i>.</p>
+
+<svg class="schem" viewBox="0 0 720 210" aria-label="FFN as a sum of value vectors and projection onto the vocabulary">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="10" y="70" width="90" height="44" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="55" y="97" text-anchor="middle" font-size="13">input x</text>
+  <g style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)">
+    <line x1="100" y1="92" x2="146" y2="40"/><line x1="100" y1="92" x2="146" y2="92"/><line x1="100" y1="92" x2="146" y2="144"/>
+  </g>
+  <g font-size="12">
+    <rect x="150" y="22" width="120" height="34" rx="5" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/><text x="210" y="44" text-anchor="middle">f<tspan baseline-shift="sub" font-size="9">1</tspan>(x) = 0.3</text>
+    <rect x="150" y="75" width="120" height="34" rx="5" style="fill:var(--orange)"/><text x="210" y="97" text-anchor="middle" font-weight="700">f<tspan baseline-shift="sub" font-size="9">2</tspan>(x) = 0.1</text>
+    <rect x="150" y="128" width="120" height="34" rx="5" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/><text x="210" y="150" text-anchor="middle">f<tspan baseline-shift="sub" font-size="9">3</tspan>(x) = 0.7</text>
+  </g>
+  <text x="210" y="16" text-anchor="middle" font-size="11" style="fill:var(--muted)">activations (depend on input)</text>
+  <g style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)">
+    <line x1="270" y1="40" x2="300" y2="40"/><line x1="270" y1="92" x2="300" y2="92"/><line x1="270" y1="144" x2="300" y2="144"/>
+  </g>
+  <g font-size="12">
+    <text x="306" y="44">&times; w<tspan baseline-shift="sub" font-size="9">1</tspan></text>
+    <text x="306" y="96" font-weight="700">&times; w<tspan baseline-shift="sub" font-size="9">2</tspan></text>
+    <text x="306" y="148">&times; w<tspan baseline-shift="sub" font-size="9">3</tspan></text>
+  </g>
+  <text x="335" y="16" text-anchor="middle" font-size="11" style="fill:var(--muted)">value vectors (fixed)</text>
+  <path d="M342,92 L392,92" style="stroke:var(--orange)" stroke-width="2" marker-end="url(#ah)" fill="none"/>
+  <text x="367" y="84" text-anchor="middle" font-size="10" style="fill:var(--orange)">project onto</text>
+  <text x="367" y="112" text-anchor="middle" font-size="10" style="fill:var(--orange)">vocabulary</text>
+  <rect x="398" y="62" width="312" height="60" rx="6" style="fill:var(--take-bg);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="410" y="84" font-size="12" font-weight="700">top tokens of w<tspan baseline-shift="sub" font-size="9">2</tspan>:</text>
+  <text x="410" y="106" font-size="12" font-family="Consolas, monospace">slow, slowly, Slow, calm, calmer, SLOW</text>
+  <text x="398" y="150" font-size="12" style="fill:var(--muted)">So neuron 2 "means" slow. Steering forces</text>
+  <text x="398" y="168" font-size="12" style="fill:var(--muted)">f<tspan baseline-shift="sub" font-size="9">2</tspan> to a large constant (e.g. 10), which</text>
+  <text x="398" y="186" font-size="12" style="fill:var(--muted)">writes much more of the "slow" direction.</text>
+</svg>
+<p class="caption">Schematic. Example tokens are close to the paper's "slow" vector 73159 (Table 2c).</p>
+
+<h3>2.3 Reading a neuron by projecting onto the vocabulary</h3>
+<p>Value vectors live in the same space as the model's final output, so you can multiply one by the output embedding matrix and see which tokens it pushes up. If the top tokens share a pattern ("slow, slowly, calm"), the neuron is labeled with that concept. This needs no data and no training, which is the method's main appeal in robotics, where data is scarce. The trade-off: concepts spread across many neurons (superposition) are missed. Sparse autoencoders handle that better, but need lots of data.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="interp">
+<summary><h2>3. Part 1: what robot training does to the model's concepts</h2></summary>
+
+<h3>Concepts survive VLA training</h3>
+<p>They sampled 10 random value vectors per layer from PaliGemma and from &pi;0-FAST (18 layers each) and marked a vector "meaningful" if at least 4 of its top 30 tokens share a pattern, as "semantic" if that pattern is about meaning rather than spelling (Figure 2a). Both models have meaningful vectors at similar rates in every layer. Robot training did not erase the language concepts, even though the model now only ever outputs action tokens.</p>
+
+<h3>Action tokens show up in every layer</h3>
+<p>Share of each value vector's top-100 tokens that are action tokens (Figure 2b, approx.):</p>
+<ul class="tight">
+<li><b>OpenVLA:</b> about 0.16-0.18 through most layers, rising to about 0.5 at the last layer.</li>
+<li><b>&pi;0:</b> about 0.10 early, drifting to about 0.05, then about 0.12 at the last layer.</li>
+</ul>
+<p>So there is no clean "think about the task first, then about control" split; action-related writing happens throughout the network.</p>
+
+<h3>Task fine-tuning mostly rewires the action tokens</h3>
+<p>Comparing &pi;0-FAST with a version fine-tuned on the DROID robot dataset, the tokens whose frequency in value vectors changed most are almost all action tokens (Figure 3). The fine-tuned model concentrates on fewer action tokens. Common words from DROID task instructions became slightly more frequent (1.2x), so instruction language also leaves a mark.</p>
+
+<div class="take"><b>My take.</b> These are encouraging but soft results. Ten vectors per layer is a small sample, so each bar in Figure 2a moves in steps of 0.1, and "meaningful" is a human judgment call. The introduction's headline that "less than 25% of FFN neurons" are rewired for action prediction is not measured directly: Figure 2b reports the share of <i>top tokens</i> that are action tokens, not a share of neurons, and for OpenVLA that share reaches about 0.5 in the final layer.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="method">
+<summary><h2>4. Part 2: the steering method</h2></summary>
+<p class="key"><b>The intervention.</b> Pick a set <i>S</i> of neurons for a concept. During the forward pass, replace their activations with a fixed number &alpha;:<br>
+<span class="eq">f&#771;<sub>i</sub>(x) = &alpha; if i &isin; S, otherwise f<sub>i</sub>(x)</span><br>
+The residual stream then receives an extra &Delta;x = &Sigma;<sub>i&isin;S</sub> (&alpha; &minus; f<sub>i</sub>(x)) &middot; w<sub>i</sub>, which flows through the rest of the network and shifts the action tokens.</p>
+
+<h3>Try it: clamp vs add</h3>
+<div class="demo">
+<svg id="clamp-svg" viewBox="0 0 760 270" aria-label="Neuron activations before and after steering"></svg>
+<div class="controls">
+  <label>&alpha; (steering strength) <input id="alpha" type="range" min="0" max="20" step="1" value="10"> <b id="alpha-val"></b></label>
+  <label><input type="radio" name="op" value="clamp" checked> clamp to &alpha; (this paper)</label>
+  <label><input type="radio" name="op" value="add"> add &alpha; (common alternative)</label>
+</div>
+<p id="clamp-text" class="caption"></p>
+<p class="caption">Twelve made-up neurons for one input. Orange = the "slow" cluster S. Gray = original activation, colored = after steering. With clamping, the cluster writes &alpha; times its value vector no matter what the input is, so the input's own signal for those neurons is thrown away. With adding, it is kept and shifted.</p>
+</div>
+
+<h3>How the neurons are chosen</h3>
+<ul class="tight">
+<li><b>By hand</b> (robot experiments, part of simulation): look at each value vector's top tokens and pick those dominated by keywords ("low", "slow", "safe", "fast", "risk"). On the robot, 6 vectors per concept, &alpha; = 10.</li>
+<li><b>By clustering</b> (simulation, layer experiments): embed each value vector as the softmax-weighted average of its top-5 token embeddings, cluster all 352,255 OpenVLA value vectors with cosine kNN (k = 10, 20 or 40), and pick the cluster closest to the embedding of the concept word.</li>
+</ul>
+
+<h3>What the chosen neurons look like</h3>
+<p>Selected rows from the paper's Table 2 (top tokens of the value vectors used on the robot). Tokens that don't fit the concept are in red.</p>
+<table>
+<colgroup><col style="width:14%"><col style="width:12%"><col style="width:74%"></colgroup>
+<thead><tr><th>Concept</th><th>Vector</th><th>Top-10 tokens</th></tr></thead>
+<tbody>
+<tr><td>low</td><td class="tok">5674</td><td class="tok">low, low, Low, Low, lower, LOW, lower, lowest, LOW, lows</td></tr>
+<tr><td>low</td><td class="tok">263305</td><td class="tok">low, <span class="odd">high</span>, low, <span class="odd">high, High, High</span>, LOW, Low, Low, LOW</td></tr>
+<tr><td>high</td><td class="tok">260217</td><td class="tok">high, high, High, High, HIGH, HIGH, <span class="odd">low, low, Low, LOW</span></td></tr>
+<tr><td>slow</td><td class="tok">73159</td><td class="tok">soeur, slow, slowest, calm, Slow, slow, SLOW, calmer, hairc, atguigu</td></tr>
+<tr><td>slow</td><td class="tok">242252</td><td class="tok"><span class="odd">safe</span>, safe, safely, Safe, Safe, SAFE, SAFE, safety, safer, &lt;bos&gt;</td></tr>
+<tr><td>fast</td><td class="tok">239787</td><td class="tok"><span class="odd">risk</span>, risk, &lt;bos&gt;, Risk, Risk, RISK, risks, Risks, RISK, riesgo</td></tr>
+<tr><td>fast</td><td class="tok">262123</td><td class="tok">fast, fast, Fast, Fast, faster, FAST, fastest, quick, quicker, FAST</td></tr>
+</tbody>
+</table>
+<div class="take"><b>My take.</b> Some "low" and "high" neurons promote <i>both</i> opposites, which looks like a "height" neuron rather than a direction. And the "slow" and "fast" clusters include "safe" and "risk" neurons by design, so the slow/fast knob is partly a safe/risky knob. Clusters are judged by their words, not by what they do to the robot, as the authors note in their limitations.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="sim">
+<summary><h2>5. Results in simulation (OpenVLA, LIBERO-Long)</h2></summary>
+<p>OpenVLA (7B), fine-tuned for LIBERO-Long, on ten long-horizon tasks, with deterministic seeds so steered and unsteered runs can be compared step by step.</p>
+
+<h3>Fast vs slow</h3>
+<ul class="tight">
+<li>Hand-picked "fast" and "slow" clusters of size 10 or 20, with &alpha; in {2, 4, 6, 8, 10, 20}; 10 tasks x 10 rollouts per setting.</li>
+<li>"Fast" clusters move the end effector <b>27.73% more on average than "slow" clusters</b>, up to 148.54% in the best setting.</li>
+<li>"All 10 matched comparisons" significant at p &lt; 0.001 (paired t-test); effect sizes d = &minus;0.091 to 1.419.</li>
+</ul>
+
+<h3>Which layers matter</h3>
+<p>"Up" clusters found by kNN, injected only in the early half of the layers, the late half, or everywhere. Mean Y-displacement of the end effector: <b>full 0.098, late 0.086, early 0.007</b> (units not stated). Early-layer injection barely does anything; late layers carry most of the effect, and at high &alpha; and cluster size they match full injection.</p>
+
+<div class="take"><b>My take.</b>
+<ul class="tight">
+<li>"Fast" is compared with "slow", not with the unsteered robot or with random neurons. In Figure 5a the fast surface even seems to dip below the baseline at small &alpha; (hard to read from a 3D surface plot).</li>
+<li>An effect size of &minus;0.091 means at least one setting went the wrong way, which doesn't fit "consistent directional influence". And 2 cluster sizes x 6 coefficients make 12 settings, not the "10 matched comparisons" reported.</li>
+<li>Task success under steering is never reported. A knob that makes the arm move more but breaks the task isn't useful.</li>
+<li>Displacement units are not given, and "up" is measured along Y, so the axis convention matters.</li>
+</ul>
+<span class="sure">How sure: high for the reported numbers; medium for the reading of the 3D plot.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="robot">
+<summary><h2>6. Results on a real robot (&pi;0-FAST, UR5)</h2></summary>
+<p><b>Setup.</b> A UR5 arm with a gripper, a scene camera and a wrist camera. Their setup is not in &pi;0-FAST's training data, so they first fine-tune it with LoRA on their own demonstrations (5,000 steps, batch 32). The demonstrations deliberately contain variation that is <b>not mentioned in the prompt</b>:</p>
+<ul class="tight">
+<li><b>Low/High Transport:</b> put a toy penguin in a basket; 75 episodes carried at low, medium or high height. Prompt: "place penguin in basket".</li>
+<li><b>Slow/Fast Transport:</b> put a toy seal on a blue or white plate; 120 episodes at slow, medium or fast speed.</li>
+</ul>
+<p><b>Conditions</b> (10 rollouts each): no intervention; steering with the concept cluster (6 neurons, &alpha; = 10); steering with 6 random neurons; and adding the concept word to the prompt ("low place penguin in basket", "slow safe place seal on blue plate").</p>
+
+<table>
+<colgroup><col style="width:30%"><col style="width:20%"><col style="width:20%"><col style="width:30%"></colgroup>
+<thead><tr><th>Condition</th><th class="n">Max height, cm (median, approx.)</th><th class="n">Displacement per step, mm (median, approx.)</th><th>Reading</th></tr></thead>
+<tbody>
+<tr><td>No intervention</td><td class="n">48.5</td><td class="n">8.6</td><td>Baseline</td></tr>
+<tr><td>Steer "low" / "slow"</td><td class="n down">39.5</td><td class="n down">7.8</td><td>Clear, tight effect in the intended direction</td></tr>
+<tr><td>Prompt "low" / "slow"</td><td class="n">46.5</td><td class="n">8.2</td><td>Weaker than steering</td></tr>
+<tr><td>Steer "high" / "fast"</td><td class="n">46.5</td><td class="n">8.9</td><td>About the same as baseline</td></tr>
+<tr><td>Prompt "high" / "fast"</td><td class="n">47.5</td><td class="n">8.6</td><td>About the same as baseline</td></tr>
+<tr><td>Steer 6 random neurons</td><td class="n">47.5</td><td class="n">8.4</td><td>About the same as baseline</td></tr>
+</tbody>
+</table>
+<p class="caption">Medians read off the box plots in Figure 7 (about &plusmn;0.5). The paper gives no numbers or statistical tests for these experiments.</p>
+<p><b>The paper's reading:</b> "low" and "slow" clearly change the behavior; "high" and "fast" resemble the baseline, perhaps because the model already treats its default as fast and high. Random neurons do little, so the choice of neurons matters, and steering beats prompting.</p>
+
+<div class="take"><b>My take: promising, but the weakest part of the evidence.</b>
+<ul class="tight">
+<li><b>One-sided effects.</b> Only one direction per pair works, so "binary control" is half shown.</li>
+<li><b>Small samples, no tests.</b> 10 rollouts per condition and box plots only.</li>
+<li><b>Speed is measured open-loop.</b> For Slow/Fast they "run inference for all steering variants simultaneously, but only execute the baseline predicted action". The robot never actually moves under the slow intervention, so the result is about predicted actions along the baseline trajectory.</li>
+<li><b>Steering selects demonstrated modes.</b> The fine-tuning data already contained slow and low examples. Steering picks among behaviors the model has seen, rather than creating new ones, a narrower claim than "zero-shot control".</li>
+<li><b>The random baseline is a single fixed draw</b> of 6 neurons, not a distribution, so it can't tell you how unusual the concept clusters' effect is.</li>
+</ul></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> A simple, data-free method that transfers an LLM interpretability tool to robot policies; two different models (PyTorch and JAX) and a real robot; honest limitations section; including random-neuron and prompt baselines on the robot is the right instinct; and the core finding, that language concepts inside a robot policy can move the robot, is genuinely interesting.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Robot results have no statistics and only 10 rollouts; only "low" and "slow" work.</td><td>Figure 7, section 4.2</td><td>High</td></tr>
+<tr><td>2</td><td>The real-robot speed result uses predicted, not executed, actions.</td><td>Section 4.2, "Task Evaluation"</td><td>High</td></tr>
+<tr><td>3</td><td>Task success under steering is never reported (simulation or robot).</td><td>Not in the paper</td><td>High</td></tr>
+<tr><td>4</td><td>Simulation compares fast with slow only; the reported effect sizes include a negative one and the count of comparisons doesn't match the sweep.</td><td>Section 4.1, Figure 5a</td><td>High</td></tr>
+<tr><td>5</td><td>"&lt;25% of neurons rewired for action" is not what Figure 2b measures, and OpenVLA's last layer reaches about 50%.</td><td>Introduction vs Figure 2b</td><td>Medium-high</td></tr>
+<tr><td>6</td><td>Concept clusters mix opposites ("low" with "high") and neighbors ("slow" with "safe"), so the knobs are not clean.</td><td>Table 2</td><td>High</td></tr>
+<tr><td>7</td><td>"Causal evidence of structured, compositional semantics" overstates it: composition is never tested; what is shown is that clamping word-aligned neurons shifts some motion statistics.</td><td>Section 5</td><td>Medium</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your TabPFN work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<ul class="tight">
+<li><b>Same shape as your &Delta;<sub>B</sub> pipeline.</b> Specify a concept (here via token projection), select components, intervene, measure a behavior. The paper's weak spots are exactly the ones your proposal review flagged: no random-component <i>null distribution</i> (one random draw only), no estimator-noise floor, and no <i>selectivity</i> check on non-target behavior such as task success. It makes a good example to cite when motivating those three requirements.</li>
+<li><b>Clamp vs add is a design choice you'll face too.</b> Clamping a TabPFN component to a constant erases its input dependence; adding or mean-ablating keeps it. Say which one you use and why.</li>
+<li><b>The vocabulary trick doesn't transfer directly to TabPFN classification</b>, because TabPFN's output head maps to a handful of class logits, not a vocabulary. But TabPFN's <b>regression</b> head outputs a distribution over about 5,000 bins. Projecting FFN value vectors onto that head could label neurons as "pushes predictions up" or "pushes predictions down". That would be a data-free way to find candidate components, untested as far as I know.</li>
+<li><b>An instructive contrast with Gupta et al. (2026).</b> They found steering vectors in TabPFN-2.5 do <i>not</i> transfer across samples, which they attribute to task structure living in the context rather than in fixed weights. Here, concepts like "slow" come from language pretraining and are stored in the weights, which may be why a fixed knob works across rollouts. TabPFN has no such pretrained word concepts; its "concepts" are built from each context.</li>
+</ul>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>VLA</b></td><td>Vision-language-action model: a vision-language model fine-tuned to output robot actions.</td></tr>
+<tr><td><b>Action tokens</b></td><td>Rarely used vocabulary tokens repurposed to mean discretized robot commands.</td></tr>
+<tr><td><b>FFN</b></td><td>The feed-forward (MLP) part of each transformer block.</td></tr>
+<tr><td><b>Value vector</b></td><td>The fixed direction one FFN neuron writes into the model, scaled by its activation.</td></tr>
+<tr><td><b>Projection onto the vocabulary</b></td><td>Multiplying a value vector by the output embedding matrix to see which tokens it promotes.</td></tr>
+<tr><td><b>Activation steering</b></td><td>Changing internal activations at inference time to change behavior, without retraining.</td></tr>
+<tr><td><b>Clamping</b></td><td>Setting an activation to a fixed value regardless of the input (this paper).</td></tr>
+<tr><td><b>Sparse autoencoder (SAE)</b></td><td>A learned dictionary that splits activations into many sparse, more interpretable features. Needs lots of data.</td></tr>
+<tr><td><b>LIBERO-Long</b></td><td>A simulation benchmark of ten long-horizon manipulation tasks.</td></tr>
+<tr><td><b>&pi;0 / &pi;0-FAST</b></td><td>VLAs from Physical Intelligence; FAST is a tokenization of actions that lets &pi;0 output them as tokens.</td></tr>
+<tr><td><b>LoRA</b></td><td>Cheap fine-tuning that trains small low-rank add-on matrices instead of all weights.</td></tr>
+<tr><td><b>End effector</b></td><td>The robot's "hand" (here a gripper); its height and speed are the measured behaviors.</td></tr>
+<tr><td><b>Cohen's d</b></td><td>Effect size: the difference in means divided by the standard deviation.</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li><b>Figure 1</b> (page 1) is the whole pipeline: extract, project, cluster, activate.</li>
+<li><b>Section 3</b> (pages 3-5) is the interpretability part; Figures 2 and 3 carry it.</li>
+<li><b>Section 4</b> (pages 5-8): equations 3-4 are the method, Figure 5 the simulation, Figure 7 the robot. Read the "Task Evaluation" paragraph closely (open-loop speed measurement).</li>
+<li><b>Appendix C.3 and Table 2</b> (pages 18-19) show exactly which neurons were used on the robot, and how the baselines were built.</li>
+<li><b>Skip</b> on a first read: the reference list and the robot hardware photos.</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the arXiv v1 PDF (20 pages, read in full). Robot medians were read off box plots and may be off by about 0.5.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+// Clamp vs add demo: 12 made-up neurons (seed 509), cluster S = {2, 6, 9}.
+(function clampDemo() {
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rnd = mulberry32(509);
+  const base = Array.from({ length: 12 }, () => +(rnd() * 1.6 - 0.4).toFixed(2));
+  const S = new Set([2, 6, 9]);
+  const svg = need("clamp-svg"), slider = need("alpha"), text = need("clamp-text");
+  const W = 760, H = 270, m = { l: 40, r: 10, t: 14, b: 40 };
+  function render() {
+    svg.replaceChildren();
+    const a = parseFloat(slider.value);
+    need("alpha-val").textContent = String(a);
+    const op = document.querySelector("input[name=op]:checked").value;
+    const steered = base.map((v, i) => (S.has(i) ? (op === "clamp" ? a : v + a) : v));
+    const hi = Math.max(2, ...steered) * 1.1, lo = Math.min(-0.6, ...base);
+    const y = v => m.t + (hi - v) / (hi - lo) * (H - m.t - m.b);
+    const gw = (W - m.l - m.r) / base.length, bw = gw * 0.36;
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), style: "stroke:var(--muted)" }, svg);
+    for (const t of [0, Math.round(hi / 2), Math.floor(hi)]) {
+      mk("text", { x: m.l - 6, y: y(t) + 4, "text-anchor": "end", "font-size": 11, style: "fill:var(--muted)" }, svg, String(t));
+    }
+    base.forEach((v, i) => {
+      const cx = m.l + gw * i + gw / 2;
+      const isS = S.has(i);
+      const draw = (val, x, color) => {
+        const top = y(Math.max(val, 0)), bot = y(Math.min(val, 0));
+        mk("rect", { x, y: top, width: bw, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+        mk("text", { x: x + bw / 2, y: val >= 0 ? top - 4 : bot + 12, "text-anchor": "middle", "font-size": 10.5, "font-weight": 600 }, svg, val.toFixed(1));
+      };
+      draw(v, cx - bw - 1, "var(--gray)");
+      draw(steered[i], cx + 1, isS ? "var(--orange)" : "var(--blue)");
+      mk("text", { x: cx, y: H - m.b + 30, "text-anchor": "middle", "font-size": 11, style: isS ? "fill:var(--orange);font-weight:700" : "fill:var(--muted)" }, svg, isS ? `n${i} (slow)` : `n${i}`);
+    });
+    const shift = [...S].reduce((s, i) => s + (steered[i] - base[i]), 0);
+    const avgBase = [...S].reduce((s, i) => s + base[i], 0) / S.size;
+    text.textContent = op === "clamp"
+      ? `Clamp: the 3 "slow" neurons now write ${a} x their value vector each, instead of about ${avgBase.toFixed(2)} on average for this input. Extra weight on the "slow" directions: ${shift.toFixed(1)} in total. Their original, input-dependent values no longer matter.`
+      : `Add: each "slow" neuron keeps its input-dependent value and gets +${a}. Extra weight on the "slow" directions: ${shift.toFixed(1)} in total, and the neurons still respond to the input.`;
+  }
+  slider.addEventListener("input", render);
+  document.querySelectorAll("input[name=op]").forEach(r => r.addEventListener("change", render));
+  render();
+})();
+</script>
+</body>
+</html>

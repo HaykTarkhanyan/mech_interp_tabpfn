@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bilos et al. explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 26px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button, .btn {
+  font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; list-style-position: outside; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take {
+  background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px;
+  padding: 10px 14px; margin: 14px 0;
+}
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.mono { font-family: Consolas, "SFMono-Regular", Menlo, monospace; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 12px 0; }
+@media (max-width: 720px) { .grid3 { grid-template-columns: 1fr; } }
+.panel { border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+.panel p { font-size: 0.88rem; margin: 6px 2px 2px; }
+.panel h4 { margin: 2px 2px 4px; font-size: 0.95rem; }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab, .chart .axis-title { font-size: 12px; fill: var(--muted); }
+.chart .val { font-size: 11.5px; font-weight: 600; }
+.chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.demo svg { touch-action: none; border-radius: 6px; background: var(--bg); cursor: crosshair; max-width: 560px; margin: 0 auto; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 160px; vertical-align: middle; }
+.readout { height: 22px; display: flex; border-radius: 5px; overflow: hidden; border: 1px solid var(--border); margin: 6px 0; }
+.readout div { height: 100%; transition: width 0.08s; }
+.demo .pt { cursor: pointer; }
+.demo line, .demo .proto { pointer-events: none; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+ul.tight li, ol.tight li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<main>
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"A Mechanistic Study of Tabular Foundation Models", explained</h1>
+<p class="sub">Bilos, Wilson, Schneider, Nevmyvaka (Morgan Stanley ML Research). arXiv 2605.21288, May 2026. A 9-page paper plus a 48-page appendix. PDF: <code>papers/tabpfn/2605.21288_a-mechanistic-study-of-tabular-foundation-models.pdf</code></p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#where">Finding 1: where class information appears inside each model</a></li>
+<li><a href="#readout">Finding 2: how each model turns its insides into a prediction</a></li>
+<li><a href="#invariance">Finding 3: order of rows, columns and classes</a></li>
+<li><a href="#collapse">Finding 4: "representation collapse" and the toy models</a></li>
+<li><a href="#attacks">Finding 5: attacks designed from the mechanism</a></li>
+<li><a href="#critique">My critique, all in one place</a></li>
+<li><a href="#parity">How it connects to McCarter, parity and your thesis</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says, with its table numbers so you can check. <span class="pill">My take</span> boxes = my own analysis, which is <b>not</b> in the paper.</p>
+</nav>
+
+<!-- ============================================================ -->
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+
+<p><b>The question.</b> Three tabular foundation models (TabPFN v2, TabICL v2 and Mitra) get almost the same accuracy on the authors' 49 classification datasets: 0.854, 0.864 and 0.860. They are built differently. Do they compute the same thing inside, or reach the same answers by different routes?</p>
+
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Different routes.</b> TabPFN v2 and Mitra predict with a <b>vote</b>: at layer 9 the test row (the "query") looks hard at a few training rows, and their labels, weighted by how hard it looks, give the prediction. TabICL v2 instead builds one average point per class (a "prototype") and picks the class whose prototype is nearest. Swap these rules between models and accuracy collapses by 33-40 points.</li>
+<li><b>Most layers are not essential.</b> Each model has one early block that "sets up the coordinate system". Remove it and things break. Many other blocks can be removed for a few points of accuracy.</li>
+<li><b>Order sensitivity is accidental and fixable.</b> Shuffling the columns can change accuracy by up to 8 points. That comes from a few position-related parameters that the trained models barely use. Zeroing them makes the models exactly order-blind, and accuracy doesn't change.</li>
+<li><b>"Representation collapse" is real in theory but not in practice.</b> Models that ignore column order can't tell some rows apart. They prove this with tiny hand-built models. The released models each have two backup defenses, so you only see the failure after removing both.</li>
+<li><b>Mechanism-based attacks.</b> Knowing the mechanism, they design data changes meant to hurt each model specifically: flip the labels of the most "central" rows, or replace values by their ranks.</li>
+</ol>
+
+<div class="take"><b>My take, one line.</b> Much more rigorous than McCarter's blog post, and finding 1 for TabPFN (the layer 9 vote) is solid and worth citing. But the abstract oversells its causal evidence, one headline plot (the "late" probe) looks like a measurement artifact, and the attack section doesn't support its own claims. Details in <a href="#critique">section 8</a>.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+
+<h3>2.1 In-context learning on a table</h3>
+<p>You don't train TabPFN on your data. You hand it the <b>whole training table</b> (the "context rows", with their labels) together with the <b>test row</b> (the "query", label unknown), and one forward pass outputs class probabilities for the query. Everything the model "learned" happened in pretraining on millions of synthetic tables. So "how does it predict?" means "what algorithm did pretraining put into the weights?".</p>
+
+<h3>2.2 What "readout" means</h3>
+<p>The <b>readout</b> is the last step: how the network turns its internal numbers into a prediction. The paper's main move is to look for a <b>simple rule</b> (a vote, a nearest-average, a nearest-neighbor) that, applied to the network's internal state, reproduces the network's own predictions. If a simple rule matches the model, you have a compact description of what the model computes.</p>
+
+<h3>2.3 The three models</h3>
+<p>The key difference is <b>what a "token" is</b>, meaning the unit that attention operates on.</p>
+
+<div class="grid3">
+<div class="panel">
+<h4>TabPFN v2 <span class="pill">7.2M params, 12 blocks</span></h4>
+<svg viewBox="0 0 260 220" aria-label="TabPFN v2 token layout">
+  <text x="45" y="22" text-anchor="middle" font-size="12">x1</text>
+  <text x="95" y="22" text-anchor="middle" font-size="12">x2</text>
+  <text x="145" y="22" text-anchor="middle" font-size="12">x3</text>
+  <text x="205" y="22" text-anchor="middle" font-size="12">y</text>
+  <text x="4" y="47" font-size="10" style="fill:var(--muted)">c1</text>
+  <text x="4" y="77" font-size="10" style="fill:var(--muted)">c2</text>
+  <text x="4" y="107" font-size="10" style="fill:var(--muted)">c3</text>
+  <text x="2" y="147" font-size="10" style="fill:var(--muted)">qry</text>
+  <g style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.6">
+    <rect x="25" y="32" width="40" height="22" rx="3"/><rect x="75" y="32" width="40" height="22" rx="3"/><rect x="125" y="32" width="40" height="22" rx="3"/>
+    <rect x="25" y="62" width="40" height="22" rx="3"/><rect x="75" y="62" width="40" height="22" rx="3"/><rect x="125" y="62" width="40" height="22" rx="3"/>
+    <rect x="25" y="92" width="40" height="22" rx="3"/><rect x="75" y="92" width="40" height="22" rx="3"/><rect x="125" y="92" width="40" height="22" rx="3"/>
+    <rect x="25" y="132" width="40" height="22" rx="3"/><rect x="75" y="132" width="40" height="22" rx="3"/><rect x="125" y="132" width="40" height="22" rx="3"/>
+    <rect x="185" y="132" width="40" height="22" rx="3"/>
+  </g>
+  <rect x="185" y="32" width="40" height="22" rx="3" style="fill:var(--red)"/>
+  <rect x="185" y="62" width="40" height="22" rx="3" style="fill:var(--blue)"/>
+  <rect x="185" y="92" width="40" height="22" rx="3" style="fill:var(--red)"/>
+  <text x="205" y="148" text-anchor="middle" font-size="13" font-weight="700">?</text>
+  <rect x="70" y="27" width="50" height="132" rx="6" fill="none" style="stroke:var(--orange)" stroke-width="2" stroke-dasharray="5 3"/>
+  <rect x="20" y="127" width="210" height="32" rx="6" fill="none" style="stroke:var(--muted)" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="6" y="186" font-size="11" style="fill:var(--orange)" font-weight="600">orange: row-attention (one column, all rows)</text>
+  <text x="6" y="204" font-size="11" style="fill:var(--muted)" font-weight="600">gray: column-attention (one row, all columns)</text>
+</svg>
+<p>Every cell is its own token (features actually go in pairs). The 12 blocks alternate the two attentions. Labels sit in a target column; the prediction is read from the query row's target cell.</p>
+</div>
+
+<div class="panel">
+<h4>TabICL v2 <span class="pill">27.6M params</span></h4>
+<svg viewBox="0 0 260 220" aria-label="TabICL v2 token layout">
+  <defs><marker id="ah-icl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <text x="47" y="22" text-anchor="middle" font-size="11">features</text>
+  <text x="160" y="22" text-anchor="middle" font-size="11">1 token per row + label</text>
+  <g style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.6">
+    <rect x="10" y="34" width="22" height="20" rx="3"/><rect x="36" y="34" width="22" height="20" rx="3"/><rect x="62" y="34" width="22" height="20" rx="3"/>
+    <rect x="10" y="64" width="22" height="20" rx="3"/><rect x="36" y="64" width="22" height="20" rx="3"/><rect x="62" y="64" width="22" height="20" rx="3"/>
+    <rect x="10" y="94" width="22" height="20" rx="3"/><rect x="36" y="94" width="22" height="20" rx="3"/><rect x="62" y="94" width="22" height="20" rx="3"/>
+    <rect x="10" y="134" width="22" height="20" rx="3"/><rect x="36" y="134" width="22" height="20" rx="3"/><rect x="62" y="134" width="22" height="20" rx="3"/>
+    <rect x="118" y="34" width="60" height="20" rx="3"/><rect x="118" y="64" width="60" height="20" rx="3"/>
+    <rect x="118" y="94" width="60" height="20" rx="3"/><rect x="118" y="134" width="60" height="20" rx="3"/>
+  </g>
+  <g style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah-icl)">
+    <line x1="90" y1="44" x2="113" y2="44"/><line x1="90" y1="74" x2="113" y2="74"/>
+    <line x1="90" y1="104" x2="113" y2="104"/><line x1="90" y1="144" x2="113" y2="144"/>
+  </g>
+  <circle cx="192" cy="44" r="7" style="fill:var(--red)"/>
+  <circle cx="192" cy="74" r="7" style="fill:var(--blue)"/>
+  <circle cx="192" cy="104" r="7" style="fill:var(--red)"/>
+  <text x="192" y="149" text-anchor="middle" font-size="13" font-weight="700">?</text>
+  <rect x="112" y="28" width="92" height="132" rx="6" fill="none" style="stroke:var(--orange)" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="6" y="186" font-size="11" style="fill:var(--orange)" font-weight="600">orange: 12 ICL blocks, rows attend to rows</text>
+  <text x="6" y="204" font-size="11" style="fill:var(--muted)" font-weight="600">arrows: a column embedder squeezes each row</text>
+</svg>
+<p>A column-embedding network first compresses each row's features into <b>one vector</b>. Labels are added, then a 12-block transformer mixes rows. After the squeeze, individual features no longer have their own tokens.</p>
+</div>
+
+<div class="panel">
+<h4>Mitra <span class="pill">75.7M params, 12 blocks</span></h4>
+<svg viewBox="0 0 260 220" aria-label="Mitra token layout">
+  <text x="27" y="22" text-anchor="middle" font-size="12">y</text>
+  <text x="78" y="22" text-anchor="middle" font-size="12">x1</text>
+  <text x="124" y="22" text-anchor="middle" font-size="12">x2</text>
+  <text x="170" y="22" text-anchor="middle" font-size="12">x3</text>
+  <rect x="12" y="32" width="30" height="22" rx="3" style="fill:var(--red)"/>
+  <rect x="12" y="62" width="30" height="22" rx="3" style="fill:var(--blue)"/>
+  <rect x="12" y="92" width="30" height="22" rx="3" style="fill:var(--red)"/>
+  <rect x="12" y="132" width="30" height="22" rx="3" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.6"/>
+  <text x="27" y="148" text-anchor="middle" font-size="13" font-weight="700">?</text>
+  <g style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.6">
+    <rect x="58" y="32" width="40" height="22" rx="3"/><rect x="104" y="32" width="40" height="22" rx="3"/><rect x="150" y="32" width="40" height="22" rx="3"/>
+    <rect x="58" y="62" width="40" height="22" rx="3"/><rect x="104" y="62" width="40" height="22" rx="3"/><rect x="150" y="62" width="40" height="22" rx="3"/>
+    <rect x="58" y="92" width="40" height="22" rx="3"/><rect x="104" y="92" width="40" height="22" rx="3"/><rect x="150" y="92" width="40" height="22" rx="3"/>
+    <rect x="58" y="132" width="40" height="22" rx="3"/><rect x="104" y="132" width="40" height="22" rx="3"/><rect x="150" y="132" width="40" height="22" rx="3"/>
+  </g>
+  <rect x="99" y="27" width="50" height="132" rx="6" fill="none" style="stroke:var(--orange)" stroke-width="2" stroke-dasharray="5 3"/>
+  <rect x="7" y="127" width="188" height="32" rx="6" fill="none" style="stroke:var(--muted)" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="6" y="186" font-size="11" style="fill:var(--muted)" font-weight="600">same embedding for every column,</text>
+  <text x="6" y="204" font-size="11" style="fill:var(--muted)" font-weight="600">no position code, labels in their own slot</text>
+</svg>
+<p>Per-cell layout like TabPFN, but every column uses the <b>same</b> embedding and nothing encodes column position. Column order therefore can't matter, by construction.</p>
+</div>
+</div>
+
+<h3>2.4 The toolbox: how they look inside</h3>
+<table>
+<colgroup><col style="width:24%"><col style="width:44%"><col style="width:32%"></colgroup>
+<thead><tr><th>Tool</th><th>What they do</th><th>Question it answers</th></tr></thead>
+<tbody>
+<tr><td>Linear probe</td><td>Take one layer's activations, fit a logistic regression that predicts the label from them.</td><td>Is class information easy to read off at this layer?</td></tr>
+<tr><td>Block knockout</td><td>Zero out one block (or just its MLP) and rerun.</td><td>Is this block needed?</td></tr>
+<tr><td>Frozen vs retrained probe after knockout</td><td>Frozen: the probe trained on the intact model. Retrained: a new probe fit after the knockout.</td><td>Did the knockout destroy the information, or just move it into a "coordinate system" the rest of the network can't read?</td></tr>
+<tr><td>Attention forcing</td><td>Replace one layer's attention weights with uniform weights (look at all rows equally).</td><td>Does the model need to focus on specific rows here?</td></tr>
+<tr><td>Activation patching</td><td>Run on corrupted input, paste in the activations from a clean run at one spot, see if the output recovers.</td><td>Where does the information that matters flow?</td></tr>
+<tr><td>Surrogate rule</td><td>A simple formula (vote, prototype, kNN) computed from internal states.</td><td>Does a simple rule reproduce the model's predictions?</td></tr>
+<tr><td>Transplant</td><td>Apply model A's rule to model B's internals.</td><td>Is the rule universal, or specific to one architecture?</td></tr>
+<tr><td>Geometry summaries</td><td>Effective rank, participation ratio, intrinsic dimension of a layer's activations.</td><td>How many directions does the representation really use?</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="where">
+<summary><h2>3. Finding 1: where class information appears inside each model</h2></summary>
+
+<p>They fit a linear probe at every layer: "if I only had this layer's numbers, could a linear classifier recover the label?"</p>
+
+<h3>TabPFN v2: almost nothing until layer 9, then a jump</h3>
+<div id="chart-probe-pfn"></div>
+<p class="caption">Linear-probe accuracy per TabPFN v2 layer, mean over 49 datasets (Table 12). The jump from layer 8 to layer 9 (0.47 to 0.78) is the paper's "crystallization point". Dashed lines are mine, from their Tables 82 and 1.</p>
+
+<h3>TabICL v2: readable almost from the start</h3>
+<p>A nearest-neighbor classifier on TabICL's representation right after the <b>first</b> ICL block already reaches 0.824, against 0.864 for the full model. So the 26M-parameter ICL transformer, about 95% of TabICL's parameters, adds only about 4 points. The paper calls this an inefficient design.</p>
+
+<h3>Mitra: rises toward layer 9</h3>
+<div id="chart-probe-mitra"></div>
+<p class="caption">Mitra v1 probe accuracy per layer, 45 datasets (Table 36). Note: they probe a different token here (feature cells averaged) than for TabPFN.</p>
+
+<h3>One critical early block per model</h3>
+<ul class="tight">
+<li><b>TabPFN block 0.</b> Skip its MLP and the frozen probe at layer 9 loses 37.6 points. But a retrained probe still finds the class information. So block 0 doesn't hold the information, it sets the coordinate system the later layers expect.</li>
+<li><b>TabPFN block 9.</b> Knock it out: the frozen probe loses 32.9 points, the retrained probe loses little. Block 9 "writes" the class structure into the readable form.</li>
+<li><b>TabICL "ColEmb-2"</b> (the last part of the column embedder): zeroing it costs 28 points. No single ICL block costs more than 3.</li>
+<li><b>Mitra block 0:</b> replacing it with identity costs 15.8 points (v1) and 41.1 points (v1.1).</li>
+</ul>
+<p>Geometry: TabPFN squeezes its representation hard early (effective rank about 40 at blocks 0-1, about 10 at block 2), then partly re-expands. TabICL expands steadily through the stack.</p>
+
+<div class="take"><b>My take: this probe result looks broken.</b> On layers 0-8 the TabPFN probe scores 0.29-0.52, and eight of those nine layers sit <b>below</b> 0.50, which is what you'd get by always guessing the most common class (their own Table 82). A logistic regression trained and tested on the same kind of data basically can't be systematically worse than that.
+<br><br>My best guess at the cause: they probe the target-column token. For context rows that token holds the label, for query rows it doesn't. So the probe is trained on one kind of token and tested on another. At layer 9 the query rows pull in labels through the vote (finding 2), the two kinds start looking alike, and the probe suddenly "works". If that's right, the jump is the vote measured a second time, not independent evidence that class structure forms late.
+<br><br>Supporting signs: their input-layer representation has effective rank 0.00 (Table 15), meaning the token they read at the input is constant. Mitra's probe (a different token) rises gradually with no jump, yet the text calls it "a similar late-jump profile". And the main text and appendix describe the probe's test rows differently (query rows vs held-out context rows).
+<br><br><b>Update:</b> Balef et al. (ICML 2026) probe the same TabPFN v2 checkpoint using query rows only, precisely to avoid label leakage, and with per-layer retrained heads they find the answer readable by about layer 5. See <a href="2605.06510_is-one-layer-enough-understanding-inference-dynamics-in-tabular-founda.html#bilos">that explainer</a>.
+<br><span class="sure">How sure: strong evidence that something is off; the exact cause is my guess.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="readout">
+<summary><h2>4. Finding 2: how each model turns its insides into a prediction</h2></summary>
+
+<p>This is the heart of the paper. For each model they propose a simple rule and test it.</p>
+
+<h3>4.1 TabPFN v2: an attention-weighted vote at layer 9</h3>
+<p class="key"><b>The rule.</b> At layer 9, read off how much attention the query row pays to each context row. Each context row "votes" for its own label with that weight:<br>
+<span class="mono">P(class c) = average over heads of &Sigma;<sub>i</sub> attention<sub>i</sub> &middot; [label<sub>i</sub> = c]</span></p>
+<ul class="tight">
+<li><b>Layer 9 is special.</b> It has the sharpest attention of all layers on 49 of 49 datasets. On average the single most-attended context row gets 0.93 of the weight, so the query mostly looks at a handful of rows.</li>
+<li><b>The vote matches the model.</b> Correlation with the model's probabilities is r = 0.89 on average: 0.93 on binary problems, 0.80 on ten-class problems.</li>
+<li><b>Causal test.</b> Force layer 9 attention to be uniform and accuracy drops from 0.874 to 0.488, which equals always guessing the majority class.</li>
+<li>The vote is spread over all 6 attention heads. Zeroing any single head costs at most about 4 points on average.</li>
+</ul>
+<div id="chart-mass"></div>
+<p class="caption">Share of the query's attention that goes to context rows of the same class as the query vs other classes, mean over datasets (Figure 1b). At layer 8 attention ignores class; at layer 9 it concentrates on same-class rows.</p>
+
+<h3>4.2 The similarity is learned, not raw distance</h3>
+<p>Which rows does layer 9 attend to? Not simply the ones closest in the raw input. They regressed the attention weights on several distance measures (Table 80):</p>
+<div id="chart-r2"></div>
+<p class="caption">How much of the layer 9 attention pattern each predictor explains (mean R&sup2;, 49 datasets).</p>
+<p>And plain k-nearest-neighbors agrees with TabPFN on about 78-81% of test points in input space, but only 54-56% when run on TabPFN's own layer 9 representation (Table 19). So TabPFN is <b>not</b> a kNN, neither in input space nor in its own final space. It builds its own notion of "similar rows" by layer 8, then votes. The paper calls this a <b>learned similarity</b>.</p>
+
+<h3>4.3 TabICL v2: nearest class prototype at the last layer</h3>
+<p class="key"><b>The rule.</b> At the final layer, average the representations of all context rows of each class to get one "prototype" per class. Predict the class whose prototype is nearest to the query.</p>
+<ul class="tight">
+<li>The prototype rule reaches 0.854 vs the model's 0.864. kNN on the final layer agrees with TabICL on about 94% of points.</li>
+<li>TabICL's attention does <b>not</b> track distance (correlation below 0.08 at every block) and never gets sharp. Forcing uniform attention in any one block barely matters; forcing it in all 12 costs 29 points. The work is spread out.</li>
+</ul>
+
+<h3>4.4 Mitra: a vote, like TabPFN</h3>
+<p>The layer 9 vote reaches 0.815 vs Mitra's 0.860, a 4.5-point gap, so it doesn't fully pass their bar. It still beats every other simple rule, so they put Mitra in the "vote over context rows" family with TabPFN.</p>
+
+<h3>4.5 Try it: vote vs prototype</h3>
+<div class="demo">
+<svg id="demo-svg" viewBox="0 0 400 280" aria-label="Interactive vote and prototype demo"></svg>
+<div class="controls">
+  <label><input type="radio" name="demo-mode" value="vote" checked> vote (TabPFN, Mitra)</label>
+  <label><input type="radio" name="demo-mode" value="proto"> prototype (TabICL)</label>
+  <label>sharpness <input id="demo-tau" type="range" min="-0.6" max="2.2" step="0.05" value="0.6"></label>
+  <button id="demo-reset" type="button">Reset</button>
+</div>
+<div class="readout" aria-hidden="true"><div id="demo-bar-red" style="background:var(--red)"></div><div id="demo-bar-blue" style="background:var(--blue)"></div></div>
+<div id="demo-text" class="caption"></div>
+<p class="caption">Drag anywhere to move the query (the cross). Click a dot to flip its label. In vote mode, line thickness = attention weight. Slide sharpness to the right and the vote becomes nearly "copy the nearest row"; slide it left and every row counts equally. In prototype mode, stars mark the class averages. This is a toy in raw 2D space. The real models compute similarity in a learned space (4.2), not on raw inputs.</p>
+</div>
+
+<h3>4.6 Transplant: each rule only works on its own model</h3>
+<table id="tbl-transplant">
+<colgroup><col style="width:20%"><col style="width:12%"><col style="width:17%"><col style="width:17%"><col style="width:17%"><col style="width:17%"></colgroup>
+<thead><tr><th>Model</th><th class="n">Own accuracy</th><th class="n">Vote rule</th><th class="n">kNN (k=5)</th><th class="n">Prototype rule</th><th class="n">Fitted linear head</th></tr></thead>
+<tbody>
+<tr><td>TabPFN v2</td><td class="n">0.854</td><td class="n" data-v="-5.0">0.804 (-5.0)</td><td class="n" data-v="-30.7">0.547 (-30.7)</td><td class="n" data-v="-33.1">0.523 (-33.1)</td><td class="n" data-v="-23.7">0.617 (-23.7)</td></tr>
+<tr><td>TabICL v2</td><td class="n">0.864</td><td class="n" data-v="-39.5">0.470 (-39.5)</td><td class="n" data-v="-0.8">0.856 (-0.8)</td><td class="n" data-v="-1.1">0.854 (-1.1)</td><td class="n" data-v="-0.5">0.859 (-0.5)</td></tr>
+<tr><td>Mitra v1</td><td class="n">0.860</td><td class="n" data-v="-4.5">0.815 (-4.5)</td><td class="n" data-v="-7.0">0.789 (-7.0)</td><td class="n" data-v="-9.0">0.769 (-9.0)</td><td class="n" data-v="-8.3">0.776 (-8.3)</td></tr>
+</tbody>
+</table>
+<p class="caption">Accuracy of each rule applied to each model's internals, with the drop vs the model's own accuracy in points (Table 1). Green = small drop, red = large drop (color pivot at the median).</p>
+<p>Reading it: TabICL's final layer is so neatly organized by class that almost any simple rule works on it (prototype, kNN, linear). TabPFN's final layer is not: even a freshly fitted linear head gets only 0.617. TabPFN's answer lives in the attention <b>pattern</b> at layer 9, not in a class-clustered final representation.</p>
+
+<h3>4.7 What counts as "faithful"</h3>
+<p>A rule is called a faithful surrogate when all four hold: (i) its probabilities correlate with the model's at r &ge; 0.85, (ii) its accuracy is within 3 points, (iii) its predicted labels agree with the model's (Cohen's &kappa; &ge; 0.8), and (iv) it survives an intervention that keeps only the parts the rule names. The vote passes on 40/49 datasets for TabPFN; the prototype passes on 43/49 for TabICL.</p>
+
+<div class="take"><b>My take: "confirmed by causal intervention" is too strong.</b> Forcing uniform attention at layer 9 shows that layer 9 attention is <b>necessary</b>. It doesn't show that a vote is <b>what</b> happens: breaking any important component would also break the model. The authors know this. In the appendix they call layer 9 attention "necessary but not sufficient", show that MLP knockouts also collapse accuracy (Table 44), and write that the rules "are not claims about internal computation". The abstract doesn't say that. Also, the vote is a good match on labels but a poor one on confidence: calibration error goes from 0.043 for the model to 0.201 for the vote (Table 85).
+<br><span class="sure">How sure: high. All of this is in their own text and tables.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="invariance">
+<summary><h2>5. Finding 3: order of rows, columns and classes</h2></summary>
+
+<p>A table is a set of rows and a set of columns, and class names are arbitrary. So shuffling the rows, shuffling the columns, or renaming the classes should not change any prediction. That property is called <b>permutation invariance</b>.</p>
+<ul class="tight">
+<li><b>Rows:</b> all three models are row-order-blind by construction.</li>
+<li><b>Columns:</b> TabPFN and TabICL are not. Random column shuffles move accuracy by a median of 2.7 points for TabPFN (1.5 for TabICL v2) and up to 8 points on the worst dataset (Table 60). The paper notes this is one reason the released models use ensembling: averaging over several shuffled column orders.</li>
+<li><b>Classes:</b> no model is class-order-blind, because labels get embeddings tied to the class index.</li>
+</ul>
+
+<table>
+<colgroup><col style="width:16%"><col style="width:32%"><col style="width:20%"><col style="width:32%"></colgroup>
+<thead><tr><th>Model</th><th>What makes order matter</th><th>Their fix</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td>TabPFN v2</td><td>A learned per-feature position embedding (matrix W plus bias b). Features are processed in fixed pairs.</td><td>Set W = 0, keep b</td><td>Accuracy 0.854 to 0.854. Now order-blind, except pairs never split. Removing b as well drops accuracy to 0.338: b is a needed constant, not a position code.</td></tr>
+<tr><td>TabICL v2</td><td>RoPE (a rotary position code) along features, plus circular feature grouping.</td><td>Remove RoPE</td><td>0.864 to 0.862. Becomes blind to circular column shifts.</td></tr>
+<tr><td>TabICL v1</td><td>RoPE only.</td><td>Remove RoPE</td><td>0.851 to 0.697 (-15.4). RoPE was its only defense (see finding 4).</td></tr>
+<tr><td>Mitra</td><td>Nothing: same embedding for every column, no position code.</td><td>None needed</td><td>Column-order-blind by construction.</td></tr>
+<tr><td>All, class order</td><td>Label embeddings tied to class index.</td><td>One-vs-All wrapper: run C binary problems</td><td>No accuracy change, 100% label agreement, but C times the compute.</td></tr>
+</tbody>
+</table>
+
+<p><b>Retraining from scratch.</b> They pretrained TabICL v1 four times, with RoPE on/off and with a normal vs a class-order-blind output head (Table 2). Each change alone costs under 1 point; both together cost 2.6 points (0.829 to 0.803). Their conclusion: build invariance into the architecture from the start, the way Mitra does, instead of patching it with ensembles.</p>
+
+<div class="take"><b>My take, for your thesis.</b> When TabPFN ensembles over column shuffles, each ensemble member is a slightly <b>different function</b>, and the final output is their average. Feature-effect plots of "TabPFN" are therefore plots of an average of models. This may also matter for McCarter's parity result, where one model failed and four succeeded (<a href="#parity">section 9</a>).</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="collapse">
+<summary><h2>6. Finding 4: "representation collapse" and the toy models</h2></summary>
+
+<p><b>The worry</b> (from the TabICL paper). If a model is completely blind to column order, two rows that are column-shuffles of each other, like <span class="mono">100</span> and <span class="mono">001</span>, look identical to it. If their labels differ, it must get one of them wrong.</p>
+
+<h3>The cleanest idea in the paper: rows grouped by shuffling</h3>
+<p>Take 3 binary features. Group the 8 possible rows by "can I turn one into the other by shuffling columns?". That's the same as grouping by <b>how many 1s the row has</b>. An order-blind model must give every row in a group the same answer.</p>
+<table>
+<colgroup><col style="width:18%"><col style="width:12%"><col style="width:17%"><col style="width:19%"><col style="width:17%"><col style="width:17%"></colgroup>
+<thead><tr><th>Group</th><th class="n">Row</th><th class="n">Task A: y = x1</th><th class="n">Task B: y = x1 XOR x2</th><th class="n">Task C: majority</th><th class="n">Full parity</th></tr></thead>
+<tbody>
+<tr><td>zero 1s</td><td class="n mono">000</td><td class="n">0</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+<tr><td rowspan="3">one 1</td><td class="n mono">001</td><td class="n">0</td><td class="n">0</td><td class="n">0</td><td class="n">1</td></tr>
+<tr><td class="n mono">010</td><td class="n">0</td><td class="n">1</td><td class="n">0</td><td class="n">1</td></tr>
+<tr><td class="n mono">100</td><td class="n">1</td><td class="n">1</td><td class="n">0</td><td class="n">1</td></tr>
+<tr><td rowspan="3">two 1s</td><td class="n mono">011</td><td class="n">0</td><td class="n">1</td><td class="n">1</td><td class="n">0</td></tr>
+<tr><td class="n mono">101</td><td class="n">1</td><td class="n">1</td><td class="n">1</td><td class="n">0</td></tr>
+<tr><td class="n mono">110</td><td class="n">1</td><td class="n">0</td><td class="n">1</td><td class="n">0</td></tr>
+<tr><td>three 1s</td><td class="n mono">111</td><td class="n">1</td><td class="n">0</td><td class="n">1</td><td class="n">1</td></tr>
+<tr><td><b>Best an order-blind model can do</b></td><td></td><td class="n"><b>6/8 = 0.75</b></td><td class="n"><b>6/8 = 0.75</b></td><td class="n"><b>8/8</b></td><td class="n"><b>8/8</b></td></tr>
+</tbody>
+</table>
+<p>In the "one 1" and "two 1s" groups, tasks A and B have mixed labels, so an order-blind model gets at least one row per group wrong: 0.75 at best. That's their Lemma 1, the "multiset bound". Tasks C and parity have one label per group, so order-blindness costs nothing. The paper calls those "multiset-decidable". (The parity column is my addition.)</p>
+
+<h3>The four toy models</h3>
+<table>
+<colgroup><col style="width:20%"><col style="width:34%"><col style="width:22%"><col style="width:8%"><col style="width:8%"><col style="width:8%"></colgroup>
+<thead><tr><th>Toy model</th><th>How it escapes order-blindness</th><th>Real-model version</th><th class="n">A</th><th class="n">B</th><th class="n">C</th></tr></thead>
+<tbody>
+<tr><td>M0, mean-pool</td><td>It doesn't: every cell gets the same embedding and the row is their average.</td><td>none</td><td class="n">0.75</td><td class="n">0.75</td><td class="n">1.00</td></tr>
+<tr><td>M1, column ID</td><td>Each cell is tagged with "I am column j".</td><td>TabPFN's position embedding W</td><td class="n">1.00</td><td class="n">0.50</td><td class="n">1.00</td></tr>
+<tr><td>M2, column mask</td><td>Each attention head only sees one column.</td><td>TabICL's per-column attention</td><td class="n">1.00</td><td class="n">0.50</td><td class="n">1.00</td></tr>
+<tr><td>M3, pair tokens</td><td>Tokens are pairs of features carrying their joint value.</td><td>TabPFN's feature pairs, TabICL v2's circular grouping</td><td class="n">1.00</td><td class="n">1.00</td><td class="n">1.00</td></tr>
+</tbody>
+</table>
+<p class="caption">Accuracy on the 8 rows from the table above (Table 21). Only pair tokens solve XOR in one layer, because XOR needs two columns looked at jointly.</p>
+
+<h3>Do the real models collapse?</h3>
+<p>Each v2 model carries <b>two</b> of these escape routes: TabPFN v2 has M1 + M3, TabICL v2 has M2 + M3. Remove one and nothing happens. Remove both and the failure appears (Table 79):</p>
+<table>
+<colgroup><col style="width:34%"><col style="width:33%"><col style="width:33%"></colgroup>
+<thead><tr><th>Model</th><th class="n">balance-scale: full, then both routes off</th><th class="n">12-feature stress data: full, then both off</th></tr></thead>
+<tbody>
+<tr><td>TabPFN v2</td><td class="n">0.962 to 0.890</td><td class="n">0.970 to 0.855</td></tr>
+<tr><td>TabICL v2</td><td class="n">0.978 to 0.823</td><td class="n">0.990 to 0.485 (majority guess: 0.47)</td></tr>
+<tr><td>TabICL v1 (only one route: RoPE)</td><td class="n">drops about 45-50 points</td><td class="n">-</td></tr>
+<tr><td>Mitra (no routes at all)</td><td class="n">0.961 (v1), 0.959 (v1.1)</td><td class="n">0.893 (v1), 0.969 (v1.1)</td></tr>
+</tbody>
+</table>
+<p><b>The surprise:</b> Mitra has none of the escape routes and still doesn't collapse. Their guess is that it puts labels in early, as a slot every layer can see, and never compresses a row into one vector. Their recipe for the next model: (i) column-order-blind by construction, (ii) labels visible from the first layer, (iii) read the answer from the context labels (for example One-vs-All) rather than from a fixed class head.</p>
+
+<div class="take"><b>My take: this is the most useful section for parity.</b> McCarter's parity uses <b>all</b> D bits, so it's in the "multiset-decidable" class like majority: an order-blind model could solve it just by counting the 1s. Sparse XOR (two bits out of D) is task B, and needs pair tokens. These give two very different predictions for TabPFN. See <a href="#parity">section 9</a>.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="attacks">
+<summary><h2>7. Finding 5: attacks designed from the mechanism</h2></summary>
+
+<p>If TabPFN votes over similar rows and TabICL compares to class averages, some data changes should hurt them more than a model trained from scratch on the same changed data. The eight attacks, all applied to the context table:</p>
+<table>
+<colgroup><col style="width:22%"><col style="width:48%"><col style="width:30%"></colgroup>
+<thead><tr><th>Attack</th><th>What it does</th><th>Paper's intended target</th></tr></thead>
+<tbody>
+<tr><td>Hub poison</td><td>Flip the labels of the 15% of rows that sit closest to everything else ("hubs").</td><td>The vote: hubs get a lot of attention.</td></tr>
+<tr><td>Rank warp</td><td>Replace each value by its rank within its column (ties broken by row index).</td><td>Distances, which prototypes rely on.</td></tr>
+<tr><td>Cube / soft-exp warp</td><td>Bend each feature with a smooth increasing function.</td><td>Control: a good learner should shrug these off.</td></tr>
+<tr><td>Noise padding</td><td>Add fake rows sampled from each feature's distribution.</td><td>Any classifier.</td></tr>
+<tr><td>Centroid injection</td><td>Add a fake row at a class's center with the wrong label.</td><td>Any classifier.</td></tr>
+<tr><td>Boundary poison</td><td>Flip labels of rows near the decision boundary.</td><td>Any classifier.</td></tr>
+<tr><td>SVD burial</td><td>Shrink the main directions of variation 10x, blow up the minor ones 10x.</td><td>Any classifier.</td></tr>
+</tbody>
+</table>
+
+<table id="tbl-attacks">
+<colgroup><col style="width:24%"><col style="width:19%"><col style="width:19%"><col style="width:19%"><col style="width:19%"></colgroup>
+<thead><tr><th>Attack</th><th class="n">TabPFN v2</th><th class="n">TabICL v2</th><th class="n">XGBoost (refit)</th><th class="n">MLP (refit)</th></tr></thead>
+<tbody>
+<tr><td>Noise padding</td><td class="n" data-v="-1.5">-1.5</td><td class="n" data-v="-0.6">-0.6</td><td class="n" data-v="-1.6">-1.6</td><td class="n" data-v="-2.7">-2.7</td></tr>
+<tr><td>Hub poison</td><td class="n" data-v="-3.9">-3.9</td><td class="n" data-v="-3.3">-3.3</td><td class="n" data-v="-4.8">-4.8</td><td class="n" data-v="-2.8">-2.8</td></tr>
+<tr><td>Centroid injection</td><td class="n" data-v="-0.1">-0.1</td><td class="n" data-v="-0.3">-0.3</td><td class="n" data-v="-0.4">-0.4</td><td class="n" data-v="-0.7">-0.7</td></tr>
+<tr><td>Boundary poison</td><td class="n" data-v="-1.9">-1.9</td><td class="n" data-v="-1.2">-1.2</td><td class="n" data-v="-2.3">-2.3</td><td class="n" data-v="-2.9">-2.9</td></tr>
+<tr><td>Cube warp</td><td class="n" data-v="-1.1">-1.1</td><td class="n" data-v="-0.3">-0.3</td><td class="n" data-v="0.0">0.0</td><td class="n" data-v="-4.8">-4.8</td></tr>
+<tr><td>Soft-exp warp</td><td class="n" data-v="-2.2">-2.2</td><td class="n" data-v="-2.3">-2.3</td><td class="n" data-v="-1.7">-1.7</td><td class="n" data-v="-4.1">-4.1</td></tr>
+<tr><td>Rank warp</td><td class="n" data-v="-8.0">-8.0</td><td class="n" data-v="-10.1">-10.1</td><td class="n" data-v="-7.6">-7.6</td><td class="n" data-v="-4.3">-4.3</td></tr>
+<tr><td>SVD burial</td><td class="n" data-v="-8.3">-8.3</td><td class="n" data-v="-5.0">-5.0</td><td class="n" data-v="-11.1">-11.1</td><td class="n" data-v="-10.2">-10.2</td></tr>
+</tbody>
+</table>
+<p class="caption">Accuracy change in points, 24 datasets x 5 seeds (Table 65). XGBoost and the MLP are retrained on the attacked data. Green = mild, red = harsh (pivot at the median).</p>
+
+<p><b>The paper's reading.</b> Hub poison and rank warp hurt the foundation models more than the MLP, so they hit the readouts specifically. Noise, centroid, boundary and SVD hurt the MLP at least as much, so they're generic. Cube and soft-exp hurt the MLP about twice as much, so the foundation models' pretraining already covers smooth warps.</p>
+
+<div id="chart-attacks"></div>
+<p class="caption">The three attacks that decide the argument, from the table above.</p>
+
+<div class="take"><b>My take: the attacks don't isolate the readouts.</b>
+<ul class="tight">
+<li><b>Hub poison hurts XGBoost more than TabPFN</b> (-4.8 vs -3.9). Against the MLP the gap is about 1 point, and the confidence intervals overlap (TabPFN [-5.7, -2.2], MLP [-4.0, -1.6]).</li>
+<li><b>Rank warp is not doing what it says.</b> A tree model doesn't care about any order-preserving change to a feature: XGBoost loses exactly 0.0 under cube warp. Yet it loses 7.6 points under "rank warp", and 13.6 on their mixed-type slice (Table 96, LightGBM 10.7). So rank warp must be changing the order somehow. My best guess: ties are broken by row index (Table 7), which turns repeated values, like categories or integers, into arbitrary distinct numbers. The mixed-type datasets, full of ties, are hit hardest: TabPFN loses 17.2 points there, TabICL 21.0 (Table 68).</li>
+</ul>
+<span class="sure">How sure: the hub numbers are from their tables. The tie-breaking explanation is my best guess for why trees lose under a supposedly order-preserving change.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="critique">
+<summary><h2>8. My critique, all in one place</h2></summary>
+<p><b>What's good.</b> 49 classification and 10 regression datasets, 5-20 seeds, bootstrap confidence intervals, multiple-testing corrections, real interventions (forcing, knockouts, patching), a falsifiable criterion for "faithful", a clean small theorem, and an honest claims-and-caveats table (Table 90). It's far more rigorous than most interpretability papers on these models.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:52%"><col style="width:30%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>The abstract says the readouts are "confirmed by causal intervention". The interventions only show necessity; the appendix says so.</td><td>Sec. 3.4 wording, Table 44, appendix E.5</td><td>High</td></tr>
+<tr><td>2</td><td>The TabPFN "late jump" probe likely compares different token types between training and testing.</td><td>Probe below majority on 8 of 9 early layers (Tables 12, 82); effective rank 0.00 at input (Table 15)</td><td>Medium</td></tr>
+<tr><td>3</td><td>Hub poison and rank warp are not specific to the readouts.</td><td>XGBoost hurt more by hub poison; XGBoost hurt by rank but not by cube (Tables 65, 96)</td><td>Medium-high</td></tr>
+<tr><td>4</td><td>They never say how many ensemble members TabPFN ran with, or which preprocessing.</td><td>Not in the text</td><td>High</td></tr>
+<tr><td>5</td><td>Only the old 12-block TabPFN v2 (package release 7.0). The 24-block v2.5/v2.6 were left out for licensing reasons. Your installed <code>tabpfn</code> 8.2.0 defaults to v3 (<code>settings.py:38</code>), so a replication must load v2 explicitly.</td><td>Appendix A.1</td><td>High</td></tr>
+<tr><td>6</td><td>The 49 datasets are ordinary benchmarks. None is adversarial to a vote, the way parity is.</td><td>Dataset list, Table 8</td><td>High</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="parity">
+<summary><h2>9. How it connects to McCarter, parity and your thesis</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+
+<h3>Why parity is a puzzle for a vote</h3>
+<p>Parity: D binary features, label = 1 if the number of 1s is odd. Flip any one bit and the label flips, so the most similar rows in input space <b>always</b> have the wrong label. A vote over input-space neighbors would be confidently wrong, and that's exactly what XGBoost does in McCarter's leave-one-out panel (about 100% error). Yet ensembled TabPFN v2 gets parity nearly right.</p>
+<p>Bilos gives the way out: the vote runs on a <b>learned</b> similarity (4.2). So by layer 8, TabPFN must make rows with the same parity look similar. And section 6 suggests how: full parity depends only on <b>how many 1s</b> a row has. "Count the 1s, then vote among rows with the same count" solves it.</p>
+
+<h3>A numerical clue</h3>
+<p>If TabPFN counts and then votes, which rows fail under leave-one-out? Exactly the two rows that have no other row with the same count: all-zeros and all-ones. That predicts an error rate of exactly 2/2<sup>D</sup>:</p>
+<table>
+<colgroup><col style="width:10%"><col style="width:16%"><col style="width:34%"><col style="width:20%"><col style="width:20%"></colgroup>
+<thead><tr><th class="n">D</th><th class="n">Rows</th><th class="n">McCarter, ensembled v2, leave-one-out (read off his Fig. 20A)</th><th class="n">Prediction 2/2<sup>D</sup></th><th class="n">Implied wrong rows</th></tr></thead>
+<tbody>
+<tr><td class="n">3</td><td class="n">8</td><td class="n">about 1.0</td><td class="n">0.25</td><td class="n">all 8: doesn't fit</td></tr>
+<tr><td class="n">4</td><td class="n">16</td><td class="n">0</td><td class="n">0.125</td><td class="n">0: doesn't fit</td></tr>
+<tr><td class="n">5</td><td class="n">32</td><td class="n">about 0.06</td><td class="n">0.0625</td><td class="n">2</td></tr>
+<tr><td class="n">6</td><td class="n">64</td><td class="n">about 0.03 (4 models), 0.016 (16)</td><td class="n">0.031</td><td class="n">2 or 1</td></tr>
+<tr><td class="n">7</td><td class="n">128</td><td class="n">about 0.016</td><td class="n">0.0156</td><td class="n">2</td></tr>
+<tr><td class="n">8</td><td class="n">256</td><td class="n">about 0.008</td><td class="n">0.0078</td><td class="n">2</td></tr>
+<tr><td class="n">9</td><td class="n">512</td><td class="n">about 0.004</td><td class="n">0.0039</td><td class="n">2</td></tr>
+<tr><td class="n">10</td><td class="n">1024</td><td class="n">about 0.002</td><td class="n">0.0020</td><td class="n">2</td></tr>
+</tbody>
+</table>
+<p>From D = 5 to 10 it's almost exactly two wrong rows per table. That's a clue, not proof. D = 3 and 4 don't fit, and other mechanisms could also fail on exactly the two most extreme rows. The test is cheap: run it and check <b>which</b> two rows are wrong.</p>
+
+<h3>The sharper experiment: sparse XOR</h3>
+<p>Label = x<sub>i</sub> XOR x<sub>j</sub>, with the other columns as pure noise. Counting no longer helps (that's task B from section 6), and the single-feature PD/ALE plots are flat. Bilos's toy models say you need <b>pair tokens</b>, and TabPFN v2 processes features in fixed pairs. If those pairs are formed from neighboring columns, (0,1), (2,3) and so on (their W = 0 result suggests fixed positional pairs), then a single TabPFN model with a fixed column order should learn XOR of columns 0 and 1 more easily than XOR of columns 0 and 2.</p>
+<p>That would be the same function with flat single-feature effects, where learnability depends on column order. It's a sharp result for a thesis about feature effects, and the prediction may well fail, which would also be informative.</p>
+
+<h3>What feature-effect methods would show</h3>
+<ul class="tight">
+<li><b>Full parity, D &ge; 3:</b> partial-dependence and ALE plots of every single feature and every pair are perfectly flat. Only the full D-way interaction carries the signal.</li>
+<li><b>Sparse XOR:</b> single-feature plots are flat, but the 2D plot of the right pair shows the XOR pattern clearly.</li>
+</ul>
+
+<h3>Experiments this suggests (not run yet)</h3>
+<ol class="tight">
+<li>McCarter's parity, D = 5-7, leave-one-out, 1 vs 4 ensemble members, with the v2 checkpoint loaded explicitly. Print which rows are wrong.</li>
+<li>Sparse XOR in the same pair vs in different pairs, with 1 ensemble member so the column order stays fixed.</li>
+<li>Read out the layer 8 representation on parity: do rows with the same count of 1s sit close together?</li>
+</ol>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="glossary">
+<summary><h2>10. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Context rows</b></td><td>The labeled training rows you hand to the model at prediction time.</td></tr>
+<tr><td><b>Query row</b></td><td>The test row whose label you want.</td></tr>
+<tr><td><b>Token</b></td><td>The unit attention works on. TabPFN: one per cell (pair of features). TabICL: one per row after compression.</td></tr>
+<tr><td><b>Row-attention</b></td><td>A cell looks at the same column in other rows. This is where the vote happens in TabPFN.</td></tr>
+<tr><td><b>Column-attention</b></td><td>A cell looks at the other columns of its own row.</td></tr>
+<tr><td><b>Readout</b></td><td>The final step that turns internal state into class probabilities.</td></tr>
+<tr><td><b>Linear probe</b></td><td>A logistic regression trained on one layer's activations to predict the label.</td></tr>
+<tr><td><b>Knockout</b></td><td>Zeroing a block (or its MLP) to see if it's needed.</td></tr>
+<tr><td><b>Attention forcing</b></td><td>Replacing attention weights with uniform ones.</td></tr>
+<tr><td><b>Activation patching</b></td><td>Pasting clean activations into a corrupted run to see where the important information flows.</td></tr>
+<tr><td><b>Surrogate rule / faithful</b></td><td>A simple formula that should reproduce the model's output. Faithful = passes their 4 criteria (section 4.7).</td></tr>
+<tr><td><b>Vote</b></td><td>Prediction = attention-weighted share of each label among the context rows.</td></tr>
+<tr><td><b>Prototype</b></td><td>The average representation of all context rows of one class. Predict the nearest one.</td></tr>
+<tr><td><b>Learned similarity</b></td><td>"Which rows are similar", measured in a space the model built (layer 8), not in raw inputs.</td></tr>
+<tr><td><b>Transplant</b></td><td>Applying one model's readout rule to another model's internals.</td></tr>
+<tr><td><b>Effective rank</b></td><td>Roughly, how many independent directions a layer's activations really use.</td></tr>
+<tr><td><b>Permutation invariance</b></td><td>The prediction doesn't change when you shuffle rows, shuffle columns, or rename classes.</td></tr>
+<tr><td><b>Positional encoding, RoPE</b></td><td>Parameters that tell the model "this is column j". RoPE is a rotation-based version.</td></tr>
+<tr><td><b>One-vs-All (OvA)</b></td><td>Split a C-class problem into C yes/no problems. Makes class order irrelevant.</td></tr>
+<tr><td><b>Representation collapse</b></td><td>An order-blind model mapping two different rows (column-shuffles of each other) to the same internal state.</td></tr>
+<tr><td><b>Multiset-decidable</b></td><td>The label depends only on which values a row contains, not where (e.g. majority, full parity).</td></tr>
+<tr><td><b>Hub</b></td><td>A row that is close to many other rows, so it gets a lot of attention in a vote.</td></tr>
+<tr><td><b>ECE</b></td><td>Expected calibration error: how far predicted confidence is from actual accuracy.</td></tr>
+<tr><td><b>pp, points</b></td><td>Percentage points of accuracy (0.854 to 0.804 = -5.0 points).</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="reading">
+<summary><h2>11. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li><b>Start with Figure 1</b> (page 2). Panels (a)-(c) are the two readouts; (d) is the transplant; (e) the attacks; (f) the invariance fix.</li>
+<li><b>Read section 3 closely</b> (pages 4-5), with section 4 of this page open next to it.</li>
+<li><b>Read section 5.1</b> (pages 7-8) together with the 8-row table in section 6 of this page.</li>
+<li><b>Skim sections 2, 4, 6.</b> Their main results are in the summaries here.</li>
+<li><b>Appendix tables worth opening:</b> 12 (probe per layer), 17 (vote per dataset), 19 and 80 (learned similarity), 21 (toy models), 73 (transplant), 60 (column-shuffle spread), 65 and 96 (attacks), 85 (calibration), 90 (their own claims-and-caveats summary).</li>
+<li><b>Skip</b> on a first read: appendices C and F (TabICL details), E (regression), and the dataset ID tables.</li>
+</ol>
+<p class="caption">Their headline runs took about 30 GPU-hours on 4 H100s. Small slices, such as a few datasets or the toy tasks, run fine on a laptop CPU.</p>
+<p class="caption">Written 2026-10-19 from the arXiv v1 PDF. Chart values are copied from the paper's tables; the parity values are read off McCarter's log-scale figure, so they're approximate.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = "auto";
+  try { cur = localStorage.getItem("explainer-theme") || "auto"; }
+  catch (e) { console.warn("Theme preference not readable, using auto:", e); }
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => {
+    cur = order[(order.indexOf(cur) + 1) % order.length];
+    try { localStorage.setItem("explainer-theme", cur); }
+    catch (e) { console.warn("Theme preference not saved:", e); }
+    apply();
+  });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el && el.tagName === "DETAILS") el.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+// Bar chart with groups x series, negative values and dashed reference lines.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  // Reference-line labels live in a right margin so they never collide with bar values.
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: cfg.bottom || 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2;
+    const x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi];
+      const x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) {
+    const d = document.createElement("div");
+    d.className = "legend";
+    for (const s of cfg.series) {
+      const sp = document.createElement("span");
+      const sw = document.createElement("i");
+      sw.style.background = s.color;
+      sp.appendChild(sw);
+      sp.appendChild(document.createTextNode(s.name));
+      d.appendChild(sp);
+    }
+    root.appendChild(d);
+  }
+}
+
+const f2 = v => v.toFixed(2), f1 = v => v.toFixed(1);
+
+barChart("chart-probe-pfn", {
+  label: "TabPFN v2 linear probe accuracy per layer",
+  groups: ["input", "L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11"],
+  series: [{ name: "probe accuracy", color: "var(--blue)",
+    values: [0.394, 0.307, 0.320, 0.287, 0.446, 0.522, 0.445, 0.460, 0.470, 0.467, 0.780, 0.798, 0.602] }],
+  colorOf: gi => (gi === 10 ? "var(--orange)" : null),
+  min: 0, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: f2, fmt: f2,
+  refs: [
+    { y: 0.499, label: "majority guess 0.50", color: "var(--red)" },
+    { y: 0.854, label: "TabPFN itself 0.85", color: "var(--muted)" }
+  ]
+});
+
+barChart("chart-probe-mitra", {
+  label: "Mitra v1 linear probe accuracy per layer",
+  groups: ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11", "L12"],
+  series: [{ name: "probe accuracy", color: "var(--blue)",
+    values: [0.576, 0.681, 0.698, 0.713, 0.731, 0.752, 0.759, 0.771, 0.777, 0.718, 0.753, 0.676] }],
+  colorOf: gi => (gi === 8 ? "var(--orange)" : null),
+  min: 0, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: f2, fmt: f2,
+  refs: [{ y: 0.827, label: "Mitra itself 0.83", color: "var(--muted)" }]
+});
+
+barChart("chart-mass", {
+  label: "Attention mass on same-class vs other-class context rows",
+  width: 520, height: 230, barMax: 70,
+  groups: ["layer 8", "layer 9"],
+  series: [
+    { name: "rows with the query's class", color: "var(--orange)", values: [0.45, 0.73] },
+    { name: "rows of other classes", color: "var(--gray)", values: [0.55, 0.27] }
+  ],
+  min: 0, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: f2, fmt: f2
+});
+
+barChart("chart-r2", {
+  label: "Variance of layer 9 attention explained by each predictor",
+  width: 560, height: 230, barMax: 90,
+  groups: ["raw input distance", "layer 8 distance", "full learned similarity"],
+  series: [{ name: "R squared", color: "var(--blue)", values: [0.218, 0.477, 0.600] }],
+  min: 0, max: 0.8, ticks: [0, 0.2, 0.4, 0.6, 0.8], tickFmt: f1, fmt: f2
+});
+
+barChart("chart-attacks", {
+  label: "Accuracy change under hub poison, cube warp and rank warp",
+  width: 700, height: 270, barMax: 40,
+  groups: ["hub poison", "cube warp", "rank warp"],
+  series: [
+    { name: "TabPFN v2", color: "var(--red)", values: [-3.9, -1.1, -8.0] },
+    { name: "TabICL v2", color: "var(--blue)", values: [-3.3, -0.3, -10.1] },
+    { name: "XGBoost (refit)", color: "var(--orange)", values: [-4.8, 0.0, -7.6] },
+    { name: "MLP (refit)", color: "var(--gray)", values: [-2.8, -4.8, -4.3] }
+  ],
+  min: -12, max: 1, ticks: [0, -4, -8, -12], tickFmt: v => String(v), fmt: f1
+});
+
+// Diverging heat colors: green for values above the median, red below, white/background at the median.
+function heat(tableId) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (cells.length === 0) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length;
+  const med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    if (v >= med) {
+      const a = hi > med ? 0.4 * (v - med) / (hi - med) : 0;
+      c.style.background = `rgba(34,150,60,${a.toFixed(3)})`;
+    } else {
+      const a = 0.4 * (med - v) / (med - lo);
+      c.style.background = `rgba(217,0,18,${a.toFixed(3)})`;
+    }
+  }
+}
+heat("tbl-transplant");
+heat("tbl-attacks");
+
+// Interactive vote vs prototype demo.
+(function demo() {
+  const svg = need("demo-svg");
+  const tauEl = need("demo-tau"), text = need("demo-text");
+  const barR = need("demo-bar-red"), barB = need("demo-bar-blue");
+  const start = [
+    [60, 60, 0], [100, 92, 0], [70, 132, 0], [132, 52, 0], [145, 120, 0], [92, 182, 0], [188, 96, 0],
+    [330, 222, 1], [288, 190, 1], [342, 150, 1], [258, 240, 1], [300, 98, 1], [232, 170, 1], [205, 214, 1]
+  ];
+  let pts = start.map(([x, y, c]) => ({ x, y, c }));
+  let q = { x: 200, y: 150 };
+  let dragging = false;
+  const color = c => (c === 0 ? "var(--red)" : "var(--blue)");
+  mk("rect", { x: 0, y: 0, width: 400, height: 280, fill: "transparent" }, svg);
+  const gLines = mk("g", {}, svg), gProto = mk("g", {}, svg), gPts = mk("g", {}, svg), gQ = mk("g", {}, svg);
+
+  function softmax(s) {
+    const mx = Math.max(...s);
+    const e = s.map(v => Math.exp(v - mx));
+    const z = e.reduce((a, b) => a + b, 0);
+    return e.map(v => v / z);
+  }
+  const d2 = (a, b) => ((a.x - b.x) ** 2 + (a.y - b.y) ** 2) / 10000;
+
+  function render() {
+    for (const g of [gLines, gProto, gPts, gQ]) g.replaceChildren();
+    const tau = Math.pow(10, -parseFloat(tauEl.value));
+    const mode = document.querySelector("input[name=demo-mode]:checked").value;
+    let pRed, info;
+    if (mode === "vote") {
+      const w = softmax(pts.map(p => -d2(p, q) / tau));
+      pts.forEach((p, i) => mk("line", { x1: q.x, y1: q.y, x2: p.x, y2: p.y,
+        style: `stroke:var(--fg);stroke-width:${(0.4 + 9 * w[i]).toFixed(2)};opacity:${(0.12 + 0.88 * w[i]).toFixed(2)}` }, gLines));
+      pRed = pts.reduce((s, p, i) => s + (p.c === 0 ? w[i] : 0), 0);
+      info = `Largest single attention weight: ${Math.max(...w).toFixed(2)} (TabPFN's layer 9 averages 0.93).`;
+    } else {
+      const means = [0, 1].map(c => {
+        const mem = pts.filter(p => p.c === c);
+        if (mem.length === 0) return null;
+        return { x: mem.reduce((s, p) => s + p.x, 0) / mem.length, y: mem.reduce((s, p) => s + p.y, 0) / mem.length };
+      });
+      if (!means[0] || !means[1]) {
+        pRed = means[0] ? 1 : 0;
+        info = "Only one class left, so its prototype wins by default.";
+      } else {
+        const w = softmax(means.map(mn => -d2(mn, q) / tau));
+        means.forEach((mn, c) => {
+          mk("line", { x1: q.x, y1: q.y, x2: mn.x, y2: mn.y, style: `stroke:${color(c)};stroke-width:${(0.6 + 6 * w[c]).toFixed(2)};opacity:0.8` }, gLines);
+          mk("path", { class: "proto", d: star(mn.x, mn.y, 11, 5), style: `fill:${color(c)};stroke:var(--fg);stroke-width:1.2` }, gProto);
+        });
+        pRed = w[0];
+        info = "Only the distance to each class average matters; individual rows don't.";
+      }
+    }
+    pts.forEach((p, i) => {
+      const cEl = mk("circle", { cx: p.x, cy: p.y, r: 8, class: "pt", style: `fill:${color(p.c)};stroke:var(--bg);stroke-width:2` }, gPts);
+      cEl.dataset.i = String(i);
+    });
+    mk("path", { d: `M${q.x - 8},${q.y - 8} L${q.x + 8},${q.y + 8} M${q.x - 8},${q.y + 8} L${q.x + 8},${q.y - 8}`,
+      style: "stroke:var(--fg);stroke-width:3.5;stroke-linecap:round", "pointer-events": "none" }, gQ);
+    barR.style.width = (100 * pRed).toFixed(1) + "%";
+    barB.style.width = (100 * (1 - pRed)).toFixed(1) + "%";
+    text.textContent = `P(red) = ${pRed.toFixed(2)}, P(blue) = ${(1 - pRed).toFixed(2)}. ${info}`;
+  }
+
+  function star(cx, cy, R, r) {
+    let d = "";
+    for (let k = 0; k < 10; k++) {
+      const rad = k % 2 === 0 ? R : r, a = -Math.PI / 2 + k * Math.PI / 5;
+      d += (k === 0 ? "M" : "L") + (cx + rad * Math.cos(a)).toFixed(1) + "," + (cy + rad * Math.sin(a)).toFixed(1);
+    }
+    return d + "Z";
+  }
+
+  function moveTo(ev) {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) throw new Error("Demo SVG has no screen transform");
+    const p = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(ctm.inverse());
+    q = { x: Math.min(395, Math.max(5, p.x)), y: Math.min(275, Math.max(5, p.y)) };
+    render();
+  }
+  svg.addEventListener("pointerdown", ev => {
+    const i = ev.target.dataset ? ev.target.dataset.i : undefined;
+    if (i !== undefined) { pts[+i].c = 1 - pts[+i].c; render(); return; }
+    dragging = true;
+    svg.setPointerCapture(ev.pointerId);
+    moveTo(ev);
+  });
+  svg.addEventListener("pointermove", ev => { if (dragging) moveTo(ev); });
+  svg.addEventListener("pointerup", () => { dragging = false; });
+  svg.addEventListener("pointercancel", () => { dragging = false; });
+  tauEl.addEventListener("input", render);
+  document.querySelectorAll("input[name=demo-mode]").forEach(el => el.addEventListener("change", render));
+  need("demo-reset").addEventListener("click", () => {
+    pts = start.map(([x, y, c]) => ({ x, y, c }));
+    q = { x: 200, y: 150 };
+    tauEl.value = "0.6";
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

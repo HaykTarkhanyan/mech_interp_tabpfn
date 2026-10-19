@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thesis meeting brief</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 960px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.65rem; line-height: 1.25; margin: 26px 0 6px; }
+h2 { display: inline; font-size: 1.28rem; margin: 0; }
+h3 { font-size: 1.06rem; margin: 22px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+@media (max-width: 720px) { .tiles { grid-template-columns: 1fr 1fr; } }
+.tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+.tile .big { font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
+.tile .lbl { font-size: 0.85rem; color: var(--muted); }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.paper { border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin: 12px 0; }
+.paper h4 { margin: 0 0 2px; font-size: 1rem; }
+.paper .meta { font-size: 0.86rem; color: var(--muted); margin-bottom: 6px; }
+.paper dl { display: grid; grid-template-columns: 130px 1fr; gap: 3px 12px; margin: 6px 0 0; font-size: 0.92rem; }
+.paper dt { color: var(--muted); font-weight: 600; }
+.paper dd { margin: 0; }
+@media (max-width: 720px) { .paper dl { grid-template-columns: 1fr; } .paper dt { margin-top: 4px; } }
+.pill { display: inline-block; font-size: 0.76rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.pill.full { border-color: var(--green); color: var(--green); }
+.pill.part { border-color: var(--orange); color: var(--orange); }
+.cites { font-weight: 700; color: var(--fg); }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.88rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+th.sortable { cursor: pointer; text-decoration: underline dotted; }
+.gap td.n { font-size: 1.05rem; }
+.g-full { color: var(--green); font-weight: 700; }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; box-sizing: border-box; }
+.dot.full { background: var(--green); border: 2px solid var(--green); }
+.dot.part { background: linear-gradient(90deg, var(--orange) 50%, transparent 50%); border: 2px solid var(--orange); }
+.dot.none { border: 2px solid var(--gray); }
+.g-part { color: var(--orange); font-weight: 700; }
+.g-none { color: var(--gray); }
+.g-thesis { background: rgba(31,138,76,0.10); }
+.scroll { overflow-x: auto; }
+.scroll table { min-width: 760px; }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+.status-confirmed { color: var(--green); font-weight: 700; }
+.status-estimated { color: var(--orange); font-weight: 700; }
+.status-passed { color: var(--gray); font-weight: 700; text-decoration: line-through; }
+.status-rolling { color: var(--blue); font-weight: 700; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+@media print {
+  .topbar, .toc { display: none; }
+  details.sec { break-inside: auto; border: none; padding: 0; }
+  body { background: #fff; color: #000; }
+}
+</style>
+</head>
+<body>
+<main>
+<div class="topbar"><button id="print-btn" type="button">Print / save as PDF</button><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>Thesis meeting brief: feature effects as behavioral specifications for mechanistic analysis of TabPFN</h1>
+<p class="sub">Prepared __BUILD_DATE__. Covers the papers discussed so far, the gaps they leave, the first pilot experiment, a new hypothesis about TabPFN's MLPs, realistic citation and venue numbers for this niche, and upcoming submission deadlines. Citation counts: Semantic Scholar snapshot of __FETCH_DATE__. Deadlines: checked against official venue pages on __DEADLINE_DATE__.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#glance">At a glance</a></li>
+<li><a href="#papers">Papers discussed: main ideas</a></li>
+<li><a href="#gaps">Gap map: what each paper covers and what is left</a></li>
+<li><a href="#pilot">First pilot experiment (2026-10-19)</a></li>
+<li><a href="#mlp">New idea: what do TabPFN's MLPs store?</a></li>
+<li><a href="#cites">Realistic citations and where this work gets published</a></li>
+<li><a href="#deadlines">Venues and deadlines</a></li>
+<li><a href="#agenda">Questions for the meeting</a></li>
+<li><a href="#appendix">Appendix: all papers with citation counts</a></li>
+</ol>
+</nav>
+
+<!-- ============================================================ -->
+<details class="sec" open id="glance">
+<summary><h2>1. At a glance</h2></summary>
+<p class="key"><b>The thesis idea.</b> Use model-agnostic feature effects and interactions (ALE, GADGET, Shapley-Taylor) as a precise <b>specification of a behavior</b> of TabPFN, then find the internal components that implement exactly that behavior, and show that intervening on them changes that behavior <b>specifically</b>.</p>
+<div class="tiles">
+  <div class="tile"><div class="big">4+</div><div class="lbl">groups published analyses of TabPFN's internals in 2026 (BITS Pilani, Knauer &amp; Rodner, Bilos et al., Balef et al.)</div></div>
+  <div class="tile"><div class="big">none found</div><div class="lbl">papers using feature effects as the target of a mechanistic analysis (targeted search, not systematic; see <a href="#related">3.1</a>)</div></div>
+  <div class="tile"><div class="big" id="tile-median"></div><div class="lbl">median Semantic Scholar citations of comparable (non-model) papers in our collection</div></div>
+  <div class="tile"><div class="big" id="tile-next"></div><div class="lbl" id="tile-next-lbl">next open deadline that fits</div></div>
+</div>
+<h3>Where the field stands</h3>
+<ul class="tight">
+<li><b>Work on TabPFN's internals picked up in 2026.</b> Probing and neuron studies came first (Gupta et al. and Knauer &amp; Rodner, January 2026). The first causal and mechanistic studies followed in May-June: Bilos et al. (what TabPFN computes: an attention vote at layer 9), Balef et al. (when: the answer is decodable by layer 5, late layers reformat it; ICML 2026) and Gupta et al. (which heads matter; ICML 2026 workshop).</li>
+<li><b>Feature-effect work on TabPFN exists</b> (Rundel et al. 2024; TabDistill, April 2026, for interactions), but stays at the behavior level and never looks inside.</li>
+<li><b>We found no paper that connects the two:</b> one that takes a specified feature effect or interaction and tests, with a null model, which components implement it. The general logic of "specify, then test against the internals" does exist in LLM research (causal abstraction), so the novelty is applying it with feature-effect estimands to tabular foundation models. This rests on our collection plus a targeted web search on 2026-10-19, not a systematic review (<a href="#related">3.1</a>).</li>
+</ul>
+<h3>Progress since the proposal</h3>
+<ul class="tight">
+<li><b>A first pilot ran on 2026-10-19</b> (<a href="#pilot">section 4</a>). The pipeline works and is validated on the real TabPFN v2 checkpoint.</li>
+<li><b>Main lesson:</b> TabPFN's interaction behavior changes by about half between two 256-row samples of the same task, so mechanism claims must be tested across many contexts.</li>
+<li><b>Tentative:</b> one selective attention set per placement, and its type flips with feature pairing. One context each, so not yet evidence.</li>
+<li><b>New hypothesis</b> (<a href="#mlp">section 5</a>): attention gathers X<sub>1</sub> and X<sub>2</sub> into one token, and an MLP computes their product. It targets the MLPs, which every paper finds important and none explains.</li>
+</ul>
+<h3>Changes to the proposal I'd suggest (from the review)</h3>
+<ol class="tight">
+<li>Cite Balef et al. and reframe RQ2: given known depthwise redundancy, is an interaction localizable at all, and at what granularity?</li>
+<li>Give &Delta;<sub>B</sub> a null model (random component sets) and an estimator-noise floor. <i>Implemented in the pilot; the floor needs splitting into estimator noise and context variation.</i></li>
+<li>Report target vs non-target &Delta;<sub>B</sub> as a selectivity ratio. <i>Implemented in the pilot.</i></li>
+</ol>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="papers">
+<summary><h2>2. Papers discussed: main ideas</h2></summary>
+<p>Citation counts are Semantic Scholar's (merged preprint + published versions). <span class="pill full">read in full</span> means text, figures and appendix; <span class="pill part">partly read</span> means abstract, introduction and key sections.</p>
+
+<h3>Mechanistic and behavioral analyses of TabPFN</h3>
+
+<div class="paper">
+<h4>Interpretable Machine Learning for TabPFN</h4>
+<div class="meta">Rundel, Kobialka, von Crailsheim, Feurer, Nagler, Rügamer (LMU) &middot; xAI 2024 (CCIS) &middot; <span class="cites" data-id="2403.10923"></span> citations &middot; <span class="pill full">read in full</span></div>
+<dl>
+<dt>Main idea</dt><dd>Adapt standard IML methods (ICE/PD, ALE, Shapley values, LOCO, data valuation) to TabPFN. Because "refitting" TabPFN is a single forward pass with a different context, methods that need retraining become cheap and exact.</dd>
+<dt>Key point</dt><dd>The value function matters: removing a feature by refitting explains the <i>data</i>; imputing it explains the <i>model</i>.</dd>
+<dt>For the thesis</dt><dd>The behavioral side of the thesis builds on this. It explains what TabPFN does, never how.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>What exactly has TabPFN learned to do?</h4>
+<div class="meta">McCarter &middot; ICLR 2024 Blogpost Track (v2 appendix 2025) &middot; <span class="cites" data-id="2502.08978"></span> citations &middot; <span class="pill full">read in full</span></div>
+<dl>
+<dt>Main idea</dt><dd>Black-box probing: feed TabPFN tiny hand-built datasets and plot what it predicts.</dd>
+<dt>Key findings</dt><dd>Confidence falls off with distance from the data; it behaves roughly like a nearest-neighbor/kernel smoother in 2D. With ensembling, TabPFN v2 learns <b>parity</b> to &gt;99% accuracy from ~12% of the truth table, a function where every main and pairwise effect is flat.</dd>
+<dt>For the thesis</dt><dd>Parity shows feature effects can specify <i>nothing</i> while the model is accurate: a stress case for "feature effects as specifications".</dd>
+<dt>Caveat</dt><dd>Anecdotal (single configurations, no statistics); one model with ensembling solved parity, one without did not, unexplained.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>A Mechanistic Study of Tabular Foundation Models</h4>
+<div class="meta">Bilos, Wilson, Schneider, Nevmyvaka (Morgan Stanley) &middot; arXiv May 2026 &middot; <span class="cites" data-id="2605.21288"></span> citations &middot; <span class="pill full">read in full</span></div>
+<dl>
+<dt>Main idea</dt><dd>Find a simple "readout rule" that reproduces each model's predictions from its internals, test it causally, and transplant it across models (TabPFN v2, TabICL v2, Mitra; 49 datasets).</dd>
+<dt>Key findings</dt><dd>TabPFN v2 predicts through an <b>attention-weighted vote over context rows at layer 9</b>, using a learned similarity. TabICL uses a nearest-class-prototype rule instead; swapping rules costs 33-40 points. Column-order sensitivity comes from a few positional parameters that can be zeroed for free. Toy models prove when order-blind architectures must fail.</dd>
+<dt>For the thesis</dt><dd>The closest prior mechanistic work, and the obvious paper to compare with. Their toy analysis shows <b>feature pairs</b> are what let one layer represent XOR-type interactions.</dd>
+<dt>Caveat</dt><dd>"Causal" evidence shows necessity only; the layer-wise probe looks flawed (below the majority-class baseline on early layers); attacks are not shown to be mechanism-specific. Ensembling not reported.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>Is One Layer Enough? Understanding Inference Dynamics in Tabular Foundation Models</h4>
+<div class="meta">Balef, Koshil, Eggensperger (TU Dortmund, Tübingen) &middot; ICML 2026 &middot; <span class="cites" data-id="2605.06510"></span> citations &middot; <span class="pill full">read in full</span></div>
+<dl>
+<dt>Main idea</dt><dd>Six LLM-interpretability tools (layer similarity, probes, per-layer retrained decoders, skip/repeat/swap ablations, self-repair) on six tabular foundation models.</dd>
+<dt>Key findings</dt><dd>For TabPFN v2 the answer is decodable by about <b>layer 5</b> of 12; the late layers mainly convert it into the output head's format. The first layer is irreplaceable; most other layers can be skipped and later layers repair the damage. A single layer looped 6 times matches 6 layers in a small TabPFN clone.</dd>
+<dt>For the thesis</dt><dd>The biggest risk to RQ2: redundancy means single-component ablations can show no effect even for components that matter. Ablate sets, and use their query-only probe protocol.</dd>
+<dt>Caveat</dt><dd>"Normalized performance" is never defined; looping saves parameters, not compute; toy scale only.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>Where Computation Lives Inside TabPFN: Causal Localisation of Attention Head Function</h4>
+<div class="meta">Gupta, Kumar, Mandal, Deshpande (BITS Pilani) &middot; ICML 2026 Workshop on Foundation Models for Structured Data &middot; <span class="cites" data-id="2606.12917"></span> citations &middot; <span class="pill part">partly read</span></div>
+<dl>
+<dt>Main idea</dt><dd>Activation patching, ablation and attention entropy on TabPFN-2.5's feature-wise attention heads, on two synthetic regression tasks.</dd>
+<dt>Key findings</dt><dd>One head is 2-5x more causally important than the others at its peak layer, and that layer shifts with task complexity. Contrastive steering vectors do <b>not</b> transfer across samples.</dd>
+<dt>For the thesis</dt><dd>Closest in method (patching on synthetic tasks); the steering result is partial prior evidence for RQ3 (mechanisms may be context-specific).</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>TabPFN Through The Looking Glass</h4>
+<div class="meta">Gupta, Sethi, Kumar (BITS Pilani) &middot; NeurIPS 2026 Workshop XAI4Science (poster); arXiv Jan 2026 &middot; <span class="cites" data-id="2601.08181"></span> citations &middot; <span class="pill part">abstract and introduction</span></div>
+<dl>
+<dt>Main idea</dt><dd>Probe TabPFN's layers for intermediate quantities: linear-regression coefficients, intermediate values of compound expressions, and the final answer.</dd>
+<dt>For the thesis</dt><dd>Probing for an intermediate quantity is the template for testing whether, say, a product X<sub>1</sub>X<sub>2</sub> is represented. Correlational only.</dd>
+</dl>
+</div>
+
+<h3>Theory and tools</h3>
+
+<div class="paper">
+<h4>Statistical Foundations of Prior-Data Fitted Networks</h4>
+<div class="meta">Nagler (LMU) &middot; ICML 2023 &middot; <span class="cites" data-id="2305.11097"></span> citations &middot; <span class="pill part">key claims</span></div>
+<dl>
+<dt>Main idea</dt><dd>A frequentist account: a PFN is a pre-tuned but untrained predictor. Its variance vanishes when its sensitivity to single training samples vanishes; its bias vanishes only if it is <b>localized around the test point</b>, which the architecture does not guarantee.</dd>
+<dt>For the thesis</dt><dd>Makes a mechanistic prediction (localization) that Bilos's similarity vote can be tested against. Nagler co-authored two papers the proposal cites, so its absence would be noticed.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>Bayes' Power for Explaining In-Context Learning Generalizations</h4>
+<div class="meta">Müller, Hollmann, Hutter &middot; arXiv 2024 &middot; <span class="cites" data-id="2410.01565"></span> citations &middot; <span class="pill part">key claims</span></div>
+<dl>
+<dt>Main idea</dt><dd>The opposite reading: the <b>Bayesian</b> posterior view, not maximum likelihood, explains how in-context learners generalize. Written by the TabPFN authors.</dd>
+<dt>For the thesis</dt><dd>With Nagler, a live theory dispute with no mechanistic evidence on either side; a framing sentence for the thesis's motivation.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>nanoTabPFN: A Lightweight and Educational Reimplementation of TabPFN</h4>
+<div class="meta">Pfefferle, Hog, Purucker, Hutter &middot; EurIPS 2025 Workshop "AI for Tabular Data" &middot; <span class="cites" data-id="2511.03634"></span> citations &middot; <span class="pill part">key sections</span></div>
+<dl>
+<dt>Main idea</dt><dd>TabPFN v2's architecture in under 500 lines, with a training loop on pre-generated prior data. In a small-data setting it trains in about a minute on one GPU.</dd>
+<dt>For the thesis</dt><dd>Makes the <b>pretraining prior an experimental variable</b>: pretrain with and without interactions and check whether the localized mechanism appears only in the first. Budget: Balef et al. needed 12-69 A100-hours per research-scale nanoTabPFN model.</dd>
+</dl>
+</div>
+
+<div class="paper">
+<h4>Accurate predictions on small data with a tabular foundation model (TabPFN v2)</h4>
+<div class="meta">Hollmann et al. &middot; Nature 2025 &middot; <span class="cites" data-id="10.1038/s41586-024-08328-6"></span> citations &middot; context only</div>
+<dl>
+<dt>Role</dt><dd>The model under study: per-cell tokens, attention alternating across rows and across features, pretrained on synthetic structural-causal-model data. Shown for scale, not as a realistic citation benchmark.</dd>
+</dl>
+</div>
+
+<h3>Method papers the proposal builds on</h3>
+<table>
+<colgroup><col style="width:32%"><col style="width:20%"><col style="width:12%"><col style="width:36%"></colgroup>
+<thead><tr><th>Paper</th><th>Venue</th><th class="n">Citations</th><th>Role in the thesis</th></tr></thead>
+<tbody>
+<tr><td>Apley &amp; Zhu, ALE</td><td>JRSS-B 2020</td><td class="n"><span class="cites" data-id="10.1111/rssb.12377"></span></td><td>Main-effect specification robust to correlated features</td></tr>
+<tr><td>Herbinger et al., GADGET</td><td>JMLR 2024</td><td class="n"><span class="cites" data-id="2306.00541"></span></td><td>Regional effects; specifies regional interactions</td></tr>
+<tr><td>Sundararajan et al., Shapley-Taylor index</td><td>ICML 2020</td><td class="n"><span class="cites" data-id="1902.05622"></span></td><td>Local pairwise interaction attribution</td></tr>
+<tr><td>Conmy et al., ACDC</td><td>NeurIPS 2023</td><td class="n"><span class="cites" data-id="2304.14997"></span></td><td>Patching-based circuit discovery workflow</td></tr>
+<tr><td>Hong et al., DePass</td><td>NeurIPS 2025</td><td class="n"><span class="cites" data-id="2510.18462"></span></td><td>Additive decomposition of the forward pass</td></tr>
+<tr><td>Sena &amp; Azevedo, ShapPFN</td><td>ICLR 2026 workshop</td><td class="n"><span class="cites" data-id="2603.29946"></span></td><td>Explanation-by-design PFN (adjacent, different question)</td></tr>
+<tr><td>Molnar et al., PD/PFI vs data-generating process <span class="pill">suggested</span></td><td>xAI 2023</td><td class="n"><span class="cites" data-id="2109.01433"></span></td><td>What a feature effect estimates; with a synthetic prior the truth is known</td></tr>
+<tr><td>Heimersheim &amp; Nanda, activation patching guide <span class="pill">suggested</span></td><td>arXiv 2024</td><td class="n"><span class="cites" data-id="2404.15255"></span></td><td>How to patch without fooling yourself</td></tr>
+<tr><td>Zhang &amp; Nanda, patching best practices <span class="pill">suggested</span></td><td>ICLR 2024</td><td class="n"><span class="cites" data-id="2309.16042"></span></td><td>Metrics and corruption choices for patching</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="gaps">
+<summary><h2>3. Gap map: what each paper covers and what is left</h2></summary>
+<p><span class="g-full">&#9679;</span> addresses it directly &nbsp; <span class="g-part">&#9680;</span> partly or indirectly &nbsp; <span class="g-none">&#9675;</span> not addressed. The last column is what the thesis would add.</p>
+<div class="scroll">
+<table class="gap">
+<colgroup><col style="width:28%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:16%"></colgroup>
+<thead><tr><th>Question</th><th class="n">Rundel</th><th class="n">McCarter</th><th class="n">Bilos</th><th class="n">Balef</th><th class="n">Gupta</th><th class="n">Nagler / Müller</th><th class="n">nano-TabPFN</th><th class="n">This thesis</th></tr></thead>
+<tbody>
+<tr><td>Feature effects of TabPFN at the output level</td><td class="n g-full">&#9679;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">used as the specification</td></tr>
+<tr><td>What the network computes (readout mechanism)</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-full">&#9679;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">for one specified effect</td></tr>
+<tr><td>Where in depth the answer forms</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-full">&#9679;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">for main effects vs interactions</td></tr>
+<tr><td><b>Linking a specified feature effect or interaction to components</b></td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis"><b>core contribution</b></td></tr>
+<tr><td><b>Null models and selectivity for interventions</b></td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis"><b>core contribution</b></td></tr>
+<tr><td>Feature interactions specifically</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">pairwise and regional (RQ2)</td></tr>
+<tr><td>Ground-truth mechanism via a controlled prior</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-thesis">prior ablation (extension)</td></tr>
+<tr><td>Mechanism reuse across contexts</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">RQ3</td></tr>
+<tr><td>Does the estimand choice change which components are found?</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">RQ1 (sharpened)</td></tr>
+<tr><td>Bayesian vs frequentist account, tested mechanistically</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-full">&#9679;</td><td class="n g-none">&#9675;</td><td class="n g-thesis">possible framing / extension</td></tr>
+<tr><td>Effect of ensembling on the mechanism</td><td class="n g-none">&#9675;</td><td class="n g-part">&#9680;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n g-none">&#9675;</td><td class="n">open, out of core scope</td></tr>
+</tbody>
+</table>
+</div>
+<p class="caption">Nagler/Müller is theory only: a full circle on the theory row means they state the competing accounts, not that they test them. The map covers only the papers in section 2; the next subsection lists related work found outside our collection.</p>
+
+<h3 id="related">3.1 Closest related work outside our collection</h3>
+<p>Our 39-paper collection was built for TabPFN in general, so it can't support a novelty claim on its own. On 2026-10-19 I ran about ten targeted web searches: mechanistic interpretability of TabPFN, feature interactions and network internals, explanations as specifications for circuit discovery, causal abstraction, and interaction detection from weights. No paper does what the thesis proposes, but these come close and should be cited and positioned against:</p>
+<table>
+<colgroup><col style="width:27%"><col style="width:25%"><col style="width:24%"><col style="width:24%"></colgroup>
+<thead><tr><th>Paper</th><th>What it does</th><th>How it differs from the thesis</th><th>Use for the thesis</th></tr></thead>
+<tbody>
+<tr><td><b>Geiger et al., "Causal Abstraction: A Theoretical Foundation for Mechanistic Interpretability"</b> (arXiv 2301.04709)</td><td>Specifies a high-level causal model, aligns its variables with internal representations, and tests the alignment with interchange interventions.</td><td>The specification is a hand-written algorithm, studied mainly in language models; not feature-effect estimands, not tabular in-context learners.</td><td><b>The closest conceptual precedent.</b> Frame the thesis as "causal abstraction with an IML estimand as the high-level model"; interchange-intervention accuracy is a ready validation metric.</td></tr>
+<tr><td><b>Tsang, Cheng &amp; Liu, "Detecting Statistical Interactions from Neural Network Weights"</b> (ICLR 2018; follow-up on topological analysis at NeurIPS 2020)</td><td>Reads which features interact from the weights of a trained MLP.</td><td>A fixed MLP rather than an in-context learner whose function changes with the context; no causal validation.</td><td>Prior evidence that interactions live in specific nonlinear paths; a possible heuristic for candidate localization.</td></tr>
+<tr><td><b>TabDistill: "Selecting Feature Interactions for Generalized Additive Models by Distilling Foundation Models"</b> (arXiv 2604.13332, April 2026; UW-Madison, Microsoft Research)</td><td>Uses TabPFN v2 and a post-hoc interaction attribution (SPEX with FBII) to pick interaction terms for GAMs.</td><td>Behavior level only; never looks inside TabPFN.</td><td>Shows interaction specifications on TabPFN are practical. Overlap risk on the specification side only.</td></tr>
+<tr><td><b>Knauer &amp; Rodner, "In Search of Grandmother Cells: Tracing Interpretable Neurons in Tabular Representations"</b> (arXiv 2601.03657) and <b>"ConceptTracer"</b> (arXiv 2604.07019)</td><td>Information-theoretic saliency and selectivity of individual TabPFN neurons for human-defined concepts.</td><td>Correlational and concept-level; no feature-effect specification, no interventions.</td><td>A fourth active group. Their measures could serve as a localization method.</td></tr>
+</tbody>
+</table>
+<p class="caption">Also cited by Bilos et al. but not located online: Hu &amp; Ghelichi (2025), "Understanding TabPFN", on signal-vs-noise separation in late TabPFN v2 layers. Before claiming novelty in writing, run a systematic search: OpenAlex/Semantic Scholar keywords plus forward citations of Rundel et al., Bilos et al., Balef et al. and Geiger et al.</p>
+
+<h3>What is left to do: concrete openings</h3>
+<table>
+<colgroup><col style="width:4%"><col style="width:46%"><col style="width:18%"><col style="width:14%"><col style="width:18%"></colgroup>
+<thead><tr><th>#</th><th>Opening</th><th>Builds on</th><th>Maps to</th><th>Effort / risk</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>Behavior-specific localization with a null model.</b> Specify one interaction with ALE/GADGET, ablate or patch component <i>sets</i>, and report &Delta;<sub>B</sub> against random-set nulls plus a target/non-target selectivity ratio.<br><i>Pilot run 2026-10-19, see section 4.</i></td><td>Rundel; Bilos; Balef</td><td>RQ2 (core)</td><td>Laptop to 1 GPU; main risk is redundancy (Balef)</td></tr>
+<tr><td>2</td><td><b>Feature-wise vs sample-wise attention.</b> Pre-register: interactions live in feature-wise (within-row) attention; sample-wise attention estimates from context. Control whether the interacting features share a feature pair (TabPFN v2 groups features in pairs).<br><i>Pre-registered and piloted, see section 4.</i></td><td>Bilos (toy models); Gupta</td><td>RQ2</td><td>Low cost; clear yes/no outcome</td></tr>
+<tr><td>3</td><td><b>Does the estimand change the answer?</b> Run the same pipeline with ALE vs Shapley-Taylor vs GADGET and compare the components identified.</td><td>Proposal &sect;5</td><td>RQ1</td><td>Cheap once 1 works; a "yes" is a warning to the field</td></tr>
+<tr><td>4</td><td><b>Mechanism reuse across contexts.</b> Repeat 1 over independently sampled contexts and interaction strengths.</td><td>Gupta (steering)</td><td>RQ3</td><td>Moderate compute; informative either way</td></tr>
+<tr><td>5</td><td><b>Prior ablation with nanoTabPFN.</b> Pretrain with and without interactions in the prior; does the mechanism exist only in the first?</td><td>nanoTabPFN; Balef</td><td>Extension</td><td>Hours to days of GPU; strongest evidence</td></tr>
+<tr><td>6</td><td><b>Stress tasks with flat main effects</b> (centered X<sub>1</sub>X<sub>2</sub>; parity). Where main effects specify nothing, only interaction-level specifications work.</td><td>McCarter; Bilos</td><td>RQ1 / RQ2</td><td>Cheap; good figure for the thesis</td></tr>
+</tbody>
+</table>
+<div class="take"><b>Scoop risk.</b> At least four groups work on TabPFN's internals (Bilos et al., Balef/Eggensperger, Gupta/Kumar at BITS Pilani, Knauer &amp; Rodner), and TabDistill works with TabPFN interactions at the behavior level. None is visibly on the "IML estimand as specification, validated inside the model" track, so the risk is mainly to RQ2's descriptive parts. Set up an arXiv alert and check monthly.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="pilot">
+<summary><h2>4. First pilot experiment (2026-10-19)</h2></summary>
+<p>A first test of openings 1 and 2 above, built and run on 2026-10-19. Code: <code>fe_mech_pipeline/</code>. Full report: <a href="../fe_mech_pipeline/results/pilot_report.html">pilot_report.html</a>; its section 0 explains the results in plain words. Design choices are recorded in DECISIONS.md #9-#18.</p>
+
+<h3>What was built</h3>
+<ul class="tight">
+<li><b>Task:</b> the label depends on X<sub>1</sub>&middot;X<sub>2</sub> (switched on when X<sub>3</sub> &gt; 0), plus main effects of X<sub>1</sub> and X<sub>2</sub> and one noise feature.</li>
+<li><b>Behavioral specification:</b> ALE main effects and the second-order ALE interaction surface, implemented in numpy. It recovers known functions to within about 1%.</li>
+<li><b>Model:</b> the original TabPFN v2 classifier checkpoint (7,244,554 parameters, matching Balef et al.), with one ensemble member and preprocessing off. Note: <code>tabpfn</code> 8.2.0's own "v2" default is a different, fine-tuned checkpoint. Hooks were verified to leave outputs bitwise identical when inactive.</li>
+<li><b>Interventions:</b> mean ablation of all feature-attention heads, all item-attention heads, or the MLP, one layer at a time (36 sets), with zero ablation as a contrast.</li>
+<li><b>Evidence standard from the review:</b> a random-component null (25 sets per type), a noise floor, and selectivity against the X<sub>2</sub> main effect. Two hypotheses were pre-registered before any result existed: H1, the interaction is carried by feature attention; H2, the answer depends on whether X<sub>1</sub> and X<sub>2</sub> share a feature pair.</li>
+<li><b>Scale:</b> one 256-row context per placement, 293 forward passes, 13 minutes on the laptop CPU.</li>
+</ul>
+
+<h3>What it found</h3>
+<table>
+<colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>
+<thead><tr><th>Finding</th><th>Numbers</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td><b>1. The behavior depends heavily on the context</b></td><td>With nothing ablated, re-estimating on the same rows moves the interaction surface by 0.6-6%; a fresh 256-row context from the same task moves it by 47-59%.</td><td>A mechanism found on one context may not hold on the next, so RQ3 becomes central. Still needs a baseline: does XGBoost or a GAM vary as much on 256 rows?</td></tr>
+<tr><td><b>2. The pre-registered noise floor was too strict</b></td><td>Floor used: 0.41 and 0.56. The fair floor for comparisons within one context: 0.06-0.07.</td><td>The floor must be split: estimator noise for within-context claims, context variation for RQ3. This traces back to the review's wording.</td></tr>
+<tr><td><b>3. One selective attention set per placement</b> (post hoc)</td><td>Same pair: feature attention, layer 3 (&Delta; 0.44, beats 100% of the null, selectivity 1.66). Different pairs: item attention, layer 3 (&Delta; 1.03, 96%, selectivity 1.55). Other sets beat the null but damage the main effects as much as the interaction.</td><td>Consistent with H2: where the interaction is computed may depend on how features are paired. One context each, so suggestive only.</td></tr>
+<tr><td><b>4. Method sensitivity</b></td><td>Mean vs zero ablation: rank correlation 0.28. 10-11 of 12 whole MLP layers beat a null of units scattered across layers.</td><td>The replacement value must be chosen and justified, and nulls must match the structure of the candidates.</td></tr>
+</tbody>
+</table>
+<p>Pre-registered verdicts, computed mechanically: H1 supported for the same pair, contradicted for different pairs; H2 supported. All weak.</p>
+
+<h3>What changes for the thesis</h3>
+<ol class="tight">
+<li>Move context generalization (RQ3) into the core: test every claim across 10 or more independent contexts.</li>
+<li>Split the noise floor, and pre-register the corrected rules before the next run.</li>
+<li>Choose and justify the replacement: mean, zero, or patching in activations from an interaction-free context. Patching also gives the causal-abstraction framing from section 3.1.</li>
+<li>Replace the MLP null with one that matches the candidates' structure.</li>
+<li>Add a baseline learner (XGBoost or a GAM) to show whether TabPFN's context variability is unusual.</li>
+</ol>
+
+<div class="take"><b>Is it a paper yet?</b> Not yet; this is a feasibility pilot.
+<ul class="tight">
+<li><b>Workshop paper:</b> realistic after the multi-context run with these fixes, e.g. ICML 2027 workshops (around late April 2027, estimated). A clean methodology paper with an honest result fits there, even a negative one.</li>
+<li><b>Main track:</b> also needs several tasks and interaction strengths, causal validation beyond ablation, a second model or the nanoTabPFN prior ablation, and clear positioning against Bilos, Balef and causal abstraction. ICLR 2028 (around late September 2027) is the realistic target.</li>
+</ul></div>
+
+<h3>Next experiment and compute</h3>
+<p>About 10 contexts x 2 placements with the fixes: roughly 1-2 hours of laptop CPU, or well under an hour on a RunPod GPU. That's an estimate; the GPU code path is still untested and the price will be checked before starting. RunPod credentials are now set up in the repo.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="mlp">
+<summary><h2>5. New idea: what do TabPFN's MLPs store? "Attention gathers, MLP computes"</h2></summary>
+<p><span class="pill part">untested hypothesis</span> Everything in this section is my proposal, not a result from any paper or from the pilot.</p>
+
+<h3>Why the MLPs deserve attention</h3>
+<p>The published explanations of TabPFN are all about attention. MLPs keep showing up as important, but nobody explains them:</p>
+<table>
+<colgroup><col style="width:22%"><col style="width:78%"></colgroup>
+<thead><tr><th>Source</th><th>What it found about MLPs</th></tr></thead>
+<tbody>
+<tr><td>Bilos et al.</td><td>Skipping block 0's MLP drops the layer-9 probe by 37.6 points ("sets up the coordinate frame"); the MLPs in blocks 5-6 are the next most critical; knocking out MLPs collapses accuracy (0.87 to 0.42); on 10-class problems the late MLPs (layers 9-11) carry what the attention vote misses. Their own summary: layer-9 attention is "necessary but not sufficient".</td></tr>
+<tr><td>Balef et al.</td><td>Ablate whole layers (attention + MLP together), so they never separate the two.</td></tr>
+<tr><td>Gupta et al.</td><td>Study attention heads only.</td></tr>
+<tr><td>Our pilot</td><td>Ablating a whole MLP layer changed the interaction a lot but the main effects just as much (e.g. layer 7: 0.84 vs 0.89). It looks like general machinery, but whole-layer ablation is a sledgehammer.</td></tr>
+</tbody>
+</table>
+
+<h3>The LLM analogy, and where it breaks</h3>
+<p>In language models, MLPs act like <b>key-value memories</b> (Geva et al., 2021): one weight matrix detects a pattern ("Eiffel Tower"), the other writes an output ("Paris"). Factual recall has been located in mid-layer MLPs and edited there (Meng et al., 2022, ROME). Those facts are knowledge memorized in training and not present in the input.</p>
+<p>TabPFN v2 was pretrained on <b>synthetic</b> data, so there are no world facts to memorize, and everything about a task is in the context. Its stored knowledge can only be what it learned from the <b>prior</b>: operations and inductive biases. (The one exception is Real-TabPFN, which continued pretraining on real datasets; it could memorize real facts or even benchmark datasets, a side question about contamination.)</p>
+
+<h3>What TabPFN's MLPs could store</h3>
+<p>A key architectural fact: TabPFN v2 makes every table cell its own token, and the MLP is applied to <b>each cell token separately</b>. Only attention moves information between cells. So an MLP can only transform what is already inside one token. Three hypotheses follow:</p>
+<ol class="tight">
+<li><b>A library of nonlinear operations (learned feature engineering):</b> squares, thresholds, bump shapes, saturating curves. The synthetic prior generates many such nonlinearities, so storing them in MLPs would make sense.</li>
+<li><b>Computing interactions ("attention gathers, MLP computes"):</b> feature attention brings X<sub>1</sub> and X<sub>2</sub> into the same token, and the following MLP computes their nonlinear combination, such as X<sub>1</sub>&middot;X<sub>2</sub>. One caveat: attention scores are themselves products of two tokens, so attention can express some interaction through <i>which</i> rows it looks at. But writing a product into the representation most naturally needs the MLP's nonlinearity. Bilos's toy models point the same way: XOR "requires at least one nonlinear interaction".</li>
+<li><b>Format conversion and calibration late in the network:</b> Balef's last stages (convert to the output head's format, calibrate confidence) happen in the final layers, and in regression (an output distribution over about 5,000 bins) the final layers matter in both papers. Late MLPs could store "shape templates" for predictive distributions.</li>
+</ol>
+
+<h3>How to test it</h3>
+<table>
+<colgroup><col style="width:4%"><col style="width:56%"><col style="width:22%"><col style="width:18%"></colgroup>
+<thead><tr><th>#</th><th>Experiment</th><th>What it shows</th><th>Cost</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>Probe before and after each MLP</b> for the product X<sub>1</sub>&middot;X<sub>2</sub> in the X<sub>1</sub>/X<sub>2</sub> tokens, on query rows only (Balef's leak-free protocol). If the product first appears right after a particular MLP, ablate it and test selectivity with the existing pipeline.</td><td>Whether hypothesis 2 holds, and where</td><td>Laptop; reuses the pilot pipeline</td></tr>
+<tr><td>2</td><td><b>Neuron-level key-value analysis:</b> for each MLP neuron, what activates it and what it writes. Read the written direction by projecting it onto the output head's directions or onto probe directions for X<sub>1</sub>, X<sub>2</sub> and X<sub>1</sub>&middot;X<sub>2</sub>.</td><td>Candidate "multiplier" or "threshold" neurons</td><td>Laptop; no training</td></tr>
+<tr><td>3</td><td><b>Sparse autoencoders or transcoders</b> on MLP activations. These need lots of data, which is scarce in robotics; TabPFN is the opposite case, since unlimited synthetic contexts can be generated from the prior.</td><td>A dictionary of MLP features</td><td>GPU (RunPod)</td></tr>
+<tr><td>4</td><td><b>Prior ablation with nanoTabPFN:</b> pretrain with and without multiplicative interactions in the prior. If the "multiplier" neurons exist only in the first model, that shows where a piece of prior knowledge is stored: the TabPFN analogue of ROME.</td><td>Causal evidence for "MLPs store operations from the prior"</td><td>GPU; hours to days</td></tr>
+</tbody>
+</table>
+
+<div class="take"><b>Why this is a good fit for the thesis.</b> It refines RQ2 into a sharp, falsifiable claim ("attention gathers, MLP computes"), targets exactly the part the existing papers leave unexplained, and experiment 1 runs on the pilot pipeline almost unchanged. It also links the feature-effect specification (an interaction surface) to a concrete mechanism type (a product computed in an MLP).</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="cites">
+<summary><h2>6. Realistic citations and where this work gets published</h2></summary>
+<p>Model-introduction papers (TabPFN v1/v2/2.5/3, the PFN paper, TabICL, TabDPT) are excluded: their counts (hundreds to 1,600+) say nothing about what a thesis paper should expect. What remains are <span id="n-real"></span> analysis, extension, scaling and theory papers about TabPFN, the closest comparison for this thesis.</p>
+
+<h3>Citations of comparable papers</h3>
+<div id="chart-cites"></div>
+<p class="caption">Semantic Scholar citation counts on __FETCH_DATE__, colored by where the paper appeared. The number in brackets is the paper's age in years since it first appeared.</p>
+
+<h3>Typical numbers by venue type</h3>
+<table id="tbl-venue-stats">
+<colgroup><col style="width:30%"><col style="width:14%"><col style="width:20%"><col style="width:18%"><col style="width:18%"></colgroup>
+<thead><tr><th>Where it appeared</th><th class="n">Papers</th><th class="n">Median citations</th><th class="n">Median per year</th><th class="n">Range</th></tr></thead>
+<tbody></tbody>
+</table>
+
+<div class="take"><b>Realistic expectations</b> (my reading of these numbers, small sample):
+<ul class="tight">
+<li><b>Mechanistic papers from 2026</b> sit at <span id="mi-range"></span> citations a few months after release, whether at ICML (Balef), at workshops (both Gupta et al. papers) or on arXiv only (Bilos). The topic is new; nobody has many citations yet.</li>
+<li><b>A workshop or arXiv-only paper</b> in this niche typically sits between single digits and about 20 citations after one to two years (medians in the table above); a few arXiv-only papers reach 40-50.</li>
+<li><b>A main-conference paper</b> (NeurIPS, ICML, AISTATS) on TabPFN has a median of <span id="main-median"></span> citations, typically after one to three years (e.g. Ye et al., NeurIPS 2025: <span class="cites" data-id="2502.17361"></span>; Nagler, ICML 2023: <span class="cites" data-id="2305.11097"></span>), with exceptions (an AISTATS 2025 paper has <span class="cites" data-id="2503.01256"></span>).</li>
+<li><b>xAI conference</b> papers from the LMU IML group sit in between (Rundel et al. 2024: <span class="cites" data-id="2403.10923"></span>).</li>
+</ul>
+<span class="sure">Citation counts depend on the source: OpenAlex splits preprint and published versions, so its counts are much lower (see appendix).</span></div>
+
+<h3>Where these papers were published</h3>
+<div id="chart-venues"></div>
+<p class="caption">All <span id="n-all-coll"></span> collection papers, excluding the model-introduction papers. Venues come from Semantic Scholar, corrected from the papers themselves where Semantic Scholar only lists arXiv (Balef: ICML 2026; Gupta: ICML 2026 workshop; nanoTabPFN: EurIPS 2025 workshop; McCarter: ICLR 2024 blog track).</p>
+<p><b>Reading:</b> most TabPFN papers in this collection (<span id="n-arx"></span> of <span id="n-all-coll2"></span>) are still arXiv-only. Among the published ones, NeurIPS and ICML dominate, Workshops are the realistic entry point for a first paper: ICML's Foundation Models for Structured Data, tabular-data workshops at NeurIPS/EurIPS when they run (none in 2026), and interpretability workshops such as XAI4Science at NeurIPS 2026, where "Looking Glass" appeared. TMLR and the xAI conference are the other realistic options.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="deadlines">
+<summary><h2>7. Venues and deadlines</h2></summary>
+<p>Checked against official venue pages on __DEADLINE_DATE__. <span class="status-confirmed">confirmed</span> = announced on the official page; <span class="status-estimated">estimated</span> = not yet announced, based on last year's date; <span class="status-passed">passed</span>; <span class="status-rolling">rolling</span> = submit any time. Always re-check the official page before planning around a date.</p>
+<div id="timeline"></div>
+<p class="caption">Upcoming deadlines from today until the end of 2027. Marker color = status.</p>
+<div class="scroll">
+<table id="tbl-deadlines">
+<colgroup><col style="width:17%"><col style="width:13%"><col style="width:15%"><col style="width:16%"><col style="width:11%"><col style="width:18%"><col style="width:10%"></colgroup>
+<thead><tr><th>Venue</th><th>Track</th><th>Deadline</th><th>Conference</th><th>Status</th><th>Fit for this thesis</th><th>Source</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+<div id="deadline-notes"></div>
+<h3>Possible plans</h3>
+<div id="plans"></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="agenda">
+<summary><h2>8. Questions for the meeting</h2></summary>
+<ol class="tight">
+<li><b>Model and version.</b> The pilot used the original TabPFN v2 checkpoint that Bilos and Balef studied (12 layers, 7.24M parameters). Keep it as the main model, with nanoTabPFN for the prior ablation? The current <code>tabpfn</code> package defaults to v3, and v2.5/v2.6 have licenses that complicate analysis.</li>
+<li><b>Behavioral specification.</b> ALE + GADGET, or Shapley-Taylor interactions, as the primary specification? (The pilot used ALE.)</li>
+<li><b>RQ2 framing.</b> Accept the reframing around depthwise redundancy (Balef)?</li>
+<li><b>Evidence standard.</b> Adopt the random-component null, the noise floor and the selectivity ratio as the headline metric, with the floor split into estimator noise and context variation (section 4)?</li>
+<li><b>Context generalization.</b> Given the pilot's main lesson, should RQ3 move into the minimum viable thesis?</li>
+<li><b>Ablation replacement.</b> Mean, zero, or patching from an interaction-free context? Mean and zero ablation disagreed in the pilot (rank correlation 0.28).</li>
+<li><b>Compute.</b> RunPod for the multi-context run (likely under an hour of GPU) and later the nanoTabPFN prior ablation (hours to days)? Is there a budget?</li>
+<li><b>MLP hypothesis.</b> Make "attention gathers, MLP computes" (section 5) the sharpened RQ2, with the before/after-MLP probe as the next cheap experiment?</li>
+<li><b>Publication target.</b> Which venue and deadline to aim for (section 7), and whether to go workshop-first (section 4 has my assessment).</li>
+<li><b>Scope check.</b> Is "one specified interaction, one model, one localization and one validation method" the agreed minimum viable thesis?</li>
+<li><b>Positioning.</b> Should the thesis be framed explicitly as causal abstraction with an IML estimand as the high-level model (section 3.1)? And who runs the systematic novelty search before the proposal is finalized?</li>
+</ol>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" id="appendix">
+<summary><h2>9. Appendix: all papers with citation counts</h2></summary>
+<p>Click a column header to sort. Semantic Scholar merges preprint and published versions; OpenAlex counts here are for the arXiv record only, which is why they are much lower. Data: <code>meeting_prep/citation_snapshot___FETCH_DAY__.json</code>.</p>
+<div class="scroll">
+<table id="tbl-all">
+<colgroup><col style="width:40%"><col style="width:14%"><col style="width:16%"><col style="width:8%"><col style="width:11%"><col style="width:11%"></colgroup>
+<thead><tr><th class="sortable" data-k="label">Paper</th><th class="sortable" data-k="group">Group</th><th class="sortable" data-k="venue">Venue</th><th class="sortable n" data-k="year">Year</th><th class="sortable n" data-k="s2">Semantic Scholar</th><th class="sortable n" data-k="oa">OpenAlex</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</details>
+
+</main>
+
+<script id="cit-data" type="application/json">__CITATIONS_JSON__</script>
+<script id="dl-data" type="application/json">__DEADLINES_JSON__</script>
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function el(tag, props, parent) {
+  const e = document.createElement(tag);
+  Object.assign(e, props || {});
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+need("print-btn").addEventListener("click", () => {
+  document.querySelectorAll("details.sec").forEach(d => { d.open = true; });
+  window.print();
+});
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+// Gap-map markers as same-size CSS circles (the Unicode glyphs render at different sizes).
+document.querySelectorAll(".g-full, .g-part, .g-none").forEach(e => {
+  const kind = e.classList.contains("g-full") ? "full" : e.classList.contains("g-part") ? "part" : "none";
+  e.replaceChildren();
+  const d = document.createElement("span");
+  d.className = "dot " + kind;
+  d.setAttribute("aria-label", { full: "addresses", part: "partly", none: "not addressed" }[kind]);
+  e.appendChild(d);
+});
+
+const CIT = JSON.parse(need("cit-data").textContent);
+const DL = JSON.parse(need("dl-data").textContent);
+const byId = new Map(CIT.papers.map(p => [p.id, p]));
+const KIND_COLOR = {
+  "Main ML conference": "var(--red)",
+  "Workshop / blog track": "var(--orange)",
+  "Journal": "var(--blue)",
+  "Specialist conference": "var(--green)",
+  "arXiv only": "var(--gray)"
+};
+
+// Fill inline citation counts.
+document.querySelectorAll(".cites[data-id]").forEach(s => {
+  const p = byId.get(s.dataset.id);
+  if (!p) throw new Error("No citation record for " + s.dataset.id);
+  s.textContent = p.s2 === null ? "n/a" : String(p.s2);
+});
+
+const median = a => { const s = a.slice().sort((x, y) => x - y); const n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; };
+const realistic = CIT.papers.filter(p => p.collection && !p.model_paper && p.s2 !== null);
+need("n-real").textContent = String(realistic.length);
+need("tile-median").textContent = String(median(realistic.map(p => p.s2)));
+const mi = ["2605.21288", "2605.06510", "2606.12917", "2601.08181"].map(i => byId.get(i).s2);
+need("mi-range").textContent = `${Math.min(...mi)}-${Math.max(...mi)}`;
+const comparable = CIT.papers.filter(p => p.collection && !p.model_paper);
+need("n-all-coll").textContent = String(comparable.length);
+need("n-all-coll2").textContent = String(comparable.length);
+need("n-arx").textContent = String(comparable.filter(p => p.kind === "arXiv only").length);
+need("main-median").textContent = String(median(realistic.filter(p => p.kind === "Main ML conference").map(p => p.s2)));
+
+// Horizontal bar chart of citations, colored by venue kind.
+(function citeChart() {
+  const root = need("chart-cites");
+  const rows = realistic.slice().sort((a, b) => b.s2 - a.s2);
+  const W = 900, rowH = 22, m = { l: 330, r: 70, t: 8, b: 8 };
+  const H = m.t + m.b + rows.length * rowH;
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Citations of comparable TabPFN papers" }, root);
+  const max = Math.max(...rows.map(r => r.s2));
+  const x = v => m.l + v / max * (W - m.l - m.r);
+  rows.forEach((r, i) => {
+    const y = m.t + i * rowH;
+    mk("text", { x: m.l - 8, y: y + 15, "text-anchor": "end", "font-size": 12 }, svg, r.short.length > 52 ? r.short.slice(0, 50) + "..." : r.short);
+    mk("rect", { x: m.l, y: y + 3, width: Math.max(1, x(r.s2) - m.l), height: rowH - 6, rx: 2, style: `fill:${KIND_COLOR[r.kind]}` }, svg);
+    mk("text", { x: x(r.s2) + 5, y: y + 15, "font-size": 12, "font-weight": 600 }, svg, `${r.s2}  (${r.age.toFixed(1)}y)`);
+  });
+  const lg = el("div", { className: "legend" }, root);
+  for (const k of Object.keys(KIND_COLOR)) {
+    if (!rows.some(r => r.kind === k)) continue;
+    const s = el("span", {}, lg); const i = el("i", {}, s); i.style.background = KIND_COLOR[k]; s.appendChild(document.createTextNode(k));
+  }
+})();
+
+// Venue-kind statistics table.
+(function venueStats() {
+  const tb = need("tbl-venue-stats").querySelector("tbody");
+  for (const k of Object.keys(KIND_COLOR)) {
+    const g = realistic.filter(p => p.kind === k);
+    if (!g.length) continue;
+    const c = g.map(p => p.s2), py = g.map(p => p.s2 / Math.max(p.age, 0.25));
+    const tr = el("tr", {}, tb);
+    el("td", { textContent: k }, tr);
+    el("td", { className: "n", textContent: String(g.length) }, tr);
+    el("td", { className: "n", textContent: median(c).toFixed(0) }, tr);
+    el("td", { className: "n", textContent: median(py).toFixed(1) }, tr);
+    el("td", { className: "n", textContent: `${Math.min(...c)}-${Math.max(...c)}` }, tr);
+  }
+})();
+
+// Venue counts chart.
+(function venueChart() {
+  const root = need("chart-venues");
+  const counts = new Map();
+  CIT.papers.filter(p => p.collection && !p.model_paper).forEach(p => {
+    const key = p.venue_short;
+    const cur = counts.get(key) || { n: 0, kind: p.kind };
+    cur.n++; counts.set(key, cur);
+  });
+  const rows = Array.from(counts.entries()).sort((a, b) => b[1].n - a[1].n);
+  const W = 700, rowH = 26, m = { l: 230, r: 40, t: 6, b: 6 };
+  const H = m.t + m.b + rows.length * rowH;
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Venues of the collection papers" }, root);
+  const max = Math.max(...rows.map(r => r[1].n));
+  rows.forEach(([name, v], i) => {
+    const y = m.t + i * rowH;
+    mk("text", { x: m.l - 8, y: y + 17, "text-anchor": "end", "font-size": 12.5 }, svg, name);
+    const w = v.n / max * (W - m.l - m.r);
+    mk("rect", { x: m.l, y: y + 4, width: w, height: rowH - 8, rx: 2, style: `fill:${KIND_COLOR[v.kind]}` }, svg);
+    mk("text", { x: m.l + w + 6, y: y + 17, "font-size": 12.5, "font-weight": 600 }, svg, String(v.n));
+  });
+})();
+
+// Deadlines table and timeline.
+(function deadlines() {
+  const today = new Date(DL.checked_on + "T00:00:00");
+  const tb = need("tbl-deadlines").querySelector("tbody");
+  const rows = DL.rows.slice().sort((a, b) => (a.deadline_iso || "9999").localeCompare(b.deadline_iso || "9999"));
+  for (const r of rows) {
+    const tr = el("tr", {}, tb);
+    el("td", { innerHTML: `<b>${r.venue}</b>` }, tr);
+    el("td", { textContent: r.track }, tr);
+    el("td", { textContent: r.deadline_text }, tr);
+    el("td", { textContent: r.conference }, tr);
+    el("td", { className: "status-" + r.status, textContent: r.status }, tr);
+    el("td", { textContent: r.fit }, tr);
+    const td = el("td", {}, tr);
+    if (r.source) { const a = el("a", { href: r.source, textContent: "link", target: "_blank", rel: "noopener" }, td); }
+  }
+  const upcoming = rows.filter(r => r.deadline_iso && r.status !== "passed" && new Date(r.deadline_iso) >= today);
+  if (upcoming.length) {
+    const nx = upcoming.find(r => r.fit_rank <= 2) || upcoming[0];
+    const nd = new Date(nx.deadline_iso + "T00:00:00");
+    need("tile-next").textContent = (nx.status === "estimated" ? "~" : "") + nd.toLocaleString("en", { month: "short", day: "numeric" });
+    need("tile-next-lbl").textContent = `next fitting deadline: ${nx.venue} ${nx.track} (${nx.status})`;
+  }
+  // Timeline
+  const root = need("timeline");
+  const end = new Date("2027-12-31T00:00:00");
+  const items = upcoming.filter(r => new Date(r.deadline_iso) <= end);
+  const W = 900, laneH = 22, m = { l: 10, r: 10, t: 30, b: 10 };
+  const H = m.t + m.b + items.length * laneH;
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Deadline timeline" }, root);
+  const x = d => m.l + (d - today) / (end - today) * (W - m.l - m.r);
+  for (let y = today.getFullYear(), mo = today.getMonth() + 1; new Date(y, mo, 1) <= end; mo++) {
+    if (mo > 11) { mo = 0; y++; }
+    const d = new Date(y, mo, 1);
+    if (d > end) break;
+    mk("line", { x1: x(d), x2: x(d), y1: m.t - 8, y2: H - m.b, style: "stroke:var(--border)" }, svg);
+    if (mo % 3 === 0) mk("text", { x: x(d) + 3, y: 14, "font-size": 11, style: "fill:var(--muted)" }, svg, d.toLocaleString("en", { month: "short" }) + " " + String(y).slice(2));
+  }
+  const col = { confirmed: "var(--green)", estimated: "var(--orange)", rolling: "var(--blue)" };
+  items.forEach((r, i) => {
+    const d = new Date(r.deadline_iso);
+    const y = m.t + i * laneH + laneH / 2;
+    mk("circle", { cx: x(d), cy: y, r: 6, style: `fill:${col[r.status] || "var(--gray)"}` }, svg);
+    const right = x(d) > W * 0.65;
+    mk("text", { x: right ? x(d) - 10 : x(d) + 10, y: y + 4, "font-size": 12, "text-anchor": right ? "end" : "start" }, svg, `${r.deadline_iso}  ${r.venue} ${r.track}`);
+  });
+  const notes = need("deadline-notes");
+  if (DL.notes && DL.notes.length) {
+    el("h3", { textContent: "Caveats" }, notes);
+    const ul = el("ul", { className: "tight" }, notes);
+    DL.notes.forEach(n => el("li", { textContent: n }, ul));
+  }
+  const plans = need("plans");
+  (DL.plans || []).forEach(p => {
+    const d = el("div", { className: "paper" }, plans);
+    el("h4", { textContent: p.name }, d);
+    el("p", { textContent: p.text }, d);
+  });
+})();
+
+// Appendix table with sorting.
+(function appendix() {
+  const table = need("tbl-all"), tb = table.querySelector("tbody");
+  const rows = CIT.papers.map(p => ({ label: p.short, group: p.group_short, venue: p.venue_short, year: p.year || 0, s2: p.s2 === null ? -1 : p.s2, oa: p.oa === null ? -1 : p.oa }));
+  let key = "s2", asc = false;
+  function render() {
+    rows.sort((a, b) => { const va = a[key], vb = b[key]; const c = typeof va === "number" ? va - vb : String(va).localeCompare(String(vb)); return asc ? c : -c; });
+    tb.replaceChildren();
+    for (const r of rows) {
+      const tr = el("tr", {}, tb);
+      el("td", { textContent: r.label }, tr);
+      el("td", { textContent: r.group }, tr);
+      el("td", { textContent: r.venue }, tr);
+      el("td", { className: "n", textContent: r.year ? String(r.year) : "-" }, tr);
+      el("td", { className: "n", textContent: r.s2 < 0 ? "n/a" : String(r.s2) }, tr);
+      el("td", { className: "n", textContent: r.oa < 0 ? "n/a" : String(r.oa) }, tr);
+    }
+  }
+  table.querySelectorAll("th.sortable").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.k; if (k === key) asc = !asc; else { key = k; asc = k === "label" || k === "group" || k === "venue"; } render();
+  }));
+  render();
+})();
+</script>
+</body>
+</html>

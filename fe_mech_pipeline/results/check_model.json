@@ -1,0 +1,64 @@
+{
+ "n_ctx": 256,
+ "device": "cpu",
+ "checkpoint": {
+  "file": "tabpfn-v2-classifier.ckpt",
+  "repo": "Prior-Labs/TabPFN-v2-clf",
+  "path": "C:\\Users\\hayk_\\AppData\\Roaming\\tabpfn\\tabpfn-v2-classifier.ckpt",
+  "sha256": "f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f",
+  "bytes": 29016968,
+  "n_params": 7244554,
+  "architecture": "TabPFNV2"
+ },
+ "wrapper_config": {
+  "overrides": {
+   "PREPROCESS_TRANSFORMS": "[PreprocessorConfig(name='none', categorical_name='numeric', append_original=False, max_features_per_estimator=500, global_transformer_name=None, max_onehot_cardinality=None, differentiable=False)]",
+   "FEATURE_SHIFT_METHOD": "None",
+   "CLASS_SHIFT_METHOD": "None",
+   "FINGERPRINT_FEATURE": "False",
+   "POLYNOMIAL_FEATURES": "no",
+   "OUTLIER_REMOVAL_STD": "None",
+   "SUBSAMPLE_SAMPLES": "None"
+  },
+  "ensemble_member": {
+   "preprocess_config": "none_cat:numeric_max_feats_per_est_500",
+   "add_fingerprint_feature": false,
+   "polynomial_features": "no",
+   "feature_shift_decoder": null,
+   "feature_shift_count": 978,
+   "class_permutation": null,
+   "outlier_removal_std": null,
+   "softmax_temperature": 1.0
+  },
+  "resolved_FEATURE_SHIFT_METHOD": "None",
+  "resolved_FINGERPRINT_FEATURE": false
+ },
+ "wrapper_equivalence": {
+  "max_abs_input_diff": 5.9594424950404346e-08,
+  "max_abs_logit_diff": 8.881092071533203e-06
+ },
+ "hook_checks": {
+  "inactive_hooks_bitwise_identical": true,
+  "deterministic": true,
+  "self_patch_bitwise_identical": true,
+  "layer0_ablation_mean_abs_change": {
+   "feat_L0_mean": 0.010140671103727072,
+   "feat_L0_zero": 0.6194686621165602,
+   "item_L0_mean": 0.14372641152294818,
+   "item_L0_zero": 0.1767827753064921,
+   "mlp_L0_mean": 10.265272409000318,
+   "mlp_L0_zero": 0.5402214453933993
+  }
+ },
+ "timing": {
+  "n_ctx": 256,
+  "n_query": 1152,
+  "seconds": [
+   3.9085326000349596,
+   3.912523200036958,
+   3.961453200026881
+  ],
+  "torch_threads": 4
+ },
+ "elapsed_s": 41.87340799998492
+}

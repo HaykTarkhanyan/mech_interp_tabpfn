@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Is One Layer Enough explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 26px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button {
+  font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.takeaway { border: 1px solid var(--blue); border-radius: 6px; padding: 6px 12px; margin: 10px 0; font-size: 0.95rem; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val { font-size: 11.5px; font-weight: 600; }
+.chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+.legend i.box { height: 12px; width: 12px; vertical-align: -1px; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+.btnrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.schem { max-width: 700px; margin: 6px auto; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+</style>
+</head>
+<body>
+<main>
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Is One Layer Enough? Understanding Inference Dynamics in Tabular Foundation Models", explained</h1>
+<p class="sub">Balef, Koshil, Eggensperger (TU Dortmund, Lamarr Institute, Tübingen). ICML 2026 main conference, arXiv 2605.06510. An 8-page paper; 44 pages with references and appendix. PDF: <code>papers/tabpfn/2605.06510_is-one-layer-enough-understanding-inference-dynamics-in-tabular-founda.pdf</code>. Code: github.com/amirbalef/is_one_layer_enough</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#exp">The six experiments, one by one</a></li>
+<li><a href="#lens">The key plot: the "tabular logit lens"</a></li>
+<li><a href="#stages">The four stages of inference</a></li>
+<li><a href="#onelayer">So, is one layer enough?</a></li>
+<li><a href="#bilos">How it fits with Bilos et al.</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#thesis">What it means for parity and your thesis</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, <b>not</b> in the paper. Chart values marked "approx." were read off the paper's figures by eye (about &plusmn;0.03), because the paper gives no tables of these numbers. Companion page: <a href="2605.21288_a-mechanistic-study-of-tabular-foundation-models.html">Bilos et al. explained</a>.</p>
+</nav>
+
+<!-- ============================================================ -->
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+
+<p><b>The question.</b> Bilos asked <i>what</i> TabPFN computes. This paper asks <i>when</i>: as a test row passes through the layers, at which depth does the answer form, and are all those layers needed? They borrow six standard tools from LLM interpretability and run them on six tabular foundation models.</p>
+
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>The answer is there early, just not in a readable form.</b> If you train a fresh decoder for each layer, most models already predict well after a few layers. For TabPFN v2 that's layer 5 of 12. The model's own output head only works near the end, so the late layers mostly <b>translate</b> the answer into the form that head can read.</li>
+<li><b>The first layer is special.</b> Skip it and performance collapses for good. Skip almost any middle or late layer and performance dips, then the following layers repair it ("self-repair").</li>
+<li><b>Depth works like repeated refinement.</b> Layers come in blocks with similar representations, and each layer adds a bit on top of the previous ones. The paper calls this "iterative inference".</li>
+<li><b>One layer looped six times is about as good as six layers.</b> In a small TabPFN clone, a single layer run six times matches the 6-layer model using only 20% of the parameters. A single layer run once is clearly worse.</li>
+</ol>
+
+<div class="take"><b>My take, one line.</b> A solid, honest, broad "where in depth" study. Its most useful result for you is that TabPFN v2's late "jump" (Bilos's layer 9) is about <b>alignment with the output head, not the arrival of information</b>, which backs up my critique of Bilos's probe. The title oversells a bit: looping saves parameters, not compute, and was only shown at toy scale. Details in <a href="#critique">section 8</a>.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+
+<h3>2.1 The residual stream</h3>
+<p>In a transformer, each layer doesn't replace the representation, it <b>adds</b> an update to it: <code>h<sub>next</sub> = h + layer(h)</code>. That running sum is called the residual stream. Two consequences matter here. You can stop after any layer and look at <code>h</code>. And if a layer is removed, the stream still flows, so later layers may fix the damage.</p>
+
+<h3>2.2 Two views of what depth does</h3>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Circuit view</b></td><td>Each component has its own specialized job (one head copies, one layer compares, ...). Removing a component removes that job.</td></tr>
+<tr><td><b>Iterative-inference view</b></td><td>Layers keep nudging the same representation toward the answer, with overlapping work. Removing one is survivable because the others cover for it.</td></tr>
+</tbody>
+</table>
+<p>The paper says they aren't mutually exclusive, and its evidence mostly supports the second view for tabular models.</p>
+
+<h3>2.3 Logit lens and tuned lens (from LLM research)</h3>
+<p>The <b>logit lens</b>: take an intermediate layer's state and push it straight through the model's <b>final</b> output head, to see what the model "would answer" at that depth. It's often misleading, because intermediate states aren't in the format the final head expects. The <b>tuned lens</b> fixes this by learning a small adapter per layer. This paper's version, the "tabular logit lens", <b>retrains a copy of the output head for each layer</b> (on synthetic data, with the model frozen) and compares it with the original head.</p>
+
+<svg class="schem" viewBox="0 0 700 210" aria-label="Original decoder versus individual decoders">
+  <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <text x="10" y="22" font-size="13" font-weight="600">residual stream through the layers</text>
+  <g style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8">
+    <rect x="20" y="40" width="80" height="36" rx="5"/><rect x="140" y="40" width="80" height="36" rx="5"/>
+    <rect x="260" y="40" width="80" height="36" rx="5"/><rect x="380" y="40" width="80" height="36" rx="5"/>
+    <rect x="500" y="40" width="80" height="36" rx="5"/>
+  </g>
+  <text x="60" y="63" text-anchor="middle" font-size="13">layer 1</text>
+  <text x="180" y="63" text-anchor="middle" font-size="13">layer 2</text>
+  <text x="300" y="63" text-anchor="middle" font-size="13">layer 3</text>
+  <text x="420" y="63" text-anchor="middle" font-size="13">...</text>
+  <text x="540" y="63" text-anchor="middle" font-size="13">last layer</text>
+  <g style="stroke:var(--muted)" stroke-width="1.5" marker-end="url(#ah1)">
+    <line x1="100" y1="58" x2="136" y2="58"/><line x1="220" y1="58" x2="256" y2="58"/>
+    <line x1="340" y1="58" x2="376" y2="58"/><line x1="460" y1="58" x2="496" y2="58"/>
+    <line x1="580" y1="58" x2="616" y2="58"/>
+  </g>
+  <rect x="620" y="40" width="70" height="36" rx="5" style="fill:var(--blue)"/>
+  <text x="655" y="63" text-anchor="middle" font-size="12" style="fill:#fff">head</text>
+  <g style="stroke:var(--blue)" stroke-width="1.5" stroke-dasharray="4 3" fill="none">
+    <path d="M60,76 C60,110 655,110 655,80"/><path d="M180,76 C180,104 655,104 655,80"/><path d="M300,76 C300,98 655,98 655,80"/>
+  </g>
+  <text x="300" y="125" text-anchor="middle" font-size="12" style="fill:var(--blue)" font-weight="600">logit lens: every layer read by the ONE original head (blue, dashed)</text>
+  <g style="fill:var(--orange)">
+    <rect x="35" y="150" width="50" height="26" rx="4"/><rect x="155" y="150" width="50" height="26" rx="4"/><rect x="275" y="150" width="50" height="26" rx="4"/><rect x="515" y="150" width="50" height="26" rx="4"/>
+  </g>
+  <g style="stroke:var(--orange)" stroke-width="1.5" marker-end="url(#ah1)">
+    <line x1="60" y1="78" x2="60" y2="146"/><line x1="180" y1="78" x2="180" y2="146"/><line x1="300" y1="78" x2="300" y2="146"/><line x1="540" y1="78" x2="540" y2="146"/>
+  </g>
+  <text x="350" y="200" text-anchor="middle" font-size="12" style="fill:var(--orange)" font-weight="600">tabular logit lens: each layer gets its OWN retrained head (orange)</text>
+</svg>
+<p class="caption">Schematic. If the orange heads predict well at layer 3 while the blue one doesn't, the information is there but in a different "format" than the final head expects.</p>
+
+<h3>2.4 The six models and the setup</h3>
+<table>
+<colgroup><col style="width:20%"><col style="width:14%"><col style="width:12%"><col style="width:54%"></colgroup>
+<thead><tr><th>Model</th><th class="n">Parameters</th><th class="n">Layers</th><th>What's notable</th></tr></thead>
+<tbody>
+<tr><td>TabPFN v1</td><td class="n">25.8M</td><td class="n">12</td><td>One token per row; attention only across rows.</td></tr>
+<tr><td>TabPFN v2</td><td class="n">7.24M</td><td class="n">12</td><td>Per-cell tokens, attention across features and across rows. <b>Same checkpoint as in Bilos.</b></td></tr>
+<tr><td>TabPFN 2.5</td><td class="n">10.7M</td><td class="n">24</td><td>Same layout as v2, twice the depth.</td></tr>
+<tr><td>TabICL</td><td class="n">27.1M</td><td class="n">3 + 3 + 12</td><td>Column embedder and row-interaction stages first, then 12 in-context layers.</td></tr>
+<tr><td>LimiX-2M</td><td class="n">2.4M</td><td class="n">12</td><td>Strong input preprocessing (an RBF kernel on features).</td></tr>
+<tr><td>LimiX-16M</td><td class="n">16.5M</td><td class="n">12</td><td>Larger, without that preprocessing.</td></tr>
+</tbody>
+</table>
+<ul class="tight">
+<li><b>Data:</b> 15 binary tasks from TabArena (up to 10,000 rows and 100 features) and 34 small binary tasks from PMLBmini (up to 500 rows). Multiclass and regression are repeated in the appendix with the same conclusions.</li>
+<li><b>Metric:</b> ROC-AUC, shown as "normalized performance" (see my critique on this).</li>
+<li><b>No ensembling:</b> every model runs with 1 ensemble member, so they study a single forward pass.</li>
+</ul>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="exp">
+<summary><h2>3. The six experiments, one by one</h2></summary>
+<p>They go from "look at the representations" (1-4) to "break the model and watch" (5-6).</p>
+
+<h3>Experiment 1: embedding similarity</h3>
+<p><b>What:</b> compare every layer's representation with every other layer's, using cosine similarity and CKA (a similarity measure for whole sets of representations).<br>
+<b>Found:</b> neighboring layers are similar, and the bigger models (TabPFN v2, 2.5, LimiX) form visible <b>blocks</b> of layers that barely change the representation, with bigger jumps between blocks. TabPFN v1 and TabICL show no clear blocks.</p>
+<div class="takeaway"><b>Takeaway 1.</b> TFMs often form blocks in which the embeddings remain similar.</div>
+
+<h3>Experiment 2: separation gap</h3>
+<p><b>What:</b> at each layer, how much farther apart are rows of different classes than rows of the same class? A bigger gap means classes are easier to tell apart. They track it separately for context ("support") and query rows, and for feature tokens vs label tokens.<br>
+<b>Found:</b> the gap grows with depth, noisily. Context rows' label tokens start high, of course, since they contain the label. Feature tokens separate first, the query's label token later. TabPFN v2 shows a jump around layer 5.</p>
+<div class="takeaway"><b>Takeaway 2.</b> TFMs incrementally increase the distance between samples from different classes.</div>
+
+<h3>Experiment 3: probing classifiers</h3>
+<p><b>What:</b> train a logistic regression on one layer's <b>query-row</b> representations and test it on the same layer or other layers.</p>
+<div class="key"><b>An important design choice:</b> they probe only query rows, and train the probe on extra query rows (half of the training set moved over), because "support embeddings inherently contain label information". This is exactly the trap I suspected in Bilos's probe (see <a href="#bilos">section 7</a>).</div>
+<svg class="schem" viewBox="0 0 520 250" aria-label="How to read the probing heatmap" style="max-width:460px">
+  <text x="260" y="18" text-anchor="middle" font-size="12" style="fill:var(--muted)">test layer: early to late</text>
+  <text x="18" y="135" text-anchor="middle" font-size="12" style="fill:var(--muted)" transform="rotate(-90 18 135)">probe trained on layer</text>
+  <g id="heat-schem"></g>
+  <text x="430" y="70" font-size="12" style="fill:var(--red)" font-weight="600">trained early,</text>
+  <text x="430" y="86" font-size="12" style="fill:var(--red)" font-weight="600">tested late:</text>
+  <text x="430" y="102" font-size="12" style="fill:var(--red)" font-weight="600">still works</text>
+  <text x="430" y="180" font-size="12" style="fill:var(--blue)" font-weight="600">trained late,</text>
+  <text x="430" y="196" font-size="12" style="fill:var(--blue)" font-weight="600">tested early:</text>
+  <text x="430" y="212" font-size="12" style="fill:var(--blue)" font-weight="600">fails</text>
+</svg>
+<p class="caption">Schematic of their Figure 5. A probe trained at an early layer keeps working on later layers, but not the reverse. So later layers keep the old information and add new information on top.</p>
+<div class="takeaway"><b>Takeaway 3.</b> Each layer cumulatively enriches the representation by adding new features while preserving previous ones.</div>
+
+<h3>Experiment 4: the tabular logit lens</h3>
+<p>The most important experiment; it has its own <a href="#lens">section 4</a>.</p>
+<div class="takeaway"><b>Takeaway 4.</b> Representations are already formed for a reliable prediction in the early layers, but not necessarily aligned with the original decoder.</div>
+
+<h3>Experiment 5: layer ablation (skip, repeat, swap)</h3>
+<svg class="schem" viewBox="0 0 700 150" aria-label="Skip, repeat and swap interventions">
+  <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <g id="abl-schem"></g>
+</svg>
+<p class="caption">Schematic. Skip = leave one layer out. Repeat = run one layer twice. Swap = run two neighboring layers in the wrong order.</p>
+<ul class="tight">
+<li><b>Skip:</b> skipping an early layer hurts the most; skipping middle or late layers costs little or nothing. TabICL and LimiX-2M survive even early skips, because their strong input encoders already did that work.</li>
+<li><b>Repeat:</b> repeating some layers even helps slightly (LimiX-16M, TabPFN v1), as you'd expect if layers do refinement.</li>
+<li><b>Swap:</b> models are generally <b>sensitive</b> to swapping, TabPFN v2 most of all, and more so than LLMs.</li>
+</ul>
+<div class="takeaway"><b>Takeaway 5.</b> Early layers contribute the most, while later layers perform iterative refinement of the representation.</div>
+
+<h3>Experiment 6: self-repair</h3>
+<p><b>What:</b> skip one layer, then use the per-layer decoders to watch performance at every following layer. If it drops right after the skip and recovers later, the later layers "repaired" the damage.<br>
+<b>Found:</b> skipping the first layer is never repaired. Skipping middle or late layers usually is, especially in TabPFN v2.</p>
+<div class="takeaway"><b>Takeaway 6.</b> Self-repair generally occurs after layer ablations, except for the first layer.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="lens">
+<summary><h2>4. The key plot: the "tabular logit lens"</h2></summary>
+<p>For each layer: how well does the model's <b>original</b> output head predict from that layer, vs a head <b>retrained</b> for that layer? Pick a model:</p>
+<div class="btnrow" id="lens-btns">
+  <button type="button" data-m="v1">TabPFN v1</button>
+  <button type="button" data-m="v2" aria-pressed="true">TabPFN v2</button>
+  <button type="button" data-m="v25">TabPFN 2.5</button>
+</div>
+<div id="chart-lens"></div>
+<p class="caption" id="lens-note"></p>
+<p class="caption">Mean "normalized ROC-AUC" across datasets, approx., read off Figure 6. The dashed line is the full model.</p>
+
+<p><b>How to read it:</b></p>
+<ul class="tight">
+<li><b>TabPFN v1:</b> the two lines lie on top of each other and reach the top by layer 2-3. Information arrives early, and it arrives in the final format.</li>
+<li><b>TabPFN v2:</b> the retrained head is near the top by <b>layer 5</b>. The original head even <b>gets worse</b> around layers 5-6 and only catches up at layers 8-10. For about four layers the answer is present, but the original head can't read it.</li>
+<li><b>TabPFN 2.5</b> (24 layers): same pattern, stretched out. The retrained head jumps at layer 5, the original head trails until roughly layer 12-20.</li>
+</ul>
+<p>Their plain-language summary: in TabPFN v2 and 2.5, the late layers mostly rewrite an already formed answer into the head's format. The other models show this much less.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="stages">
+<summary><h2>5. The four stages of inference</h2></summary>
+<p>Combining the experiments, they propose four stages, named after a similar 4-stage story for LLMs (Lad et al., 2025):</p>
+<svg class="schem" viewBox="0 0 700 120" aria-label="Four stages of inference">
+  <rect x="10" y="20" width="130" height="50" rx="6" style="fill:var(--gray)" opacity="0.55"/>
+  <rect x="145" y="20" width="190" height="50" rx="6" style="fill:var(--red)" opacity="0.75"/>
+  <rect x="340" y="20" width="190" height="50" rx="6" style="fill:var(--blue)" opacity="0.8"/>
+  <rect x="535" y="20" width="155" height="50" rx="6" style="fill:var(--orange)" opacity="0.85"/>
+  <text x="75" y="50" text-anchor="middle" font-size="12" font-weight="700">1. Latent mapping</text>
+  <text x="240" y="50" text-anchor="middle" font-size="12" font-weight="700" style="fill:#fff">2. Features + labeling</text>
+  <text x="435" y="50" text-anchor="middle" font-size="12" font-weight="700" style="fill:#fff">3. Prediction ensembling</text>
+  <text x="612" y="50" text-anchor="middle" font-size="12" font-weight="700">4. Calibration</text>
+  <text x="10" y="98" font-size="12" style="fill:var(--muted)">first layers</text>
+  <text x="690" y="98" text-anchor="end" font-size="12" style="fill:var(--muted)">last layers</text>
+  <line x1="90" y1="94" x2="610" y2="94" style="stroke:var(--muted)" stroke-width="1.2"/>
+</svg>
+<table>
+<colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>
+<thead><tr><th>Stage</th><th>What happens</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td>1. Latent mapping</td><td>Turn the input encoding into a representation the rest of the stack can work with.</td><td>Decoders can't read anything yet; skipping these layers is catastrophic. Weaker in models with strong encoders (TabICL, LimiX-2M).</td></tr>
+<tr><td>2. Feature engineering and labeling</td><td>Build features and pull label information into the query; classes separate.</td><td>Retrained heads shoot up; the separation gap grows.</td></tr>
+<tr><td>3. Prediction ensembling</td><td>Convert the formed answer into the format the original head reads.</td><td>Retrained heads are already saturated while the original head keeps improving. Clear <b>only in TabPFN v2 and 2.5</b>.</td></tr>
+<tr><td>4. Prediction calibration</td><td>Adjust confidence without changing the ranking.</td><td>ROC-AUC is flat, but balanced accuracy jumps and output entropy keeps changing.</td></tr>
+</tbody>
+</table>
+<p>The stages can overlap. Differences from LLMs: tabular models are <b>more</b> sensitive to swapping layers, and their last layer matters <b>less</b> for classification (but in regression the TabPFN family's last layer does matter, appendix E).</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="onelayer">
+<summary><h2>6. So, is one layer enough?</h2></summary>
+<p>If middle layers largely redo similar work, maybe one layer used repeatedly can replace them. They test this with <b>nanoTabPFN</b>, a small open reimplementation of TabPFN v2, pretraining three versions from scratch on the TabICL prior:</p>
+<table>
+<colgroup><col style="width:26%"><col style="width:22%"><col style="width:16%"><col style="width:16%"><col style="width:20%"></colgroup>
+<thead><tr><th>Model</th><th>How it runs</th><th class="n">Parameters</th><th class="n">Pretraining (A100 hours)</th><th class="n">Final performance (approx.)</th></tr></thead>
+<tbody>
+<tr><td>nanoTabPFN, 6 layers</td><td>6 different layers</td><td class="n">3.72M</td><td class="n">62.3</td><td class="n">0.945</td></tr>
+<tr><td>nanoTabPFN, looped</td><td>1 layer, run 6 times</td><td class="n">0.75M (20%)</td><td class="n">68.8</td><td class="n">0.945</td></tr>
+<tr><td>nanoTabPFN, 1 layer</td><td>1 layer, run once</td><td class="n">0.75M</td><td class="n">11.9</td><td class="n">0.82</td></tr>
+</tbody>
+</table>
+<div id="chart-loop"></div>
+<p class="caption">Mean normalized performance on PMLBmini + TabArena, approx., read off Figure 9 (TabPFN 2.5 is the 1.00 reference line in that figure). Parameters and hours are from Tables A.7, A.8 and A.10.</p>
+<p><b>Their answer:</b> one layer used <b>once</b> is not enough (0.82). One layer used <b>six times</b> matches six separate layers. So depth is mostly repeated refinement, not six different transformations. Their caveats: small scale only, and still clearly behind TabPFN 2.5.</p>
+
+<div class="take"><b>My take: read the title as "one layer's worth of <i>parameters</i>".</b>
+<ul class="tight">
+<li>The looped model does the <b>same amount of compute</b> as the 6-layer one: same forward cost, and even slightly longer pretraining (68.8 vs 62.3 hours). It saves memory for weights, not time.</li>
+<li>The appendix says looping "reduces the total number of parameters <b>by</b> 20%". Their own Tables A.7/A.8 (3.72M vs 0.75M) show it reduces them <b>to</b> 20%, as the abstract correctly says.</li>
+<li>In their per-dataset scatter (Figure 9, right) one PMLBmini dataset collapses under looping: about 0.4 for 6 layers but about 0.05 for the looped model. They don't comment on it.</li>
+</ul>
+<span class="sure">How sure: high. All from their own tables and figures.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="bilos">
+<summary><h2>7. How it fits with Bilos et al.</h2></summary>
+<p>Both papers study <b>the same TabPFN v2 checkpoint</b> (7.24M parameters, 12 layers), so they can be compared directly.</p>
+<table>
+<colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>
+<thead><tr><th>Question</th><th>Bilos et al.</th><th>Balef et al. (this paper)</th></tr></thead>
+<tbody>
+<tr><td>When is the class readable?</td><td>Linear probe near chance until layer 8, jump at layer 9.</td><td>Retrained head near the top by layer 5; the <b>original</b> head jumps late (layers 8-10).</td></tr>
+<tr><td>Is the first block critical?</td><td>Yes: block 0 "sets the coordinate frame".</td><td>Yes: skipping it is catastrophic and never repaired.</td></tr>
+<tr><td>Can middle/late layers go?</td><td>Most single-block knockouts cost little.</td><td>Yes, with self-repair.</td></tr>
+<tr><td>What happens late?</td><td>A sharp attention vote over context rows.</td><td>"Prediction ensembling" (format conversion) and calibration.</td></tr>
+<tr><td>What do they look at?</td><td>Attention patterns, readout rules: <i>what</i> is computed.</td><td>Layer-level dynamics: <i>when</i> and <i>where</i>.</td></tr>
+<tr><td>Ensembling</td><td>Not reported.</td><td>Off (1 member), stated.</td></tr>
+</tbody>
+</table>
+
+<div class="take"><b>My take: this paper supports my critique of Bilos's probe.</b> In <a href="2605.21288_a-mechanistic-study-of-tabular-foundation-models.html#where">the Bilos explainer</a> I flagged that their layer 0-8 probe scored <i>below</i> the majority-class baseline, and guessed that it mixed tokens that contain labels with tokens that don't. Balef avoids exactly that trap (query rows only) and, with retrained heads, finds the answer readable by layer 5. So Bilos's "late crystallization" is best read as "the moment the answer gets into the output head's format", not "the moment the information appears". Bilos's own frozen-vs-retrained probe results already hinted at this.
+<br><br><b>A combined story, my synthesis, not in either paper:</b> layers 1 to about 5 build features and pull in label information; the following layers convert that into the format the output head reads, and in TabPFN v2 that conversion runs through the sharp layer 9 attention vote Bilos found; the last layers calibrate confidence. Two loose consistencies: Balef's retrained head jumps around layer 5, and Bilos found blocks 5-6 to be the second most damaging to knock out.
+<br><span class="sure">How sure: medium. The two papers count layers differently (Bilos starts at 0) and use different datasets and metrics, so don't match single layers exactly.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="critique">
+<summary><h2>8. My critique</h2></summary>
+<p><b>What's good.</b> Six models, two benchmark suites, binary + multiclass + regression, a carefully designed probe that avoids label leakage, retrained per-layer heads trained on synthetic data (so they can't overfit the test datasets), clear takeaways, a public code link, and an honest limitations paragraph. Peer-reviewed at ICML.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:52%"><col style="width:30%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>"Normalized performance", the y-axis of nearly every plot, is never defined. So you can't tell where chance level sits. Is TabPFN v2's original head at 0.47 (layer 5) worse than random, or just weak?</td><td>No definition anywhere in the 44 pages; Figure 1 alone shows raw values.</td><td>High</td></tr>
+<tr><td>2</td><td>The "one layer" result saves parameters, not compute; it's only at nanoTabPFN scale; there's a "by 20%" vs "to 20%" slip; and one dataset collapses without comment.</td><td>Section 6 above; Tables A.7-A.10; Figure 9.</td><td>High</td></tr>
+<tr><td>3</td><td>Swap sensitivity cuts against the pure "layers repeat the same refinement" story. If layers did the same job, swapping neighbors should barely matter, yet TabPFN v2 is very sensitive. The evidence fits "partly shared, partly specialized" better.</td><td>Figure 7; their own discussion offers two explanations.</td><td>Medium</td></tr>
+<tr><td>4</td><td>A retrained head is a small trained network. "It can decode the answer at layer 5" shows the information is <b>present</b>, not that the model <b>uses</b> it at that point. And the heads are trained on TabICL's prior, not each model's own (they note this).</td><td>Appendix A.6</td><td>Medium</td></tr>
+<tr><td>5</td><td>Everything is averaged over 49 datasets. The thin per-dataset lines in Figures 6-8 vary hugely, so "layer 5" is a mean, not a rule.</td><td>Figures 6-8</td><td>Medium</td></tr>
+<tr><td>6</td><td>One ensemble member only. Fine for mechanism, but it's not how TabPFN is used, and McCarter's parity result depended on ensembling.</td><td>Section 3, Limitations</td><td>High</td></tr>
+<tr><td>7</td><td>Scope: it tells you <i>where</i> and <i>when</i>, not <i>what</i>. No attention heads, no circuits. That's why it pairs well with Bilos.</td><td>Their future work</td><td>High</td></tr>
+</tbody>
+</table>
+<p class="caption">For scale: they report about 290,000 CPU-hours and 600 GPU-hours in total (Table A.11), and 13.6 A100-hours just to train the per-layer heads for TabPFN v2 (Table A.15). A slice of it, such as one model and a few datasets, is far cheaper.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="thesis">
+<summary><h2>9. What it means for parity and your thesis</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<ul class="tight">
+<li><b>Their benchmark contains Boolean puzzles.</b> PMLBmini includes <code>parity5</code> (32 rows), <code>mux6</code> and <code>corral</code>: exactly the functions where feature effects are uninformative. The paper only reports averages, but it links a GitHub repo (I haven't checked what's in it), so you may be able to pull the per-dataset layer curves for these.</li>
+<li><b>A sharper test of my "count, then vote" parity hypothesis.</b> Use their query-only probe protocol and, at each layer, probe two targets: the <b>number of 1s</b> in the row, and the <b>parity</b> itself. If TabPFN counts first, the count should become linearly readable before parity does. This uses the leak-free probe design from this paper on the question raised by McCarter and Bilos.</li>
+<li><b>A "feature-effect lens" for your thesis.</b> With per-layer heads you can compute PD/ALE curves <b>at every layer</b> and watch when an effect's <b>shape</b> forms. If Balef's stages hold, shapes should settle around mid-depth and the last layers should mostly rescale confidence (their "calibration" stage). That's a testable claim connecting depth to feature effects. One cost check first: their heads took 13.6 A100-hours for TabPFN v2. Whether the repo ships trained heads is something I haven't verified.</li>
+<li><b>Practical point.</b> If you ever explain TabPFN through an intermediate layer, use a retrained head. The original head read at middle layers gives misleading, even below-chance, answers for TabPFN v2.</li>
+</ul>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="glossary">
+<summary><h2>10. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>TFM</b></td><td>Tabular foundation model (TabPFN, TabICL, LimiX, ...).</td></tr>
+<tr><td><b>Support / query</b></td><td>Support = the labeled training rows given in context. Query = the rows to predict.</td></tr>
+<tr><td><b>Residual stream</b></td><td>The running representation that every layer adds its update to.</td></tr>
+<tr><td><b>Decoder / output head</b></td><td>The small network at the end that turns the final representation into class probabilities.</td></tr>
+<tr><td><b>Logit lens</b></td><td>Reading an intermediate layer with the model's own final head.</td></tr>
+<tr><td><b>Tuned lens / "tabular logit lens"</b></td><td>Reading each layer with a head trained for that layer.</td></tr>
+<tr><td><b>Individual decoder</b></td><td>The per-layer retrained head (orange in the charts).</td></tr>
+<tr><td><b>Cosine similarity, CKA</b></td><td>Two ways to measure how similar two layers' representations are. CKA compares whole sets of vectors.</td></tr>
+<tr><td><b>Separation gap</b></td><td>Average distance between different-class rows minus that between same-class rows.</td></tr>
+<tr><td><b>Probe</b></td><td>A simple classifier (here logistic regression) trained on a layer's representation.</td></tr>
+<tr><td><b>Ablation</b></td><td>Removing or altering a component (skip, repeat, swap a layer) to see what changes.</td></tr>
+<tr><td><b>Self-repair</b></td><td>Later layers making up for a removed earlier layer.</td></tr>
+<tr><td><b>Iterative inference</b></td><td>The view that layers gradually refine one shared representation.</td></tr>
+<tr><td><b>Looped transformer</b></td><td>Running the same layer several times instead of stacking different layers.</td></tr>
+<tr><td><b>ROC-AUC</b></td><td>Probability that a random positive gets a higher score than a random negative. 0.5 = chance, 1.0 = perfect. Ignores calibration.</td></tr>
+<tr><td><b>Balanced accuracy</b></td><td>Accuracy averaged over classes. Depends on the decision threshold, so it reacts to calibration.</td></tr>
+<tr><td><b>Entropy (of the output)</b></td><td>How spread out the predicted probabilities are. Low = confident.</td></tr>
+</tbody>
+</table>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="reading">
+<summary><h2>11. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li><b>Figure 1</b> (page 1) is the whole paper in one picture: retrained heads succeed early, the original head late.</li>
+<li><b>Figure 2</b> (page 4) shows the experiment types; then read the six numbered experiments in section 3 (pages 4-6). Each ends with a blue "Takeaway" box, which section 3 of this page repeats.</li>
+<li><b>Figure 6</b> (page 6) is the one to study; use the chart in section 4 of this page.</li>
+<li><b>Section 4, "Discussion"</b> (pages 6-7) has the stages; Table C.1 in the appendix spells them out.</li>
+<li><b>Section 5</b> (pages 7-8) is the looped model; check Tables A.7, A.8 and A.10 for parameters and training time.</li>
+<li><b>Skip</b> on a first read: the parameter tables A.1-A.6, the dataset lists, and the many per-benchmark repeats in appendices B, D and E.</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the arXiv v1 PDF. Values marked approx. were read off the paper's figures and may be off by about 0.03.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = "auto";
+  try { cur = localStorage.getItem("explainer-theme") || "auto"; }
+  catch (e) { console.warn("Theme preference not readable, using auto:", e); }
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => {
+    cur = order[(order.indexOf(cur) + 1) % order.length];
+    try { localStorage.setItem("explainer-theme", cur); }
+    catch (e) { console.warn("Theme preference not saved:", e); }
+    apply();
+  });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el && el.tagName === "DETAILS") el.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    if (it.box) sw.className = "box";
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Line chart over layers, with a dashed reference line.
+function lineChart(root, cfg) {
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.series[0].values.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, t.toFixed(2));
+  }
+  const step = n > 14 ? 3 : 1;
+  for (let i = 0; i < n; i++) {
+    if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, String(i + 1));
+  }
+  mk("text", { x: m.l + (W - m.l - m.r) / 2, y: H - 2, class: "xlab", "text-anchor": "middle" }, svg, "layer");
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, "full model");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  for (const a of cfg.notes || []) {
+    mk("text", { x: x(a.i), y: y(a.v) + a.dy, class: "val", "text-anchor": "middle", style: `fill:${a.color}` }, svg, a.text);
+  }
+  legend(root, cfg.series.map(s => ({ name: s.name, color: s.color })));
+}
+
+// Values read off Figure 6 by eye (approx., +-0.03).
+const LENS = {
+  v1: {
+    label: "TabPFN v1, 12 layers",
+    orig: [0.60, 0.90, 0.945, 0.95, 0.94, 0.95, 0.945, 0.95, 0.94, 0.95, 0.97, 0.97],
+    ind: [0.62, 0.92, 0.95, 0.955, 0.945, 0.955, 0.95, 0.96, 0.945, 0.955, 0.975, 0.975],
+    ref: 0.98,
+    note: "TabPFN v1: both heads agree from the start. Information arrives early and already in the final format.",
+    notes: []
+  },
+  v2: {
+    label: "TabPFN v2, 12 layers",
+    orig: [0.57, 0.59, 0.66, 0.58, 0.47, 0.50, 0.62, 0.84, 0.92, 0.95, 0.97, 0.99],
+    ind: [0.58, 0.60, 0.74, 0.67, 0.93, 0.95, 0.955, 0.955, 0.965, 0.97, 0.98, 0.99],
+    ref: 0.983,
+    note: "TabPFN v2: the retrained head is near the top at layer 5; the original head dips there and only catches up at layers 8-10. That gap is the 'prediction ensembling' stage.",
+    notes: [{ i: 4, v: 0.47, dy: 18, text: "original head dips", color: "var(--blue)" }, { i: 4, v: 0.93, dy: -10, text: "retrained head: ready", color: "var(--orange)" }]
+  },
+  v25: {
+    label: "TabPFN 2.5, 24 layers",
+    orig: [0.61, 0.57, 0.59, 0.57, 0.66, 0.64, 0.82, 0.855, 0.86, 0.85, 0.84, 0.93, 0.94, 0.93, 0.93, 0.95, 0.955, 0.96, 0.97, 0.97, 0.985, 0.99, 1.0, 1.0],
+    ind: [0.60, 0.57, 0.59, 0.57, 0.87, 0.88, 0.91, 0.91, 0.91, 0.91, 0.94, 0.945, 0.965, 0.97, 0.965, 0.965, 0.965, 0.965, 0.975, 0.985, 0.985, 1.0, 1.0, 1.0],
+    ref: 1.0,
+    note: "TabPFN 2.5: the same pattern stretched over 24 layers. The retrained head jumps at layer 5, the original head trails until roughly layers 12-20.",
+    notes: []
+  }
+};
+
+function showLens(key) {
+  const d = LENS[key];
+  if (!d) throw new Error("Unknown lens model " + key);
+  lineChart(need("chart-lens"), {
+    label: "Tabular logit lens for " + d.label,
+    min: 0.4, max: 1.05, ticks: [0.4, 0.6, 0.8, 1.0], ref: d.ref,
+    series: [
+      { name: "original head (logit lens)", color: "var(--blue)", values: d.orig },
+      { name: "retrained head per layer (individual decoder)", color: "var(--orange)", values: d.ind }
+    ],
+    notes: d.notes
+  });
+  need("lens-note").textContent = d.note;
+  document.querySelectorAll("#lens-btns button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === key)));
+}
+document.querySelectorAll("#lens-btns button").forEach(b => b.addEventListener("click", () => showLens(b.dataset.m)));
+showLens("v2");
+
+// Bar chart for the looped-model comparison.
+(function loopChart() {
+  const root = need("chart-loop");
+  const W = 760, H = 240, m = { l: 46, r: 14, t: 18, b: 40 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "Final normalized performance of looped and non-looped models" }, root);
+  const items = [
+    { name: "TabPFN 2.5", v: 1.0, color: "var(--gray)" },
+    { name: "TabPFN v1", v: 0.945, color: "var(--gray)" },
+    { name: "nano 6 layers", v: 0.945, color: "var(--blue)" },
+    { name: "nano looped", v: 0.945, color: "var(--orange)" },
+    { name: "nano 1 layer", v: 0.82, color: "var(--red)" }
+  ];
+  const min = 0.6, max = 1.05;
+  const y = v => m.t + (max - v) / (max - min) * (H - m.t - m.b);
+  for (const t of [0.6, 0.7, 0.8, 0.9, 1.0]) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, t.toFixed(1));
+  }
+  const gw = (W - m.l - m.r) / items.length, bw = Math.min(70, gw * 0.6);
+  items.forEach((it, i) => {
+    const cx = m.l + gw * i + gw / 2;
+    mk("rect", { x: cx - bw / 2, y: y(it.v), width: bw, height: y(min) - y(it.v), rx: 2, style: `fill:${it.color}` }, svg);
+    mk("text", { x: cx, y: y(it.v) - 5, class: "val", "text-anchor": "middle" }, svg, it.v === 1 ? "1.00" : String(it.v));
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, it.name);
+  });
+  mk("text", { x: m.l + 4, y: H - 4, class: "xlab" }, svg, "y-axis starts at 0.6 to make the gaps visible");
+})();
+
+// Schematic probe heatmap: early-trained probes transfer forward, late-trained ones fail backward.
+(function heatSchem() {
+  const g = need("heat-schem");
+  const n = 8, s = 40, x0 = 40, y0 = 30;
+  for (let r = 0; r < n; r++) {
+    for (let c = 0; c < n; c++) {
+      let color, op;
+      if (c >= r) { color = "var(--red)"; op = 0.85 - 0.06 * (c - r); }
+      else { color = "var(--blue)"; op = 0.2 + 0.1 * (r - c); }
+      mk("rect", { x: x0 + c * s, y: y0 + r * s * 0.55, width: s - 2, height: s * 0.55 - 2, style: `fill:${color}`, opacity: Math.max(0.15, Math.min(0.9, op)).toFixed(2) }, g);
+    }
+  }
+})();
+
+// Schematic of skip, repeat and swap.
+(function ablSchem() {
+  const g = need("abl-schem");
+  const rows = [
+    { name: "normal", seq: [1, 2, 3, 4, 5, 6], mark: [] },
+    { name: "skip 3", seq: [1, 2, 4, 5, 6], mark: [] },
+    { name: "repeat 3", seq: [1, 2, 3, 3, 4, 5, 6], mark: [3] },
+    { name: "swap 3,4", seq: [1, 2, 4, 3, 5, 6], mark: [2, 3] }
+  ];
+  rows.forEach((row, ri) => {
+    const y = 10 + ri * 34;
+    mk("text", { x: 4, y: y + 17, "font-size": 12, style: "fill:var(--muted)" }, g, row.name);
+    row.seq.forEach((l, i) => {
+      const x = 90 + i * 70;
+      const hl = row.mark.includes(i);
+      mk("rect", { x, y, width: 50, height: 24, rx: 4, style: `fill:${hl ? "var(--orange)" : "var(--cell)"};stroke:var(--muted)`, "stroke-width": 0.8 }, g);
+      mk("text", { x: x + 25, y: y + 16, "text-anchor": "middle", "font-size": 12 }, g, "L" + l);
+      if (i < row.seq.length - 1) mk("line", { x1: x + 50, y1: y + 12, x2: x + 68, y2: y + 12, style: "stroke:var(--muted)", "stroke-width": 1.3, "marker-end": "url(#ah2)" }, g);
+    });
+  });
+})();
+</script>
+</body>
+</html>

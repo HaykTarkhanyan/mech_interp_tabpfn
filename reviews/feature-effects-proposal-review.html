@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feature-effects proposal review</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+  --req-bg: #fdecee; --rec-bg: #eef2fb; --new-bg: #eaf6ef;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+    --req-bg: #3a1c20; --rec-bg: #1d2538; --new-bg: #17301f;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  --req-bg: #3a1c20; --rec-bg: #1d2538; --new-bg: #17301f;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main { max-width: 900px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.65rem; line-height: 1.25; margin: 26px 0 6px; }
+h2 { display: inline; font-size: 1.28rem; margin: 0; }
+h3 { font-size: 1.06rem; margin: 22px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button {
+  font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer;
+}
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+details.new { border-color: var(--green); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.verdict { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; margin: 14px 0; }
+@media (max-width: 720px) { .verdict { grid-template-columns: 1fr 1fr; } .verdict .lead { grid-column: 1 / -1; } }
+.tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+.tile .big { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+.tile .lbl { font-size: 0.85rem; color: var(--muted); }
+.tile.lead { border-left: 5px solid var(--orange); }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.newbox { background: var(--new-bg); border-left: 4px solid var(--green); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.newbox > b:first-child { color: var(--green); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+.ba { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+@media (max-width: 720px) { .ba { grid-template-columns: 1fr; } }
+.ba > div { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.ba .before { border-left: 4px solid var(--gray); }
+.ba .after { border-left: 4px solid var(--green); }
+.ba .tag { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
+@media (max-width: 720px) { .cards { grid-template-columns: 1fr; } }
+.card { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.card h4 { margin: 2px 0 4px; font-size: 0.95rem; }
+.card p { margin: 4px 0; font-size: 0.92rem; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+tr.req td { background: var(--req-bg); }
+tr.rec td { background: var(--rec-bg); }
+.ok { color: var(--green); font-weight: 700; }
+.warn { color: var(--orange); font-weight: 700; }
+.pill { display: inline-block; font-size: 0.76rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.pill.req { border-color: var(--red); color: var(--red); }
+.pill.rec { border-color: var(--blue); color: var(--blue); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.widget { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.widget .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; font-size: 0.9rem; margin: 8px 0; }
+@media (max-width: 720px) { .widget .controls { grid-template-columns: 1fr; } }
+.widget input[type=range] { width: 100%; }
+.verdict-line { font-weight: 600; padding: 6px 10px; border-radius: 6px; margin-top: 6px; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+input[type=checkbox] { width: 17px; height: 17px; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>Review: "Feature Effects as Behavioral Specifications for Mechanistic Analysis of Tabular Foundation Models"</h1>
+<p class="sub">Review written 2026-08-07 against the 39-paper collection in <code>papers/tabpfn/</code> and the field map in <code>lit_review/</code>. This page renders <code>reviews/feature-effects-proposal-review.md</code>; the proposal it reviews is <code>reviews/proposal_as_reviewed.md</code>. Section 8 is new (2026-10-19) and kept separate from the original review.</p>
+
+<div class="verdict">
+  <div class="tile lead"><div class="lbl">Overall</div><b>A good proposal with one serious missing citation and one fixable methodological hole.</b> The core bet is well aimed, the scoping realistic, and the citation hygiene better than most published work.</div>
+  <div class="tile"><div class="big ok">8/8</div><div class="lbl">checkable references verified, 0 mismatches</div></div>
+  <div class="tile"><div class="big" style="color:var(--red)">3</div><div class="lbl">changes required before starting</div></div>
+  <div class="tile"><div class="big" style="color:var(--blue)">4</div><div class="lbl">changes recommended</div></div>
+</div>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol start="0">
+<li><a href="#proposal">The proposal in brief (context for this review)</a></li>
+<li><a href="#citations">Citation check</a></li>
+<li><a href="#gap">The serious gap: a missing paper that threatens RQ2</a></li>
+<li><a href="#null">The methodological hole: &Delta;<sub>B</sub> has no null model</a></li>
+<li><a href="#nano">Missed opportunity: nanoTabPFN as more than "small and fast"</a></li>
+<li><a href="#right">What the proposal gets right</a></li>
+<li><a href="#smaller">Smaller points</a></li>
+<li><a href="#priority">Priority list (with checkboxes)</a></li>
+<li><a href="#since">Since the review: updates from reading Bilos and Balef in full</a></li>
+<li><a href="#glossary">Glossary</a></li>
+</ol>
+</nav>
+
+<!-- ============================================================ -->
+<details class="sec" open id="proposal">
+<summary><h2>0. The proposal in brief</h2></summary>
+<p>Context, summarized from the proposal so the review below makes sense. The section numbers (&sect;) refer to the proposal.</p>
+<p class="key"><b>The idea in one sentence.</b> Use model-agnostic explanations (feature effects, interactions) as a precise <b>specification of a behavior</b>, then look inside the network for the components that implement exactly that behavior, and test whether removing them changes that behavior specifically.</p>
+
+<p>TabPFN with fixed weights &theta; turns each context dataset <i>D</i> into its own prediction function:</p>
+<p class="eq">g<sub>D</sub>(x) = f<sub>&theta;</sub>(D, x)</p>
+<p>A behavioral object <i>B</i>(g<sub>D</sub>) is, for example, an ALE curve, an interaction index, or a regional effect contrast. For a set of internal components <i>C</i>, g<sub>D</sub><sup>(&minus;C)</sup> is the network with <i>C</i> modified (ablated or patched). The central evaluation quantity is:</p>
+<p class="eq">&Delta;<sub>B</sub>(C, D) = d( B(g<sub>D</sub>), B(g<sub>D</sub><sup>(&minus;C)</sup>) )</p>
+
+<svg viewBox="0 0 780 250" aria-label="Pipeline of the proposal" style="max-width:780px;margin:8px auto">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <g style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8">
+    <rect x="10" y="30" width="100" height="44" rx="6"/>
+    <rect x="140" y="30" width="110" height="44" rx="6"/>
+    <rect x="280" y="30" width="80" height="44" rx="6"/>
+    <rect x="390" y="30" width="170" height="44" rx="6"/>
+    <rect x="140" y="160" width="110" height="44" rx="6"/>
+    <rect x="280" y="160" width="80" height="44" rx="6"/>
+    <rect x="390" y="160" width="170" height="44" rx="6"/>
+  </g>
+  <rect x="590" y="30" width="80" height="44" rx="6" style="fill:var(--blue)"/>
+  <rect x="590" y="160" width="80" height="44" rx="6" style="fill:var(--orange)"/>
+  <rect x="690" y="95" width="82" height="44" rx="6" style="fill:var(--red)"/>
+  <text x="60" y="50" text-anchor="middle" font-size="12">context D</text>
+  <text x="60" y="65" text-anchor="middle" font-size="11" style="fill:var(--muted)">synthetic task</text>
+  <text x="195" y="50" text-anchor="middle" font-size="12">TabPFN f&#952;</text>
+  <text x="195" y="65" text-anchor="middle" font-size="11" style="fill:var(--muted)">frozen weights</text>
+  <text x="320" y="57" text-anchor="middle" font-size="14">g<tspan baseline-shift="sub" font-size="10">D</tspan></text>
+  <text x="475" y="50" text-anchor="middle" font-size="12">IML method</text>
+  <text x="475" y="65" text-anchor="middle" font-size="11" style="fill:var(--muted)">ALE, GADGET, Shapley-Taylor</text>
+  <text x="630" y="57" text-anchor="middle" font-size="13" style="fill:#fff">B(g<tspan baseline-shift="sub" font-size="9">D</tspan>)</text>
+  <text x="195" y="180" text-anchor="middle" font-size="12">modify set C</text>
+  <text x="195" y="195" text-anchor="middle" font-size="11" style="fill:var(--muted)">ablate / patch</text>
+  <text x="320" y="187" text-anchor="middle" font-size="14">g<tspan baseline-shift="sub" font-size="10">D</tspan><tspan baseline-shift="super" font-size="10">(&#8722;C)</tspan></text>
+  <text x="475" y="180" text-anchor="middle" font-size="12">same IML method</text>
+  <text x="475" y="195" text-anchor="middle" font-size="11" style="fill:var(--muted)">same settings</text>
+  <text x="630" y="187" text-anchor="middle" font-size="13">B(g<tspan baseline-shift="sub" font-size="9">D</tspan><tspan baseline-shift="super" font-size="9">(&#8722;C)</tspan>)</text>
+  <text x="731" y="114" text-anchor="middle" font-size="13" style="fill:#fff" font-weight="700">&#916;<tspan baseline-shift="sub" font-size="9">B</tspan></text>
+  <text x="731" y="129" text-anchor="middle" font-size="10" style="fill:#fff">distance d</text>
+  <g style="stroke:var(--muted)" stroke-width="1.5" marker-end="url(#ah)" fill="none">
+    <line x1="110" y1="52" x2="136" y2="52"/><line x1="250" y1="52" x2="276" y2="52"/>
+    <line x1="360" y1="52" x2="386" y2="52"/><line x1="560" y1="52" x2="586" y2="52"/>
+    <line x1="195" y1="74" x2="195" y2="156"/>
+    <line x1="250" y1="182" x2="276" y2="182"/><line x1="360" y1="182" x2="386" y2="182"/><line x1="560" y1="182" x2="586" y2="182"/>
+    <path d="M670,52 C690,52 700,70 715,92"/><path d="M670,182 C690,182 700,162 715,142"/>
+  </g>
+  <text x="200" y="120" font-size="11" style="fill:var(--muted)">same model, components C changed</text>
+  <text x="10" y="236" font-size="11" style="fill:var(--muted)">Top row: the behavior of the intact model. Bottom row: the same behavior after modifying components C.</text>
+</svg>
+
+<h3>Research questions (as proposed)</h3>
+<table>
+<colgroup><col style="width:16%"><col style="width:84%"></colgroup>
+<tbody>
+<tr><td><b>RQ1</b> specification</td><td>Which local, global, or regional feature-effect or interaction estimands provide sufficiently precise and stable targets for mechanistic analysis?</td></tr>
+<tr><td><b>RQ2</b> implementation</td><td>At which layers and in which components does a selected main effect or interaction become represented, and how well do proposed mechanisms account for it without degrading unrelated behavior?</td></tr>
+<tr><td><b>RQ3</b> generalization</td><td>To what extent is the mechanism reused across independently sampled contexts, interaction strengths, feature distributions, or regions?</td></tr>
+</tbody>
+</table>
+<p><b>Minimum viable core:</b> one open model, one behavioral specification, one localization method, one validation method, on controlled synthetic tasks such as</p>
+<p class="eq">Pr(Y = 1 | X) = &sigma;( h<sub>1</sub>(X<sub>1</sub>) + h<sub>2</sub>(X<sub>2</sub>) + &gamma; X<sub>1</sub>X<sub>2</sub> &middot; 1{X<sub>3</sub> &gt; t} )</p>
+<p>where &gamma; = 0 is the additive control and &gamma; &ne; 0 adds a regional interaction.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="citations">
+<summary><h2>1. Citation check</h2></summary>
+<p>All eight machine-checkable references resolve correctly with exact metadata (<code>reviews/proposal_verification.json</code>): 8/8 verified, 0 title mismatches.</p>
+<table>
+<colgroup><col style="width:30%"><col style="width:14%"><col style="width:34%"><col style="width:22%"></colgroup>
+<thead><tr><th>Reference</th><th class="n">Registry</th><th>Venue found</th><th class="n">Status</th></tr></thead>
+<tbody>
+<tr><td>Hollmann et al. 2025</td><td class="n">Crossref</td><td>Nature 637: 319-326</td><td class="n ok">verified, exact</td></tr>
+<tr><td>Rundel et al. 2024</td><td class="n">Crossref</td><td>Communications in Computer and Information Science</td><td class="n ok">verified (see note)</td></tr>
+<tr><td>Apley &amp; Zhu 2020</td><td class="n">Crossref</td><td>JRSS-B 82(4): 1059-1086</td><td class="n ok">verified, exact</td></tr>
+<tr><td>Bilos et al. 2026</td><td class="n">arXiv</td><td>2605.21288; all four authors correct</td><td class="n ok">verified</td></tr>
+<tr><td>Gupta et al. 2026</td><td class="n">arXiv</td><td>2606.12917; author list and order exact</td><td class="n ok">verified</td></tr>
+<tr><td>Pfefferle et al. 2025 (nanoTabPFN)</td><td class="n">arXiv</td><td>2511.03634</td><td class="n ok">verified</td></tr>
+<tr><td>Hong et al. 2025 (DePass)</td><td class="n">arXiv</td><td>2510.18462; real, correctly described</td><td class="n ok">verified</td></tr>
+<tr><td>Sena &amp; Azevedo 2026 (ShapPFN)</td><td class="n">arXiv</td><td>2603.29946; real, correctly described</td><td class="n ok">verified</td></tr>
+<tr><td>Herbinger et al. 2024 (GADGET)</td><td class="n">-</td><td>JMLR 25(381)</td><td class="n warn">not machine-checked</td></tr>
+<tr><td>Sundararajan et al. 2020</td><td class="n">-</td><td>ICML 2020 (PMLR 119)</td><td class="n warn">not machine-checked</td></tr>
+<tr><td>Conmy et al. 2023 (ACDC)</td><td class="n">-</td><td>NeurIPS 36</td><td class="n warn">not machine-checked</td></tr>
+</tbody>
+</table>
+<p class="caption">The last three cite proceedings URLs rather than a DOI or arXiv ID, so the verification pipeline didn't check them. They are well-known papers, so the risk is low.</p>
+<p><b>One trivial note.</b> Rundel et al. is cited as "In <i>Explainable Artificial Intelligence</i>, 465-476". Crossref lists the container as <i>Communications in Computer and Information Science</i>, the series the xAI 2024 proceedings appear in. Both are defensible; naming the series is more standard.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="gap">
+<summary><h2>2. The serious gap: a missing paper that threatens RQ2</h2></summary>
+<p><b>Balef, Koshil &amp; Eggensperger (2026), "Is One Layer Enough? Understanding Inference Dynamics in Tabular Foundation Models", arXiv:2605.06510</b> (ICML 2026).</p>
+<p>It isn't cited, and it should be the first thing the student reads. It is the first large-scale study of how computation unfolds layer by layer across six tabular in-context models, TabPFN among them. Its central finding is <b>substantial depthwise redundancy</b>: layers refine the representation step by step with overlapping work. They show this constructively, with a single layer looped six times that matches a six-layer model using <b>20% of the parameters</b>.</p>
+
+<h3>Why it matters for this proposal</h3>
+<ul class="tight">
+<li><b>RQ2 may have no clean answer, for structural reasons.</b> RQ2 asks "at which layers and in which components" an effect is represented. If the computation is spread redundantly over depth, that may be unanswerable at the component level. The proposal's fallback (&sect;6, a coarser layer- or module-level account) is the right instinct, but Balef et al. suggest it is the <i>expected</i> outcome, not a contingency.</li>
+<li><b>It weakens single-component ablation as evidence.</b> With redundant pathways, ablating component C may leave B(g<sub>D</sub>) nearly unchanged because another component recomputes the same thing. A null &Delta;<sub>B</sub> would then mean redundancy, not irrelevance. Telling those apart requires ablating <b>sets</b> of components, which changes the search design.</li>
+<li><b>It supplies a prediction and tooling.</b> Starting from their instrumentation is cheaper than building layerwise tools from scratch, and "does the redundancy story hold for a specified feature interaction?" is a sharper framing of RQ2.</li>
+</ul>
+
+<div class="ba">
+  <div class="before"><div class="tag">RQ2 now</div>At which layers and in which components does a selected main effect or interaction become represented, and how well do proposed internal mechanisms account for it?</div>
+  <div class="after"><div class="tag">RQ2 suggested</div>Given known depthwise redundancy, is a specified interaction localizable at all, and at what granularity? A better question, with a genuinely uncertain answer.</div>
+</div>
+<p><b>Recommendation:</b> cite it, read it before finalizing RQ2, and consider the reframing above. Plain-language explainer: <a href="../paper_explainers/2605.06510_is-one-layer-enough-understanding-inference-dynamics-in-tabular-founda.html">Is One Layer Enough, explained</a>.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="null">
+<summary><h2>3. The methodological hole: &Delta;<sub>B</sub> has no null model</h2></summary>
+<p class="eq">&Delta;<sub>B</sub>(C, D) = d( B(g<sub>D</sub>), B(g<sub>D</sub><sup>(&minus;C)</sup>) )</p>
+<p>The proposal says a useful mechanistic account "should explain a substantial share of the target behavior while preserving relevant non-target behavior" (&sect;2). <b>"Substantial" relative to what is never specified, and without that the criterion is unfalsifiable.</b> Ablating <i>any</i> component changes behavior, and some components matter more than others for reasons that have nothing to do with the target interaction.</p>
+
+<h3>The fix: small and standard</h3>
+<div class="cards">
+  <div class="card"><h4>1. Random-component null</h4><p>Compute &Delta;<sub>B</sub>(C&prime;, D) over many random component sets C&prime; of the same size and type. The claim becomes "C is in the upper tail of this null", which can be wrong, and is therefore testable.</p></div>
+  <div class="card"><h4>2. Estimator-noise floor</h4><p>B(g<sub>D</sub>) is itself an estimate: it depends on ALE bin count, reference distribution and context sample. Recompute it under resampling with <b>no</b> ablation and report the spread. Any &Delta;<sub>B</sub> below that floor is indistinguishable from noise.</p></div>
+  <div class="card"><h4>3. Quantified non-target control</h4><p>Report &Delta;<sub>B</sub> on a designated <b>non-target</b> effect next to the target, and make the ratio the headline number. That ratio is the selectivity claim, and it is what separates this work from an ordinary ablation study.</p></div>
+</div>
+
+<h3>Try it: what the three checks do to a claim</h3>
+<div class="widget">
+<svg id="null-svg" viewBox="0 0 760 260" aria-label="Simulated null distribution of Delta B"></svg>
+<div class="controls">
+  <label>&Delta;<sub>B</sub> on the <b>target</b> effect when ablating C: <span id="t-val"></span><input id="t-in" type="range" min="0" max="1" step="0.01" value="0.55"></label>
+  <label>&Delta;<sub>B</sub> on a <b>non-target</b> effect when ablating C: <span id="n-val"></span><input id="n-in" type="range" min="0" max="1" step="0.01" value="0.10"></label>
+</div>
+<div id="null-verdict" class="verdict-line"></div>
+<p class="caption">Simulated numbers for illustration only (300 random component sets, seed 509). Gray bars: &Delta;<sub>B</sub> for random component sets. Shaded band: the estimator-noise floor. Orange line: your component C on the target effect. Gray dashed line: C on the non-target effect. Move the sliders to see which claims survive.</p>
+</div>
+
+<p>The review calls this the <b>single highest-value change</b> to the document. It turns the central contribution from "we located a mechanism" into "we located a mechanism and can show it is specific", which is exactly the evidence standard the mechanistic interpretability literature currently lacks (section 5).</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="nano">
+<summary><h2>4. Missed opportunity: nanoTabPFN as more than "small and fast"</h2></summary>
+<p>&sect;5 honestly says the synthetic design "supplies a known functional structure at the data level, but not a ground-truth neural mechanism". That is the proposal's main epistemic limitation, and <b>nanoTabPFN can partly lift it</b>.</p>
+<p>Because nanoTabPFN can be pretrained cheaply, the <b>pretraining prior becomes an experimental variable</b>. Pretrain one model on a prior <i>with</i> feature interactions and one <i>without</i>, holding everything else fixed. Then:</p>
+<table>
+<colgroup><col style="width:30%"><col style="width:30%"><col style="width:40%"></colgroup>
+<thead><tr><th>Mechanism found in model pretrained WITH interactions?</th><th>...and in model pretrained WITHOUT?</th><th>What it means</th></tr></thead>
+<tbody>
+<tr><td class="n ok">yes</td><td class="n">no</td><td><b>Causal evidence</b> that the mechanism is a response to the prior, not an artifact of the localization method or the context dataset.</td></tr>
+<tr><td class="n ok">yes</td><td class="n ok">yes</td><td>The interaction is <b>built in context</b> rather than recalled from pretraining. A substantive, publishable finding about what in-context learning does.</td></tr>
+<tr><td class="n">no</td><td class="n">-</td><td>The localization isn't finding it in either. Points back to the redundancy problem of section 2.</td></tr>
+</tbody>
+</table>
+<p>This is about as close to a ground-truth mechanism as mechanistic interpretability gets. It directly answers the limitation the proposal states about itself. Worth at least a paragraph in &sect;5, and a natural extension in &sect;3.</p>
+<div class="newbox"><b>Correction (2026-10-19): budget hours, not minutes.</b> The original review said this "costs minutes of compute", citing nanoTabPFN's "one minute on a single GPU, 160,000x faster than TabPFN v2". That figure is real (arXiv abstract), but it is stated for a <b>small data setting</b> with <b>pre-generated</b> training data, and the paper notes that generating data from a prior is itself expensive. For comparison, Balef et al. pretrained nanoTabPFN on the TabICL prior (10,000 steps, batch 512) and report 11.9 A100-hours for 1 layer and 62.3 for 6 layers (their Table A.10). A prior-ablation pair at research quality is therefore more likely hours to a few days of GPU time than minutes. Run a small pilot to measure it before planning around it.<br><span class="sure">How sure: high; both numbers are quoted from the papers.</span></div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="right">
+<summary><h2>5. What the proposal gets right</h2></summary>
+<p>Worth stating plainly, because the document undersells its own contribution.</p>
+<ul class="tight">
+<li><b>The core bet addresses a real, current gap.</b> The field's binding constraint is evaluation. Heap et al. (2025) found that automated interpretability metrics don't distinguish trained transformers from randomly initialized ones. Hase et al. (2023) found that localizing a fact doesn't tell you where to edit it. Both are failures of <i>verification</i>. Specifying behavior externally and precisely <i>before</i> looking inside is a direct answer. The framing "external explanations as evaluation instruments" is stronger than the document's modest presentation, and belongs in &sect;1, not implicitly in &sect;7.</li>
+<li><b>&sect;6's first bullet is exactly right.</b> "Recovering the known synthetic interaction shows that the model learned a behavior, not how it implemented it." That's the distinction most papers in this area blur.</li>
+<li><b>The scoping is realistic.</b> One model, one specification, one localization method, one validation method, with a stated minimum viable core.</li>
+<li><b>Negative results are pre-authorized</b> (&sect;6, &sect;7). Given section 2 of this review, that is not just good practice; it is likely load-bearing.</li>
+</ul>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="smaller">
+<summary><h2>6. Smaller points</h2></summary>
+
+<h3>Use the two attention types for a pre-registered hypothesis</h3>
+<p>&sect;2 notes that TabPFN "alternates attention across observations and features" but never uses it. That split gives a testable, architecture-specific prediction: a <b>pairwise feature interaction should be carried by feature-wise (within-row) attention</b>, while sample-wise attention estimates from the context. Stating that up front is much stronger than "at which layers and in which components". Gupta et al. already studied feature-wise heads, so this builds on them rather than duplicating them.</p>
+
+<h3>Sharpen RQ1</h3>
+<div class="ba">
+  <div class="before"><div class="tag">RQ1 now</div>Which estimands provide sufficiently precise and stable targets? A survey question with no falsifiable answer; it could be satisfied by tabulating properties.</div>
+  <div class="after"><div class="tag">RQ1 suggested</div>Does the choice of estimand change which components are identified? A yes/no question, cheap to test once the pipeline exists, and a "yes" would be an important warning to the field.</div>
+</div>
+
+<h3>RQ3 already has partial prior evidence</h3>
+<p>Gupta et al. report that contrastive activation steering <b>fails to transfer across samples</b>, which they attribute to in-context encoding of task structure. RQ3 asks about reuse across contexts, so this is a partial prior answer. It also supports the "different contexts recruit partially different components" hypothesis already floated in &sect;4. Cite it there.</p>
+
+<h3>The PFN theory literature is missing</h3>
+<ul class="tight">
+<li><b>Nagler</b>, <i>Statistical Foundations of Prior-Data Fitted Networks</i> (2305.11097, ICML 2023): a purely <b>frequentist</b> reading of PFNs as pre-tuned but untrained predictors. Nagler co-authored two works the proposal does cite (Rundel et al., Herbinger et al.), so its absence will be noticed.</li>
+<li><b>Müller, Hollmann &amp; Hutter</b>, <i>Bayes' Power for Explaining In-Context Learning Generalizations</i> (2410.01565): the opposite, <b>Bayesian</b>, reading.</li>
+</ul>
+<p>What counts as "the mechanism" of a PFN is contested at the theory level. Neither side has mechanistic evidence, and Bilos et al. find an implemented readout (a similarity-weighted vote) that matches neither cleanly. A thesis that specifies behavior precisely and then tests implementation is well placed to say something about that dispute. At minimum it is a strong framing sentence for &sect;2.</p>
+
+<h3>Scoop risk is real, but the angle is distinctive</h3>
+<p>Three groups are visibly active on tabular foundation model internals: Gupta et al., Bilos et al., and Balef/Eggensperger. The "IML as specification" framing is not obviously on any of their trajectories, so the risk is to RQ2's descriptive parts rather than the core contribution. Check arXiv monthly rather than at the end.</p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="priority">
+<summary><h2>7. Priority list</h2></summary>
+<p>Items 1-3 are required before starting. Items 4-7 improve the thesis, but the core survives without them. Tick items off as you address them; ticks are saved in this browser only.</p>
+<table id="prio">
+<colgroup><col style="width:6%"><col style="width:46%"><col style="width:16%"><col style="width:20%"><col style="width:12%"></colgroup>
+<thead><tr><th class="n">#</th><th>Change</th><th class="n">Type</th><th>Where in the proposal</th><th class="n">Done</th></tr></thead>
+<tbody>
+<tr class="req"><td class="n">1</td><td><b>Cite and read Balef et al. (2605.06510).</b> Reframe RQ2 around known depthwise redundancy. Highest impact, costs nothing.</td><td class="n"><span class="pill req">required</span></td><td>&sect;4 RQ2, &sect;6, &sect;8</td><td class="n"><input type="checkbox" data-k="p1" aria-label="item 1 done"></td></tr>
+<tr class="req"><td class="n">2</td><td><b>Add a null model and an estimator-noise floor to &Delta;<sub>B</sub>.</b> Two sentences in &sect;2, and it is what makes the central claim falsifiable.</td><td class="n"><span class="pill req">required</span></td><td>&sect;2</td><td class="n"><input type="checkbox" data-k="p2" aria-label="item 2 done"></td></tr>
+<tr class="req"><td class="n">3</td><td><b>Report target / non-target &Delta;<sub>B</sub> as a ratio.</b> Makes selectivity the headline number.</td><td class="n"><span class="pill req">required</span></td><td>&sect;2, &sect;5</td><td class="n"><input type="checkbox" data-k="p3" aria-label="item 3 done"></td></tr>
+<tr class="rec"><td class="n">4</td><td><b>Add the prior-ablation extension with nanoTabPFN.</b> Partly answers the proposal's own limitation about ground truth. Budget hours, not minutes (see section 4).</td><td class="n"><span class="pill rec">recommended</span></td><td>&sect;3 extensions, &sect;5</td><td class="n"><input type="checkbox" data-k="p4" aria-label="item 4 done"></td></tr>
+<tr class="rec"><td class="n">5</td><td><b>State the feature-attention hypothesis</b> as a pre-registered prediction.</td><td class="n"><span class="pill rec">recommended</span></td><td>&sect;4 hypotheses</td><td class="n"><input type="checkbox" data-k="p5" aria-label="item 5 done"></td></tr>
+<tr class="rec"><td class="n">6</td><td><b>Add Nagler (2305.11097) and Müller et al. (2410.01565)</b> to the starting literature.</td><td class="n"><span class="pill rec">recommended</span></td><td>&sect;2, &sect;8</td><td class="n"><input type="checkbox" data-k="p6" aria-label="item 6 done"></td></tr>
+<tr class="rec"><td class="n">7</td><td><b>Sharpen RQ1</b> from "which estimands are suitable" to "does the estimand change the answer".</td><td class="n"><span class="pill rec">recommended</span></td><td>&sect;4 RQ1</td><td class="n"><input type="checkbox" data-k="p7" aria-label="item 7 done"></td></tr>
+</tbody>
+</table>
+<p class="caption" id="prio-count"></p>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec new" open id="since">
+<summary><h2>8. Since the review: updates from reading Bilos and Balef in full</h2></summary>
+<p>Added 2026-10-19; the original review above is unchanged. These come from reading both papers end to end, appendices included, plus McCarter's TabPFN blog post. Explainers: <a href="../paper_explainers/2605.21288_a-mechanistic-study-of-tabular-foundation-models.html">Bilos et al.</a>, <a href="../paper_explainers/2605.06510_is-one-layer-enough-understanding-inference-dynamics-in-tabular-founda.html">Balef et al.</a></p>
+
+<div class="newbox"><b>1. Balef confirms item 1 and makes it concrete.</b> On the TabPFN v2 checkpoint, a decoder retrained per layer already predicts well around layer 5 of 12, while the model's own output head only works at layers 8-10. Skipping the first layer is catastrophic and never repaired; skipping most other layers is repaired by the following layers. For &Delta;<sub>B</sub> this means two things. Single-layer ablations of middle layers will often give small &Delta;<sub>B</sub> because of self-repair, so ablate sets. And an effect can be <i>present</i> long before it is <i>readable by the output head</i>, so where you read the behavior from changes the answer.
+<br><span class="sure">How sure: high for what the paper reports; layer numbers are read off their figures.</span></div>
+
+<div class="newbox"><b>2. Probes need care: use query rows only.</b> Bilos et al. report TabPFN's class information appearing only at layer 9, but their probe scores <i>below</i> majority-class guessing on layers 0-8, which points to a measurement problem. Their probed token carries labels for context rows but not for query rows. Balef avoids this by probing query rows only. If the thesis uses probes for localization, adopt Balef's protocol.
+<br><span class="sure">How sure: medium; strong evidence that Bilos's probe is off, the exact cause is my inference.</span></div>
+
+<div class="newbox"><b>3. Both papers show why the selectivity ratio (items 2-3) matters.</b> Bilos's "confirmed by causal intervention" rests on interventions that only show necessity: knocking out many parts collapses accuracy. Their "mechanism-specific" attacks hurt XGBoost as much or more than TabPFN. These are exactly the errors a random-component null and a non-target control would have caught. Good examples to cite when motivating items 2-3.</div>
+
+<div class="newbox"><b>4. A stress case for the core idea: interactions with flat main effects.</b> McCarter showed ensembled TabPFN v2 learns full <b>parity</b>, where every main effect <i>and</i> every pairwise effect is exactly flat. Feature effects below the full interaction order then specify nothing, even though the model is accurate. A milder, thesis-friendly version: in the proposal's task family, set h<sub>1</sub> = h<sub>2</sub> = 0 with centered X<sub>1</sub>, X<sub>2</sub>. The main-effect curves are then flat and only the pairwise or regional specification carries the behavior. That is a clean test of whether B must be an interaction-level object. Worth adding as a control task.
+<br><span class="sure">How sure: high for the math; McCarter's parity result is a single blog-post experiment.</span></div>
+
+<div class="newbox"><b>5. Make column order a controlled variable (refines item 5).</b> TabPFN v2 processes features in fixed <b>pairs</b>, and Bilos's toy models show that pair tokens are what let a single layer represent XOR-type interactions. If pairs are formed from neighboring columns, as their W = 0 result suggests, an X<sub>1</sub>X<sub>2</sub> interaction may be implemented differently depending on whether X<sub>1</sub> and X<sub>2</sub> land in the same pair. Fix column order, use one ensemble member (ensembling shuffles columns), and consider "same pair vs different pairs" as an explicit condition.
+<br><span class="sure">How sure: medium; the pair grouping is documented, its effect on interaction mechanisms is my hypothesis.</span></div>
+
+<div class="newbox"><b>6. Pin the model version.</b> Bilos and Balef both study the 12-layer TabPFN v2 (7.24M parameters). The <code>tabpfn</code> package installed in this repo (8.2.0) defaults to <b>v3</b>, and Bilos notes that v2.5/v2.6 have licenses that excluded them from their analysis. Pick the checkpoint deliberately and record it in DECISIONS.md, otherwise results won't be comparable with the closest prior work.</div>
+</details>
+
+<!-- ============================================================ -->
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>g<sub>D</sub></b></td><td>The prediction function TabPFN implements for context dataset D (weights fixed).</td></tr>
+<tr><td><b>B(g<sub>D</sub>)</b></td><td>The behavioral object: an effect curve, interaction index, or regional contrast computed from g<sub>D</sub>.</td></tr>
+<tr><td><b>&Delta;<sub>B</sub>(C, D)</b></td><td>How much that behavior changes when component set C is ablated or patched.</td></tr>
+<tr><td><b>ALE</b></td><td>Accumulated local effects: a feature-effect curve that avoids extrapolating into unrealistic feature combinations.</td></tr>
+<tr><td><b>GADGET</b></td><td>Finds regions of feature space where local effects are homogeneous; specifies regional interactions.</td></tr>
+<tr><td><b>Shapley-Taylor index</b></td><td>Splits a single prediction into main and pairwise interaction contributions.</td></tr>
+<tr><td><b>Ablation / patching</b></td><td>Removing a component's output, or replacing it with its value from another run.</td></tr>
+<tr><td><b>Null model</b></td><td>The distribution of &Delta;<sub>B</sub> for random component sets: what "no special role" looks like.</td></tr>
+<tr><td><b>Noise floor</b></td><td>How much B varies with no intervention at all, from estimator settings and resampling alone.</td></tr>
+<tr><td><b>Selectivity</b></td><td>&Delta;<sub>B</sub> on the target divided by &Delta;<sub>B</sub> on a non-target effect.</td></tr>
+<tr><td><b>Depthwise redundancy, self-repair</b></td><td>Several layers doing overlapping work, so later layers compensate when one is removed.</td></tr>
+<tr><td><b>nanoTabPFN</b></td><td>A ~500-line reimplementation of TabPFN v2 you can pretrain yourself on a prior you choose.</td></tr>
+<tr><td><b>Prior</b></td><td>The distribution of synthetic datasets a PFN is pretrained on.</td></tr>
+</tbody>
+</table>
+<p class="caption">Built 2026-10-19 from <code>reviews/feature-effects-proposal-review.md</code> (2026-08-07), <code>reviews/proposal_as_reviewed.md</code> and <code>reviews/proposal_verification.json</code>.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(key) {
+  try { return localStorage.getItem(key); }
+  catch (e) { console.warn("Browser storage not readable:", e); return null; }
+}
+function storeSet(key, val) {
+  try { localStorage.setItem(key, val); }
+  catch (e) { console.warn("Browser storage not writable:", e); }
+}
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => {
+    cur = order[(order.indexOf(cur) + 1) % order.length];
+    storeSet("explainer-theme", cur);
+    apply();
+  });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el && el.tagName === "DETAILS") el.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+// Priority checklist, saved per browser.
+(function checklist() {
+  const boxes = Array.from(document.querySelectorAll("#prio input[type=checkbox]"));
+  const count = need("prio-count");
+  function update() {
+    const done = boxes.filter(b => b.checked).length;
+    const req = boxes.slice(0, 3).filter(b => b.checked).length;
+    count.textContent = `${done} of ${boxes.length} done (${req} of 3 required).`;
+  }
+  for (const b of boxes) {
+    b.checked = storeGet("review-prio-" + b.dataset.k) === "1";
+    b.addEventListener("change", () => { storeSet("review-prio-" + b.dataset.k, b.checked ? "1" : "0"); update(); });
+  }
+  update();
+})();
+
+// Null-model widget with simulated data (seed 509).
+(function nullWidget() {
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const rnd = mulberry32(509);
+  const nullVals = [];
+  while (nullVals.length < 300) {
+    const u1 = Math.max(rnd(), 1e-12), u2 = rnd();
+    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    const v = Math.exp(Math.log(0.18) + 0.6 * z);
+    if (v < 1) nullVals.push(v);
+  }
+  const FLOOR = 0.08;
+  const sorted = nullVals.slice().sort((a, b) => a - b);
+  const p95 = sorted[Math.floor(0.95 * sorted.length)];
+
+  const svg = need("null-svg");
+  const W = 760, H = 260, m = { l: 44, r: 14, t: 28, b: 40 };
+  const HALO = "paint-order:stroke;stroke:var(--card);stroke-width:4px;stroke-linejoin:round;";
+  const x = v => m.l + v * (W - m.l - m.r);
+  const nb = 40, counts = new Array(nb).fill(0);
+  for (const v of nullVals) counts[Math.min(nb - 1, Math.floor(v * nb))]++;
+  const cmax = Math.max(...counts);
+  const y = c => H - m.b - c / cmax * (H - m.t - m.b);
+  mk("rect", { x: x(0), y: m.t, width: x(FLOOR) - x(0), height: H - m.t - m.b, style: "fill:var(--red)", opacity: 0.12 }, svg);
+  mk("text", { x: x(0), y: 16, "font-size": 11, style: "fill:var(--red)", "font-weight": 600 }, svg, "noise floor");
+  counts.forEach((c, i) => {
+    if (c === 0) return;
+    const x0 = x(i / nb), x1 = x((i + 1) / nb);
+    mk("rect", { x: x0 + 1, y: y(c), width: x1 - x0 - 2, height: H - m.b - y(c), style: "fill:var(--gray)", opacity: 0.75 }, svg);
+  });
+  mk("line", { x1: x(p95), x2: x(p95), y1: m.t, y2: H - m.b, style: "stroke:var(--muted)", "stroke-dasharray": "2 3", "stroke-width": 1.2 }, svg);
+  mk("text", { x: x(p95), y: 16, "font-size": 11, "text-anchor": "middle", style: "fill:var(--muted)" }, svg, "95th percentile of null");
+  mk("line", { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, style: "stroke:var(--muted)" }, svg);
+  for (const t of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
+    mk("text", { x: x(t), y: H - m.b + 16, "font-size": 11, "text-anchor": "middle", style: "fill:var(--muted)" }, svg, t.toFixed(1));
+  }
+  mk("text", { x: (m.l + W - m.r) / 2, y: H - 6, "font-size": 12, "text-anchor": "middle", style: "fill:var(--muted)" }, svg, "change in behavior, ΔB (simulated units)");
+  const tLine = mk("line", { y1: m.t, y2: H - m.b, style: "stroke:var(--orange)", "stroke-width": 3 }, svg);
+  const tLab = mk("text", { y: m.t + 16, "font-size": 12, "font-weight": 700, style: HALO + "fill:var(--orange)" }, svg, "C, target");
+  const nLine = mk("line", { y1: m.t, y2: H - m.b, style: "stroke:var(--fg)", "stroke-width": 2, "stroke-dasharray": "6 4" }, svg);
+  const nLab = mk("text", { y: m.t + 34, "font-size": 12, "font-weight": 600, style: HALO }, svg, "C, non-target");
+
+  const tIn = need("t-in"), nIn = need("n-in"), out = need("null-verdict");
+  function place(line, lab, v) {
+    line.setAttribute("x1", x(v)); line.setAttribute("x2", x(v));
+    const right = v > 0.8;
+    lab.setAttribute("x", right ? x(v) - 6 : x(v) + 6);
+    lab.setAttribute("text-anchor", right ? "end" : "start");
+  }
+  function update() {
+    const t = parseFloat(tIn.value), n = parseFloat(nIn.value);
+    need("t-val").textContent = t.toFixed(2);
+    need("n-val").textContent = n.toFixed(2);
+    place(tLine, tLab, t); place(nLine, nLab, n);
+    const pctNum = Math.round(100 * sorted.filter(v => v < t).length / sorted.length);
+    const sfx = (pctNum % 100 >= 11 && pctNum % 100 <= 13) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" }[pctNum % 10] || "th");
+    const pct = pctNum + sfx;
+    const ratio = t / Math.max(n, FLOOR);
+    let msg, color;
+    if (t <= FLOOR) {
+      msg = "Below the noise floor: this change is indistinguishable from re-estimating B with no ablation at all."; color = "var(--red)";
+    } else if (t < p95) {
+      msg = `Inside the null (${pct} percentile): random component sets of the same size change the effect this much too. No special role shown.`; color = "var(--orange)";
+    } else if (ratio < 2) {
+      msg = `Upper tail of the null (${pct} percentile), but not selective: the non-target effect changes almost as much (ratio ${ratio.toFixed(1)}). Looks like general damage.`; color = "var(--orange)";
+    } else {
+      msg = `Specific: upper tail of the null (${pct} percentile) and selective (target / non-target ratio ${ratio.toFixed(1)}). This is the claim the proposal wants to make.`; color = "var(--green)";
+    }
+    out.textContent = msg;
+    out.style.border = `2px solid ${color}`;
+  }
+  tIn.addEventListener("input", update);
+  nIn.addEventListener("input", update);
+  update();
+})();
+</script>
+</body>
+</html>

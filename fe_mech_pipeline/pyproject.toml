@@ -1,0 +1,14 @@
+[project]
+name = "fe-mech-pipeline"
+version = "0.1.0"
+description = "Feature effects (ALE) as behavioral specifications for ablation studies on TabPFN v2."
+readme = "README.md"
+# Python itself is a range on purpose: any 3.12.x patch release; 3.12.11 is what was tested.
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy==2.5.2",
+    "plotly==7.1.0",
+    "tabpfn==8.2.0",
+    "torch==2.13.0",
+    "tqdm==4.70.0",
+]
