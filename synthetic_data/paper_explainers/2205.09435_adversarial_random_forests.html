@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Adversarial random forests explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Adversarial random forests explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Adversarial Random Forests for Density Estimation and Generative Modeling", explained</h1>
+<p class="sub">David S. Watson (King's College London), Kristin Blesch, Jan Kapar, Marvin N. Wright (BIPS and University of Bremen; Wright also Copenhagen). AISTATS 2023, PMLR volume 206; arXiv 2205.09435v4 (13 Mar 2023). 19 pages (9 main + references + Appendices A-B). R package <code>arf</code> on CRAN; the paper says a Python implementation is "forthcoming". Citations: 7 on OpenAlex for a university-repository record (checked 2026-10-19); the AISTATS paper itself is not indexed there, so this is a severe undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/watson2023_adversarial_random_forests.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: the method and its guarantee</a></li>
+<li><a href="#f2">Finding 2: density estimation, competitive with circuits</a></li>
+<li><a href="#f3">Finding 3: synthetic data, as useful as deep models and far faster</a></li>
+<li><a href="#demo">Try it: independence inside small boxes</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Can a random forest learn the joint distribution of a mixed-type table well enough to estimate densities and generate realistic synthetic rows, without the tuning, data appetite and GPUs of deep generative models?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Yes, with a trick borrowed from GANs.</b> Train a forest to tell real rows from fake ones, make new fakes by sampling each feature independently inside the forest's leaves, and repeat until the forest cannot tell them apart. Then inside every leaf the features are (approximately) independent, and the joint density is easy (Algorithms 1-3).</li>
+<li><b>It is provably consistent</b> under stated assumptions: the estimated density converges to the true one as data grows (Theorems 1-2).</li>
+<li><b>Density estimation:</b> second-best average rank (3.3) of six models on the Twenty Datasets benchmark, behind one probabilistic circuit (Table 1).</li>
+<li><b>Data synthesis:</b> top accuracy and F1 on three of five real classification datasets against five deep generators, and on average over 60 times faster than the nearest competitor (Table 2).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> A well-built, fast, honest generator, and the right one for your pitch's purpose, because its conditional distributions are tractable. But the paper shows unconditional fidelity only; the conditional sampling your exact targets depend on is described in one sentence and never evaluated.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Density estimation and generative modelling.</b> Given a table of rows, learn the probability density p(x) of the rows (density estimation), or a procedure that produces new rows from that distribution (generative modelling). Deep models (GANs, VAEs, diffusion) generate well but give no tractable density or conditionals. <b>Probabilistic circuits</b> (sum-product networks and relatives) give exact marginals and conditionals but are slower and less expressive.</p>
+<p><b>Random forests as partitions.</b> A decision tree cuts feature space into boxes (leaves) with axis-aligned splits. A forest is many such trees on random subsamples of the data. Each leaf has a <b>coverage</b>: the share of real rows that fall in it.</p>
+<p><b>The unsupervised random forest (URF) idea.</b> Make a fake dataset by shuffling each column independently. That keeps every marginal distribution and destroys all dependence. Train a forest to tell real from fake: it can only succeed by finding where the dependence is, so its splits locate the dependence structure.</p>
+<p><b>The key fact this paper builds on.</b> If, inside every leaf, the features are independent ("local independence"), then the joint density inside a leaf is just a product of one-dimensional densities, which are easy to estimate. A high-dimensional problem becomes many one-dimensional ones.</p>
+<svg class="schem" viewBox="0 0 720 200" aria-label="ARF loop">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="64" width="140" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="78" y="88" text-anchor="middle" font-size="13">fakes: sample each</text>
+  <text x="78" y="106" text-anchor="middle" font-size="13">feature independently</text>
+  <text x="78" y="124" text-anchor="middle" font-size="13">(within leaves)</text>
+  <line x1="148" y1="99" x2="206" y2="99" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="208" y="64" width="150" height="70" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="283" y="92" text-anchor="middle" font-size="13">forest classifies</text>
+  <text x="283" y="110" text-anchor="middle" font-size="13">real vs fake</text>
+  <line x1="358" y1="99" x2="416" y2="99" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="418" y="64" width="130" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="483" y="92" text-anchor="middle" font-size="13">accuracy</text>
+  <text x="483" y="110" text-anchor="middle" font-size="13">near 1/2 ?</text>
+  <path d="M483,64 C483,20 78,20 78,62" fill="none" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <text x="280" y="54" text-anchor="middle" font-size="12">no: use the new leaves, repeat</text>
+  <line x1="548" y1="99" x2="590" y2="99" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="592" y="58" width="122" height="82" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="653" y="82" text-anchor="middle" font-size="13">yes: fit 1-D</text>
+  <text x="653" y="100" text-anchor="middle" font-size="13">densities per leaf</text>
+  <text x="653" y="118" text-anchor="middle" font-size="13">(FORDE, FORGE)</text>
+</svg>
+<p class="caption">Schematic of Algorithm 1 and what follows it. The "generator" never learns anything itself; it only exploits what the discriminator forest has learned.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: the method and its guarantee</h2></summary>
+<p><b>The algorithm (Algorithm 1).</b> Round 0 is a URF: fakes from independent column shuffles. In each later round, sample a tree, sample a leaf with probability equal to its coverage, and draw each feature from its empirical marginal inside that leaf. Train a new forest on real versus these fakes. Stop when out-of-bag accuracy is at most 1/2 + δ. In the experiments δ = 0, and "this is often achieved in just a single round".</p>
+<p><b>The density (FORDE, Algorithm 2, Eq. 1).</b> For each leaf, store its coverage and fit a one-dimensional distribution per feature inside the leaf's bounds: a truncated normal by maximum likelihood for continuous features (so the whole model is a truncated Gaussian mixture), and smoothed category probabilities for categorical ones. The density at a point is the average, over trees, of coverage times the product of the per-feature densities in the leaf that contains the point.</p>
+<p><b>Generation (FORGE, Algorithm 3).</b> Pick a tree uniformly, pick a leaf by coverage, draw each feature from its leaf distribution.</p>
+<p><b>The guarantee.</b> Under assumptions A1-A3 (bounded domain with density bounded away from 0 and infinity, Lipschitz targets, and regularity conditions on the trees including honesty and subsampling), ARFs converge on local independence (Theorem 1). Adding smoothness (A4), FORDE is L2-consistent: the mean integrated squared error goes to zero (Theorem 2). The total error splits into errors of coverage, density and convergence (Eqs. 3-5, Lemma 1).</p>
+<div class="key">The paper is explicit about the limits: "our convergence guarantees have no implications for finite sample performance", the loop may fail to terminate on some datasets (on MNIST, discriminator accuracy plateaus around 65% after five rounds), and deep trees trade density error against convergence error.</div>
+<div class="take"><b>My take.</b> The proof assumes honest, subsampled trees (A3 i-ii), while the experiments use ordinary bootstrapped trees grown to purity or a minimum node size. The paper says so in footnote 5 and argues it does not matter in practice, but strictly the theorem covers a different algorithm from the one benchmarked. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: density estimation, competitive with circuits</h2></summary>
+<p><b>Simulation (Fig. 2).</b> Ten Gaussian features with strong neighbour correlation (Toeplitz covariance, 0.9 to the power of the index distance), 20 replicates, test negative log-likelihood. FORDE beats piecewise-constant tree density estimators (supervised and unsupervised) and generative forests (GeFs) at every sample size and sparsity level shown; the unsupervised methods are unaffected by how sparse the outcome signal is, as expected.</p>
+<p><b>Twenty Datasets (Table 1).</b> Twenty binary benchmark datasets, negative log-likelihood, five probabilistic circuits versus FORDE. Average ranks:</p>
+<div id="chart-rank"></div>
+<p class="caption">Table 1, average rank across 20 datasets (lower is better). FORDE is best on two datasets (bbc 240.31, and plants 12.26, tied with CMCLT) and "never far behind the state of the art".</p>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: synthetic data, as useful as deep models and far faster</h2></summary>
+<p><b>What they did.</b> The Xu et al. (2019) pipeline: fit each generator to a training set, generate a synthetic training set of the same size, train classifiers on it, test on real held-out data. The "oracle" trains on the real training set. Five datasets, five deep competitors, five replicates (Table 2).</p>
+<div id="chart-acc"></div>
+<p class="caption">Table 2, test accuracy when training on each generator's synthetic data (bar labels rounded to two decimals; exact values in the text). Only the generators that ran on all five datasets are shown; CTAB-GAN+, IT-GAN and RCC-GAN failed to finish within 24 hours on some of them. The gray oracle bar is training on the real data; the closer a generator's bar, the better.</p>
+<ul class="tight">
+<li>FORGE has the top accuracy and F1 among generators on adult, covertype and intrusion. On census, TVAE is better (0.928 versus 0.903). On credit (highly imbalanced), the generators with higher accuracy have F1 of 0, while FORGE keeps F1 at 0.527.</li>
+<li>Time on adult: FORGE 2.9 s, TVAE 115.1 s, CTGAN 263.3 s, IT-GAN 3,435.6 s. FORGE is "over 60 times faster than its nearest competitor on average", running on 10 CPU cores against GPUs for the deep models.</li>
+<li>On image data (MNIST), a convolutional GAN clearly beats FORGE, as the authors expect (Appendix B.5).</li>
+</ul>
+<div class="take"><b>My take.</b> Look at covertype: the oracle reaches 0.895, FORGE 0.707. Training on ARF data loses 19 accuracy points there, against 0.9 points on adult. The quality of an ARF copy varies a lot between datasets, and a utility score like this says nothing about whether the conditional distributions are right. For a benchmark whose targets integrate over conditionals, a per-dataset conditional fidelity check is not optional. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: independence inside small boxes</h2></summary>
+<div class="demo">
+<svg id="demo-svg" viewBox="0 0 760 345" aria-label="Real and synthetic points under local independence"></svg>
+<div class="controls">
+  <label>Boxes per axis <input id="demo-slider" type="range" min="1" max="10" step="1" value="1"> <b id="demo-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Made-up data (seed 509): 600 points on a noisy ring. The "forest" here is a fixed k-by-k grid, not a learned ARF, to show only the core idea: inside each box, each coordinate is drawn independently from the real points in that box, and boxes are chosen in proportion to how many real points they hold. With one box this is the URF's independent shuffle; with more boxes the copy follows the ring.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> A simple idea with a real theorem behind it, honest about where the theorem stops. Mixed data handled natively. Strong, reproducible baselines (published code), default hyperparameters throughout, and a fair acknowledgement of where deep models win (images). The density form (Eq. 1) is transparent enough that conditionals and marginals follow directly.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Conditional densities and conditional sampling are claimed "straightforward" but never shown or evaluated. All fidelity evidence is unconditional (likelihood, train-on-synthetic utility).</td><td>Section 6, last paragraph; Sections 5.1-5.2</td><td>High</td></tr>
+<tr><td>2</td><td>The theorems assume honest, subsampled trees; the experiments use standard bootstrapped forests.</td><td>A3 (i)-(ii), footnote 5</td><td>High</td></tr>
+<tr><td>3</td><td>The tree settings are stated inconsistently: "100 trees for density estimation and 20 for data synthesis", minimum node size 2 (Section 5) versus "number of trees = 10, minimum node size = 5" for the synthesis benchmark (Appendix B.3).</td><td>Section 5 vs Appendix B.3</td><td>Medium</td></tr>
+<tr><td>4</td><td>Train-on-synthetic, test-on-real utility is a weak fidelity measure (the paper itself cites a critique of it), and it hides big per-dataset differences (covertype loses 19 points).</td><td>Table 2; Section 5.2</td><td>High</td></tr>
+<tr><td>5</td><td>The density is local independence plus truncated normals, so it cannot generate outside the observed range and assumes independence at the scale of a leaf. Neither is a flaw for synthesis, but both are structural assumptions any downstream user inherits.</td><td>Eq. 1; Section 4.1</td><td>Medium</td></tr>
+<tr><td>6</td><td>Continuous density estimation is tested only on simulated Gaussian data; the Twenty Datasets are all binary.</td><td>Section 5.1, Appendix B.2</td><td>Medium</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the pitch's generator, and the reason exact targets are possible.</b> Under Eq. 1, conditioning on some features is cheap: weight each leaf by its coverage times the density of the observed values in that leaf, then draw the remaining features from their leaf distributions. That gives exact conditional sampling under the ARF model, which conditional Shapley values, conditional feature importance and ALE all need. Before relying on it, check what the current Python implementation exposes; if conditioning is missing, the reweighting above is a few lines on top of the fitted forest and should be documented as such.</p>
+<p><b>Three things the pitch inherits.</b></p>
+<ol class="tight">
+<li><b>A structural assumption that can favour some explainers.</b> The generator is a mixture of axis-aligned boxes with independent features inside. Explainers built on the same structure (cARFi uses ARFs; tree-path-based TreeSHAP approximates conditionals with tree partitions) may look better on ARF data than they are. This is the generator-side version of Karim's projection; a second generator family guards against it.</li>
+<li><b>No extrapolation.</b> Synthetic rows never leave the observed range, so failure modes that come from permutation-based extrapolation may look different than on real data.</li>
+<li><b>Uneven fidelity.</b> Covertype shows how far a copy can be from the original. The per-dataset fidelity audit should include conditional checks, and datasets where the copy is poor should be flagged rather than averaged in.</li>
+</ol>
+<p><b>Mixed and categorical data</b> are handled natively (smoothed category probabilities per leaf), which helps with gap G5 in your review (classification and mixed types).</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Leaf / coverage</b></td><td>A box in feature space at the bottom of a tree; the share of real rows that fall in it.</td></tr>
+<tr><td><b>URF</b></td><td>Unsupervised random forest: a forest trained to separate real rows from rows with independently shuffled columns.</td></tr>
+<tr><td><b>Local independence</b></td><td>Inside every leaf, the features are independent of each other.</td></tr>
+<tr><td><b>FORDE / FORGE</b></td><td>The paper's density estimator and data generator built on a trained ARF.</td></tr>
+<tr><td><b>Truncated normal</b></td><td>A normal distribution cut off at the leaf's bounds and renormalized.</td></tr>
+<tr><td><b>Out-of-bag accuracy</b></td><td>Accuracy measured on the rows each tree did not see in training.</td></tr>
+<tr><td><b>Probabilistic circuit</b></td><td>A family of models (sum-product networks and relatives) that allow exact marginal and conditional queries.</td></tr>
+<tr><td><b>Negative log-likelihood</b></td><td>How improbable the test data is under the model; lower is better.</td></tr>
+<tr><td><b>Honest trees</b></td><td>Trees where one subsample chooses the splits and another sets the leaf values; a common assumption in forest theory.</td></tr>
+<tr><td><b>MISE, L2-consistency</b></td><td>Mean integrated squared error between estimated and true density; consistent if it goes to zero with more data.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-3: introduction, related work and the URF background (Section 3). Read in full.</li>
+<li>Pages 3-4: Section 4 and Algorithms 1-3. This is the method; Eq. 1 is the formula to remember.</li>
+<li>Page 5-6: Figures 1-2 and Table 1; pages 6-7: Table 2 and its paragraph.</li>
+<li>Page 7-8: Section 6 (discussion of limits) and the last paragraph of Section 7 (conditionals).</li>
+<li>Skip on a first read: the proofs in Appendix A, unless you need the assumptions exactly.</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the arXiv v4 PDF (19 pages, read in full including the proofs). Figures 1-3 were checked as images; numbers are from Tables 1-2 and the text.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 1: average rank on the Twenty Datasets benchmark (lower is better).
+barChart("chart-rank", {
+  label: "Average rank of six density estimators on the Twenty Datasets benchmark",
+  groups: ["EiNet", "RAT-SPN", "PGC", "Strudel", "CMCLT", "FORDE (ARF)"],
+  series: [{ name: "average rank", color: "#0033A0", values: [4.5, 4.2, 4.0, 3.6, 1.2, 3.3] }],
+  colorOf: gi => (gi === 5 ? "#F2A800" : "#0033A0"),
+  min: 0, max: 5, ticks: [0, 1, 2, 3, 4, 5], tickFmt: t => String(t), fmt: v => v.toFixed(1), height: 220, barMax: 70
+});
+
+// Table 2: accuracy of classifiers trained on synthetic data, tested on real data.
+barChart("chart-acc", {
+  label: "Test accuracy after training on synthetic data from each generator",
+  groups: ["adult", "census", "covertype", "credit", "intrusion"],
+  series: [
+    { name: "oracle (real training data)", color: "#8a8f99", values: [0.828, 0.922, 0.895, 0.997, 0.998] },
+    { name: "FORGE (ARF)", color: "#F2A800", values: [0.819, 0.903, 0.707, 0.995, 0.993] },
+    { name: "TVAE", color: "#0033A0", values: [0.804, 0.928, 0.698, 0.998, 0.990] },
+    { name: "CTGAN", color: "#D90012", values: [0.786, 0.916, 0.633, 0.881, 0.944] }
+  ],
+  min: 0, max: 1.08, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 280
+});
+
+// Demo: local independence on a fixed k-by-k grid (a stand-in for learned leaves).
+(function demo() {
+  const svg = need("demo-svg"), slider = need("demo-slider"), out = need("demo-val"), text = need("demo-text");
+  const rnd = mulberry32(509);
+  const gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd());
+  const real = [];
+  for (let i = 0; i < 600; i++) {
+    const a = 2 * Math.PI * rnd(), r = 1 + 0.08 * gauss();
+    real.push([r * Math.cos(a), r * Math.sin(a)]);
+  }
+  const lo = -1.4, hi = 1.4;
+  const P = { w: 300, h: 300, top: 18 };
+  const panels = [{ x0: 50, title: "real data" }, { x0: 410, title: "synthetic copy" }];
+  const sx = (p, v) => p.x0 + (v - lo) / (hi - lo) * P.w;
+  const sy = v => P.top + (hi - v) / (hi - lo) * P.h;
+  function render() {
+    const k = Number(slider.value);
+    out.textContent = k + " x " + k;
+    svg.replaceChildren();
+    const cell = (hi - lo) / k;
+    const idx = v => Math.min(k - 1, Math.max(0, Math.floor((v - lo) / cell)));
+    const boxes = new Map();
+    for (const p of real) {
+      const key = idx(p[0]) + "," + idx(p[1]);
+      if (!boxes.has(key)) boxes.set(key, []);
+      boxes.get(key).push(p);
+    }
+    const keys = Array.from(boxes.keys()), weights = keys.map(c => boxes.get(c).length);
+    const gen = mulberry32(509 + k), synth = [];
+    for (let i = 0; i < 600; i++) {
+      let u = gen() * real.length, j = 0;
+      while (u > weights[j]) { u -= weights[j]; j++; }
+      const pts = boxes.get(keys[j]);
+      synth.push([pts[Math.floor(gen() * pts.length)][0], pts[Math.floor(gen() * pts.length)][1]]);
+    }
+    for (const p of panels) {
+      mk("rect", { x: p.x0, y: P.top, width: P.w, height: P.h, style: "fill:none;stroke:var(--border)" }, svg);
+      mk("text", { x: p.x0 + P.w / 2, y: P.top + P.h + 16, "text-anchor": "middle", "font-size": 13 }, svg, p.title);
+    }
+    for (let g = 1; g < k; g++) {
+      const v = lo + g * cell, q = panels[1];
+      mk("line", { x1: sx(q, v), x2: sx(q, v), y1: P.top, y2: P.top + P.h, style: "stroke:var(--border)" }, svg);
+      mk("line", { x1: q.x0, x2: q.x0 + P.w, y1: sy(v), y2: sy(v), style: "stroke:var(--border)" }, svg);
+    }
+    for (const p of real) mk("circle", { cx: sx(panels[0], p[0]), cy: sy(p[1]), r: 2.2, style: "fill:#0033A0;opacity:0.7" }, svg);
+    for (const p of synth) mk("circle", { cx: sx(panels[1], p[0]), cy: sy(p[1]), r: 2.2, style: "fill:#D90012;opacity:0.7" }, svg);
+    const onRing = synth.filter(p => { const r = Math.hypot(p[0], p[1]); return r > 0.76 && r < 1.24; }).length;
+    const realOn = real.filter(p => { const r = Math.hypot(p[0], p[1]); return r > 0.76 && r < 1.24; }).length;
+    text.textContent = "Synthetic points on the ring (radius 0.76 to 1.24): " + Math.round(100 * onRing / 600) +
+      "% (real data: " + Math.round(100 * realOn / 600) + "%). " +
+      (k === 1 ? "One box = independent columns: the copy fills a square and loses the ring." :
+        k >= 8 ? "With very small boxes each holds only a few real points, so the copy is close to resampling the real data: the overfitting end of the trade-off the paper discusses (deep trees leave too little data per leaf to estimate densities)." :
+          "Smaller boxes make independence inside each box a better approximation, so the copy follows the shape.");
+  }
+  slider.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

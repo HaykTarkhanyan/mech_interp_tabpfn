@@ -1,0 +1,108 @@
+title = "Synthetic-data thesis direction: scoping review, its fixes, five core-paper explainers, transfer pilot"
+date = "2026-10-19"
+time = "1830"
+areas = ["synthetic_data/", "DECISIONS.md", "README.md"]
+
+done = """
+- Saved the ChatGPT conversation on ground-truth XAI benchmarks and moved the benchmark pitch into
+  synthetic_data/; recorded the thesis lean (DECISIONS #19); connected the OpenAlex MCP (user scope; the user
+  still has to log in via /mcp).
+- Scoping review (DECISIONS #20): OpenAlex + Crossref + arXiv keyword search, forward chaining from 14 seeds,
+  rule-based screen, manual inclusion, registry verification, PRISMA figure, pandoc PDF.
+- Review fixes after reading the PDF: author-year collisions now get a/b suffixes and grouped citations
+  ("Mamalakis et al., 2022a, 2022b"); a misquote (CLEVR-XAI) corrected; Advani et al.'s MSE half added (the
+  "worse than random" result is about bias only); a gendered pronoun removed; redundant "X et al. (X et al.)"
+  citations turned narrative; wrong venues fixed (Wilming, Watson and Wright: Machine Learning; Stolte: PLOS ONE);
+  14 preprints moved to their published versions with web-checked venues and years (resolver now accepts a
+  year with a venue); 18 themes listed correctly; ranking rule for the top 700 stated; XAI-BENCH's "exact"
+  targets described as sampled; implication 3 no longer claims knockoff methods use ARFs; AI-assistant
+  authorship disclosed in the limitations.
+- Read the five core papers in full (XAI-BENCH, Islam et al. 2025, ARF, Advani et al. 2019, Karim 2026),
+  which corrected several abstract-based statements and added Synth-validation (Schuler et al. 2017) by
+  backward chaining. Review now 81 references, 81/81 verified, 17 pages.
+- Wrote five explainers with the paper-explainer skill (synthetic_data/paper_explainers/), each with charts,
+  a working demo and a critique; checked with check_html.py and Playwright (charts render, sliders work,
+  no clipped labels, no overflow at 390 px). Notable findings: Islam et al. Fig. 4 shows a JSD near 0.39
+  against a stated maximum of 0.24, and its CQV metric is ill-defined for signed attributions (Fig. 8 axes
+  reach 68.5); in XAI-BENCH's own Table 1, monotonicity has Spearman -0.07 and infidelity 0.32 with GT-Shapley.
+- Picked and validated the first study (DECISIONS #22): does a data-fitted benchmark reproduce the explainer
+  ranking of the world it was fitted to (Advani-style nested known-truth design)? Novelty checked against the
+  review corpus and five web searches. Wrote scripts/transfer_pilot.py and scripts/transfer_report.py.
+- Feasibility findings (DECISIONS #23): arfpy 0.1.1 crashes on numpy 2.4+ (np.in1d) and pandas 3 (positional
+  Series indexing), so the ARF arm waits for the user's choice of implementation; shap TreeExplainer silently
+  subsamples a raw background above 100 rows; shap's interventional TreeSHAP loses additivity on California
+  rows (up to 0.12), so ground truth is computed by exact enumeration with an additivity check.
+- Smoke run (1 replicate, 15 tasks, 658 s on 2 threads, results/transfer_pilot/smoke.json + report): the
+  pipeline works with exact ground truth, but one task per world is noise. The oracle (a fresh sample of
+  reality) agrees with reality's ranking at tau 0.20 only; explainer error gaps (0.29 to 0.46) are about as
+  large as their task-to-task sd (0.05 to 0.13). Builder taus from this run mean nothing yet.
+- 2026-10-20: forked arfpy (github.com/HaykTarkhanyan/arfpy, clone at Desktop/arfpy). Branch
+  fix/leaf-coverage-and-oob (upstream issue #4 reproduced with min_node_size=1 and fixed by per-tree
+  renormalisation; forde(oob=True) fixed via public estimators_samples_; pandas set_axis deprecation) and
+  feature/random-state (stacked); 27 tests pass; both pushed, no PR opened.
+- Independent review agent over synthetic_data/: 13 findings. Fixed: PRISMA overstated screening (54 works came
+  through screening, 27 were added outside it; review text and figure corrected), 32 untitled records counted as
+  duplicates, --reuse-keyword silent rerun, HTML entities and suffix order in lit_references (code only, see
+  pending), stale counts in README. Design findings folded into pilot v2.
+- Pilot v2 (DECISIONS #24): K-task means, oracle at the same K, generic null, two reality families, nine
+  explainers, ARF from the fork, 1,000-row truths. Root cause of shap's TreeSHAP errors found: thresholds between
+  nearly equal values are not exact in float32; snapping values to a 2^-12 grid makes TreeSHAP match exact
+  enumeration to 3.3e-8. tests/test_truth.py (4 tests). Timing run (forest reality): 11 to 33 s per task.
+  Cost: Tier 0 1.3 h, Tier 1 6.1 h, Tier 2 56.5 h on 2 threads (results/transfer_pilot/cost_estimate.md).
+- Two background jobs (MLP timing run, reference re-resolution) were killed by Claude Code for low memory
+  (0.8 GB free of 15.6 GB); not restarted. No file was left half-written.
+- Measured the pilot's memory: one process peaks at 361 MB RAM (442 MB committed); one process needs about
+  0.5 GB, three about 1.3 GB. The pressure came from Chrome (3.5 GB), VS Code (2.4 GB) and six Claude sessions.
+- Ten learnings written (_learnings/2026-10-20-0133 to -0142); .gitignore now drops *.stackdump and logs/*.out.
+"""
+
+pending = """
+- Re-run lit_references.py (about 7 min, network) to apply the HTML-entity and suffix-order fixes, then
+  scratchpad remap_keys.py logic (map old to new keys by title) on review_source.md, then render. Killed once
+  by memory pressure.
+- Decide and run Tier 0 of pilot v2 (1.3 h on 2 threads) once memory is freed; the MLP timing run is optional.
+- arfpy: open PRs upstream when the user has talked to the maintainers; candidate next feature lik() and
+  conditional forge(evidence=...) (issue #5), which conditional-estimand ground truth needs.
+- Choose the ARF implementation (R arf via Rscript, patched arfpy, older numpy/pandas, or own code), then add
+  the ARF builder to transfer_pilot.py.
+- Redesign the full pilot for noise before running it: several task replicates per world (each world's
+  ranking averaged like reality's), and a cheaper ground truth (fewer trees in the true forests). At the
+  measured 44 s per task, 10 replicates x 10 worlds x 5 tasks is about 6 hours; needs the user's OK or Colab.
+- OpenAlex MCP login via /mcp; the review's Advani journal record was never chained (free allowance).
+- The paper-explainer skill template's <code> does not wrap (390 px overflow); patched in the build script
+  only, the skill and its two backups are unchanged.
+- Nothing in mech_interp/ is committed.
+"""
+
+next = """
+- Add realities from other function families (not only a forest fitted to the target) before drawing
+  conclusions, so the forest target family is not favoured by construction.
+- Second study on the same harness: which proxy metrics track ground-truth explanation error (review
+  implication 9; XAI-BENCH Table 1 already hints at it).
+"""
+
+files = [
+  "synthetic_data/lit_review/review_source.md",
+  "synthetic_data/lit_review/synthetic_data_for_xai_evaluation_review.pdf",
+  "synthetic_data/lit_review/included.json",
+  "synthetic_data/scripts/lit_references.py",
+  "synthetic_data/scripts/lit_render.py",
+  "synthetic_data/scripts/lit_prisma.py",
+  "synthetic_data/papers/",
+  "synthetic_data/paper_explainers/",
+  "synthetic_data/scripts/transfer_pilot.py",
+  "synthetic_data/scripts/transfer_report.py",
+  "synthetic_data/pyproject.toml",
+  "synthetic_data/README.md",
+  "DECISIONS.md",
+  "README.md",
+]
+
+commits = []
+
+notes = """
+- Two other sessions worked in this repo the same day (DECISIONS #21, robotics review); the numbering here
+  continues from it.
+- Playwright: navigating from an already open page timed out repeatedly; closing the tab and navigating
+  fresh worked. Python's http.server lets the browser cache pages; a query string forces a reload.
+"""

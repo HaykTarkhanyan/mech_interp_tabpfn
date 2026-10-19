@@ -1,0 +1,20 @@
+[project]
+name = "synthetic-data-xai"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "arfpy",
+    "lime==0.2.0.1",
+    "matplotlib==3.11.2",
+    "numpy==2.5.4",
+    "pandas==3.0.6",
+    "plotly==7.1.0",
+    "requests==2.34.2",
+    "scikit-learn==1.9.1",
+    "scipy==1.18.1",
+    "shap==0.54.1",
+    "tqdm==4.70.1",
+]
+
+[tool.uv.sources]
+arfpy = { git = "https://github.com/HaykTarkhanyan/arfpy", rev = "da710119eece1924406bab868c2c6fdee55222f4" }

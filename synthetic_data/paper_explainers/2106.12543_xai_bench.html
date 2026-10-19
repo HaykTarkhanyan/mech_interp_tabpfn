@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>XAI-BENCH explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: XAI-BENCH explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Synthetic Benchmarks for Scientific Research in Explainable Machine Learning" (XAI-BENCH), explained</h1>
+<p class="sub">Yang Liu and Sujay Khandagale (equal contribution), Colin White (Abacus.AI), Willie Neiswanger (Stanford). NeurIPS 2021 Datasets and Benchmarks track; arXiv 2106.12543v4 (4 Nov 2021). 25 pages (10 main + references + Appendices A-G). Code: github.com/abacusai/xai-bench (Apache 2.0). Citations: 19 on OpenAlex for the arXiv record only (checked 2026-10-19), certainly an undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/liu2021_xai_bench.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: explainer rankings depend on the metric</a></li>
+<li><a href="#f2">Finding 2: correlation between features breaks explainers</a></li>
+<li><a href="#f3">Finding 3: simulating real datasets (Section 5.3)</a></li>
+<li><a href="#demo">Try it: two "true" Shapley values</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> How do you score a feature-attribution method (SHAP, LIME and friends) when, on real data, nobody knows the correct attribution and the metrics that need conditional distributions cannot be computed?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Use synthetic data whose distribution you know.</b> With Gaussian, Gaussian-mixture or multinomial features, every conditional distribution is known in closed form, so metrics like "distance to the true Shapley values" become computable. XAI-BENCH packages such datasets, five metrics and eight explainers as a library.</li>
+<li><b>Which explainer is best depends on the metric.</b> On one setting, SHAPR wins three of five metrics, MAPLE wins infidelity, and breakDown is best on monotonicity while worst on ground-truth Shapley (Table 1).</li>
+<li><b>Correlation hurts.</b> Explainers become less faithful as feature correlation rises; LIME's faithfulness drops by as much as about 90% when features are almost perfectly correlated (Fig. 2).</li>
+<li><b>Real datasets can be "converted".</b> Fit a Gaussian to a real dataset's covariance and label the samples with a nearest-neighbour model of the real target (Section 5.3, wine and forest fires).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> This is the closest prior work to your pitch, and Section 5.3 is the precedent you generalize. It is a useful library with thin real-data simulation, a scale-free headline metric, and one undiscussed result in its own Table 1: two of its four proxy metrics barely agree with its own ground truth.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Feature attribution.</b> An explainer takes a trained model <i>f</i> and one input <i>x</i> and returns one number per feature: how much that feature pushed this prediction. SHAP, LIME, MAPLE, L2X and breakDown are different ways to compute such numbers.</p>
+<p><b>Shapley values need "remove a feature".</b> The Shapley value of feature <i>i</i> averages how much the prediction changes when <i>i</i> joins every possible subset <i>S</i> of the other features. That needs a value for "the model's output when only the features in <i>S</i> are known". The standard answer is an expectation, and there are two:</p>
+<ul class="tight">
+<li><b>Observational (conditional):</b> E[f(X) | X_S = x_S]. Fill in the unknown features by their conditional distribution given the known ones. "True to the data": importance spreads to correlated features, even unused ones.</li>
+<li><b>Interventional:</b> fill in the unknown features from their marginal distribution, as if independent. "True to the model": unused features get zero.</li>
+</ul>
+<p>Both are legitimate; they answer different questions (the demo in Section 6 shows the difference). On real data the conditional version cannot be computed exactly, because nobody knows the conditional distributions. That is the paper's opening.</p>
+<svg class="schem" viewBox="0 0 720 150" aria-label="XAI-BENCH components">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="40" width="150" height="70" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="83" y="64" text-anchor="middle" font-size="13">data: known</text>
+  <text x="83" y="82" text-anchor="middle" font-size="13">distribution + label</text>
+  <text x="83" y="100" text-anchor="middle" font-size="13">function</text>
+  <line x1="158" y1="75" x2="196" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="198" y="40" width="140" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="268" y="68" text-anchor="middle" font-size="13">model: linear,</text>
+  <text x="268" y="86" text-anchor="middle" font-size="13">tree or MLP</text>
+  <line x1="338" y1="75" x2="376" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="378" y="40" width="140" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="448" y="68" text-anchor="middle" font-size="13">explainer: SHAP,</text>
+  <text x="448" y="86" text-anchor="middle" font-size="13">LIME, MAPLE ...</text>
+  <line x1="518" y1="75" x2="556" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="558" y="40" width="154" height="70" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="635" y="64" text-anchor="middle" font-size="13">metrics, using the</text>
+  <text x="635" y="82" text-anchor="middle" font-size="13">known conditional</text>
+  <text x="635" y="100" text-anchor="middle" font-size="13">distributions</text>
+</svg>
+<p class="caption">Schematic of Fig. 1. The blue box is what makes the orange box computable.</p>
+<p><b>The five metrics</b> (Section 3.2, Appendix E). <b>Faithfulness</b>: correlation between each feature's weight and the change in prediction when that feature is replaced by its conditional expectation. <b>Monotonicity</b>: do features, added in order of weight, add diminishing amounts? <b>ROAR</b>: retrain the model with the top features removed and see how fast it degrades. <b>Infidelity</b>: mismatch between the output change and the weights under noisy perturbations (lower is better). <b>GT-Shapley</b>: the Pearson correlation between the explainer's weights and the true Shapley values of the trained model. Only GT-Shapley compares against a ground truth; the other four are proxies.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: explainer rankings depend on the metric</h2></summary>
+<p><b>What they did.</b> Train a multilayer perceptron on Gaussian features with pairwise correlation 0.5 and a nonlinear additive label (sin, absolute value, square, exponential of single features). Explain it with seven methods, score with five metrics (Table 1).</p>
+<table id="tbl-t1">
+<colgroup><col style="width:22%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"><col style="width:15.6%"></colgroup>
+<thead><tr><th>Explainer</th><th class="n">GT-Shapley (↑)</th><th class="n">faithfulness (↑)</th><th class="n">monotonicity (↑)</th><th class="n">ROAR (↑)</th><th class="n">infidelity (↓)</th></tr></thead>
+<tbody>
+<tr><td>RANDOM</td><td class="n">0.004</td><td class="n">0.002</td><td class="n">0.525</td><td class="n">0.380</td><td class="n">0.114</td></tr>
+<tr><td>SHAP</td><td class="n">0.810</td><td class="n">0.651</td><td class="n">0.537</td><td class="n">0.455</td><td class="n">0.050</td></tr>
+<tr><td>SHAPR</td><td class="n"><b>0.930</b></td><td class="n"><b>0.799</b></td><td class="n">0.550</td><td class="n"><b>0.465</b></td><td class="n">0.036</td></tr>
+<tr><td>LIME</td><td class="n">0.711</td><td class="n">0.524</td><td class="n">0.517</td><td class="n">0.432</td><td class="n">0.053</td></tr>
+<tr><td>MAPLE</td><td class="n">0.530</td><td class="n">0.478</td><td class="n">0.543</td><td class="n">0.432</td><td class="n"><b>0.019</b></td></tr>
+<tr><td>L2X</td><td class="n">-0.014</td><td class="n">0.000</td><td class="n">0.535</td><td class="n">0.365</td><td class="n">0.025</td></tr>
+<tr><td>BREAKDOWN</td><td class="n">-0.127</td><td class="n">0.110</td><td class="n"><b>0.562</b></td><td class="n">0.329</td><td class="n">0.126</td></tr>
+</tbody>
+</table>
+<p class="caption">Table 1, means as reported (standard deviations omitted). Bold = best per column. "SHAPR" here is Aas et al.'s nonparametric "empirical" method, re-implemented with a fixed kernel width (Appendix E.2.2), not the Gaussian version.</p>
+<p>The paper's reading: SHAPR wins three metrics, consistent with its design for dependent features; MAPLE is the most consistent across metrics; breakDown suits monotonicity by construction.</p>
+<div class="take"><b>My take: the table also measures its own proxy metrics.</b> GT-Shapley is the one ground-truth column, so one can ask how well each proxy ranks the seven explainers the same way. Spearman rank correlation with GT-Shapley, computed by me from the table:
+<div id="chart-meta"></div>
+Faithfulness and ROAR agree well. Monotonicity does not agree at all (its values span only 0.517 to 0.562, with RANDOM at 0.525), and infidelity ranks L2X second although L2X is no better than random on GT-Shapley. Seven explainers in one setting is far too little to generalize from, but it is exactly the "which proxy metrics track real error" question, answered with ground truth, that your review lists as a headline experiment. <span class="sure">How sure: high that the numbers are right; low that the pattern generalizes.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: correlation between features breaks explainers</h2></summary>
+<p><b>What they did.</b> Vary the pairwise feature correlation ρ from 0 to 0.99 (all off-diagonal covariance entries equal to ρ), for linear, nonlinear-additive and piecewise-constant labels and for three model types, and track faithfulness (Figs. 2, 3; all metrics in Appendix G, Figs. 6-10).</p>
+<p><b>What they found.</b> "A general trend is that explainers become less faithful as feature correlation increases." At ρ = 0 on the linear dataset, most methods sit above 0.9. LIME's faithfulness drops by as much as about 90% at ρ = 0.99. MAPLE stays relatively stable on the nonlinear-additive and piecewise-constant datasets. Most explainers do well for linear regression up to ρ = 0.75, and MAPLE does markedly worse on the decision tree (Fig. 3).</p>
+<div class="take"><b>My take.</b> These curves are the evidence your review uses for "dependence is the main driver of explainer failure". Note what kind of dependence it is: a single number ρ shared by every pair of Gaussian features. Real tables have uneven, nonlinear and mixed-type dependence; how explainers behave under that is what the curves cannot tell you, and what a data-fitted generator could. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: simulating real datasets (Section 5.3)</h2></summary>
+<p><b>What they did.</b> Take the wine-quality data (4,898 rows, 11 continuous features; the size matches the white-wine set) and the forest-fire data (12 features). Standardize the features, compute the empirical covariance, and sample multivariate Gaussian features with that covariance. Label each synthetic point with a k-nearest-neighbour model fitted to the real (x, y) pairs.</p>
+<p><b>How they checked fidelity.</b></p>
+<ul class="tight">
+<li>Mean Jensen-Shannon divergence of the feature marginals, real versus synthetic: 0.20 (wine), 0.17 (forest fires). Of the targets: 0.23 and 0.15. The paper calls these "a good fit".</li>
+<li>Train models on real and on simulated wine, explain both on the same held-out real test set, and compare the explanations by MSE (Table 5): SHAP 0.028 / 0.047 / 0.028 (linear / tree / MLP), LIME 0.047 / 0.009 / 0.037, MAPLE 0.027 / 0.052 / 0.040, L2X about 0.0008, Random 1.988.</li>
+</ul>
+<p><b>What they found on the simulated wine data</b> (decision tree, Table 2): GT-Shapley SHAPR 0.945, SHAP 0.825, LIME 0.745, MAPLE 0.685; faithfulness SHAP 0.534 and SHAPR 0.528 ahead of LIME 0.368 and MAPLE 0.034. On forest fires (Table 3), SHAP is best on three of five metrics; SHAPR is not reported there.</p>
+<div class="take"><b>My take.</b> Three things limit this as a precedent. The Gaussian keeps only linear correlation, so skewed wine features (residual sugar, chlorides) lose their shape, which a marginal JSD of 0.20 reflects. The kNN target is a black box, so the data-level "true explanation" is not readable, only the model-level Shapley values. And Table 5 compares explanation MSE across explainers whose weights live on different scales: L2X's weights sum to 1 by construction (Eq. 15) and RANDOM draws standard normals, so "low MSE" partly measures scale. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: two "true" Shapley values</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Feature correlation ρ <input id="demo-slider" type="range" min="0" max="19" step="1" value="10"> <b id="demo-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Exact computation, not made up: a linear model f(x) = 2·x1 + 1·x2 + 0·x3 on three standard Gaussian features with equal pairwise correlation ρ, explained at the point x = (1.0, -0.5, 1.2). Interventional Shapley values are w_i·x_i. Conditional (observational) Shapley values use E[X_k | X_j] = ρ·x_j and E[X_k | X_j, X_l] = ρ/(1+ρ)·(x_j + x_l), the Gaussian formulas behind the paper's Eq. 5.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It made ground-truth Shapley evaluation practical and released it as a maintained, documented library with five metrics and eight explainers. It states its own central trade-off honestly ("there is a trade-off between data realism and ground truth availability") and does not oversell the synthetic data as a replacement for human studies. The correlation sweeps are a clean controlled experiment.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>GT-Shapley is a per-instance Pearson correlation over D = 5 to 12 numbers. It ignores scale and offset, so an explainer that is off by a constant factor scores perfectly, and with so few points per instance it is noisy.</td><td>Eq. 14</td><td>High</td></tr>
+<tr><td>2</td><td>"Exact computation of the evaluation metrics" is claimed, but the expectations are computed by sampling from the known conditionals, and no Monte Carlo error is reported.</td><td>Sections 4.1-4.2 ("generate samples from the conditional distribution")</td><td>Medium</td></tr>
+<tr><td>3</td><td>The real-data simulation is a Gaussian with the empirical covariance plus a kNN target, on two datasets, with "good fit" asserted from JSD values without a reference point.</td><td>Section 5.3</td><td>High</td></tr>
+<tr><td>4</td><td>Table 5 compares explanation MSE across explainers on different scales (L2X weights sum to 1; RANDOM is N(0,1)), so it does not show that the simulated data is "a good proxy".</td><td>Table 5, Eq. 15, Appendix E.2.7</td><td>High</td></tr>
+<tr><td>5</td><td>The number of repetitions is stated inconsistently: "ten trials" in Section 5.1, "three runs for all experiments except Table 4" in Appendix G.</td><td>Section 5.1 vs Appendix G</td><td>High</td></tr>
+<tr><td>6</td><td>Two of the four proxy metrics barely agree with GT-Shapley in the paper's own Table 1 (my computation above), which the paper does not discuss.</td><td>Table 1</td><td>Medium</td></tr>
+<tr><td>7</td><td>All synthetic experiments use 1,000 training points; the authors note L2X needs about 1 million and "often fails", so L2X's poor scores partly reflect the setup.</td><td>Appendix E.2.5</td><td>High</td></tr>
+<tr><td>8</td><td>SHAPR is missing from the forest-fire table without explanation.</td><td>Table 3 ("six different explainers")</td><td>Medium</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the precedent the pitch must cite and beat.</b> Your review (Section 3.4 and implication 1) positions the pitch as a generalization of Section 5.3. Concretely, the pitch adds: a learned generator with realistic marginals and nonlinear dependence (ARF) instead of a Gaussian; a readable fitted target (symbolic regression) instead of kNN, so data-level ground truth exists; targets with stated numerical error instead of "exact"; fidelity beyond marginal JSD; and many datasets instead of two.</p>
+<p><b>It is also a ready-made baseline arm.</b> The realism question your review flags as unmeasured ("whether realistic data changes explainer rankings at all") can be asked directly: run the same explainers on (a) XAI-BENCH's Gaussian conversion of a dataset, (b) an ARF fitted to the same dataset, and compare rankings. If they agree, realism adds little; if they differ, which one is right is the question a known-truth test (see the Advani explainer) answers.</p>
+<p><b>Metric lesson.</b> Score explainers by error magnitude against the target (for example a normalized L2 or absolute error), not only by correlation, so scale errors count. Keep GT-Shapley-style correlation as a secondary view.</p>
+<p><b>The meta-evaluation seed.</b> The Spearman numbers in Finding 1 are a seven-explainer preview of the review's implication 9 ("measure which proxy metrics track actual explanation error"). A full version, many datasets and settings, is a strong candidate experiment.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Feature attribution</b></td><td>One importance number per feature for one prediction.</td></tr>
+<tr><td><b>Shapley value</b></td><td>A feature's average marginal contribution over all subsets of the other features.</td></tr>
+<tr><td><b>Observational vs interventional</b></td><td>Two ways to fill in "unknown" features: from their conditional distribution given the known ones, or from their marginal distribution as if independent.</td></tr>
+<tr><td><b>Kernel SHAP, BF-SHAP</b></td><td>The SHAP library's sampling approximation, and a brute-force re-implementation; both assume independent features.</td></tr>
+<tr><td><b>SHAPR</b></td><td>Aas et al.'s Shapley estimators for dependent features; here the nonparametric "empirical" variant.</td></tr>
+<tr><td><b>LIME, MAPLE, L2X, breakDown</b></td><td>A local linear surrogate, a local linear model with tree-based neighbourhoods, a learned feature selector, and a greedy sequential decomposition.</td></tr>
+<tr><td><b>Faithfulness, monotonicity, infidelity, ROAR</b></td><td>Proxy metrics that compare weights with how the model's output changes when features are removed or perturbed; ROAR retrains the model.</td></tr>
+<tr><td><b>GT-Shapley</b></td><td>Pearson correlation between an explainer's weights and the true Shapley values.</td></tr>
+<tr><td><b>Jensen-Shannon divergence</b></td><td>A symmetric, bounded (0 to 1) distance between two distributions.</td></tr>
+<tr><td><b>Spearman correlation</b></td><td>Pearson correlation computed on ranks; 1 means identical orderings.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-2 and 4-6: introduction, metrics (Section 3) and why synthetic data (Section 4.1). Read in full.</li>
+<li>Page 7: Table 1 and the paragraph under it.</li>
+<li>Page 8: Figures 2 and 3 and Section 5.3, the part your pitch extends.</li>
+<li>Page 9: Tables 2-3 and Section 5.4.</li>
+<li>Appendix E.2 (page 18) to know what each explainer actually is (SHAPR in particular); Table 5 (page 21).</li>
+<li>Skip on a first read: the mixture and multinomial conditionals (Appendix D) and the full grids (Figs. 6-10).</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the arXiv v4 PDF (25 pages, read in full, appendices included). Figures 2-3 were checked as images; their values are described, not quoted, except the paper's own "about 90%".</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// My analysis of Table 1: Spearman rank correlation of each proxy metric with GT-Shapley (7 explainers).
+barChart("chart-meta", {
+  label: "Spearman correlation of each proxy metric with GT-Shapley across seven explainers",
+  groups: ["ROAR", "faithfulness", "infidelity", "monotonicity"],
+  series: [{ name: "Spearman with GT-Shapley", color: "#0033A0", values: [0.991, 0.893, 0.321, -0.071] }],
+  colorOf: gi => (gi < 2 ? "#0033A0" : "#D90012"),
+  min: -0.2, max: 1.1, ticks: [0, 0.5, 1], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2), height: 220, barMax: 80
+});
+
+// Demo: exact interventional vs conditional Shapley values for a Gaussian linear model with 3 features.
+(function demo() {
+  const slider = need("demo-slider"), out = need("demo-val"), text = need("demo-text"), box = need("demo-chart");
+  const w = [2, 1, 0], x = [1.0, -0.5, 1.2];
+  function value(S, rho) {               // E[f(X) | X_S = x_S] for equicorrelated standard Gaussians
+    const known = new Set(S);
+    let v = 0;
+    for (const j of S) v += w[j] * x[j];
+    for (let k = 0; k < 3; k++) {
+      if (known.has(k)) continue;
+      let cond = 0;
+      if (S.length === 1) cond = rho * x[S[0]];
+      if (S.length === 2) cond = rho / (1 + rho) * (x[S[0]] + x[S[1]]);
+      v += w[k] * cond;
+    }
+    return v;
+  }
+  function shapley(rho) {
+    const phi = [];
+    for (let i = 0; i < 3; i++) {
+      const [j, k] = [0, 1, 2].filter(t => t !== i);
+      phi.push((value([i], rho) - value([], rho)) / 3 +
+        (value([i, j], rho) - value([j], rho)) / 6 +
+        (value([i, k], rho) - value([k], rho)) / 6 +
+        (value([0, 1, 2], rho) - value([j, k], rho)) / 3);
+    }
+    return phi;
+  }
+  function render() {
+    const rho = Number(slider.value) * 0.05;
+    out.textContent = rho.toFixed(2);
+    const cond = shapley(rho), inter = w.map((wi, i) => wi * x[i]);
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Interventional and conditional Shapley values", groups: ["x1 (weight 2)", "x2 (weight 1)", "x3 (weight 0, unused)"],
+      series: [
+        { name: "interventional ('true to the model')", color: "#0033A0", values: inter },
+        { name: "conditional ('true to the data')", color: "#F2A800", values: cond }
+      ],
+      min: -2.4, max: 2.6, ticks: [-2, -1, 0, 1, 2], tickFmt: t => t.toFixed(0), fmt: v => v.toFixed(2), height: 280
+    });
+    text.textContent = "At ρ = " + rho.toFixed(2) + ", the unused feature x3 gets " + cond[2].toFixed(2) +
+      " under the conditional definition and exactly 0 under the interventional one. Both sum to f(x) = " +
+      (w[0] * x[0] + w[1] * x[1]).toFixed(2) + ". Which one is 'the truth' depends on the question; an explainer can only be scored against the one it targets.";
+  }
+  slider.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

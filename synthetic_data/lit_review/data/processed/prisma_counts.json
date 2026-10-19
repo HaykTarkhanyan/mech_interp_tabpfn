@@ -1,0 +1,33 @@
+{
+ "identification": 3582,
+ "after_deduplication": 3067,
+ "duplicates_merged": 483,
+ "dropped_no_title": 32,
+ "after_relevance_screen": 888,
+ "excluded_by_screen": 2179,
+ "excluded_domain_title": 175,
+ "passed_without_abstract": 84,
+ "passed_only_via_citation_chaining": 165,
+ "rules_fired": {
+  "xai_eval_synthetic": 215,
+  "xai_ground_truth": 185,
+  "semi_synthetic_methodology": 233,
+  "model_vs_data": 66,
+  "tabular_generative": 193,
+  "symbolic_regression": 137,
+  "title_only": 84
+ },
+ "shortlist_size": 700,
+ "records_per_source": {
+  "OpenAlex": 837,
+  "Crossref": 756,
+  "OpenAlex-citing": 966,
+  "arXiv": 713
+ },
+ "found_by_n_keyword_databases": {
+  "0": 889,
+  "1": 2053,
+  "2": 122,
+  "3": 3
+ }
+}

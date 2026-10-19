@@ -1,0 +1,1807 @@
+[
+ {
+  "title": "Synthetic Benchmarks for Scientific Research in Explainable Machine Learning",
+  "authors": [
+   "Liu, Yang",
+   "Khandagale, Sujay",
+   "White, Colin",
+   "Neiswanger, Willie"
+  ],
+  "year": "2021",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2106.12543",
+  "url": "https://arxiv.org/abs/2106.12543",
+  "arxiv_id": "2106.12543",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2021 Datasets and Benchmarks",
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "liu2021"
+ },
+ {
+  "title": "OpenXAI: Towards a Transparent Evaluation of Model Explanations",
+  "authors": [
+   "Agarwal, Chirag",
+   "Ley, Dan",
+   "Krishna, Satyapriya",
+   "Saxena, Eshika",
+   "Pawelczyk, Martin",
+   "Johnson, Nari",
+   "Puri, Isha",
+   "Zitnik, Marinka",
+   "Lakkaraju, Himabindu"
+  ],
+  "year": "2022",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2206.11104",
+  "url": "https://arxiv.org/abs/2206.11104",
+  "arxiv_id": "2206.11104",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2022 Datasets and Benchmarks",
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": false,
+  "key": "agarwal2022"
+ },
+ {
+  "title": "Towards Ground Truth Explainability on Tabular Data",
+  "authors": [
+   "Barr, Brian",
+   "Xu, Ke",
+   "Silva, Claudio",
+   "Bertini, Enrico",
+   "Reilly, Robert",
+   "Bruss, C. Bayan",
+   "Wittenbach, Jason D."
+  ],
+  "year": "2020",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2007.10532",
+  "url": "https://arxiv.org/abs/2007.10532",
+  "arxiv_id": "2007.10532",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2020 Workshop on Human Interpretability in ML",
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "barr2020"
+ },
+ {
+  "title": "Data Representing Ground-Truth Explanations to Evaluate XAI Methods",
+  "authors": [
+   "Amiri, Shideh Shams",
+   "Weber, Rosina O.",
+   "Goel, Prateek",
+   "Brooks, Owen",
+   "Gandley, Archer",
+   "Kitchell, Brian",
+   "Zehm, Aaron"
+  ],
+  "year": "2020",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2011.09892",
+  "url": "https://arxiv.org/abs/2011.09892",
+  "arxiv_id": "2011.09892",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "amiri2020"
+ },
+ {
+  "title": "XAI-Units: Benchmarking Explainability Methods with Unit Tests",
+  "authors": [
+   "Lee, Jun Rui",
+   "Emami, Sadegh",
+   "Hollins, Michael David",
+   "Wong, Timothy C. H.",
+   "Sánchez, Carlos Ignacio Villalobos",
+   "Toni, Francesca",
+   "Zhang, Dekai",
+   "Dejl, Adam"
+  ],
+  "year": "2025",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2506.01059",
+  "url": "https://arxiv.org/abs/2506.01059",
+  "arxiv_id": "2506.01059",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "FAccT 2025",
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "lee2025"
+ },
+ {
+  "title": "A Synthetic Ground-Truth Framework for the Evaluation of Explainable AI Methods",
+  "authors": [
+   "Miró-Nicolau, Miquel",
+   "Spinnato, Francesco",
+   "Guidotti, Riccardo"
+  ],
+  "year": "2026",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2609.30397",
+  "url": "https://arxiv.org/abs/2609.30397",
+  "arxiv_id": "2609.30397",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "mironicolau2026a"
+ },
+ {
+  "title": "Exploring SAIG Methods for an Objective Evaluation of XAI",
+  "authors": [
+   "Miró-Nicolau, Miquel",
+   "Moyà-Alcover, Gabriel",
+   "Arias-Duart, Anna"
+  ],
+  "year": "2026",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2602.08715",
+  "url": "https://arxiv.org/abs/2602.08715",
+  "arxiv_id": "2602.08715",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "core",
+  "found_by_search": false,
+  "key": "mironicolau2026b"
+ },
+ {
+  "title": "Evaluating local explanation methods on ground truth",
+  "authors": [
+   "Riccardo Guidotti"
+  ],
+  "year": "2020",
+  "venue": "Artificial Intelligence",
+  "doi": "10.1016/j.artint.2020.103428",
+  "url": "https://openalex.org/W3103897213",
+  "citations": 99,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "guidotti2020"
+ },
+ {
+  "title": "Neural network attribution methods for problems in geoscience: A novel synthetic benchmark dataset",
+  "authors": [
+   "Antonios Mamalakis",
+   "Imme Ebert‐Uphoff",
+   "Elizabeth A. Barnes"
+  ],
+  "year": "2022",
+  "venue": "Environmental Data Science",
+  "doi": "10.1017/eds.2022.7",
+  "url": "https://doi.org/10.1017/eds.2022.7",
+  "citations": 101,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref",
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "mamalakis2022a"
+ },
+ {
+  "title": "Investigating the Fidelity of Explainable Artificial Intelligence Methods for Applications of Convolutional Neural Networks in Geoscience",
+  "authors": [
+   "Antonios Mamalakis",
+   "Elizabeth A. Barnes",
+   "Imme Ebert‐Uphoff"
+  ],
+  "year": "2022",
+  "venue": "Artificial Intelligence for the Earth Systems",
+  "doi": "10.1175/aies-d-22-0012.1",
+  "url": "https://openalex.org/W4292133488",
+  "citations": 94,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "mamalakis2022b"
+ },
+ {
+  "title": "Scrutinizing XAI using linear ground-truth data with suppressor variables",
+  "authors": [
+   "Rick Wilming",
+   "Céline Budding",
+   "Klaus-Robert Müller",
+   "Stefan Haufe"
+  ],
+  "year": "2022",
+  "venue": "Machine Learning",
+  "doi": "10.1007/s10994-022-06167-y",
+  "url": "https://doi.org/10.1007/s10994-022-06167-y",
+  "citations": 23,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "wilming2022"
+ },
+ {
+  "title": "XAI-TRIS: Non-linear image benchmarks to quantify false positive post-hoc attribution of feature importance",
+  "authors": [
+   "Benedict Clark",
+   "Rick Wilming",
+   "Stefan Haufe"
+  ],
+  "year": "2023",
+  "venue": "Machine Learning",
+  "doi": "10.1007/s10994-024-06574-3",
+  "url": "https://arxiv.org/abs/2306.12816",
+  "citations": 9,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "clark2023"
+ },
+ {
+  "title": "Can local explanation techniques explain linear additive models?",
+  "authors": [
+   "Amir Hossein Akhavan Rahnama",
+   "Judith Bütepage",
+   "Pierre Geurts",
+   "Henrik Boström"
+  ],
+  "year": "2023",
+  "venue": "Data Mining and Knowledge Discovery",
+  "doi": "10.1007/s10618-023-00971-3",
+  "url": "https://openalex.org/W4386861108",
+  "citations": 17,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "rahnama2023"
+ },
+ {
+  "title": "AttributionLab: Faithfulness of Feature Attribution Under Controllable Environments",
+  "authors": [
+   "Zhang, Yang",
+   "Li, Yawei",
+   "Brown, Hannah",
+   "Rezaei, Mina",
+   "Bischl, Bernd",
+   "Torr, Philip",
+   "Khakzar, Ashkan",
+   "Kawaguchi, Kenji"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2310.06514",
+  "url": "https://arxiv.org/abs/2310.06514",
+  "arxiv_id": "2310.06514",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2023 Workshop XAIA",
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "zhang2023"
+ },
+ {
+  "title": "A comprehensive study on fidelity metrics for XAI",
+  "authors": [
+   "Miquel Miró-Nicolau",
+   "Antoni Jaume-i-Capó",
+   "Gabriel Moyà-Alcover"
+  ],
+  "year": "2024",
+  "venue": "Information Processing & Management",
+  "doi": "10.1016/j.ipm.2024.103900",
+  "url": "https://openalex.org/W4402878556",
+  "citations": 49,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "mironicolau2024a"
+ },
+ {
+  "title": "Assessing fidelity in XAI post-hoc techniques: A comparative study with ground truth explanations datasets",
+  "authors": [
+   "Miquel Miró-Nicolau",
+   "Antoni Jaume-i-Capó",
+   "Gabriel Moyà-Alcover"
+  ],
+  "year": "2024",
+  "venue": "Artificial Intelligence",
+  "doi": "10.1016/j.artint.2024.104179",
+  "url": "https://openalex.org/W4400521133",
+  "citations": 40,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "mironicolau2024b"
+ },
+ {
+  "title": "Precise Benchmarking of Explainable AI Attribution Methods",
+  "authors": [
+   "Rafaël Brandt",
+   "Daan Raatjens",
+   "Georgi Gaydadjiev"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2308.03161",
+  "url": "https://arxiv.org/abs/2308.03161",
+  "citations": null,
+  "provenance": "corpus",
+  "found_by": [
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "brandt2023"
+ },
+ {
+  "title": "Evaluating explainability for graph neural networks",
+  "authors": [
+   "Chirag Agarwal",
+   "Owen Queen",
+   "Himabindu Lakkaraju",
+   "Marinka Žitnik"
+  ],
+  "year": "2023",
+  "venue": "Scientific Data",
+  "doi": "10.1038/s41597-023-01974-x",
+  "url": "https://openalex.org/W4327813569",
+  "citations": 183,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "agarwal2023"
+ },
+ {
+  "title": "FunnyBirds: A Synthetic Vision Dataset for a Part-Based Analysis of Explainable AI Methods",
+  "authors": [
+   "Hesse, Robin",
+   "Schaub-Meyer, Simone",
+   "Roth, Stefan"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2308.06248",
+  "url": "https://arxiv.org/abs/2308.06248",
+  "arxiv_id": "2308.06248",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICCV 2023",
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": false,
+  "key": "hesse2023"
+ },
+ {
+  "title": "From Model Explanation to Data Misinterpretation: A Cautionary Analysis of Post Hoc Explainers in Business Research",
+  "authors": [
+   "Wang, Tong",
+   "Ragodos, Ronilo",
+   "Feng, Lu",
+   "Yu",
+   "Hu"
+  ],
+  "year": "2024",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2408.16987",
+  "url": "https://arxiv.org/abs/2408.16987",
+  "arxiv_id": "2408.16987",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "gt_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "wang2024"
+ },
+ {
+  "title": "Privacy-preserving ground-truth data for evaluating additive feature attribution in regression models with additive CBR and CQV",
+  "authors": [
+   "Mir Riyanul Islam",
+   "Rosina O. Weber",
+   "Mobyen Uddin Ahmed",
+   "Shahina Begum"
+  ],
+  "year": "2025",
+  "venue": "Knowledge-Based Systems",
+  "doi": "10.1016/j.knosys.2025.114599",
+  "url": "https://doi.org/10.1016/j.knosys.2025.114599",
+  "citations": 1,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref",
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_semi_synthetic",
+  "role": "core",
+  "found_by_search": true,
+  "key": "islam2025"
+ },
+ {
+  "title": "Benchmarking Attribution Methods with Relative Feature Importance",
+  "authors": [
+   "Mengjiao Yang",
+   "Been Kim"
+  ],
+  "year": "2019",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.1907.09701",
+  "url": "https://arxiv.org/abs/1907.09701",
+  "citations": null,
+  "provenance": "corpus",
+  "found_by": [
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "yang2019"
+ },
+ {
+  "title": "Do Feature Attribution Methods Correctly Attribute Features?",
+  "authors": [
+   "Yilun Zhou",
+   "Serena Booth",
+   "Marco Túlio Ribeiro",
+   "Julie Shah"
+  ],
+  "year": "2022",
+  "venue": "Proceedings of the AAAI Conference on Artificial Intelligence",
+  "doi": "10.1609/aaai.v36i9.21196",
+  "url": "https://openalex.org/W3157950068",
+  "citations": 109,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "zhou2022"
+ },
+ {
+  "title": "Sanity Simulations for Saliency Methods",
+  "authors": [
+   "Kim, Joon Sik",
+   "Plumb, Gregory",
+   "Talwalkar, Ameet"
+  ],
+  "year": "2022",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2105.06506",
+  "url": "https://arxiv.org/abs/2105.06506",
+  "arxiv_id": "2105.06506",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2022",
+  "source_year": "2021",
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "kim2022"
+ },
+ {
+  "title": "Post hoc Explanations may be Ineffective for Detecting Unknown Spurious Correlation",
+  "authors": [
+   "Adebayo, Julius",
+   "Muelly, Michael",
+   "Abelson, Hal",
+   "Kim, Been"
+  ],
+  "year": "2022",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2212.04629",
+  "url": "https://arxiv.org/abs/2212.04629",
+  "arxiv_id": "2212.04629",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICLR 2022",
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": false,
+  "key": "adebayo2022"
+ },
+ {
+  "title": "CLEVR-XAI: A benchmark dataset for the ground truth evaluation of neural network explanations",
+  "authors": [
+   "Leila Arras",
+   "Ahmed Osman",
+   "Wojciech Samek"
+  ],
+  "year": "2022",
+  "venue": "Information Fusion",
+  "doi": "10.1016/j.inffus.2021.11.008",
+  "url": "https://doi.org/10.1016/j.inffus.2021.11.008",
+  "citations": 156,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": false,
+  "key": "arras2022"
+ },
+ {
+  "title": "“Will You Find These Shortcuts?” A Protocol for Evaluating the Faithfulness of Input Salience Methods for Text Classification",
+  "authors": [
+   "Jasmijn Bastings",
+   "Sebastian Ebert",
+   "Polina Zablotskaia",
+   "Anders Sandholm",
+   "Katja Filippova"
+  ],
+  "year": "2022",
+  "venue": "Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing",
+  "doi": "10.18653/v1/2022.emnlp-main.64",
+  "url": "https://doi.org/10.18653/v1/2022.emnlp-main.64",
+  "citations": 12,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "gt_semi_synthetic",
+  "role": "context",
+  "found_by_search": true,
+  "key": "bastings2022"
+ },
+ {
+  "title": "$\\mathcal{M}^4$: A Unified XAI Benchmark for Faithfulness Evaluation of Feature Attribution Methods across Metrics, Modalities and Models",
+  "authors": [
+   "Xuhong Li",
+   "Mengnan Du",
+   "Jiamin Chen",
+   "Yekun Chai",
+   "Himabindu Lakkaraju",
+   "Haoyi Xiong"
+  ],
+  "year": "2023",
+  "venue": "Advances in Neural Information Processing Systems 36",
+  "doi": "10.52202/075280-0081",
+  "url": "https://doi.org/10.52202/075280-0081",
+  "citations": 8,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref"
+  ],
+  "match_ratio": 0.968,
+  "theme": "proxy_metrics",
+  "role": "context",
+  "found_by_search": true,
+  "key": "li2023"
+ },
+ {
+  "title": "Navigating the Maze of Explainable AI: A Systematic Approach to Evaluating Methods and Metrics",
+  "authors": [
+   "Klein, Lukas",
+   "Lüth, Carsten T.",
+   "Schlegel, Udo",
+   "Bungert, Till J.",
+   "El-Assady, Mennatallah",
+   "Jäger, Paul F."
+  ],
+  "year": "2024",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2409.16756",
+  "url": "https://arxiv.org/abs/2409.16756",
+  "arxiv_id": "2409.16756",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2024 Datasets and Benchmarks",
+  "theme": "proxy_metrics",
+  "role": "context",
+  "found_by_search": false,
+  "key": "klein2024"
+ },
+ {
+  "title": "The Meta-Evaluation Problem in Explainable AI: Identifying Reliable Estimators with MetaQuantus",
+  "authors": [
+   "Hedström, Anna",
+   "Bommer, Philine",
+   "Wickstrøm, Kristoffer K.",
+   "Samek, Wojciech",
+   "Lapuschkin, Sebastian",
+   "Höhne, Marina M. -C."
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2302.07265",
+  "url": "https://arxiv.org/abs/2302.07265",
+  "arxiv_id": "2302.07265",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "TMLR 2023",
+  "theme": "proxy_metrics",
+  "role": "context",
+  "found_by_search": true,
+  "key": "hedstrom2023"
+ },
+ {
+  "title": "The Disagreement Problem in Explainable Machine Learning: A Practitioner&#39;s Perspective",
+  "authors": [
+   "Krishna, Satyapriya",
+   "Han, Tessa",
+   "Gu, Alex",
+   "Wu, Steven",
+   "Jabbari, Shahin",
+   "Lakkaraju, Himabindu"
+  ],
+  "year": "2024",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2202.01602",
+  "url": "https://arxiv.org/abs/2202.01602",
+  "arxiv_id": "2202.01602",
+  "provenance": "arxiv",
+  "match_ratio": 0.987,
+  "venue_note": "TMLR 2024",
+  "source_year": "2022",
+  "theme": "proxy_metrics",
+  "role": "context",
+  "found_by_search": true,
+  "key": "krishna2024"
+ },
+ {
+  "title": "From Anecdotal Evidence to Quantitative Evaluation Methods: A Systematic Review on Evaluating Explainable AI",
+  "authors": [
+   "Meike Nauta",
+   "Jan Trienes",
+   "Shreyasi Pathak",
+   "Elisa Nguyen",
+   "Michelle Peters",
+   "Yasmin Alyssa Schmitt",
+   "Jörg Schlötterer",
+   "Maurice van Keulen",
+   "Christin Seifert"
+  ],
+  "year": "2023",
+  "venue": "ACM Computing Surveys",
+  "doi": "10.1145/3583558",
+  "url": "https://openalex.org/W4321786089",
+  "citations": 570,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "proxy_metrics",
+  "role": "context",
+  "found_by_search": true,
+  "key": "nauta2023"
+ },
+ {
+  "title": "Plasmode simulation for the evaluation of pharmacoepidemiologic methods in complex healthcare databases",
+  "authors": [
+   "Jessica Myers Franklin",
+   "Sebastian Schneeweiß",
+   "Jennifer M. Polinski",
+   "Jeremy A. Rassen"
+  ],
+  "year": "2013",
+  "venue": "Computational Statistics &amp; Data Analysis",
+  "doi": "10.1016/j.csda.2013.10.018",
+  "url": "https://doi.org/10.1016/j.csda.2013.10.018",
+  "citations": 145,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref",
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "franklin2013"
+ },
+ {
+  "title": "Statistical plasmode simulations–Potentials, challenges and recommendations",
+  "authors": [
+   "Nicholas Schreck",
+   "Alla Slynko",
+   "Maral Saadati",
+   "Axel Benner"
+  ],
+  "year": "2024",
+  "venue": "Statistics in Medicine",
+  "doi": "10.48550/arxiv.2305.06028",
+  "url": "https://openalex.org/W4391841493",
+  "citations": 20,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "venue_note": "Statistics in Medicine",
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "schreck2024"
+ },
+ {
+  "title": "Simulation study to evaluate when Plasmode simulation is superior to parametric simulation in estimating the mean squared error of the least squares estimator in linear regression",
+  "authors": [
+   "Marieke Stolte",
+   "Nicholas Schreck",
+   "Alla Slynko",
+   "Maral Saadati",
+   "Axel Benner",
+   "Jörg Rahnenführer",
+   "Andrea Bommert"
+  ],
+  "year": "2024",
+  "venue": "PLOS ONE",
+  "doi": "10.1371/journal.pone.0299989",
+  "url": "https://doi.org/10.1371/journal.pone.0299989",
+  "citations": 4,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": true,
+  "key": "stolte2024"
+ },
+ {
+  "title": "A Cautionary Note for Plasmode Simulation Studies in the Setting of Causal Inference",
+  "authors": [
+   "Pamela A. Shaw",
+   "Susan Gruber",
+   "Brian D. Williamson",
+   "Rishi Desai",
+   "Susan M. Shortreed",
+   "Chloe Krakauer",
+   "Jennifer C. Nelson",
+   "Mark J. van der Laan"
+  ],
+  "year": "2026",
+  "venue": "Statistics in Medicine",
+  "doi": "10.1002/sim.70676",
+  "url": "https://doi.org/10.1002/sim.70676",
+  "citations": 0,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "shaw2026"
+ },
+ {
+  "title": "A Plasmode Benchmark Can Refute but Cannot Certify: Projection and Regularity in Causal-Inference Simulation",
+  "authors": [
+   "M. Ehsan Karim"
+  ],
+  "year": "2026",
+  "venue": "arXiv (Cornell University)",
+  "doi": "10.48550/arxiv.2609.26186",
+  "url": "https://openalex.org/W7214104564",
+  "citations": 0,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "karim2026"
+ },
+ {
+  "title": "Computing True Parameter Values in Simulation Studies Using Monte Carlo Integration",
+  "authors": [
+   "Ashley Isaac Naimi",
+   "David C. Benkeser",
+   "Jacqueline E. Rudolph"
+  ],
+  "year": "2025",
+  "venue": "Epidemiology",
+  "doi": "10.1097/ede.0000000000001873",
+  "url": "https://openalex.org/W4411260365",
+  "citations": 0,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": true,
+  "key": "naimi2025"
+ },
+ {
+  "title": "Using Wasserstein Generative Adversarial Networks for the design of Monte Carlo simulations",
+  "authors": [
+   "Susan Athey",
+   "Guido W. Imbens",
+   "Jonas Metzger",
+   "Evan Munro"
+  ],
+  "year": "2024",
+  "venue": "Journal of Econometrics",
+  "doi": "10.1016/j.jeconom.2020.09.013",
+  "url": "https://doi.org/10.1016/j.jeconom.2020.09.013",
+  "citations": 38,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "athey2024"
+ },
+ {
+  "title": "Mostly harmless simulations? Using Monte Carlo studies for estimator selection",
+  "authors": [
+   "Arun Advani",
+   "Toru Kitagawa",
+   "Tymon Słoczyński"
+  ],
+  "year": "2019",
+  "venue": "Journal of Applied Econometrics",
+  "doi": "10.1002/jae.2724",
+  "url": "https://doi.org/10.1002/jae.2724",
+  "citations": 13,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "advani2019"
+ },
+ {
+  "title": "RealCause: Realistic Causal Inference Benchmarking",
+  "authors": [
+   "Neal, Brady",
+   "Huang, Chin-Wei",
+   "Raghupathi, Sunand"
+  ],
+  "year": "2020",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2011.15007",
+  "url": "https://arxiv.org/abs/2011.15007",
+  "arxiv_id": "2011.15007",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "neal2020"
+ },
+ {
+  "title": "Validating Causal Inference Methods",
+  "authors": [
+   "Parikh, Harsh",
+   "Varjao, Carlos",
+   "Xu, Louise",
+   "Tchetgen, Eric Tchetgen"
+  ],
+  "year": "2022",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2202.04208",
+  "url": "https://arxiv.org/abs/2202.04208",
+  "arxiv_id": "2202.04208",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2022",
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": false,
+  "key": "parikh2022"
+ },
+ {
+  "title": "Doing Great at Estimating CATE? On the Neglected Assumptions in Benchmark Comparisons of Treatment Effect Estimators",
+  "authors": [
+   "Curth, Alicia",
+   "van der Schaar, Mihaela"
+  ],
+  "year": "2021",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2107.13346",
+  "url": "https://arxiv.org/abs/2107.13346",
+  "arxiv_id": "2107.13346",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2021 Workshop on the Neglected Assumptions in Causal Inference",
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": true,
+  "key": "curth2021"
+ },
+ {
+  "title": "Automated versus Do-It-Yourself Methods for Causal Inference: Lessons Learned from a Data Analysis Competition",
+  "authors": [
+   "Vincent Dorie",
+   "Jennifer Hill",
+   "Uri Shalit",
+   "Marc Scott",
+   "Dan Cervone"
+  ],
+  "year": "2019",
+  "venue": "Statistical Science",
+  "doi": "10.1214/18-sts667",
+  "url": "https://doi.org/10.1214/18-STS667",
+  "citations": 191,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": false,
+  "key": "dorie2019"
+ },
+ {
+  "title": "Bayesian Nonparametric Modeling for Causal Inference",
+  "authors": [
+   "Jennifer L. Hill"
+  ],
+  "year": "2011",
+  "venue": "Journal of Computational and Graphical Statistics",
+  "doi": "10.1198/jcgs.2010.08162",
+  "url": "https://doi.org/10.1198/jcgs.2010.08162",
+  "citations": 860,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": false,
+  "key": "hill2011"
+ },
+ {
+  "title": "Evaluating large-scale propensity score performance through real-world and synthetic data experiments",
+  "authors": [
+   "Yuxi Tian",
+   "Martijn J. Schuemie",
+   "Marc A. Suchard"
+  ],
+  "year": "2018",
+  "venue": "International Journal of Epidemiology",
+  "doi": "10.1093/ije/dyy120",
+  "url": "https://openalex.org/W2808880546",
+  "citations": 170,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": true,
+  "key": "tian2018"
+ },
+ {
+  "title": "Using simulation studies to evaluate statistical methods",
+  "authors": [
+   "Tim P. Morris",
+   "Ian R. White",
+   "Michael J. Crowther"
+  ],
+  "year": "2019",
+  "venue": "Statistics in Medicine",
+  "doi": "10.1002/sim.8086",
+  "url": "https://doi.org/10.1002/sim.8086",
+  "citations": 1286,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": false,
+  "key": "morris2019"
+ },
+ {
+  "title": "Machine learning estimation of heterogeneous causal effects: Empirical Monte Carlo evidence",
+  "authors": [
+   "Michael C Knaus",
+   "Michael Lechner",
+   "Anthony Strittmatter"
+  ],
+  "year": "2020",
+  "venue": "The Econometrics Journal",
+  "doi": "10.1093/ectj/utaa014",
+  "url": "https://doi.org/10.1093/ectj/utaa014",
+  "citations": 106,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": true,
+  "key": "knaus2020"
+ },
+ {
+  "title": "Synth-Validation: Selecting the Best Causal Inference Method for a Given Dataset",
+  "authors": [
+   "Schuler, Alejandro",
+   "Jung, Ken",
+   "Tibshirani, Robert",
+   "Hastie, Trevor",
+   "Shah, Nigam"
+  ],
+  "year": "2017",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.1711.00083",
+  "url": "https://arxiv.org/abs/1711.00083",
+  "arxiv_id": "1711.00083",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "core",
+  "found_by_search": false,
+  "key": "schuler2017"
+ },
+ {
+  "title": "Generative AI-Based Monte Carlo Simulation for Method Evaluation Using Synthetic Multilevel Data",
+  "authors": [
+   "Youmi Suk",
+   "Chenguang Pan",
+   "Weixuan Xiao"
+  ],
+  "year": "2026",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2605.05752",
+  "url": "https://arxiv.org/abs/2605.05752",
+  "citations": null,
+  "provenance": "corpus",
+  "found_by": [
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "realistic_simulation",
+  "role": "context",
+  "found_by_search": true,
+  "key": "suk2026"
+ },
+ {
+  "title": "Adversarial random forests for density estimation and generative modeling",
+  "authors": [
+   "Watson, David S.",
+   "Blesch, Kristin",
+   "Kapar, Jan",
+   "Wright, Marvin N."
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2205.09435",
+  "url": "https://arxiv.org/abs/2205.09435",
+  "arxiv_id": "2205.09435",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "AISTATS 2023",
+  "source_year": "2022",
+  "theme": "generators",
+  "role": "core",
+  "found_by_search": false,
+  "key": "watson2023"
+ },
+ {
+  "title": "Modeling Tabular data using Conditional GAN",
+  "authors": [
+   "Xu, Lei",
+   "Skoularidou, Maria",
+   "Cuesta-Infante, Alfredo",
+   "Veeramachaneni, Kalyan"
+  ],
+  "year": "2019",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.1907.00503",
+  "url": "https://arxiv.org/abs/1907.00503",
+  "arxiv_id": "1907.00503",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2019",
+  "theme": "generators",
+  "role": "context",
+  "found_by_search": false,
+  "key": "xu2019"
+ },
+ {
+  "title": "TabDDPM: Modelling Tabular Data with Diffusion Models",
+  "authors": [
+   "Kotelnikov, Akim",
+   "Baranchuk, Dmitry",
+   "Rubachev, Ivan",
+   "Babenko, Artem"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2209.15421",
+  "url": "https://arxiv.org/abs/2209.15421",
+  "arxiv_id": "2209.15421",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2023",
+  "source_year": "2022",
+  "theme": "generators",
+  "role": "context",
+  "found_by_search": true,
+  "key": "kotelnikov2023"
+ },
+ {
+  "title": "Panning for Gold: ‘Model-X’ Knockoffs for High Dimensional Controlled Variable Selection",
+  "authors": [
+   "Emmanuel Candès",
+   "Yingying Fan",
+   "Lucas Janson",
+   "Jinchi Lv"
+  ],
+  "year": "2018",
+  "venue": "Journal of the Royal Statistical Society Series B: Statistical Methodology",
+  "doi": "10.1111/rssb.12265",
+  "url": "https://doi.org/10.1111/rssb.12265",
+  "citations": 564,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "generators",
+  "role": "context",
+  "found_by_search": true,
+  "key": "candes2018"
+ },
+ {
+  "title": "A Sobering Look at Tabular Data Generation via Probabilistic Circuits",
+  "authors": [
+   "Davide Scassola",
+   "Dylan Ponsford",
+   "Adrián Javaloy",
+   "Sebastiano Saccani",
+   "Luca Bortolussi",
+   "Henry Gouk",
+   "Antonio Vergari"
+  ],
+  "year": "2026",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2603.23016",
+  "url": "https://arxiv.org/abs/2603.23016",
+  "citations": null,
+  "provenance": "corpus",
+  "found_by": [
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "generators",
+  "role": "context",
+  "found_by_search": true,
+  "key": "scassola2026"
+ },
+ {
+  "title": "Deep Neural Networks and Tabular Data: A Survey",
+  "authors": [
+   "Vadim Borisov",
+   "Tobias Leemann",
+   "Kathrin Seßler",
+   "Johannes Haug",
+   "Martin Pawelczyk",
+   "Gjergji Kasneci"
+  ],
+  "year": "2022",
+  "venue": "IEEE Transactions on Neural Networks and Learning Systems",
+  "doi": "10.1109/tnnls.2022.3229161",
+  "url": "https://openalex.org/W3202428668",
+  "citations": 1061,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "generators",
+  "role": "context",
+  "found_by_search": true,
+  "key": "borisov2022"
+ },
+ {
+  "title": "How Faithful is your Synthetic Data? Sample-level Metrics for Evaluating and Auditing Generative Models",
+  "authors": [
+   "Alaa, Ahmed M.",
+   "van Breugel, Boris",
+   "Saveliev, Evgeny",
+   "van der Schaar, Mihaela"
+  ],
+  "year": "2022",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2102.08921",
+  "url": "https://arxiv.org/abs/2102.08921",
+  "arxiv_id": "2102.08921",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2022",
+  "source_year": "2021",
+  "theme": "fidelity",
+  "role": "context",
+  "found_by_search": false,
+  "key": "alaa2022"
+ },
+ {
+  "title": "Synthetic data, real errors: how (not) to publish and use synthetic data",
+  "authors": [
+   "van Breugel, Boris",
+   "Qian, Zhaozhi",
+   "van der Schaar, Mihaela"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2305.09235",
+  "url": "https://arxiv.org/abs/2305.09235",
+  "arxiv_id": "2305.09235",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICML 2023",
+  "theme": "fidelity",
+  "role": "context",
+  "found_by_search": false,
+  "key": "vanbreugel2023"
+ },
+ {
+  "title": "How Well Does Your Tabular Generator Learn the Structure of Tabular Data?",
+  "authors": [
+   "Xiangjian Jiang",
+   "Nikola Simidjievski",
+   "Mateja Jamnik"
+  ],
+  "year": "2025",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2503.09453",
+  "url": "https://arxiv.org/abs/2503.09453",
+  "citations": null,
+  "provenance": "corpus",
+  "found_by": [
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "fidelity",
+  "role": "context",
+  "found_by_search": true,
+  "key": "jiang2025"
+ },
+ {
+  "title": "What’s Wrong with Your Synthetic Tabular Data? Using Explainable AI to Evaluate Generative Models",
+  "authors": [
+   "Jan Kapar",
+   "Niklas Koenen",
+   "Martin Jullum"
+  ],
+  "year": "2025",
+  "venue": "Communications in Computer and Information Science",
+  "doi": "10.1007/978-3-032-08327-2_2",
+  "url": "https://doi.org/10.1007/978-3-032-08327-2_2",
+  "citations": 2,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "fidelity",
+  "role": "core",
+  "found_by_search": true,
+  "key": "kapar2025"
+ },
+ {
+  "title": "SHAP Distance: An Explainability-Aware Metric for Evaluating the Semantic Fidelity of Synthetic Tabular Data",
+  "authors": [
+   "Ke Yu",
+   "Shigeru Ishikura",
+   "Yukari Usukura",
+   "Yuki Shigoku",
+   "Teruaki Hayashi"
+  ],
+  "year": "2025",
+  "venue": "2025 IEEE International Conference on Big Data (BigData)",
+  "doi": "10.1109/bigdata66926.2025.11402338",
+  "url": "https://doi.org/10.1109/bigdata66926.2025.11402338",
+  "citations": 2,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "fidelity",
+  "role": "core",
+  "found_by_search": true,
+  "key": "yu2025"
+ },
+ {
+  "title": "Contemporary Symbolic Regression Methods and their Relative Performance",
+  "authors": [
+   "La Cava, William",
+   "Orzechowski, Patryk",
+   "Burlacu, Bogdan",
+   "de França, Fabrício Olivetti",
+   "Virgolin, Marco",
+   "Jin, Ying",
+   "Kommenda, Michael",
+   "Moore, Jason H."
+  ],
+  "year": "2021",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2107.14351",
+  "url": "https://arxiv.org/abs/2107.14351",
+  "arxiv_id": "2107.14351",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "NeurIPS 2021 Datasets and Benchmarks",
+  "theme": "symbolic_regression",
+  "role": "context",
+  "found_by_search": true,
+  "key": "lacava2021"
+ },
+ {
+  "title": "SRBench++: Principled Benchmarking of Symbolic Regression With Domain-Expert Interpretation",
+  "authors": [
+   "Fabrício Olivetti de França",
+   "Marco Virgolin",
+   "Michael Kommenda",
+   "Maimuna Shahnaz Majumder",
+   "Miles Cranmer",
+   "Guilherme Espada",
+   "Leon Ingelse",
+   "Alcides Fonseca",
+   "Mikel Landajuela",
+   "B. Petersen",
+   "Ruben Glatt",
+   "Nathan Mundhenk",
+   "C. S. Lee",
+   "Jacob D. Hochhalter",
+   "D. L. Randall",
+   "P. Kamienny",
+   "Hengzhe Zhang",
+   "Grant Dick",
+   "A. Simon",
+   "Bogdan Burlacu",
+   "Jaan Kasak",
+   "Meera Machado",
+   "Casper Wilstrup",
+   "William La Cava"
+  ],
+  "year": "2024",
+  "venue": "IEEE Transactions on Evolutionary Computation",
+  "doi": "10.1109/tevc.2024.3423681",
+  "url": "https://openalex.org/W4400314852",
+  "citations": 22,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "symbolic_regression",
+  "role": "context",
+  "found_by_search": true,
+  "key": "franca2024"
+ },
+ {
+  "title": "Rethinking Symbolic Regression Datasets and Benchmarks for Scientific Discovery",
+  "authors": [
+   "Matsubara, Yoshitomo",
+   "Chiba, Naoya",
+   "Igarashi, Ryo",
+   "Ushiku, Yoshitaka"
+  ],
+  "year": "2024",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2206.10540",
+  "url": "https://arxiv.org/abs/2206.10540",
+  "arxiv_id": "2206.10540",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "DMLR 2024",
+  "source_year": "2022",
+  "theme": "symbolic_regression",
+  "role": "context",
+  "found_by_search": true,
+  "key": "matsubara2024"
+ },
+ {
+  "title": "AI Feynman: A physics-inspired method for symbolic regression",
+  "authors": [
+   "Silviu-Marian Udrescu",
+   "Max Tegmark"
+  ],
+  "year": "2020",
+  "venue": "Science Advances",
+  "doi": "10.1126/sciadv.aay2631",
+  "url": "https://doi.org/10.1126/sciadv.aay2631",
+  "citations": 1010,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "symbolic_regression",
+  "role": "context",
+  "found_by_search": false,
+  "key": "udrescu2020"
+ },
+ {
+  "title": "Interpretability in symbolic regression: a benchmark of explanatory methods using the Feynman data set",
+  "authors": [
+   "Guilherme Seidyo Imai Aldeia",
+   "Fabrício Olivetti de França"
+  ],
+  "year": "2022",
+  "venue": "Genetic Programming and Evolvable Machines",
+  "doi": "10.1007/s10710-022-09435-x",
+  "url": "https://openalex.org/W4281776274",
+  "citations": 26,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "symbolic_regression",
+  "role": "core",
+  "found_by_search": true,
+  "key": "aldeia2022"
+ },
+ {
+  "title": "Bias and Variance Analysis of Contemporary Symbolic Regression Methods",
+  "authors": [
+   "Lukas Kammerer",
+   "Gabriel Kronberger",
+   "Stephan Winkler"
+  ],
+  "year": "2024",
+  "venue": "Applied Sciences",
+  "doi": "10.3390/app142311061",
+  "url": "https://openalex.org/W4404827285",
+  "citations": 5,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "symbolic_regression",
+  "role": "core",
+  "found_by_search": true,
+  "key": "kammerer2024"
+ },
+ {
+  "title": "Interpretable Machine Learning for Science with PySR and SymbolicRegression.jl",
+  "authors": [
+   "Cranmer, Miles"
+  ],
+  "year": "2023",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2305.01582",
+  "url": "https://arxiv.org/abs/2305.01582",
+  "arxiv_id": "2305.01582",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "symbolic_regression",
+  "role": "context",
+  "found_by_search": false,
+  "key": "cranmer2023"
+ },
+ {
+  "title": "True to the Model or True to the Data?",
+  "authors": [
+   "Chen, Hugh",
+   "Janizek, Joseph D.",
+   "Lundberg, Scott",
+   "Lee, Su-In"
+  ],
+  "year": "2020",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2006.16234",
+  "url": "https://arxiv.org/abs/2006.16234",
+  "arxiv_id": "2006.16234",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "core",
+  "found_by_search": false,
+  "key": "chen2020"
+ },
+ {
+  "title": "Relating the Partial Dependence Plot and Permutation Feature Importance to the Data Generating Process",
+  "authors": [
+   "Christoph Molnar",
+   "Timo Freiesleben",
+   "Gunnar König",
+   "Julia Herbinger",
+   "Tim Reisinger",
+   "Giuseppe Casalicchio",
+   "Marvin N. Wright",
+   "Bernd Bischl"
+  ],
+  "year": "2023",
+  "venue": "Communications in Computer and Information Science",
+  "doi": "10.1007/978-3-031-44064-9_24",
+  "url": "https://doi.org/10.1007/978-3-031-44064-9_24",
+  "citations": 100,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "core",
+  "found_by_search": true,
+  "key": "molnar2023a"
+ },
+ {
+  "title": "Scientific Inference with Interpretable Machine Learning: Analyzing Models to Learn About Real-World Phenomena",
+  "authors": [
+   "Timo Freiesleben",
+   "Gunnar König",
+   "Christoph Molnar",
+   "Álvaro Tejero-Cantero"
+  ],
+  "year": "2024",
+  "venue": "Minds and Machines",
+  "doi": "10.1007/s11023-024-09691-z",
+  "url": "https://openalex.org/W4400657197",
+  "citations": 37,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "freiesleben2024"
+ },
+ {
+  "title": "Unrestricted permutation forces extrapolation: variable importance requires at least one more model, or there is no free variable importance",
+  "authors": [
+   "Giles Hooker",
+   "Lucas Mentch",
+   "Siyu Zhou"
+  ],
+  "year": "2021",
+  "venue": "Statistics and Computing",
+  "doi": "10.1007/s11222-021-10057-z",
+  "url": "https://openalex.org/W3209434414",
+  "citations": 256,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "hooker2021"
+ },
+ {
+  "title": "Shapley explainability on the data manifold",
+  "authors": [
+   "Frye, Christopher",
+   "de Mijolla, Damien",
+   "Begley, Tom",
+   "Cowton, Laurence",
+   "Stanley, Megan",
+   "Feige, Ilya"
+  ],
+  "year": "2021",
+  "venue": "arXiv preprint",
+  "doi": "10.48550/arxiv.2006.01272",
+  "url": "https://arxiv.org/abs/2006.01272",
+  "arxiv_id": "2006.01272",
+  "provenance": "arxiv",
+  "match_ratio": 1.0,
+  "venue_note": "ICLR 2021",
+  "source_year": "2020",
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "frye2021"
+ },
+ {
+  "title": "Model-agnostic feature importance and effects with dependent features: a conditional subgroup approach",
+  "authors": [
+   "Christoph Molnar",
+   "Gunnar König",
+   "Bernd Bischl",
+   "Giuseppe Casalicchio"
+  ],
+  "year": "2023",
+  "venue": "Data Mining and Knowledge Discovery",
+  "doi": "10.1007/s10618-022-00901-9",
+  "url": "https://doi.org/10.1007/s10618-022-00901-9",
+  "citations": 122,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref",
+   "OpenAlex",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "molnar2023b"
+ },
+ {
+  "title": "Testing conditional independence in supervised learning algorithms",
+  "authors": [
+   "David S. Watson",
+   "Marvin N. Wright"
+  ],
+  "year": "2021",
+  "venue": "Machine Learning",
+  "doi": "10.1007/s10994-021-06030-6",
+  "url": "https://doi.org/10.1007/s10994-021-06030-6",
+  "citations": 58,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "watson2021"
+ },
+ {
+  "title": "Conditional feature importance for mixed data",
+  "authors": [
+   "Kristin Blesch",
+   "David S. Watson",
+   "Marvin N. Wright"
+  ],
+  "year": "2023",
+  "venue": "AStA Advances in Statistical Analysis",
+  "doi": "10.1007/s10182-023-00477-9",
+  "url": "https://openalex.org/W4367393752",
+  "citations": 12,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "OpenAlex-citing",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "blesch2023a"
+ },
+ {
+  "title": "Conditional Feature Importance with Generative Modeling Using Adversarial Random Forests",
+  "authors": [
+   "Kristin Blesch",
+   "Niklas Koenen",
+   "Jan Kapar",
+   "Pegah Golchian",
+   "Lukas Burk",
+   "Markus Loecher",
+   "Marvin N. Wright"
+  ],
+  "year": "2025",
+  "venue": "Proceedings of the AAAI Conference on Artificial Intelligence",
+  "doi": "10.1609/aaai.v39i15.33712",
+  "url": "https://openalex.org/W4409347111",
+  "citations": 3,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex",
+   "arXiv"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "core",
+  "found_by_search": true,
+  "key": "blesch2025"
+ },
+ {
+  "title": "Unfooling SHAP and SAGE: Knockoff Imputation for Shapley Values",
+  "authors": [
+   "Kristin Blesch",
+   "Marvin N. Wright",
+   "David Watson"
+  ],
+  "year": "2023",
+  "venue": "Communications in Computer and Information Science",
+  "doi": "10.1007/978-3-031-44064-9_8",
+  "url": "https://doi.org/10.1007/978-3-031-44064-9_8",
+  "citations": 5,
+  "provenance": "doi",
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "blesch2023b"
+ },
+ {
+  "title": "Explaining individual predictions when features are dependent: More accurate approximations to Shapley values",
+  "authors": [
+   "Kjersti Aas",
+   "Martin Jullum",
+   "Anders Løland"
+  ],
+  "year": "2021",
+  "venue": "Artificial Intelligence",
+  "doi": "10.1016/j.artint.2021.103502",
+  "url": "https://doi.org/10.1016/j.artint.2021.103502",
+  "citations": 1061,
+  "provenance": "corpus",
+  "found_by": [
+   "Crossref",
+   "OpenAlex-citing"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "core",
+  "found_by_search": true,
+  "key": "aas2021"
+ },
+ {
+  "title": "A comparative study of methods for estimating model-agnostic Shapley value explanations",
+  "authors": [
+   "Lars Henry Berge Olsen",
+   "Ingrid K. Glad",
+   "Martin Jullum",
+   "Kjersti Aas"
+  ],
+  "year": "2024",
+  "venue": "Data Mining and Knowledge Discovery",
+  "doi": "10.1007/s10618-024-01016-z",
+  "url": "https://openalex.org/W4393306796",
+  "citations": 23,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "core",
+  "found_by_search": true,
+  "key": "olsen2024"
+ },
+ {
+  "title": "Analyzing Error Sources in Global Feature Effect Estimation",
+  "authors": [
+   "Timo Heiß",
+   "Coco Bögel",
+   "Bernd Bischl",
+   "Giuseppe Casalicchio"
+  ],
+  "year": "2026",
+  "venue": "arXiv (Cornell University)",
+  "doi": "10.48550/arxiv.2603.15057",
+  "url": "https://openalex.org/W7137818727",
+  "citations": 0,
+  "provenance": "corpus",
+  "found_by": [
+   "OpenAlex"
+  ],
+  "match_ratio": 1.0,
+  "theme": "estimands",
+  "role": "context",
+  "found_by_search": true,
+  "key": "heiss2026"
+ }
+]

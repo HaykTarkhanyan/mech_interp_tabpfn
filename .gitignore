@@ -219,3 +219,7 @@ __marimo__/
 
 # Playwright MCP session artifacts
 .playwright-mcp/
+
+# Git Bash crash dumps and raw run output captured next to the logs
+*.stackdump
+**/logs/*.out

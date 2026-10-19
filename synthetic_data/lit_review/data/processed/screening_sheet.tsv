@@ -1,0 +1,701 @@
+idx	year	cites	rules	chained	title
+0	2025	1	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology,model_vs_data	-	Causal Pitfalls of Feature Attributions in Financial Machine Learning Models
+1	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative,model_vs_data	-	ExplainerPFN: Towards tabular foundation models for model-free zero-shot feature importance estimations
+2	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	FIDELITY AND UTILITY OF SYNTHETIC TABULAR HEALTH DATA: A CROSS-PARADIGM BENCHMARKING OF A CORRELATION-PRESERVING STATISTICAL PIPELINE AND A CONDITIONAL GENERATIVE ADVERSARIAL NETWORK
+3	2023	0	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology	-	OpenXAI: A Comprehensive Framework for Transparent Evaluation and Benchmarking of Explanation Methods for Machine Learning Models
+4	2024	1	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology,model_vs_data	-	From Model Explanation to Data Misinterpretation: A Cautionary Analysis of Post Hoc Explainers in Business Research
+5	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	SynPre-FL: Synthetic data-driven pretraining integrated Federated Learning training framework
+6	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative,model_vs_data	-	Kolmogorov-Arnold causal generative models
+7	2026	0	xai_eval_synthetic,xai_ground_truth,tabular_generative	-	A Synthetic Ground-Truth Framework for the Evaluation of Explainable AI Methods
+8	2024	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	FairX: A comprehensive benchmarking tool for model analysis using fairness, utility, and explainability
+9	2026	0	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology	-	Local Label-Informed Feature Transfer for Generating Ground-Truth Medical Images: A Comparison of GAN- and Diffusion-Based Approaches
+10	2026	0	xai_eval_synthetic,xai_ground_truth	-	The effect of whitening on explanation performance
+11	2026	0	semi_synthetic_methodology,tabular_generative	-	CausalWrap: Model-Agnostic Causal Constraint Wrappers for Tabular Synthetic Data
+12	2025	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Benchmarking Synthetic Tabular Data: A Multi-Dimensional Evaluation Framework
+13	2024	49	xai_eval_synthetic,xai_ground_truth	C	A comprehensive study on fidelity metrics for XAI
+14	2021	19	xai_eval_synthetic,xai_ground_truth	C	Synthetic Benchmarks for Scientific Research in Explainable Machine Learning
+15	2025	1	xai_eval_synthetic,xai_ground_truth	C	Privacy-preserving ground-truth data for evaluating additive feature attribution in regression models with additive CBR and CQV
+16	2025	13	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	An enhancement of machine learning model performance in disease prediction with synthetic data generation
+17	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Balancing Utility and Privacy: Evaluating Synthetic Gene Expression Data with a Novel Dilution Metric for Feature Stability
+18	2023	0	xai_eval_synthetic,xai_ground_truth	-	Precise Benchmarking of Explainable AI Attribution Methods
+19	2025	2	xai_eval_synthetic,tabular_generative	-	What’s Wrong with Your Synthetic Tabular Data? Using Explainable AI to Evaluate Generative Models
+20	2025	2	xai_eval_synthetic,tabular_generative	-	SHAP Distance: An Explainability-Aware Metric for Evaluating the Semantic Fidelity of Synthetic Tabular Data
+21	2025	1	xai_eval_synthetic,semi_synthetic_methodology,model_vs_data	-	Evaluating Variable Selection Methods in a Classification Framework: A Simulation Study
+22	2026	0	xai_eval_synthetic,xai_ground_truth	-	Explainability in Uplift Modelling : Evaluating SHAP interpretations Using Real and Synthetic Data.
+23	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	An Energy-Driven Framework for Privacy-Aware Synthetic Data Generation
+24	2026	0	xai_eval_synthetic,xai_ground_truth	C	BEAM: Exact Benchmarking of Explainable AI Attribution Methods
+25	2025	12	xai_eval_synthetic,semi_synthetic_methodology	-	Advancements in Basketball Action Recognition: Datasets, Methods, Explainability, and Synthetic Data Applications
+26	2025	3	xai_eval_synthetic,xai_ground_truth	C	XAI-Units: Benchmarking Explainability Methods with Unit Tests
+27	2020	0	xai_eval_synthetic,xai_ground_truth	-	Data Representing Ground-Truth Explanations to Evaluate XAI Methods
+28	2026	0	xai_eval_synthetic,tabular_generative	-	Spectral Model eXplainer: a chemically-grounded explainability framework for spectral-based machine learning models
+29	2026	0	xai_eval_synthetic,semi_synthetic_methodology,model_vs_data	-	RelShap: Relationally Consistent Shapley Explanations
+30	2021	0	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology,model_vs_data	-	Relating the Partial Dependence Plot and Permutation Feature Importance to the Data Generating Process
+31	2023	183	xai_eval_synthetic,xai_ground_truth	-	Evaluating explainability for graph neural networks
+32	2024	23	xai_eval_synthetic,tabular_generative,model_vs_data	-	A comparative study of methods for estimating model-agnostic Shapley value explanations
+33	2026	0	xai_eval_synthetic,xai_ground_truth	-	A Synthetic Multi-Label Time Series Classification Dataset with Time-Frequency Ground-Truth Explanation for Evaluating Explainable Artificial Intelligence Methods
+34	2025	0	xai_ground_truth	-	Faithful and Interpretable Explanations for Complex Ensemble Time Series Forecasts using Surrogate Models and Forecastability Analysis
+35	2025	0	xai_eval_synthetic,xai_ground_truth	-	A method for the systematic generation of graph XAI benchmarks via Weisfeiler-Leman coloring
+36	2026	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Forensic-Oriented Intrusion Detection Using Synthetic Network Traffic Data and Explainable Artificial Intelligence
+37	2022	0	xai_eval_synthetic,xai_ground_truth,semi_synthetic_methodology	-	Characterization and Greedy Learning of Gaussian Structural Causal Models under Unknown Interventions
+38	2025	0	semi_synthetic_methodology,tabular_generative	-	Synthetic Data Generation Using Generative AI: Revolutionizing Data-Driven Innovation
+39	2026	0	semi_synthetic_methodology,tabular_generative	-	Evaluating quality in synthetic data generation for large tabular health datasets
+40	2023	10	semi_synthetic_methodology,tabular_generative	-	Reimagining Synthetic Tabular Data Generation through Data-Centric AI: A Comprehensive Benchmark
+41	2026	4	tabular_generative	C	Inside the black box: A comprehensive survey of explainable AI benchmarks, protocols, technical analysis, and open gaps
+42	2024	1	xai_eval_synthetic,xai_ground_truth	C	Using Grouped Features to Improve Explainable AI Results for Atmospheric AI Models that use Gridded Spatial Data and Complex Machine Learning Technique
+43	2025	0	xai_eval_synthetic,xai_ground_truth	-	Learning Temporal Saliency for Time Series Forecasting with Cross-Scale Attention
+44	2026	0	semi_synthetic_methodology,tabular_generative	-	A Multidimensional Benchmark of Generative Models for Neonatal Clinical Tabular Data: Trade-offs in Fidelity, Utility, and Realism
+45	2026	0	semi_synthetic_methodology,tabular_generative	-	A Multidimensional Evaluation of Privacy-Preserving Generative Models for Neonatal Clinical Tabular Data: Fidelity, Utility, and Realism Trade-offs
+46	2026	0	semi_synthetic_methodology,tabular_generative	-	HardTVAE: Hardness-Aware Generation and Multi-View Fidelity Evaluation of Synthetic Tabular Data for Imbalanced Learning
+47	2025	0	semi_synthetic_methodology,tabular_generative	-	Synthetic Tabular Data Generation: A Comparative Survey for Modern Techniques
+48	2026	0	xai_eval_synthetic,semi_synthetic_methodology,model_vs_data	-	Analyzing Error Sources in Global Feature Effect Estimation
+49	2025	19	semi_synthetic_methodology,tabular_generative	-	How good is your synthetic data? SynthRO, a dashboard to evaluate and benchmark synthetic tabular data
+50	2025	10	xai_eval_synthetic,xai_ground_truth	C	The influence of correlated features on neural network attribution methods in geoscience
+51	2021	5	xai_eval_synthetic,xai_ground_truth	C	Sanity Simulations for Saliency Methods
+52	2025	3	xai_eval_synthetic,tabular_generative,model_vs_data	-	Conditional Feature Importance with Generative Modeling Using Adversarial Random Forests
+53	2025	1	semi_synthetic_methodology,tabular_generative	-	Generative Adversarial Networks for Synthetic Data Generation in Deep Learning Applications
+54	2026	1	xai_ground_truth	C	ExplainTS: a benchmark dataset of pretrained models and post-hoc explanations for time-series classification
+55	2026	0	xai_eval_synthetic,xai_ground_truth	-	ESL-Bench: An Event-Driven Synthetic Longitudinal Benchmark for Health Agents
+56	2026	0	xai_eval_synthetic,xai_ground_truth	-	Causal Integrated Gradients: Scalable Feature Attribution Along Causal Paths
+57	2023	0	xai_eval_synthetic,xai_ground_truth	C	teex: A toolbox for the evaluation of explanations
+58	2026	0	xai_ground_truth,tabular_generative	-	BDIViz in Action: Interactive Curation and Benchmarking for Schema Matching Methods
+59	2026	0	xai_eval_synthetic,xai_ground_truth	-	Graph neural network explanations reveal a topological signature of disease-associated hubs in biological networks
+60	2024	0	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Targeted synthetic data generation for tabular data via hardness characterization
+61	2025	0	semi_synthetic_methodology,tabular_generative	-	A Quantitative Comparison of Structural and Distributional Properties of Synthetic Tabular Data in Parkinson’s Disease
+62	2026	0	semi_synthetic_methodology,tabular_generative	-	Hierarchical Synthetic Tabular Data Generation: A Hybrid Top-Down and Bottom-Up Framework
+63	2026	0	semi_synthetic_methodology,tabular_generative	-	Improving TabPFN's Synthetic Data Generation by Integrating Causal Structure
+64	2026	0	xai_ground_truth,symbolic_regression	-	SymbolicArena: A Unified Infrastructure for Benchmark Distillation and Dynamic Evaluation in Symbolic Regression
+65	2024	123	xai_eval_synthetic,semi_synthetic_methodology,model_vs_data	-	GeoShapley: A Game Theory Approach to Measuring Spatial Effects in Machine Learning Models
+66	2023	34	semi_synthetic_methodology,tabular_generative	-	Synthetic Tabular Data Based on Generative Adversarial Networks in Health Care: Generation and Validation Using the Divide-and-Conquer Strategy
+67	2025	26	semi_synthetic_methodology,tabular_generative	-	Diffusion Models for Tabular Data Imputation and Synthetic Data Generation
+68	2023	10	xai_eval_synthetic,xai_ground_truth,symbolic_regression	-	DistilSR: A Distilled Version of Gene Expression Programming Symbolic Regression
+69	2025	7	xai_eval_synthetic,xai_ground_truth,model_vs_data	C	Explainable time-series forecasting with sampling-free SHAP for Transformers
+70	2023	6	xai_eval_synthetic,model_vs_data	-	Unfooling SHAP and SAGE: Knockoff Imputation for Shapley Values
+71	2025	4	semi_synthetic_methodology,tabular_generative	-	Synthetic neurosurgical data generation with generative adversarial networks and large language models:an investigation on fidelity, utility, and privacy
+72	2024	3	xai_ground_truth	C	EXACT: Towards a platform for empirically benchmarking Machine Learning model explanation methods
+73	2025	2	semi_synthetic_methodology,tabular_generative	-	Synthetic Flight Data Generation Using Generative Models
+74	2026	2	semi_synthetic_methodology,tabular_generative	-	Evaluating the quality of tabular synthetic data in health care
+75	2024	2	semi_synthetic_methodology,tabular_generative	-	A Multi-Faceted Evaluation Framework for Assessing Synthetic Data Generated by Large Language Models
+76	2023	1	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Deep Generative Models, Synthetic Tabular Data, and Differential Privacy: An Overview and Synthesis
+77	2024	1	xai_eval_synthetic,semi_synthetic_methodology,tabular_generative	-	Towards the Design, Quality Assessment and Explainability of Synthetic Tabular Data Generation Techniques for Metabolic Syndrome Diagnosis
+78	2025	1	xai_eval_synthetic,tabular_generative	-	A Robust Metric for Evaluating the Quality of Synthetic Tabular Data
+79	2026	0	xai_eval_synthetic,xai_ground_truth	-	AGOP as Explanation: From Feature Learning to Per-Sample Attribution in Image Classifiers
+80	2024	0	xai_eval_synthetic,xai_ground_truth	-	JAILJUDGE: A Comprehensive Jailbreak Judge Benchmark with Multi-Agent Enhanced Explanation Evaluation Framework
+81	2022	0	xai_eval_synthetic,xai_ground_truth	-	Explainability of Traditional and Deep Learning Models on Longitudinal Healthcare Records
+82	2026	0	xai_eval_synthetic,xai_ground_truth	-	HotComment: A Benchmark for Evaluating Popularity of Online Comments
+83	2026	0	semi_synthetic_methodology	-	Psych-ECA: A Reproducible Semi-Synthetic Benchmark for Synthetic Control Arms in Longitudinal Psychiatry
+84	2024	0	xai_eval_synthetic,semi_synthetic_methodology	-	InterpBench: Semi-Synthetic Transformers for Evaluating Mechanistic Interpretability Techniques
+85	2026	0	semi_synthetic_methodology	-	IV-ICL: Bounding Causal Effects with Instrumental Variables via In-Context Learning
+86	2023	0	semi_synthetic_methodology,tabular_generative	-	Synthetic Tabular Data Based on Generative Adversarial Networks in Health Care: Generation and Validation Using the Divide-and-Conquer Strategy (Preprint)
+87	2025	0	semi_synthetic_methodology,tabular_generative	-	Benchmarking Generative Adversarial Networks for Realistic Tabular Data Generation
+88	2025	0	tabular_generative	-	TabStruct: Measuring Structural Fidelity of Tabular Data
+89	2022	101	xai_eval_synthetic,xai_ground_truth	-	Neural network attribution methods for problems in geoscience: A novel synthetic benchmark dataset
+90	2025	43	semi_synthetic_methodology,tabular_generative	-	Comprehensive evaluation framework for synthetic tabular data in health: fidelity, utility and privacy analysis of generative models with and without privacy guarantees
+91	2022	26	xai_ground_truth	C	Scrutinizing XAI using linear ground-truth data with suppressor variables
+92	2024	22	xai_eval_synthetic,symbolic_regression	-	SRBench++: Principled Benchmarking of Symbolic Regression With Domain-Expert Interpretation
+93	2024	8	semi_synthetic_methodology,tabular_generative	-	GAN-Based Novel Approach for Generating Synthetic Medical Tabular Data
+94	2025	8	semi_synthetic_methodology,tabular_generative	-	A Text-to-tabular Approach to Generate Synthetic Patient Data using LLMs
+95	2024	5	semi_synthetic_methodology,tabular_generative	-	Iterative Application of UMAP-Based Algorithms for Fully Synthetic Healthcare Tabular Data Generation
+96	2024	3	xai_ground_truth,symbolic_regression	C	GINN-LP: A Growing Interpretable Neural Network for Discovering Multivariate Laurent Polynomial Equations
+97	2026	2	semi_synthetic_methodology,tabular_generative	-	Conditional Tabular Generative Adversarial Network-based Synthetic Data Generation for Model Generalisation Improvement
+98	2024	1	xai_ground_truth	C	Evaluating Anomaly Explanations Using Ground Truth
+99	2019	0	xai_ground_truth	-	Evaluating Explanation Without Ground Truth in Interpretable Machine Learning
+100	2025	0	xai_ground_truth	-	B-XAIC Dataset: Benchmarking Explainable AI for Graph Neural Networks Using Chemical Data
+101	2026	0	xai_eval_synthetic,xai_ground_truth	-	DACRI: Decision-Aware Causal Intervention Ranking for Critical Supply Chains
+102	2026	0	xai_eval_synthetic,xai_ground_truth	-	FinRule-Bench: A Benchmark for Joint Reasoning over Financial Tables and Principles
+103	2025	0	xai_eval_synthetic,xai_ground_truth	-	Why Do Class-Dependent Evaluation Effects Occur with Time Series Feature Attributions? A Synthetic Data Investigation
+104	2025	0	xai_eval_synthetic	-	A Study of Synthetic-Data-Enhanced Analysis for Smart Contracts: Function-Level Detection and Explanation [Project Report]
+105	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	Hierarchical Industrial Demand Forecasting with Temporal and Uncertainty Explanations
+106	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	Using Text-Based Causal Inference to Disentangle Factors Influencing Online Review Ratings
+107	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	Can Language Model Agents be Helpful Circuit Explainers in Mechanistic Interpretability?
+108	2026	0	tabular_generative	-	TabQueryBench: A Query-Centric Benchmark for Synthetic Tabular Data
+109	2026	0	tabular_generative	-	Beyond Statistical Similarity: A Multidimensional Framework for Evaluating Synthetic Tabular Data
+110	2025	0	xai_eval_synthetic,symbolic_regression	-	Current Challenges of Symbolic Regression: Optimization, Selection, Model Simplification, and Benchmarking
+111	2026	0	xai_eval_synthetic,xai_ground_truth	-	$Ψ$-Resilience: Model-Free Feature Importance from 1D Topological Signals
+112	2020	99	xai_eval_synthetic,xai_ground_truth	-	Evaluating local explanation methods on ground truth
+113	2022	94	xai_eval_synthetic,xai_ground_truth	C	Investigating the Fidelity of Explainable Artificial Intelligence Methods for Applications of Convolutional Neural Networks in Geoscience
+114	2021	48	xai_eval_synthetic,xai_ground_truth	C	A Benchmark to Test Generalization Capabilities of Deep Learning Methods to Classify Severe Convective Storms in a Changing Climate
+115	2024	16	xai_eval_synthetic,tabular_generative,symbolic_regression	-	Symbolic Regression Enhanced Decision Trees for Classification Tasks
+116	2023	15	xai_eval_synthetic,xai_ground_truth	C	Robust Explainer Recommendation for Time Series Classification
+117	2025	13	xai_ground_truth	-	Saliency-Bench: A Comprehensive Benchmark for Evaluating Visual Explanations
+118	2026	8	semi_synthetic_methodology,tabular_generative	-	Synthetic Data Augmentation for Imbalanced Tabular Data: A Comparative Study of Generation Methods
+119	2025	4	xai_eval_synthetic	-	Benchmarking interpretability of deep learning for predictive genomics: Recall, precision, and variability of feature attribution
+120	2025	4	semi_synthetic_methodology,tabular_generative	-	FEST: A Unified Framework for Evaluating Synthetic Tabular Data
+121	2024	3	semi_synthetic_methodology,tabular_generative	-	Structured Evaluation of Synthetic Tabular Data
+122	2025	1	xai_eval_synthetic,tabular_generative	-	Explainable AI for Osteoporosis Risk Modeling: Random Forest and SHAP Interpretation on CTGAN-Enhanced Data
+123	2021	0	xai_eval_synthetic,xai_ground_truth	-	Best of both worlds: local and global explanations with human-understandable concepts
+124	2025	0	xai_eval_synthetic,xai_ground_truth	-	SimulRAG: Simulator-based RAG for Grounding LLMs in Long-form Scientific QA
+125	2019	0	xai_ground_truth	-	Benchmarking Attribution Methods with Relative Feature Importance
+126	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	A Framework for Evaluating Zero-Shot Image Generation in Concept-based Explainability
+127	2021	0	xai_eval_synthetic,xai_ground_truth	-	Evaluating saliency methods on artificial data with different background types
+128	2026	0	semi_synthetic_methodology	-	SurvHTE-Bench: A Benchmark for Heterogeneous Treatment Effect Estimation in Survival Analysis
+129	2026	0	semi_synthetic_methodology	-	InferenceEvolve: Towards Automated Causal Effect Estimators through Self-Evolving AI
+130	2026	0	semi_synthetic_methodology	-	The Partial Testimony of Logs: Evaluation of Language Model Generation under Confounded Model Choice
+131	2025	0	semi_synthetic_methodology,tabular_generative	-	Privacy-Preserving Synthetic Data Generation Using Conditional Tabular Generative Adversarial Networks
+132	2024	0	semi_synthetic_methodology,tabular_generative	-	SiloFuse: Cross-silo Synthetic Data Generation with Latent Tabular Diffusion Models
+133	2025	0	semi_synthetic_methodology,tabular_generative	-	Privacy-Preserving Tabular Synthetic Data Generation Using TabularARGN
+134	2025	0	semi_synthetic_methodology,tabular_generative	-	Evaluating Privacy and Utility in Synthetic EHR Data Generation for Adverse Drug Event Detection
+135	2025	0	tabular_generative	-	Evaluating CTGAN-Generated Synthetic Data for Heart Disease Prediction: Fidelity, Predictive Utility, and Feature Preservation
+136	2026	0	tabular_generative	-	Synthetic Tabular Generators Fail to Preserve Behavioral Fraud Patterns: A Benchmark on Temporal, Velocity, and Multi-Account Signals
+137	2025	0	tabular_generative	-	Risk In Context: Benchmarking Privacy Leakage of Foundation Models in Synthetic Tabular Data Generation
+138	2026	0	semi_synthetic_methodology,tabular_generative	-	Quantifying Membership Disclosure Risk for Tabular Synthetic Data Using Kernel Density Estimators
+139	2025	0	xai_eval_synthetic,model_vs_data	-	Causal Saliency: Counterfactual Explanations for Robust AI Interpretation
+140	2024	0	xai_eval_synthetic,xai_ground_truth	-	SynHING: Synthetic Heterogeneous Information Network Generation for Graph Learning and Explanation
+141	2024	78	xai_ground_truth	C	Finding the Right XAI Method—A Guide for the Evaluation and Ranking of Explainable AI Methods in Climate Science
+142	2022	73	xai_eval_synthetic,model_vs_data	C	Counterfactual Shapley Additive Explanations
+143	2024	50	tabular_generative	-	Syntheval: a framework for detailed utility and privacy evaluation of tabular synthetic data
+144	2023	29	semi_synthetic_methodology,tabular_generative	-	On the Quality of Synthetic Generated Tabular Data
+145	2024	27	semi_synthetic_methodology,tabular_generative	-	Systematic Review of Generative Modelling Tools and Utility Metrics for Fully Synthetic Tabular Data
+146	2025	19	xai_eval_synthetic,tabular_generative	-	Understanding the Black Box: A Deep Empirical Dive into Shapley Value Approximations for Tabular Data
+147	2023	16	xai_eval_synthetic,tabular_generative	-	Interpretable tabular data generation
+148	2025	10	semi_synthetic_methodology,tabular_generative	-	AI-Driven Predictive Modeling for Lung Cancer Detection and Management Using Synthetic Data Augmentation and Random Forest Classifier
+149	2025	7	xai_eval_synthetic,tabular_generative	-	An explainable multi-task similarity measure: Integrating accumulated local effects and weighted Fréchet distance
+150	2024	1	model_vs_data	-	Feature Attribution with Necessity and Sufficiency via Dual-stage Perturbation Test for Causal Explanation
+151	2026	1	xai_ground_truth	C	GECOBench: a gender-controlled text dataset and benchmark for quantifying biases in explanations
+152	2026	0	xai_eval_synthetic,xai_ground_truth	-	xaitimesynth: A Python Package for Evaluating Attribution Methods for Time Series with Synthetic Ground Truth
+153	2024	0	xai_ground_truth	-	A Backdoor-based Explainable AI Benchmark for High Fidelity Evaluation of Attributions
+154	2018	0	xai_ground_truth	-	A Human-Grounded Evaluation Benchmark for Local Explanations of Machine Learning
+155	2026	0	xai_ground_truth	-	CBX-Bench: A Human-Aligned MLLM Council for Benchmarking Concept Bottleneck Model Explanations
+156	2025	0	xai_ground_truth	-	FIRE: Faithful Interpretable Recommendation Explanations
+157	2024	0	xai_ground_truth	-	Classification Metrics for Image Explanations: Towards Building Reliable XAI-Evaluations
+158	2023	0	xai_ground_truth	-	The Meta-Evaluation Problem in Explainable AI: Identifying Reliable Estimators with MetaQuantus
+159	2024	0	semi_synthetic_methodology,tabular_generative	-	Synthesizers: A Meta-Framework for Generating and Evaluating High-Fidelity Tabular Synthetic Data
+160	2025	0	tabular_generative	-	Evaluating Fidelity and Machine Learning Utility of Synthetic Tabular Data Generated Using Generative Models
+161	2025	0	xai_eval_synthetic,semi_synthetic_methodology	-	Improving Omics-Based Classification: The Role of Feature Selection and Synthetic Data Generation
+162	2025	0	xai_eval_synthetic,tabular_generative	-	REX: Causal discovery based on machine learning and explainability techniques
+163	2021	0	semi_synthetic_methodology	-	Semi-Synthetic EEG Data for the Evaluation of EEG Cleaning Methods
+164	2023	0	xai_eval_synthetic,xai_ground_truth	-	How good Neural Networks interpretation methods really are? A quantitative benchmark
+165	2025	0	semi_synthetic_methodology	-	CausalProfiler: Generating Synthetic Benchmarks for Rigorous and Transparent Evaluation of Causal Machine Learning
+166	2026	0	tabular_generative	-	Beyond Distributional Fidelity: Causal-Penalized Diffusion for Synthetic Tabular Data
+167	2022	0	xai_eval_synthetic,semi_synthetic_methodology	-	A Semi-Synthetic Dataset Generation Framework for Causal Inference in Recommender Systems
+168	2021	0	semi_synthetic_methodology	C	Doing Great at Estimating CATE? On the Neglected Assumptions in Benchmark Comparisons of Treatment Effect Estimators
+169	2026	0	semi_synthetic_methodology,tabular_generative	-	GFCM: A Tail-Sensitive Mixed-Type Conditional Independence Test for Causal Discovery
+170	2025	0	xai_eval_synthetic,semi_synthetic_methodology	-	The Final-Stage Bottleneck: A Systematic Dissection of the R-Learner for Network Causal Inference
+171	2026	0	semi_synthetic_methodology	-	Generative AI-Based Monte Carlo Simulation for Method Evaluation Using Synthetic Multilevel Data
+172	2025	0	semi_synthetic_methodology,tabular_generative	-	Investigating Tabular Generative Models for Synthetic Data Generation in PDAC Bulk Gene Expression Data
+173	2026	0	xai_eval_synthetic,tabular_generative	-	CARTGen-IR: Synthetic Tabular Data Generation for Imbalanced Regression
+174	2026	0	tabular_generative	-	TabularQGAN: a quantum generative model for tabular data synthesis
+175	2026	0	tabular_generative	-	A GENERATIVE ADVERSARIAL NETWORK APPROACH TO SYNTHETIC TABULAR DATA GENERATION: ARCHITECTURES, MATHEMATICAL FOUNDATIONS, AND EVALUATION PRACTICES
+176	2026	0	semi_synthetic_methodology,tabular_generative	-	Enhancing Clinical Prediction via Synthetic Tabular Data Generation Using Deep Generative Models
+177	2025	0	tabular_generative	-	How Well Does Your Tabular Generator Learn the Structure of Tabular Data?
+178	2025	0	tabular_generative	-	Dependency-aware synthetic tabular data generation
+179	2025	0	tabular_generative	-	TABFAIRGDT: A Fast Fair Tabular Data Generator using Autoregressive Decision Trees
+180	2026	0	tabular_generative	-	Seq2Synth: Benchmarking Temporal Fidelity in Synthetic Sequential Tabular Data
+181	2025	0	semi_synthetic_methodology,tabular_generative	-	A Systematic Evaluation of Generative Models on Tabular Transportation Data
+182	2024	0	xai_eval_synthetic,model_vs_data	-	Challenges in Variable Importance Ranking Under Correlation
+183	2026	0	xai_eval_synthetic,xai_ground_truth	-	Quantifying Model Uncertainty with AutoML and Rashomon Partial Dependence Profiles: Enabling Trustworthy and Human-centered XAI
+184	2023	129	semi_synthetic_methodology,tabular_generative	-	Tabular and latent space synthetic data generation: a literature review
+185	2023	78	tabular_generative	-	Synthetic Tabular Data Evaluation in the Health Domain Covering Resemblance, Utility, and Privacy Dimensions
+186	2024	60	tabular_generative	-	Can I trust my fake data – A comprehensive quality assessment framework for synthetic tabular data in healthcare
+187	2024	40	semi_synthetic_methodology,tabular_generative	-	Scaling While Privacy Preserving: A Comprehensive Synthetic Tabular Data Generation and Evaluation in Learning Analytics
+188	2022	34	xai_eval_synthetic,xai_ground_truth	-	Quantifying Explainability of Saliency Methods in Deep Neural Networks With a Synthetic Dataset
+189	2021	33	xai_eval_synthetic,xai_ground_truth	C	"Will You Find These Shortcuts?" A Protocol for Evaluating the Faithfulness of Input Salience Methods for Text Classification
+190	2024	29	tabular_generative	-	Synthetic Tabular Data Validation: A Divergence-Based Approach
+191	2025	14	xai_eval_synthetic,symbolic_regression	-	SyMANTIC: An Efficient Symbolic Regression Method for Interpretable and Parsimonious Model Discovery in Science and Beyond
+192	2021	6	xai_eval_synthetic,xai_ground_truth	-	A Framework for Evaluating Post Hoc Feature-Additive Explainers
+193	2024	2	xai_ground_truth	-	TextFocus: Assessing the Faithfulness of Feature Attribution Methods Explanations in Natural Language Processing
+194	2023	2	semi_synthetic_methodology,tabular_generative	-	Synthetic Electricity Consumption Data Generation Using Tabular Generative Adversarial Networks
+195	2023	2	xai_eval_synthetic,xai_ground_truth	C	Studying Limits of Explainability by Integrated Gradients for Gene Expression Models
+196	2021	2	xai_eval_synthetic,xai_ground_truth	C	On the Objective Evaluation of Post Hoc Explainers.
+197	2024	1	semi_synthetic_methodology,tabular_generative	-	Synthetic Electrical Load Data Generation: A Tabular Generative Adversarial Networks Approach with Statistical and Predictive Modelling Evaluation
+198	2020	0	xai_ground_truth	-	Ground Truth Evaluation of Neural Network Explanations with CLEVR-XAI
+199	2026	0	xai_eval_synthetic,tabular_generative	-	Beyond cross-classification: evaluating tabular dataset similarity via feature importance rankings
+200	2026	0	xai_ground_truth	-	SleuthBench: Benchmarking Statistical LLM Evaluation Using Tabular Hidden Signals
+201	2025	0	xai_eval_synthetic,tabular_generative	-	$φ$-Table: A Statistical Explanation for Global SHAP
+202	2025	0	xai_ground_truth	-	DeepFaith: A Domain-Free and Model-Agnostic Unified Framework for Highly Faithful Explanations
+203	2024	0	xai_ground_truth	-	Saliency Methods are Encoders: Analysing Logical Relations Towards Interpretation
+204	2019	0	xai_ground_truth	-	DSAL-GAN: Denoising based Saliency Prediction with Generative Adversarial Networks
+205	2023	0	xai_ground_truth	-	Beyond Discriminative Regions: Saliency Maps as Alternatives to CAMs for Weakly Supervised Semantic Segmentation
+206	2023	0	xai_ground_truth	-	Red Teaming Deep Neural Networks with Feature Synthesis Tools
+207	2024	0	xai_ground_truth	-	Gradient-free Post-hoc Explainability Using Distillation Aided Learnable Approach
+208	2020	0	xai_ground_truth	-	Uncertainty-Aware Deep Calibrated Salient Object Detection
+209	2025	0	semi_synthetic_methodology	C	Are Neural Representation Learning Methods a Viable Alternative to TMLE for Causal Estimation?
+210	2026	0	semi_synthetic_methodology	-	A Causal Multiscale Digital Twin Framework for Immune-Nanomaterial Interactions: A Falsifiable Mechanistic Model and a Synthetic Benchmark for Causal Inference
+211	2026	0	semi_synthetic_methodology	-	Causal-Audit: A Framework for Risk Assessment of Assumption Violations in Time-Series Causal Discovery
+212	2024	0	semi_synthetic_methodology	-	Testing Generalizability in Causal Inference
+213	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	PerCaM-Health: Personalized Dynamic Causal Graphs for Healthcare Reasoning
+214	2026	0	semi_synthetic_methodology,tabular_generative	-	In-Context Positive-Unlabeled Learning
+215	2025	0	tabular_generative	-	Evaluating Generative Models for Tabular Data: Novel Metrics and Benchmarking
+216	2023	0	semi_synthetic_methodology,tabular_generative	-	TabMT: Generating tabular data with masked transformers
+217	2026	0	semi_synthetic_methodology	-	Beyond Realism: A Utility-Fidelity-Privacy Framework for Trustworthy Synthetic Data
+218	2025	0	semi_synthetic_methodology,tabular_generative	-	Critical Challenges and Guidelines in Evaluating Synthetic Tabular Data: A Systematic Review
+219	2025	0	tabular_generative	-	Synthetic Data Blueprint (SDB): A modular framework for the statistical, structural, and graph-based evaluation of synthetic tabular data
+220	2022	0	semi_synthetic_methodology,tabular_generative	-	Evaluating Synthetic Tabular Data Generated To Augment Small Sample Datasets
+221	2024	0	xai_eval_synthetic	-	Isolating variable effects in supervised machine learning illustrated in educational data mining
+222	2021	58	xai_eval_synthetic,model_vs_data	-	Testing conditional independence in supervised learning algorithms
+223	2024	40	xai_ground_truth	C	Assessing fidelity in XAI post-hoc techniques: A comparative study with ground truth explanations datasets
+224	2025	30	semi_synthetic_methodology,tabular_generative	-	Synthetic Data Generation for Healthcare: Exploring Generative Adversarial Networks Variants for Medical Tabular Data
+225	2022	26	symbolic_regression	C	Interpretability in symbolic regression: a benchmark of explanatory methods using the Feynman data set
+226	2024	12	xai_ground_truth	C	Benchmarking the influence of pre-training on explanation performance in MR image classification
+227	2021	12	xai_ground_truth,symbolic_regression	C	Measuring feature importance of symbolic regression models using partial effects
+228	2024	11	xai_eval_synthetic,tabular_generative	-	Improved Thermal Comfort Model Leveraging Conditional Tabular GAN Focusing on Feature Selection
+229	2021	11	semi_synthetic_methodology,tabular_generative	-	Generating Synthetic Fermentation Data of Shindari, a Traditional Jeju Beverage, Using Multiple Imputation Ensemble and Generative Adversarial Networks
+230	2020	10	xai_eval_synthetic,xai_ground_truth	C	Towards Ground Truth Explainability on Tabular Data
+231	2021	8	xai_ground_truth	-	Linked Data Ground Truth for Quantitative and Qualitative Evaluation of Explanations for Relational Graph Convolutional Network Link Prediction on Knowledge Graphs
+232	2023	7	semi_synthetic_methodology,model_vs_data	-	Inferring feature importance with uncertainties with application to large genotype data
+233	2025	6	xai_eval_synthetic	-	RankingSHAP - Faithful Listwise Feature Attribution Explanations for Ranking Models
+234	2021	5	tabular_generative	-	Standardised Metrics and Methods for Synthetic Tabular Data Evaluation
+235	2023	5	semi_synthetic_methodology	-	Simulation study to evaluate when Plasmode simulation is superior to parametric simulation in estimating the mean squared error of the least squares estimator in linear regression
+236	2021	2	semi_synthetic_methodology,model_vs_data	-	Inferring feature importance with uncertainties in high-dimensional data
+237	2026	1	xai_eval_synthetic,xai_ground_truth	-	WISCA: A Consensus-Based Approach to Harmonizing Interpretability in Tabular Datasets
+238	2024	0	xai_eval_synthetic	-	RankingSHAP -- Listwise Feature Attribution Explanations for Ranking Models
+239	2025	0	xai_ground_truth	-	Benchmarking Time-localized Explanations for Audio Classification Models
+240	2023	0	xai_eval_synthetic,xai_ground_truth	-	Generative models for two-ground-truth partitions in networks
+241	2024	0	xai_ground_truth	-	KGExplainer: Towards Exploring Connected Subgraph Explanations for Knowledge Graph Completion
+242	2025	0	xai_ground_truth	-	Rethinking Explanation Evaluation under the Retraining Scheme
+243	2026	0	xai_ground_truth	-	From Gaze to Meaning: A Training-Free AI Agent for Unified Grounding and Explanation
+244	2020	0	xai_ground_truth	-	Exathlon: A Benchmark for Explainable Anomaly Detection over Time Series
+245	2022	0	xai_ground_truth	-	Re-Examining Human Annotations for Interpretable NLP
+246	2026	0	tabular_generative	-	SelectArena: A Modern Benchmark for Feature Selection on Real-world Tabular Data
+247	2025	0	semi_synthetic_methodology,tabular_generative	-	Evaluating Privacy and Utility of Synthetic Tabular Data with Membership Inference Attacks
+248	2025	0	xai_eval_synthetic	-	SynClaimEval: A Framework for Evaluating the Utility of Synthetic Data in Long-Context Claim Verification
+249	2025	0	xai_eval_synthetic	-	Interpretable Similarity of Synthetic Image Utility
+250	2026	0	xai_eval_synthetic	-	Explainability of Complex AI Models with Correlation Impact Ratio
+251	2021	0	xai_eval_synthetic	-	Explaining Black-Box Algorithms Using Probabilistic Contrastive Counterfactuals
+252	2025	0	xai_eval_synthetic,semi_synthetic_methodology	-	Entropic Causal Inference: Graph Identifiability
+253	2024	0	xai_eval_synthetic,semi_synthetic_methodology	-	An Effective Theory of Bias Amplification
+254	2026	0	xai_eval_synthetic	-	Measuring What Matters: Synthetic Benchmarks for Concept Bottleneck Models
+255	2026	0	xai_ground_truth	-	Raising the Ceiling: Better Empirical Fixation Densities for Saliency Benchmarking
+256	2022	0	xai_ground_truth	-	TL;DW? Summarizing Instructional Videos with Task Relevance & Cross-Modal Saliency
+257	2026	0	semi_synthetic_methodology	-	Joint Treatment Effect Estimation from Incomplete Healthcare Data: Temporal Causal Normalizing Flows with LLM-driven Evolutionary MNAR Imputation
+258	2026	0	semi_synthetic_methodology	-	Topological Ignorability for Structural Causal Effects Beyond Means
+259	2026	0	semi_synthetic_methodology	-	HalluWorld: A Controlled Benchmark for Hallucination via Reference World Models
+260	2023	0	semi_synthetic_methodology	-	Learned Causal Method Prediction
+261	2026	0	semi_synthetic_methodology	-	Learning Optimal and Sample-Efficient Decision Policies with Guarantees
+262	2026	0	semi_synthetic_methodology,tabular_generative	-	Generative Artificial Intelligence for Synthetic Data Creation and Advanced Data Augmentation in Analytical Software Pipelines
+263	2023	0	semi_synthetic_methodology,tabular_generative	-	On the Usefulness of Synthetic Tabular Data Generation
+264	2023	0	semi_synthetic_methodology,tabular_generative	-	MMM and MMMSynth: Clustering of heterogeneous tabular data, and synthetic data generation
+265	2024	0	tabular_generative	-	Generating Realistic Tabular Data with Large Language Models
+266	2025	0	tabular_generative	-	Synthetic Tabular Data Generation for Privacy-Preserving Machine Learning
+267	2026	0	tabular_generative	-	The Decision Layer Above the Metrics: A Validated Decision Support System for Selecting Synthetic Tabular Data Generators
+268	2023	0	xai_eval_synthetic,tabular_generative	-	Sharing is CAIRing: Characterizing Principles and Assessing Properties of Universal Privacy Evaluation for Synthetic Tabular Data
+269	2023	0	semi_synthetic_methodology,tabular_generative	-	CuTS: Customizable Tabular Synthetic Data Generation
+270	2023	0	semi_synthetic_methodology,tabular_generative	-	Assessment of Differentially Private Synthetic Data for Utility and Fairness in End-to-End Machine Learning Pipelines for Tabular Data
+271	2025	0	semi_synthetic_methodology,tabular_generative	-	Membership Inference over Diffusion-models-based Synthetic Tabular Data
+272	2023	0	semi_synthetic_methodology,tabular_generative	-	Synthetic is all you need: removing the auxiliary data assumption for membership inference attacks against synthetic data
+273	2025	0	symbolic_regression	-	SURFACEBENCH: A Geometry-Aware Benchmark for Symbolic Surface Discovery
+274	2026	0	xai_eval_synthetic	-	Beyond Edge Deletion: A Comprehensive Approach to Counterfactual Explanation in Graph Neural Networks
+275	2022	96	semi_synthetic_methodology	-	A Multi-Dimensional Evaluation of Synthetic Data Generators
+276	2023	18	symbolic_regression	C	RILS-ROLS: robust symbolic regression via iterated local search and ordinary least squares
+277	2022	15	semi_synthetic_methodology	-	Evaluating the robustness of targeted maximum likelihood estimators via realistic simulations in nutrition intervention trials
+278	2022	12	xai_eval_synthetic	C	Generative and reproducible benchmarks for comprehensive evaluation of machine learning classifiers
+279	2024	11	xai_eval_synthetic	-	Guiding computationally intensive theory development with explainable artificial intelligence: The case of shapley additive explanations
+280	2023	9	xai_ground_truth	C	XAI-TRIS: Non-linear image benchmarks to quantify false positive post-hoc attribution of feature importance
+281	2023	8	title_only	-	$\mathcal{M}^4$: A Unified XAI Benchmark for Faithfulness Evaluation of Feature Attribution Methods across Metrics, Modalities and Models
+282	2024	8	xai_ground_truth	C	Can We Trust Explainable AI Methods on ASR? An Evaluation on Phoneme Recognition
+283	2019	6	xai_ground_truth	C	Towards a Unified Evaluation of Explanation Methods without Ground Truth
+284	2023	6	xai_ground_truth	C	Interpretability Methods for Graph Neural Networks
+285	2023	5	semi_synthetic_methodology	C	Longitudinal plasmode algorithms to evaluate statistical methods in realistic scenarios: an illustration applied to occupational epidemiology
+286	2025	4	tabular_generative	-	A Comprehensive Survey of Synthetic Tabular Data Generation
+287	2025	4	tabular_generative	-	Benchmarking Tabular Data Synthesis: Evaluating Tools, Metrics, and Datasets on Prosumer Hardware for End-Users
+288	2021	3	semi_synthetic_methodology	-	REFINE2: A tool to evaluate real-world performance of machine-learning based effect estimators for molecular and clinical studies
+289	2022	3	xai_ground_truth	-	A Simplified Benchmark for Ambiguous Explanations of Knowledge Graph Link Prediction Using Relational Graph Convolutional Networks (Student Abstract)
+290	2022	2	model_vs_data	-	Threading the Needle of On and Off-Manifold Value Functions for Shapley Explanations
+291	2026	1	tabular_generative	-	Metrics That Matter: A Practical Survey on Tabular Synthetic Data Evaluation
+292	2024	1	semi_synthetic_methodology	-	DeepDRK: Deep Dependency Regularized Knockoff for Feature Selection
+293	2026	1	tabular_generative	C	Comparative Analysis of Model‐Agnostic Explanation Methods in Materials Science
+294	2026	0	xai_ground_truth	-	Learning Quantifiable Visual Explanations Without Ground-Truth
+295	2024	0	xai_ground_truth	-	CHAOSMINING: Benchmarking Post-Hoc Attribution with Sparse Informative Features in High Dimensions
+296	2020	0	xai_ground_truth	-	QUACKIE: A NLP Classification Task With Ground Truth Explanations
+297	2025	0	xai_ground_truth	-	LeapFactual: Reliable Visual Counterfactual Explanation Using Conditional Flow Matching
+298	2026	0	xai_ground_truth	-	HalluScore: Large Language Model Hallucination Question Answering Benchmark
+299	2025	0	tabular_generative	-	Assessing Privacy-Utility Trade-offs in Generative Model-based Synthetic Tabular Datasets
+300	2026	0	xai_eval_synthetic,semi_synthetic_methodology	-	Reasoning-Driven Synthetic Data Generation and Evaluation
+301	2024	0	xai_eval_synthetic	-	LOKI: A Comprehensive Synthetic Data Detection Benchmark using Large Multimodal Models
+302	2024	0	xai_eval_synthetic,semi_synthetic_methodology	-	Inpainting the Gaps: A Novel Framework for Evaluating Explanation Methods in Vision Transformers
+303	2026	0	xai_eval_synthetic	-	From local to global XAI: Do local regression contributions correspond to spatially adjusted SHAP (SA-SHAP)?
+304	2026	0	xai_ground_truth	-	Evaluating the Causal Faithfulness of SHAP as a Candidate Attribution Method for SAE Features
+305	2026	0	xai_eval_synthetic	-	Evaluating Explanation Methods by the Predictors They Induce
+306	2017	0	xai_ground_truth	-	Personalization of Saliency Estimation
+307	2026	0	xai_ground_truth	-	Follow the Saliency: Supervised Saliency for Retrieval-augmented Dense Video Captioning
+308	2018	0	xai_ground_truth	-	Learning Saliency Prediction From Sparse Fixation Pixel Map
+309	2017	0	xai_ground_truth	-	A Locally Weighted Fixation Density-Based Metric for Assessing the Quality of Visual Saliency Predictions
+310	2021	0	xai_ground_truth	-	Salient Objects in Clutter
+311	2026	0	xai_ground_truth	-	Where Black-box Drug-Target Interaction Prediction Models Look: Cross-Method Explainability
+312	2024	0	semi_synthetic_methodology	-	Plasmode simulation for the evaluation of causal inference methods in homophilous social networks
+313	2026	0	semi_synthetic_methodology	-	Which Regularized Propensity-Score and Doubly Robust Methods Are Best Calibrated When Exposures or Outcomes Are Rare? A Plasmode Study of Proxy-Based Confounding Adjustment
+314	2025	0	semi_synthetic_methodology	-	A cautionary note for plasmode simulation studies in the setting of causal inference
+315	2024	0	semi_synthetic_methodology	-	Assessing treatment effects in observational data with missing confounders: A comparative study of practical doubly-robust and traditional missing data methods
+316	2024	0	semi_synthetic_methodology	-	K-Fold Causal BART for CATE Estimation
+317	2026	0	semi_synthetic_methodology	-	Bayesian estimation of causal effects from categorical data under unknown interventions
+318	2024	0	semi_synthetic_methodology	-	Automatic debiasing of neural networks via moment-constrained learning
+319	2023	0	semi_synthetic_methodology	-	SpaCE: The Spatial Confounding Environment
+320	2022	0	semi_synthetic_methodology	-	Transfer Learning on Heterogeneous Feature Spaces for Treatment Effects Estimation
+321	2025	0	semi_synthetic_methodology,tabular_generative	-	Adaptive Synthetic Data Generation and Integration for Enhanced Fraud Detection in Low-Resource Financial Domains
+322	2024	0	tabular_generative	-	Tabular Data Generation using Binary Diffusion
+323	2026	0	tabular_generative	-	A Sobering Look at Tabular Data Generation via Probabilistic Circuits
+324	2024	0	tabular_generative	-	FedTabDiff: Federated Learning of Diffusion Probabilistic Models for Synthetic Mixed-Type Tabular Data Generation
+325	2025	0	tabular_generative	-	LLM-TabLogic: Preserving Inter-Column Logical Relationships in Synthetic Tabular Data via Prompt-Guided Latent Diffusion
+326	2026	0	model_vs_data	-	cc-Shapley: Measuring Multivariate Feature Importance Needs Causal Context
+327	2024	0	semi_synthetic_methodology,model_vs_data	-	Enhancing Variable Importance in Random Forests: A Novel Application of Global Sensitivity Analysis
+328	2018	0	xai_eval_synthetic,model_vs_data	-	Knockoffs for the mass: new feature importance statistics with false discovery guarantees
+329	2023	0	xai_ground_truth	-	Interpretability Methods for Graph Neural Networks (Tutorial)
+330	2021	0	xai_ground_truth	C	Evaluation of Local Model-Agnostic Explanations Using Ground Truth.
+331	2021	376	xai_eval_synthetic	C	Deterministic Local Interpretable Model-Agnostic Explanations for Stable Explainability
+332	2022	109	xai_ground_truth	C	Do Feature Attribution Methods Correctly Attribute Features?
+333	2022	94	xai_eval_synthetic,model_vs_data	-	Discovering Invariant Rationales for Graph Neural Networks
+334	2022	70	semi_synthetic_methodology	-	Utility Metrics for Evaluating Synthetic Health Data Generation Methods: Validation Study
+335	2024	17	xai_ground_truth	C	Building trust in deep learning-based immune response predictors with interpretable explanations
+336	2023	12	model_vs_data	C	Conditional feature importance for mixed data
+337	2025	9	semi_synthetic_methodology	-	A comparison of methods for analysing compositional data with fixed and variable totals: a simulation study using the examples of time-use and dietary data
+338	2015	6	semi_synthetic_methodology	-	A Causal Perspective on OSIM2 Data Generation, with Implications for Simulation Study Design and Interpretation
+339	2025	5	tabular_generative	-	Unraveling the Regimes of Synthetic Data Metrics: Expectations, Ethics, and Politics
+340	2025	5	xai_eval_synthetic	-	Data augmentation alters feature importance in XGBoost for CVD prediction
+341	2025	5	xai_eval_synthetic	-	SEHG: Bridging Interpretability and Prediction in Self-Explainable Heterogeneous Graph Neural Networks
+342	2022	3	semi_synthetic_methodology	-	Neglecting normalization impact in semi-synthetic RNA-seq data simulation generates artificial false positives
+343	2026	1	xai_eval_synthetic	-	Corr-SHAP: Correlation-Aware Sampling for Faithful SHAP Value Estimation
+344	2026	1	xai_eval_synthetic	-	Class-Dependent Attribution of Optical and SAR Sensor Contributions in Land Cover Classification with SHAP and ROAR
+345	2026	0	xai_ground_truth	-	TrueMuse: A Benchmark for Data Attribution in Text-to-Music Models
+346	2026	0	xai_ground_truth	-	WOMBAT: Whitebox Oracle for Molecular Benchmarking and Attribution Testing
+347	2025	0	xai_ground_truth	-	An Expert-grounded benchmark of General Purpose LLMs in LCA
+348	2023	0	xai_ground_truth	-	REASONER: An Explainable Recommendation Dataset with Multi-aspect Real User Labeled Ground Truths Towards more Measurable Explainable Recommendation
+349	2026	0	xai_ground_truth	-	SFBench: The SciFy Scientific Feasibility Benchmark
+350	2026	0	xai_ground_truth	-	Beyond Trained Models: Compiling GNNs for a Sound Explainer Benchmark
+351	2026	0	xai_ground_truth	-	Do Large Language Model Voters Strategize? An Oracle-Based Benchmark for Manipulation under Voting Rules
+352	2026	0	xai_eval_synthetic	-	Explainable AI for Screening Abuse-Related Trauma in Bangladeshi Children: A Training-Free Multimodal Framework Evaluated on Noise-Aware Synthetic Data
+353	2021	0	xai_eval_synthetic	-	Explaining Deep Tractable Probabilistic Models: The sum-product network case
+354	2024	0	xai_eval_synthetic	-	Cognition Chain for Explainable Psychological Stress Detection on Social Media
+355	2026	0	xai_ground_truth	-	AGRI-Fidelity: Evaluating the Reliability of Listenable Explanations for Poultry Disease Detection
+356	2023	0	xai_eval_synthetic	-	Towards Attributions of Input Variables in a Coalition
+357	2024	0	xai_ground_truth	-	SalNAS: Efficient Saliency-prediction Neural Architecture Search with self-knowledge distillation
+358	2025	0	xai_ground_truth	-	WXSOD: A Benchmark for Robust Salient Object Detection in Adverse Weather Conditions
+359	2018	0	xai_ground_truth	-	Hyperspectral Image Dataset for Benchmarking on Salient Object Detection
+360	2014	0	xai_ground_truth	-	The Secrets of Salient Object Segmentation
+361	2022	0	semi_synthetic_methodology	-	Targeted-BEHRT: Deep learning for observational causal inference on longitudinal electronic health records
+362	2021	0	semi_synthetic_methodology	-	Bayesian Topic Regression for Causal Inference
+363	2021	0	semi_synthetic_methodology	-	Causal effect on a target population: a sensitivity analysis to handle missing covariates
+364	2025	0	semi_synthetic_methodology	-	Uncovering Bias Paths with LLM-guided Causal Discovery: An Active Learning and Dynamic Scoring Approach
+365	2026	0	tabular_generative	-	Synthetic tabular health data generation: a practical comparison between correlation and model-based statistical approach and the conditional generative adversarial network approach
+366	2025	0	tabular_generative	-	Diffusion and Flow Matching Models for Tabular Data: A Survey
+367	2025	0	tabular_generative	-	Exponential Family Variational Flow Matching for Tabular Data Generation
+368	2026	0	tabular_generative	-	Memisis: Orchestrating and Evaluating Synthetic Data for Tabular Health Datasets
+369	2021	0	semi_synthetic_methodology	-	Utility Metrics for Evaluating Synthetic Health Data Generation Methods: Validation Study (Preprint)
+370	2026	0	tabular_generative	-	Curriculum Matters: Data-Efficient Relational PFN Pretraining with Synthetic Data
+371	2026	0	symbolic_regression	-	ViSymRe: Vision multimodal symbolic regression
+372	2025	0	symbolic_regression	-	Call for Action: towards the next generation of symbolic regression benchmark
+373	2025	0	symbolic_regression	-	Can Synthetic Data Improve Symbolic Regression Extrapolation Performance?
+374	2025	0	xai_eval_synthetic,symbolic_regression	-	Bayesian Symbolic Regression via Posterior Sampling
+375	2025	0	model_vs_data	-	Novel Knockoff Generation and Importance Measures with Heterogeneous Data via Conditional Residuals and Local Gradients
+376	2024	0	xai_eval_synthetic	-	GNNAnatomy: Rethinking Model-Level Explanations for Graph Neural Networks
+377	2023	0	xai_ground_truth	C	An evaluation method with convolutional white-box models for image attribution explainers
+378	2024	0	xai_eval_synthetic	C	Transparent Neighborhood Approximation for Text Classifier Explanation by Probability-Based Editing
+379	2018	170	semi_synthetic_methodology	C	Evaluating large-scale propensity score performance through real-world and synthetic data experiments
+380	2022	120	tabular_generative	-	TabDDPM: Modelling Tabular Data with Diffusion Models
+381	2022	60	xai_eval_synthetic	C	Explainable Artificial Intelligence in Meteorology and Climate Science: Model Fine-Tuning, Calibrating Trust and Learning New Science
+382	2024	48	xai_eval_synthetic	-	Generative Artificial Intelligence Meets Synthetic Aperture Radar: A survey
+383	2025	38	symbolic_regression	C	Recent Advances in Symbolic Regression
+384	2023	29	xai_eval_synthetic	C	SAFARI: Versatile and Efficient Evaluations for Robustness of Interpretability
+385	2022	8	xai_eval_synthetic	-	Deconfounding to Explanation Evaluation in Graph Neural Networks
+386	2025	8	symbolic_regression	C	OIKAN: A Hybrid AI Framework Combining Symbolic Inference and Deep Learning for Interpretable Information Retrieval Models
+387	2021	7	semi_synthetic_methodology	C	Generating Synthetic Text Data to Evaluate Causal Inference Methods
+388	2024	6	xai_ground_truth	-	shapiq: Shapley Interactions for Machine Learning
+389	2024	6	tabular_generative	-	Large Language Models for Synthetic Tabular Health Data: A Benchmark Study
+390	2025	6	xai_eval_synthetic,xai_ground_truth	C	Multivariate engineering formulas discovery with knowledge-based neural network
+391	2024	6	xai_eval_synthetic,symbolic_regression	C	A generic approach for reproducible model distillation
+392	2025	4	symbolic_regression	C	SPINEX-symbolic regression: similarity-based symbolic regression with explainable neighbors exploration
+393	2022	3	xai_eval_synthetic,model_vs_data	-	Error-Based Knockoffs Inference for Controlled Feature Selection
+394	2026	1	tabular_generative	-	TabPrep: Closing the Feature Engineering Gap in Tabular Benchmarks
+395	2023	1	semi_synthetic_methodology	-	How to Simulate Realistic Survival Data? A Simulation Study to Compare Realistic Simulation Models
+396	2023	1	symbolic_regression	-	Boolformer: Symbolic Regression of Logic Functions with Transformers
+397	2023	1	symbolic_regression	-	Scalable Neural Symbolic Regression using Control Variables
+398	2026	0	xai_eval_synthetic	-	Synthetic Speech Attribution via Prototypical Networks
+399	2026	0	tabular_generative	-	Mind the Gap? A Distributional Comparison of Real and Synthetic Priors for Tabular Foundation Models
+400	2024	0	semi_synthetic_methodology	-	Synthetic Census Data Generation via Multidimensional Multiset Sum
+401	2023	0	xai_eval_synthetic	-	Towards Robust Fidelity for Evaluating Explainability of Graph Neural Networks
+402	2023	0	xai_eval_synthetic	-	XIMAGENET-12: An Explainable AI Benchmark Dataset for Model Robustness Evaluation
+403	2026	0	xai_eval_synthetic	-	Explainable Adaptive Zero Trust Framework for AWS with Adversarial Robustness Evaluation
+404	2022	0	xai_eval_synthetic	-	Explainable AI Algorithms for Vibration Data-based Fault Detection: Use Case-adadpted Methods and Critical Evaluation
+405	2026	0	xai_eval_synthetic	-	LOG-BASED SEMI-SUPERVISED ANOMALY DETECTION AND EXPLANATION USING TEMPORAL VISUAL REPRESENTATIONS AND LLMS
+406	2026	0	xai_ground_truth	-	Metamorphic Testing with the Rashomon Set: Explanation Faithfulness in Machine Learning
+407	2025	0	xai_ground_truth	-	Attribution Explanations for Deep Neural Networks: A Theoretical Perspective
+408	2020	0	xai_ground_truth	-	Synergistic saliency and depth prediction for RGB-D saliency detection
+409	2024	0	xai_ground_truth	-	Effective Guidance for Model Attention with Simple Yes-no Annotations
+410	2017	0	xai_ground_truth	-	Structure-measure: A New Way to Evaluate Foreground Maps
+411	2025	0	semi_synthetic_methodology	C	Causal Forests versus Inverse Probability of Treatment Weighting to adjust for Cluster-Level Confounding: A Parametric and Plasmode Simulation Study based on US Hosptial Electronic Health Record Data
+412	2026	0	semi_synthetic_methodology	-	Structure-agnostic Causal Representation Learning
+413	2026	0	semi_synthetic_methodology	-	Flexible Doubly Robust Proximal Causal Inference for Censored Outcomes
+414	2026	0	semi_synthetic_methodology	-	Transportable Causal Effect Estimation across Networks under Interference
+415	2021	0	semi_synthetic_methodology	-	NCoRE: Neural Counterfactual Representation Learning for Combinations of Treatments
+416	2026	0	semi_synthetic_methodology	-	When Interference Graphs Evolve: Doubly Robust Estimation of Dynamic Peer Effects
+417	2026	0	semi_synthetic_methodology	-	Kernel Balancing in Tree-based Methods
+418	2025	0	tabular_generative	-	Robust Spectral Watermark for Synthetic Tabular Data
+419	2024	0	tabular_generative	-	An improved tabular data generator with VAE-GMM integration
+420	2025	0	tabular_generative	-	Exploring the Heterogeneity of Tabular Data: A Diversity-aware Data Generator via LLMs
+421	2026	0	tabular_generative	-	Fidelity-Utility Dissociation in Synthetic Data Augmentation for RUL Prediction of Window-based Tabular Transformation
+422	2022	0	tabular_generative	-	TabSynDex: A Universal Metric for Robust Evaluation of Synthetic Tabular Data
+423	2025	0	tabular_generative	-	Evaluating Inter-Column Logical Relationships in Synthetic Tabular Data Generation
+424	2024	0	tabular_generative	-	Artificial Inductive Bias for Synthetic Tabular Data Generation in Data-Scarce Scenarios
+425	2025	0	symbolic_regression	-	Robust symbolic regression for dynamical system identification
+426	2026	0	symbolic_regression	C	A Comprehensive Survey on Symbolic Regression: State-of-the-Art Approaches, Key Applications, Benchmark Evaluations, and Future Research Directions
+427	2024	0	symbolic_regression	-	Benchmarking symbolic regression constant optimization schemes
+428	2024	0	symbolic_regression	-	Shape Constraints in Symbolic Regression using Penalized Least Squares
+429	2020	0	semi_synthetic_methodology	-	Learning from Positive and Unlabeled Data by Identifying the Annotation Process
+430	2022	0	xai_eval_synthetic,model_vs_data	-	Asymptotically Optimal Knockoff Statistics via the Masked Likelihood Ratio
+431	2026	0	xai_eval_synthetic	-	A Comparative Study of Counterfactual Explainers for Graph Neural Networks Enabling Multiple Types of Graph Edit
+432	2024	0	xai_ground_truth	-	DRExplainer: Quantifiable Interpretability in Drug Response Prediction with Directed Graph Convolutional Network
+433	2025	0	tabular_generative	C	Explanations Go Linear: Post-Hoc Explainability for Tabular Data with Interpretable Meta-Encoding
+434	2026	0	xai_eval_synthetic	C	Two-phase Feature Optimization for Fast and Accurate Software Defect Prediction
+435	2026	0	xai_eval_synthetic	C	From Prediction to Insight: Explainable Ensemble Learning for CO2-to-Methanol Conversion
+436	2026	0	tabular_generative	C	Multiple Imputation of a Continuous Outcome with Fully Observed Predictors Using TabPFN
+437	2018	220	tabular_generative	-	Synthesizing Tabular Data using Generative Adversarial Networks
+438	2021	137	symbolic_regression	-	Contemporary Symbolic Regression Methods and their Relative Performance
+439	2023	122	model_vs_data	-	Model-agnostic feature importance and effects with dependent features: a conditional subgroup approach
+440	2022	54	semi_synthetic_methodology	C	The Timing, the Treatment, the Question: Comparison of Epidemiologic Approaches to Minimize Immortal Time Bias in Real-World Data Using a Surgical Oncology Example
+441	2023	47	symbolic_regression	C	SR-Forest: A Genetic Programming-Based Heterogeneous Ensemble Learning Method
+442	2022	39	semi_synthetic_methodology	-	Synthetic Energy Data Generation Using Time Variant Generative Adversarial Network
+443	2024	21	xai_ground_truth	-	PowerGraph: A power grid benchmark dataset for graph neural networks
+444	2016	20	semi_synthetic_methodology	C	Effect Estimation in Point-Exposure Studies with Binary Outcomes and High-Dimensional Covariate Data – A Comparison of Targeted Maximum Likelihood Estimation and Inverse Probability of Treatment Weighting
+445	2024	18	tabular_generative	-	CasTGAN: Cascaded Generative Adversarial Network for Realistic Tabular Data Synthesis
+446	2011	15	semi_synthetic_methodology	-	Monte Carlo Simulations and Capital Structure Research*
+447	2022	9	symbolic_regression	-	Rethinking Symbolic Regression Datasets and Benchmarks for Scientific Discovery
+448	2023	6	xai_eval_synthetic	C	Evaluating Explanation Methods for Multivariate Time Series Classification
+449	2025	5	xai_ground_truth	-	Evaluating Model Explanations without Ground Truth
+450	2024	5	symbolic_regression	C	Interpretability analysis of Symbolic Regression models for dynamical systems
+451	2025	4	semi_synthetic_methodology	C	How Effective Are Machine Learning and Doubly Robust Estimators in Incorporating High‐Dimensional Proxies to Reduce Residual Confounding?
+452	2024	3	symbolic_regression	C	Effects of reducing redundant parameters in parameter optimization for symbolic regression using genetic programming
+453	2023	2	xai_eval_synthetic	-	Generative Explanations for Graph Neural Network: Methods and Evaluations
+454	2022	2	xai_ground_truth	C	Explainability as statistical inference
+455	2024	1	semi_synthetic_methodology	-	High-dimensional multiple imputation (HDMI) for partially observed confounders including natural language processing-derived auxiliary covariates
+456	2026	1	xai_eval_synthetic	-	Operating characteristics of agreement metrics in AI-based scoring: a Monte Carlo simulation
+457	2026	1	xai_eval_synthetic	-	Validating Neurite EXchange Imaging (NEXI) using diffusion Monte Carlo simulations in realistic numerical gray matter substrates
+458	2025	1	xai_eval_synthetic	-	Feature Importance Depends on Properties of the Data: Towards Choosing the Correct Explanations for Your Data and Decision Trees based Models
+459	2021	1	xai_eval_synthetic	C	Accurate and robust Shapley Values for explaining predictions and focusing on local important variables.
+460	2026	1	model_vs_data	C	Use of explainable symbolic regression approaches for predicting nanomaterial-enhanced concrete performance
+461	2024	1	symbolic_regression	C	A Hierarchical Cooperative Genetic Programming for Complex Piecewise Symbolic Regression
+462	2026	1	semi_synthetic_methodology	C	A Plasmode Simulation‐Based Bias Analysis for Residual Confounding by Unmeasured Variables Leveraging Information‐Rich Subsets
+463	2026	1	xai_eval_synthetic,symbolic_regression	C	A data-driven model of waste gasification and pyrolysis: One tailored approach for an experimental facility from the Czech Republic
+464	2026	0	semi_synthetic_methodology	-	Extending regression without truth to integrate ground-truth measurements for evaluating quantitative imaging methods with patient data
+465	2026	0	title_only	-	How Interpretable Are LLMs? A Multi-Metric Framework for Evaluating Synthetic Explanations in Digital Mental Health
+466	2025	0	xai_ground_truth	-	ExPO: Unlocking Hard Reasoning with Self-Explanation-Guided Reinforcement Learning
+467	2026	0	title_only	-	Evaluating Fidelity in Synthetic Tabular Data Generation: A Comparative Study of CTGAN and TVAE for Human Activity Recognition Datasets
+468	2022	0	xai_eval_synthetic	-	Using Explainable Boosting Machine to Compare Idiographic and Nomothetic Approaches for Ecological Momentary Assessment Data
+469	2021	0	xai_eval_synthetic	-	Physically Explainable CNN for SAR Image Classification
+470	2022	0	xai_eval_synthetic	-	Fast and explainable clustering based on sorting
+471	2023	0	xai_eval_synthetic	-	ICLEF: In-Context Learning with Expert Feedback for Explainable Style Transfer
+472	2021	0	xai_ground_truth	-	Anomaly detection and explanation in big data
+473	2026	0	xai_eval_synthetic	-	Shapley Value Estimation for Multi-Site Data with Blockwise-Missing Features
+474	2024	0	model_vs_data	-	Shapley Marginal Surplus for Strong Models
+475	2026	0	model_vs_data	-	Proxy-Based Approximation of Shapley and Banzhaf Interactions
+476	2024	0	xai_eval_synthetic	-	Kernel Banzhaf: A Fast and Robust Estimator for Banzhaf Values
+477	2026	0	tabular_generative	-	Integrating Feature Understandability into Feature Selection for Human-Centred Tabular Explanations
+478	2023	0	xai_ground_truth	-	Better Understanding Differences in Attribution Methods via Systematic Evaluations
+479	2022	0	xai_ground_truth	-	Towards Better Understanding Attribution Methods
+480	2018	0	xai_ground_truth	-	Relative Saliency and Ranking: Models, Metrics, Data, and Benchmarks
+481	2019	0	xai_ground_truth	-	Light Field Saliency Detection with Deep Convolutional Networks
+482	2022	0	xai_ground_truth	-	3SD: Self-Supervised Saliency Detection With No Labels
+483	2024	0	xai_ground_truth	-	DiffSal: Joint Audio and Video Learning for Diffusion Saliency Prediction
+484	2023	0	xai_ground_truth	-	Joint Correcting and Refinement for Balanced Low-Light Image Enhancement
+485	2025	0	semi_synthetic_methodology	-	Behavior of prediction performance metrics with rare events
+486	2025	0	semi_synthetic_methodology	-	Machine learning to optimize precision in the analysis of randomized trials: A journey in pre-specified, yet data-adaptive learning
+487	2026	0	semi_synthetic_methodology	-	SCOPE: Sequential Causal Optimization of Process Interventions
+488	2026	0	semi_synthetic_methodology	-	Large Causal Models for Temporal Causal Discovery
+489	2026	0	semi_synthetic_methodology	-	Surrogate-powered Causal Inference with Censored Outcomes
+490	2022	0	semi_synthetic_methodology	-	Partial Identification of Dose Responses with Hidden Confounders
+491	2026	0	semi_synthetic_methodology	-	Outcome-adapted Automatic Debiased Machine Learning
+492	2026	0	semi_synthetic_methodology	-	Calibrated Inference for the Conditional Average Treatment Effect in the Few-Placebo Regime via Gaussian Processes
+493	2026	0	semi_synthetic_methodology	-	Learning Risk Scores Robust to Unobserved Confounders
+494	2026	0	semi_synthetic_methodology	-	Optimizing Techniques for Data Generation Using Generative Adversarial Network
+495	2022	0	tabular_generative	-	Permutation-Invariant Tabular Data Synthesis
+496	2026	0	tabular_generative	-	TabPATE: Differentially Private Tabular In-Context Learning Without Public Data
+497	2024	0	tabular_generative	-	Adaptive and Robust Watermark for Generative Tabular Data
+498	2025	0	tabular_generative	-	Robust Tabular Foundation Models
+499	----	0	tabular_generative	-	Evaluating post hoc explanations using tabular data: a functionally-grounded perspective
+500	2026	0	symbolic_regression	-	Benchmarking Zero-Shot LLM-Generated Parent Selection in Genetic Programming for Symbolic Regression
+501	2022	0	symbolic_regression	-	Correlation versus RMSE Loss Functions in Symbolic Regression Tasks
+502	2018	0	xai_eval_synthetic	-	Return of the features. Efficient feature selection and interpretation for photometric redshifts
+503	2026	0	tabular_generative,model_vs_data	-	xplainfi: Feature Importance and Statistical Inference for Machine Learning in R
+504	2025	0	xai_ground_truth	C	Building consistency in explanations: Harmonizing CNN attributions for satellite-based land cover classification
+505	2022	1061	tabular_generative	C	Deep Neural Networks and Tabular Data: A Survey
+506	2017	55	semi_synthetic_methodology	-	DepthSynth: Real-Time Realistic Synthetic Data Generation from CAD Models for 2.5D Recognition
+507	2022	31	xai_eval_synthetic	C	Comparison of Climate Model Large Ensembles With Observations in the Arctic Using Simple Neural Networks
+508	2024	27	tabular_generative	-	Data Augmentation of a Corrosion Dataset for Defect Growth Prediction of Pipelines Using Conditional Tabular Generative Adversarial Networks
+509	2023	26	xai_eval_synthetic	-	MixupExplainer: Generalizing Explanations for Graph Neural Networks with Data Augmentation
+510	2021	23	semi_synthetic_methodology	C	Propensity score trimming mitigates bias due to covariate measurement error in inverse probability of treatment weighted analyses: A plasmode simulation
+511	2024	17	tabular_generative	-	Tab-VAE: A Novel VAE for Generating Synthetic Tabular Data
+512	2023	16	tabular_generative	-	A Deep Learning-Based Pipeline for the Generation of Synthetic Tabular Data
+513	2024	14	symbolic_regression	-	Symbolic Regression with a Learned Concept Library
+514	2018	14	model_vs_data	-	iml: Interpretable Machine Learning
+515	2024	13	title_only	C	BEExAI: Benchmark to Evaluate Explainable AI
+516	2015	12	symbolic_regression	-	Evaluating Methods for Constant Optimization of Symbolic Regression Benchmark Problems
+517	2024	9	semi_synthetic_methodology	C	Comparison of two propensity score-based methods for balancing covariates: the overlap weighting and fine stratification methods in real-world claims data
+518	2025	9	model_vs_data	C	Interpretable Machine Learning for Survival Analysis
+519	2024	9	semi_synthetic_methodology	C	Can supervised deep learning architecture outperform autoencoders in building propensity score models for matching?
+520	2022	8	semi_synthetic_methodology	-	A Monte Carlo Simulation Study to Assess Estimation Methods in CFA on Ordinal Data
+521	2023	7	title_only	-	Evaluating the Utility of GAN Generated Synthetic Tabular Data for Class Balancing and Low Resource Settings
+522	2023	7	model_vs_data	-	Statistically Valid Variable Importance Assessment through Conditional Permutations
+523	2021	7	semi_synthetic_methodology	C	Using Numerical Methods to Design Simulations: Revisiting the Balancing Intercept
+524	2020	6	xai_ground_truth	-	Recent Advances in Saliency Estimation for Omnidirectional Images, Image Groups, and Video Sequences
+525	2024	6	semi_synthetic_methodology	C	Comparing methods for estimating causal treatment effects of administrative health data: A plasmode simulation study
+526	2024	6	symbolic_regression	C	Machine and deep learning performance in out-of-distribution regressions
+527	2025	3	semi_synthetic_methodology	C	Is there a competitive advantage to using multivariate statistical or machine learning methods over the Bross formula in the hdPS framework for bias and variance estimation?
+528	2019	3	xai_eval_synthetic	-	In vivo diffusion magnetic resonance imaging of the white matter microstructure from dictionaries generated by Monte Carlo simulations: development and validation
+529	2019	2	tabular_generative	-	A Model-based Framework to Automatically Generate Semi-real Data for Evaluating Data Analysis Techniques
+530	2026	2	tabular_generative	-	CT-TabGAN: enhanced tabular data modeling through conditional generative adversarial networks for imbalance mitigation
+531	2023	1	model_vs_data	-	Manifold Restricted Interventional Shapley Values
+532	2023	1	title_only	-	InterSynth: A Semi-Synthetic Framework for Benchmarking Prescriptive Inference from Observational Data
+533	2024	1	semi_synthetic_methodology	-	Proximal Causal Inference With Text Data
+534	2025	1	semi_synthetic_methodology	C	REFINE2: a simplified simulation tool to help epidemiologists evaluate the suitability and sensitivity of effect estimation within user-specified data
+535	2023	0	xai_ground_truth	-	Be Careful When Evaluating Explanations Regarding Ground Truth
+536	2025	0	xai_ground_truth	-	Misleading through Inconsistency: A Benchmark for Political Inconsistencies Detection
+537	2023	0	xai_eval_synthetic	-	Synthetic Boost: Leveraging Synthetic Data for Enhanced Vision-Language Segmentation in Echocardiography
+538	2022	0	semi_synthetic_methodology	-	GeoPointGAN: Synthetic Spatial Data with Local Label Differential Privacy
+539	2026	0	semi_synthetic_methodology	-	On the Role of Conversational Timing in Synthetic Training Data for ASR
+540	2022	0	xai_eval_synthetic	-	Evaluation of post-hoc interpretability methods in time-series classification
+541	2023	0	xai_eval_synthetic	-	Fast Approximation of the Shapley Values Based on Order-of-Addition Experimental Designs
+542	2025	0	xai_eval_synthetic	-	Losing is for Cherishing: Data Valuation Based on Machine Unlearning and Shapley Value
+543	2025	0	xai_eval_synthetic	-	Shapley Value-driven Data Pruning for Recommender Systems
+544	----	0	title_only	-	Table 6: Quantitative evaluation of explanation quality metrics for LIME, PFI, and SHAP methods.
+545	2017	0	xai_ground_truth	-	A Unified RGB-T Saliency Detection Benchmark: Dataset, Baselines, Analysis and A Novel Approach
+546	2025	0	xai_ground_truth	-	KVQ: Boosting Video Quality Assessment via Saliency-guided Local Perception
+547	2018	0	xai_ground_truth	-	Boundary-guided Feature Aggregation Network for Salient Object Detection
+548	2018	0	xai_ground_truth	-	WebSeg: Learning Semantic Segmentation from Web Searches
+549	2021	0	xai_ground_truth	-	Leveraging Auxiliary Tasks with Affinity Learning for Weakly Supervised Semantic Segmentation
+550	2024	0	xai_ground_truth	-	Alignment-Free RGB-T Salient Object Detection: A Large-scale Dataset and Progressive Correlation Network
+551	2026	0	xai_ground_truth	-	The Cost of Context: Mitigating Textual Bias in Multimodal Retrieval-Augmented Generation
+552	2023	0	xai_ground_truth	-	LOCATE: Self-supervised Object Discovery via Flow-guided Graph-cut and Bootstrapped Self-training
+553	2026	0	semi_synthetic_methodology	-	A Plasmode Benchmark Can Refute but Cannot Certify: Projection and Regularity in Causal-Inference Simulation
+554	2026	0	semi_synthetic_methodology	-	When bad adjustment looks good: what goes wrong in Plasmode 0.1.0 simulations
+555	----	0	semi_synthetic_methodology	-	Structural Causal Models for Synthetic Data Generation
+556	2026	0	semi_synthetic_methodology	-	SeaCausal-FL: Federated Fuzzy Causal Learning for Maritime IoT Fault Diagnosis and Counterfactual Reasoning
+557	2026	0	semi_synthetic_methodology	-	Observationally Informed Adaptive Causal Experimental Design
+558	2024	0	semi_synthetic_methodology	-	Benchmarking Observational Studies with Experimental Data under Right-Censoring
+559	2026	0	xai_eval_synthetic	-	Stock health analysis and forecasting using risk-adjusted metrics and LSTM-guided Monte Carlo simulation
+560	2024	0	tabular_generative	-	Tabular Data Augmentation for Machine Learning: Progress and Prospects of Embracing Generative AI
+561	2026	0	tabular_generative	-	Causal Data Augmentation for Robust Fine-Tuning of Tabular Foundation Models
+562	2024	0	tabular_generative	-	TAEGAN: Generating Synthetic Tabular Data For Data Augmentation
+563	2026	0	tabular_generative	-	MIDST Challenge at SaTML 2025: Membership Inference over Diffusion-models-based Synthetic Tabular data
+564	2025	0	symbolic_regression	-	Transformer Semantic Genetic Programming for Symbolic Regression
+565	2026	0	symbolic_regression	-	Neural Symbollic Regression Using Deep Learning and Sparse Modelling
+566	2026	0	symbolic_regression	-	Architecture-Induced Recoverability Bias in Differentiable Symbolic Regression
+567	2017	0	symbolic_regression	-	Symbolic Regression Algorithms with Built-in Linear Regression
+568	2024	0	symbolic_regression	-	ISR: Invertible Symbolic Regression
+569	2024	0	xai_eval_synthetic	-	Conditional Local Importance by Quantile Expectations
+570	2023	0	xai_eval_synthetic	-	Contextual Feature Selection with Conditional Stochastic Gates
+571	2023	0	xai_eval_synthetic	-	Quantifying the Intrinsic Usefulness of Attributional Explanations for Graph Neural Networks with Artificial Simulatability Studies
+572	2024	0	symbolic_regression	C	Cross-validation, Symbolic Regression, Pareto include
+573	2026	0	model_vs_data	C	Correlations Matter in Explanations for Energy Systems
+574	2025	0	xai_eval_synthetic,symbolic_regression	C	Data-driven investigation of analytical relationships in moiré structured materials
+575	2018	113	semi_synthetic_methodology	C	Relative Performance of Propensity Score Matching Strategies for Subgroup Analyses
+576	2015	84	semi_synthetic_methodology	C	Regularized Regression Versus the High-Dimensional Propensity Score for Confounding Adjustment in Secondary Database Analyses
+577	2017	71	semi_synthetic_methodology	C	Using Super Learner Prediction Modeling to Improve High-dimensional Propensity Score Estimation
+578	2022	68	tabular_generative	-	Language Models are Realistic Tabular Data Generators
+579	2020	37	model_vs_data	C	Shapley explainability on the data manifold
+580	2023	33	xai_eval_synthetic	-	Sample size and predictive performance of machine learning methods with survival data: A simulation study
+581	2021	26	tabular_generative	-	Generative Adversarial Networks for Synthetic Data Generation: A Comparative Study
+582	2019	25	semi_synthetic_methodology	-	Using Wasserstein Generative Adversarial Networks for the Design of Monte Carlo Simulations
+583	2024	20	semi_synthetic_methodology	C	Statistical plasmode simulations–Potentials, challenges and recommendations
+584	2022	19	xai_eval_synthetic	-	Agnostic Explanation of Model Change based on Feature Importance
+585	2023	18	model_vs_data	C	Investigating the interaction parameters on ventilation supercavitation phenomena: Experimental and numerical analysis with machine learning interpretation
+586	2023	17	tabular_generative	C	Can local explanation techniques explain linear additive models?
+587	2024	10	semi_synthetic_methodology	C	A Principled Approach to Characterize and Analyze Partially Observed Confounder Data from Electronic Health Records
+588	2024	9	symbolic_regression	-	Racing Control Variable Genetic Programming for Symbolic Regression
+589	2012	8	semi_synthetic_methodology	-	Anti-metastatic Semi-synthetic Sulfated Maltotriose C-C Linked Dimers. Synthesis and Characterisation
+590	2022	8	symbolic_regression	-	Denoising autoencoder genetic programming for real-world symbolic regression
+591	2023	8	semi_synthetic_methodology	C	XyGen: Synthetic data generator for feature selection
+592	2025	7	semi_synthetic_methodology	-	A behavioral architecture for realistic simulations of Drosophila larva locomotion and foraging
+593	2023	6	symbolic_regression	-	ODEFormer: Symbolic Regression of Dynamical Systems with Transformers
+594	2023	6	xai_eval_synthetic	C	RHALE: Robust and Heterogeneity-Aware Accumulated Local Effects
+595	2019	6	semi_synthetic_methodology	C	Evaluating the use of bootstrapping in cohort studies conducted with 1:1 propensity score matching—A plasmode simulation study
+596	2024	5	semi_synthetic_methodology	-	The Causal Roadmap and Simulations to Improve the Rigor and Reproducibility of Real-data Applications
+597	2023	5	symbolic_regression	-	Deep Generative Symbolic Regression with Monte-Carlo-Tree-Search
+598	2025	3	semi_synthetic_methodology	-	Sensitivity Analysis for Unmeasured Confounding in Medical Product Development and Evaluation Using Real World Evidence
+599	2023	3	tabular_generative	-	Tabular Generative Adversarial Networks (TabGANs) for Flood Forecasting from Meteorological data
+600	2023	3	symbolic_regression	C	Death After Liver Transplantation: Mining Interpretable Risk Factors for Survival Prediction
+601	2023	2	semi_synthetic_methodology	C	Evaluating the Performance of High-Dimensional Propensity Scores Compared with Standard Propensity Scores for Comparing Antihypertensive Therapies in the CPRD GOLD Database
+602	2016	1	semi_synthetic_methodology	-	WiSDM: a platform for crowd-sourced data acquisition, analytics, and synthetic data generation
+603	2025	1	xai_ground_truth	-	Saliency Maps are Ambiguous: Analysis of Logical Relations on First and Second Order Attributions
+604	2025	1	symbolic_regression	C	Towards Automated and Interpretable Decision Support Systems for Precision Livestock Farming Using Evolutionary Computing
+605	2022	1	symbolic_regression	C	Symbolic Regression with augmented dataset using RuleFit
+606	2026	0	tabular_generative	-	Evaluation of Active Feature Acquisition Policies with Tabular Foundation Models
+607	2025	0	model_vs_data	-	Basic Explainability ‚Äì Feature Importance, PDP, ICE
+608	2024	0	xai_eval_synthetic	-	Adding Explainability to Visual Clustering Tendency Assessment (VAT) Methods Through Feature Importance
+609	2025	0	xai_eval_synthetic	-	A Comparative Study on Synthetic Facial Data Generation Techniques for Face Recognition
+610	2024	0	xai_eval_synthetic	-	EXGC: Bridging Efficiency and Explainability in Graph Condensation
+611	2026	0	tabular_generative	-	A semantic firewall for proactive governance of synthetic tabular data in generative AI pipelines
+612	2026	0	xai_eval_synthetic	-	TN-SHAP-G: Graph-Structured Tensor Network Surrogates for Shapley Values and Interactions
+613	2026	0	xai_eval_synthetic	-	iAdditive: Fast and Fair Feature Importance Estimation for Correlated Features Using Shapley Values
+614	2025	0	xai_eval_synthetic	-	Rethinking Data Value: Asymmetric Data Shapley for Structure-Aware Valuation in Data Markets and Machine Learning Pipelines
+615	2026	0	model_vs_data	-	Receiver-Specific Interventional Valuation of Semantic Atoms for Budget-Constrained Multi-Agent Communication
+616	2021	0	xai_eval_synthetic	-	Information Theoretic Measures for Fairness-aware Feature Selection
+617	2026	0	tabular_generative	-	MEA: A Reward-Driven Multi-Agent System for Faithful Model Explanations
+618	2026	0	xai_ground_truth	-	How Faithful Is Trajectory-Based Data Attribution? Error Sources, Remedies, and Practical Guidelines
+619	2021	0	xai_ground_truth	-	SalFBNet: Learning Pseudo-Saliency Distribution via Feedback Convolutional Networks
+620	2023	0	xai_ground_truth	-	Boundary-semantic collaborative guidance network with dual-stream feedback mechanism for salient object detection in optical remote sensing imagery
+621	2024	0	xai_ground_truth	-	Auxiliary Tasks Enhanced Dual-affinity Learning for Weakly Supervised Semantic Segmentation
+622	2019	0	xai_ground_truth	-	Nested Network with Two-Stream Pyramid for Salient Object Detection in Optical Remote Sensing Images
+623	2025	0	xai_ground_truth	-	Ensemble Foreground Management for Unsupervised Object Discovery
+624	2017	0	xai_ground_truth	-	Predicting Foreground Object Ambiguity and Efficiently Crowdsourcing the Segmentation(s)
+625	2024	0	semi_synthetic_methodology	-	Monte Carlo Integration in Simple and Complex Simulation Designs
+626	2026	0	semi_synthetic_methodology	-	Targeted maximum likelihood estimation of vaccine effectiveness and immune correlates in test-negative design studies with missing data
+627	2018	0	xai_eval_synthetic	-	An Empirical Evaluation of the Approximation of Subjective Logic Operators Using Monte Carlo Simulations
+628	2025	0	semi_synthetic_methodology	-	Exploring the Role of Generative Adversarial Networks (GANs) and Generative AI for Synthetic Data Generation and Augmentation in Machine Learning
+629	2024	0	tabular_generative	-	Convex space learning for tabular synthetic data generation
+630	2026	0	title_only	-	SynGenEva: A Generator-Agnostic Evaluation Protocol for Synthetic Tabular Data
+631	2024	0	tabular_generative	-	Cross-table Synthetic Tabular Data Detection
+632	2022	0	tabular_generative	-	Comparing Synthetic Tabular Data Generation Between a Probabilistic Model and a Deep Learning Model for Education Use Cases
+633	2026	0	symbolic_regression	-	MorphingNet: Symbolic Regression Where the Network Is the Formula
+634	2025	0	symbolic_regression	-	Probabilistic Symbolic Regression for Equation Discovery via Operator-induced and Regularized Symbolic Forests
+635	2025	0	symbolic_regression	-	EGG-SR: Embedding Symbolic Equivalence into Symbolic Regression via Equality Graph
+636	2024	0	symbolic_regression	-	A Comparison of Recent Algorithms for Symbolic Regression to Genetic Programming
+637	2026	0	symbolic_regression	-	Deep Divide-and-Reduce in Symbolic Regression
+638	2026	0	symbolic_regression	-	Bayesian Symbolic Regression with Entropic Reinforcement Learning
+639	2026	0	symbolic_regression	-	Breaking the Simplification Bottleneck in Amortized Neural Symbolic Regression
+640	2025	0	symbolic_regression	-	LLM-Meta-SR: In-Context Learning for Evolving Selection Operators in Symbolic Regression
+641	2025	0	xai_eval_synthetic	-	Decorrelated feature importance from local sample weighting
+642	2017	0	model_vs_data	-	Consistent feature attribution for tree ensembles
+643	2025	0	xai_ground_truth	-	Explainable machine learning for wheat above-ground biomass estimation under spatial cross-validation: sensor contributions and exploratory harvest forecasting
+644	2026	0	semi_synthetic_methodology	-	Mosaic Monte Carlo: A New Method of Simulation Design to Improve the Generalizability of Findings
+645	2026	0	xai_ground_truth	-	The Equilibrium Is the Initialization: Lazy Identity Collapse in Physics-Structured Deep Equilibrium Reasoning
+646	2025	0	semi_synthetic_methodology	C	Computing True Parameter Values in Simulation Studies Using Monte Carlo Integration
+647	2022	148	xai_eval_synthetic	-	Feature Importance in Gradient Boosting Trees with Cross-Validation Feature Selection
+648	2013	145	title_only	-	Plasmode simulation for the evaluation of pharmacoepidemiologic methods in complex healthcare databases
+649	2024	47	symbolic_regression	-	SymFormer: End-to-End Symbolic Regression Using Transformer-Based Architecture
+650	2018	47	semi_synthetic_methodology	C	Data Mining for Adverse Drug Events With a Propensity Score-matched Tree-based Scan Statistic
+651	2022	43	semi_synthetic_methodology	-	A comprehensive method to design and assess mixed reality simulations
+652	2022	39	xai_eval_synthetic	C	Stable and actionable explanations of black-box models through factual and counterfactual rules
+653	2021	27	semi_synthetic_methodology	C	Extent, impact, and mitigation of batch effects in tumor biomarker studies using tissue microarrays
+654	2024	26	symbolic_regression	C	Rediscovering the Mullins effect with deep symbolic regression
+655	2023	24	symbolic_regression	C	Modular Multitree Genetic Programming for Evolutionary Feature Construction for Regression
+656	2021	22	xai_eval_synthetic	C	Explaining predictive models using Shapley values and non-parametric vine copulas
+657	2017	18	semi_synthetic_methodology	C	Extending the Case–Control Design to Longitudinal Data
+658	2023	15	xai_eval_synthetic	C	Identifying the regional emergence of climate patterns in the ARISE-SAI-1.5 simulations
+659	2022	12	model_vs_data	-	Importance conditional sampling for Pitman–Yor mixtures
+660	2025	10	tabular_generative	-	Synthetic Tabular Data Generation for Imbalanced Classification: The Surprising Effectiveness of an Overlap Class
+661	2024	10	xai_eval_synthetic	-	Factorized Explainer for Graph Neural Networks
+662	2024	9	model_vs_data	C	Explainable artificial intelligence for machine learning prediction of bandgap energies
+663	2025	8	symbolic_regression	C	cp3-bench: a tool for benchmarking symbolic regression algorithms demonstrated with cosmology
+664	2024	7	xai_eval_synthetic	-	Reliable and Faithful Generative Explainers for Graph Neural Networks
+665	2025	7	symbolic_regression	C	Symbolic regression accelerates the discovery of quantitative relationships in rubber material aging
+666	2024	5	title_only	C	Explainability, Quantified: Benchmarking XAI Techniques
+667	2024	5	symbolic_regression	C	Bias and Variance Analysis of Contemporary Symbolic Regression Methods
+668	2024	4	tabular_generative	-	How Realistic Is Your Synthetic Data? Constraining Deep Generative Models for Tabular Data
+669	2026	4	symbolic_regression	C	Hybrid modeling with attribution-guided symbolic enhancements of known physics: Applications to complex biological and engineering systems
+670	2025	3	tabular_generative	C	A Framework for Generating Realistic Synthetic Tabular Data in a Randomized Controlled Trial Setting
+671	2026	3	tabular_generative	-	MALLM-GAN: Multi-Agent Large Language Model as Generative Adversarial Network for Synthesizing Tabular Data
+672	2025	3	symbolic_regression	-	Noise-Resilient Symbolic Regression with Dynamic Gating Reinforcement Learning
+673	2023	3	symbolic_regression	C	Improving Shoreline Forecasting Models with Multi-Objective Genetic Programming
+674	2023	2	xai_ground_truth	-	AttributionLab: Faithfulness of Feature Attribution Under Controllable Environments
+675	2024	2	semi_synthetic_methodology	C	Cardinality matching versus propensity score matching for addressing cluster-level residual confounding in implantable medical device and surgical epidemiology: a parametric and plasmode simulation study
+676	2019	2	semi_synthetic_methodology	-	Towards real-time simulation of physically realistic pressure applied to submerged bodies using explicit and semi-implicit SPH algorithms
+677	2022	2	xai_ground_truth	C	Ground truth explanation dataset for chemical property prediction on molecular graphs
+678	2025	2	semi_synthetic_methodology	C	High‐Dimensional Disease Risk Score for Dealing With Residual Confounding Bias in Estimating Treatment Effects With a Survival Outcome
+679	2026	1	title_only	-	Evaluating Local Explainability Metrics for Machine Learning Models on Tabular Data
+680	2026	1	title_only	-	SHAP-LLM: Explainability-Guided Synthetic Tabular Data Generation Using Large Language Models
+681	2021	1	tabular_generative	-	SAGAD: Synthetic Data Generator for Tabular Datasets
+682	2024	1	xai_eval_synthetic	-	A Multispectral Decomposition and Frequency-Based Framework for Salient Object Detection in Remote Sensing Images
+683	----	1	title_only	-	Table 2: Data generating process (DGP) of Monte Carlo simulation.
+684	2026	1	xai_ground_truth	-	Assessing Explanations of Graph Neural Networks for Dynamic Stability Assessment of Power Grids
+685	2026	1	xai_ground_truth	C	Evaluating line-level localization ability of learning-based code vulnerability detection models
+686	2024	1	symbolic_regression	C	A Novel Symbolic Regressor Enhancer Using Genetic Programming
+687	2025	1	semi_synthetic_methodology	C	“Double Machine Learning for Causal Inference in High-Dimensional Electronic Health Records”
+688	2025	0	xai_eval_synthetic	-	SageLM: A Multi-aspect and Explainable Large Language Model for Speech Judgement
+689	2025	0	xai_eval_synthetic	-	Fair Document Valuation in LLM Summaries via Shapley Values
+690	2025	0	xai_eval_synthetic	-	Relation-Stratified Sampling for Shapley Values Estimation in Relational Databases
+691	2024	0	xai_eval_synthetic	-	Fast Calculation of Feature Contributions in Boosting Trees
+692	2026	0	model_vs_data	-	The Failures of Marginal Influence-Based Attribution Methods for Global Time Series Explanations
+693	2026	0	title_only	-	An Empirical Evaluation of Faithfulness Metrics in Explainable AI for Vision Transformers
+694	2025	0	semi_synthetic_methodology	C	Causal Forests Versus Inverse Probability of Treatment Weighting to Adjust for Cluster‐Level Confounding: A Parametric and Plasmode Simulation Study Based on US Hospital Electronic Health Record Data
+695	2023	0	semi_synthetic_methodology	-	Flexible parametrization of graph-theoretical features from individual-specific networks for prediction
+696	2023	0	semi_synthetic_methodology	-	A Comparison of the Best Generative Adversarial Network Architectures for Synthetic Data Generation
+697	2025	0	tabular_generative	-	Generative Adversarial Network-based Image and Tabular Data Generation with Differential Privacy
+698	2021	0	tabular_generative	-	DANets: Deep Abstract Networks for Tabular Data Classification and Regression
+699	2026	0	tabular_generative	-	Bayesian Generative Adversarial Networks via Gaussian Approximation for Tabular Data Synthesis

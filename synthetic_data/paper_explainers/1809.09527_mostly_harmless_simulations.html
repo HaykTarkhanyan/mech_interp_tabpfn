@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Advani et al. explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Advani et al. explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Mostly Harmless Simulations? Using Monte Carlo Studies for Estimator Selection", explained</h1>
+<p class="sub">Arun Advani (Warwick, CAGE, IFS), Toru Kitagawa (UCL, cemmap), Tymon Słoczyński (Brandeis, IZA). Journal of Applied Econometrics 34(6):893-910, 2019, doi 10.1002/jae.2724; arXiv 1809.09527v2 (17 Apr 2019). 33 pages (25 main + references + Appendices A-C); Appendices D-F are in the journal's supplement, not in the arXiv PDF. Citations: 16 citing works for the journal record on OpenAlex (checked 2026-10-19 during the review's chaining stage); Semantic Scholar shows 7 for the 2018 working-paper record. Both undercount. Local PDF: <code>synthetic_data/papers/advani2019_mostly_harmless_simulations.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: the theory, simulations must copy both biases and variance order</a></li>
+<li><a href="#f2">Finding 2: on real data, bias rankings are worse than random</a></li>
+<li><a href="#f3">Finding 3: for MSE they help, but a bootstrap does as well</a></li>
+<li><a href="#f4">Finding 4: the result survives two robustness checks, mostly</a></li>
+<li><a href="#demo">Try it: when a fitted simulation picks the wrong estimator</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. This paper has no figures; all numbers come from its tables and text.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Econometricians choosing between treatment-effect estimators were advised to run an "empirical Monte Carlo study" (EMCS): build a simulation that mimics their own dataset, run all estimators on it, and pick the one that does best. Does that actually pick the estimator that is best on the real data?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>In theory, only under restrictive conditions.</b> The simulation must reproduce both each estimator's bias and the order of their variances. Miss either and it can pick the wrong one with certainty (Section 3).</li>
+<li><b>On real data, for bias, worse than random.</b> On the LaLonde job-training data, where the true effect is known from an experiment, both EMCS designs rank estimators by absolute bias with negative correlation to the true ranking: Kendall's tau of -0.21 and -0.37 (Table 1).</li>
+<li><b>For mean squared error, better than random but no better than a bootstrap.</b> Tau 0.60 and 0.64, versus 0.83 for a plain bootstrap (Table 1).</li>
+<li><b>Why:</b> the simulations copy the estimators' variances well but not their biases.</li>
+</ol>
+<div class="take"><b>My take, one line.</b> The single most important empirical warning for your pitch, and also a ready-made template for testing it: they measured whether a simulation fitted to a dataset ranks methods the way the real data does, with Kendall's tau, regret and a random and a bootstrap baseline. Nobody has run that test for explainers.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>The task.</b> Estimate the average effect of a job-training programme on the people who took it (the <b>ATT</b>, average treatment effect on the treated), from observational data, assuming that once you control for the observed covariates, who got trained is as good as random (<b>unconfoundedness</b>). Many estimators exist for this (regression, weighting, matching and combinations), with similar large-sample properties. Which to use in a given dataset?</p>
+<p><b>Two ways to build a dataset-specific simulation.</b></p>
+<svg class="schem" viewBox="0 0 720 220" aria-label="Placebo and structured EMCS designs">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="80" width="130" height="56" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="73" y="103" text-anchor="middle" font-size="13">your observational</text>
+  <text x="73" y="121" text-anchor="middle" font-size="13">dataset</text>
+  <line x1="138" y1="96" x2="196" y2="50" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="138" y1="120" x2="196" y2="166" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="198" y="12" width="300" height="72" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="348" y="34" text-anchor="middle" font-size="13">Placebo (Huber et al. 2013): take the</text>
+  <text x="348" y="52" text-anchor="middle" font-size="13">untreated only, fake a treatment with the</text>
+  <text x="348" y="70" text-anchor="middle" font-size="13">fitted propensity model; true effect = 0</text>
+  <rect x="198" y="132" width="300" height="72" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="348" y="154" text-anchor="middle" font-size="13">Structured (Busso et al. 2014): fit</text>
+  <text x="348" y="172" text-anchor="middle" font-size="13">parametric distributions to every variable,</text>
+  <text x="348" y="190" text-anchor="middle" font-size="13">sample new data; true effect known</text>
+  <line x1="498" y1="48" x2="556" y2="96" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="498" y1="168" x2="556" y2="120" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="558" y="74" width="154" height="68" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="635" y="97" text-anchor="middle" font-size="13">run all estimators,</text>
+  <text x="635" y="115" text-anchor="middle" font-size="13">rank them, pick</text>
+  <text x="635" y="133" text-anchor="middle" font-size="13">the best</text>
+</svg>
+<p class="caption">Schematic of the two EMCS designs (Section 2). The question the paper asks: does the pick on the right match the best estimator on the real data?</p>
+<p><b>Bias, variance, MSE.</b> An estimator's error splits into <b>bias</b> (it is off on average) and <b>variance</b> (it scatters). <b>MSE</b> = bias squared + variance. Ranking estimators by MSE and by absolute bias can give different answers.</p>
+<p><b>How they score a ranking.</b> <b>Kendall's tau</b> between the simulation's ranking and the true ranking (1 = identical, 0 = unrelated, -1 = reversed), and <b>average regret</b>: how much worse the chosen estimator is than the truly best one, as a percentage. Two baselines: <b>random</b> choice, and a <b>nonparametric bootstrap</b> (resample the real data and rank estimators by their bootstrap error).</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: the theory, simulations must copy both biases and variance order</h2></summary>
+<p><b>What they did.</b> Take two estimators whose sampling distribution is bivariate Gaussian, the most favourable setting possible. Let the simulation have its own biases and variances. When does the simulation pick the truly better estimator?</p>
+<ul class="tight">
+<li><b>Scenario 1:</b> biases and variances reproduced exactly. It always picks right.</li>
+<li><b>Scenario 2:</b> both unbiased, but the simulation gets the variance order wrong. It always picks wrong.</li>
+<li><b>Scenario 3:</b> variance order right, but one estimator is biased in reality and the simulation does not reproduce that bias. It picks the biased one whenever the bias exceeds a threshold that shrinks with sample size: |b2| &gt; sqrt((σ1² - σ2²)/n).</li>
+</ul>
+<p><b>Why these are realistic.</b> Both happen in ordinary treatment-effect settings. If treated outcomes are noisier than untreated ones (heteroskedasticity), the placebo design, which builds fake treated units from untreated ones, cannot see it and gets the variance order wrong. If the outcome slopes differ between treated and untreated, OLS is biased in reality, but in the placebo world (all untreated) it is not. A structured design fitted with a misspecified model has the same blind spot.</p>
+<p><b>What they found in a stylised simulation.</b> With heteroskedasticity, the placebo design picked the better estimator 1.9% of the time and the structured design 3.0%, against 97.6% and 100% without it. Random guessing gets 50%. In the Scenario 3 example the rates were 2.3% and 0.2% (Section 3.2; details in the supplement).</p>
+<div class="key">The general lesson, in their words: "misspecification in the construction of the DGP can lead the ranking of estimators to be incorrect for the original dataset".</div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: on real data, bias rankings are worse than random</h2></summary>
+<p><b>What they did.</b> LaLonde's National Supported Work data is a classic test bed: the programme was randomized, so the true effect on earnings is known from the experiment ($1,794). Treat the experimental treated group (185) plus a trimmed CPS comparison group (7,660) as a finite population. Draw 1,000 samples of 100 treated and 1,900 comparison units. In each sample, compute seven estimators' errors against the truth (this gives the true ranking) and run each EMCS design 1,000 times on the sample (this gives the simulation's ranking): one million replications per design.</p>
+<p><b>What they found (Table 1).</b> Kendall's tau between the simulation's ranking and the true ranking:</p>
+<div id="chart-tau"></div>
+<p class="caption">Table 1, exact values. Random ranking has tau 0 by construction (dashed line). Higher is better.</p>
+<p>For absolute bias, average regret is 3,067% (placebo) and 3,766% (structured) of the best estimator's bias, against 1,184% for random choice and 1,000% for the bootstrap: the chosen estimator is on average about 30 to 37 times worse than the best. "In two out of three cases we study, the rankings produced are negatively correlated with the true ranking."</p>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: for MSE they help, but a bootstrap does as well</h2></summary>
+<p>For MSE the picture changes: average regret is 18.2% (placebo) and 16.3% (structured), much better than random (141.9%), but the bootstrap's 7.9% is lower still, with tau 0.83 versus 0.60 and 0.64 (Table 1).</p>
+<p><b>Why.</b> In these data MSE is driven mostly by variance, and the simulations reproduce variances well: tau for variance rankings is 0.77 and 0.81. They reproduce biases badly. The bootstrap captures variance just as well with fewer design choices.</p>
+<div class="take"><b>My take.</b> This decomposition is the part to carry over. An explainer's error against a known answer also has a "variance" part (Monte Carlo noise, sensitivity to the sample) and a "bias" part (a systematic error from a violated assumption, like independence or additivity). The variance part depends on generic properties a fitted generator copies easily. The bias part depends on exactly the structure (dependence, interactions) that a generator and a fitted formula may not reproduce. So one would predict the same split for explainers. That prediction is testable. <span class="sure">How sure: medium (it is an analogy, not shown in the paper).</span></div>
+</details>
+
+<details class="sec" open id="f4">
+<summary><h2>6. Finding 4: the result survives two robustness checks, mostly</h2></summary>
+<p><b>No sampling error in the truth (Table 2).</b> Use the experiment's randomized-out controls as the "treated" group, so the true effect is exactly zero. Bias tau is -0.27 (placebo) and -0.47 (structured), against 0.32 for the bootstrap; MSE tau 0.65 and 0.55 against 0.81. Same conclusion.</p>
+<p><b>Unconfoundedness by construction (Table 3).</b> Impute missing potential outcomes by 4-nearest-neighbour matching, assign treatment by a perturbed propensity, so the assumptions the estimators rely on hold exactly. Now bias rankings are about as good as random (tau -0.003 and 0.057), slightly better than the bootstrap (-0.300), and for MSE both designs beat random (tau 0.74 and 0.73) and marginally beat the bootstrap (0.63).</p>
+<table id="tbl-tau">
+<colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+<thead><tr><th>Average Kendall's tau</th><th class="n">Placebo</th><th class="n">Structured</th><th class="n">Bootstrap</th></tr></thead>
+<tbody>
+<tr><td>Abs. bias, NSW (Table 1)</td><td class="n" data-v="-0.214">-0.214</td><td class="n" data-v="-0.372">-0.372</td><td class="n" data-v="0.016">0.016</td></tr>
+<tr><td>Abs. bias, zero effect (Table 2)</td><td class="n" data-v="-0.274">-0.274</td><td class="n" data-v="-0.466">-0.466</td><td class="n" data-v="0.320">0.320</td></tr>
+<tr><td>Abs. bias, unconfounded (Table 3)</td><td class="n" data-v="-0.003">-0.003</td><td class="n" data-v="0.057">0.057</td><td class="n" data-v="-0.300">-0.300</td></tr>
+<tr><td>MSE, NSW (Table 1)</td><td class="n" data-v="0.599">0.599</td><td class="n" data-v="0.635">0.635</td><td class="n" data-v="0.828">0.828</td></tr>
+<tr><td>MSE, zero effect (Table 2)</td><td class="n" data-v="0.645">0.645</td><td class="n" data-v="0.549">0.549</td><td class="n" data-v="0.809">0.809</td></tr>
+<tr><td>MSE, unconfounded (Table 3)</td><td class="n" data-v="0.737">0.737</td><td class="n" data-v="0.729">0.729</td><td class="n" data-v="0.632">0.632</td></tr>
+</tbody>
+</table>
+<p class="caption">Tables 1-3, exact values. Cell colour: green above the median of all cells, red below. Random choice has tau 0 throughout.</p>
+<div class="take"><b>My take.</b> The third test softens the headline: when the estimators' assumptions hold by construction, the simulations are no longer worse than random on bias and are the best of the three on MSE. The abstract's "worse than random" is true for the two tests on the real data, not universally. Secondary sources, including my own first version of your literature review, quoted only the bias half. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>7. Try it: when a fitted simulation picks the wrong estimator</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>True bias of estimator 2 <input id="demo-bias" type="range" min="0" max="20" step="1" value="6"> <b id="demo-bias-val"></b></label>
+  <label>Sample size n <input id="demo-n" type="range" min="1" max="5" step="1" value="3"> <b id="demo-n-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">This is the paper's Scenario 3 computed exactly from its formulas: estimator 1 is unbiased with variance σ1² = 2, estimator 2 is more efficient (σ2² = 1) but biased by b2 in reality. The simulation reproduces the variances but not the bias. MSE = bias² + variance/n. The variance values are my choice for the illustration.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>8. My critique</h2></summary>
+<p><b>What's good.</b> It asks the right question (does the simulation pick the method that is best on this data?) and answers it with a design where the truth is known, with two sensible baselines (random and bootstrap) and three ways of scoring a ranking. The theory is simple enough to check by hand and pins down the mechanism. The robustness tests attack the obvious objections. The advice at the end is modest and correct.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>The real-data evidence is one dataset (NSW-CPS), one outcome and seven estimators. That is the nature of a known-truth test, but it limits how far "worse than random" generalizes.</td><td>Section 4</td><td>High</td></tr>
+<tr><td>2</td><td>The headline holds for two of the three tests. With unconfoundedness by construction, bias rankings are near random and the simulations win on MSE.</td><td>Table 3</td><td>High</td></tr>
+<tr><td>3</td><td>Only two specific EMCS implementations are tested (one placebo setting, one sequential-regression structured design). A more flexible generator might copy biases better; the paper cannot rule that out.</td><td>Section 4.4, Appendix C</td><td>Medium</td></tr>
+<tr><td>4</td><td>The theory is a two-estimator Gaussian example; the extension to many estimators is argued informally ("naturally carries over").</td><td>Section 3.3</td><td>Medium</td></tr>
+<tr><td>5</td><td>The 1,000 "original samples" each draw 100 of the same 185 treated units, so they overlap heavily; the spread of tau across samples will understate real uncertainty. The paper does not discuss this.</td><td>Section 4.2</td><td>Low</td></tr>
+<tr><td>6</td><td>Simulation details and further results sit in Appendices D-F of the journal supplement, not in the arXiv version I read.</td><td>Footnote 7, Section 5</td><td>High</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>9. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the strongest argument against the pitch's transfer claim.</b> The pitch slide says "anything you observe on the simulated side transfers to the real one". For estimators, a simulation fitted to the very dataset in question chose worse than random on bias. Your literature review (Section 3.5, implication 2) already uses this; the corrected version now also reports the MSE half and the mechanism.</p>
+<p><b>It is also the template for the test the pitch needs.</b> Advani et al. had a setting with a known truth and asked whether the data-fitted simulation reproduces the true ranking. The same design works for explainers if you have a world where the correct explanation is known and realistic. Two ways to get one: (a) a nested test, where one rich semi-synthetic world plays "reality", and the benchmark pipeline (fit an ARF and a target to samples drawn from it) is checked against it; (b) data with a known mechanism, such as the physics formulas of SRSD or Feynman datasets sampled at realistic ranges. Score with their exact metrics: Kendall's tau and regret, against a random ranking and a bootstrap-style baseline.</p>
+<p><b>A prediction to test.</b> From Finding 3: explainer errors that are "variance-like" (Monte Carlo noise in KernelSHAP, sensitivity to background size) should transfer from a fitted benchmark; errors that are "bias-like" (independence-assuming explainers under strong dependence, additive explainers under interactions) transfer only if the generator reproduces the dependence and the fitted formula reproduces the interactions. Measuring that split would be a genuinely new result.</p>
+<p><b>Their closing advice applies too.</b> "Test sensitivity of estimator performance to parameters of the simulation" is the case for declared difficulty dials (correlation, interaction strength, noise) rather than one fitted world per dataset.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>10. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>ATT</b></td><td>Average treatment effect on the treated: the average effect for the people who actually received the treatment.</td></tr>
+<tr><td><b>Unconfoundedness</b></td><td>Given the observed covariates, treatment is as good as randomly assigned. Also called selection on observables.</td></tr>
+<tr><td><b>EMCS</b></td><td>Empirical Monte Carlo study: a simulation designed to mimic a particular real dataset.</td></tr>
+<tr><td><b>Placebo EMCS</b></td><td>Assign fake treatments to untreated units using the fitted propensity model; the true effect is zero.</td></tr>
+<tr><td><b>Structured EMCS</b></td><td>Fit parametric distributions to all variables and sample a new dataset with a computable true effect.</td></tr>
+<tr><td><b>Kendall's tau</b></td><td>Rank correlation between two orderings: 1 identical, 0 unrelated, -1 reversed.</td></tr>
+<tr><td><b>Average regret</b></td><td>How much worse the chosen estimator is than the truly best one, averaged over samples.</td></tr>
+<tr><td><b>Nonparametric bootstrap</b></td><td>Resample the observed data with replacement many times to approximate an estimator's sampling distribution.</td></tr>
+<tr><td><b>Heteroskedasticity</b></td><td>The noise variance differs across groups or covariate values (here, treated versus untreated outcomes).</td></tr>
+<tr><td><b>Semiparametric efficiency bound</b></td><td>The smallest variance any regular estimator can achieve without assuming a functional form.</td></tr>
+<tr><td><b>NSW / LaLonde data</b></td><td>A randomized job-training programme from the 1970s, used since LaLonde (1986) to test non-experimental estimators against an experimental truth.</td></tr>
+<tr><td><b>Oaxaca-Blinder, IPWRA</b></td><td>A regression-based decomposition used as an ATT estimator, and inverse-probability-weighted regression adjustment, a doubly robust estimator.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>11. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-5: summary and introduction, including the three main results stated plainly. Read in full.</li>
+<li>Pages 6-10: Section 3.1, the two-estimator scenarios. Short and worth working through once.</li>
+<li>Pages 15-17: Section 4.2, the design of the real-data test. This is the part to copy.</li>
+<li>Pages 19-22: Table 1 and its notes, then Section 5.2; skim Table 3.</li>
+<li>Skip on a first read: the variance algebra in Section 3.2.1 and Appendix A, and the estimator details in Appendices B-C.</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the arXiv v2 PDF (33 pages, read in full including Appendices A-C; Appendices D-F of the journal supplement were not available).</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 1: Kendall's tau of each procedure's ranking against the true ranking (NSW-CPS).
+barChart("chart-tau", {
+  label: "Kendall's tau by procedure, for absolute bias and for MSE",
+  groups: ["Placebo EMCS", "Structured EMCS", "Bootstrap"],
+  series: [
+    { name: "ranking by absolute bias", color: "#D90012", values: [-0.214, -0.372, 0.016] },
+    { name: "ranking by MSE", color: "#0033A0", values: [0.599, 0.635, 0.828] }
+  ],
+  min: -0.5, max: 1, ticks: [-0.5, 0, 0.5, 1], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2),
+  refs: [{ y: 0, label: "random = 0", color: "#8a8f99" }], height: 260
+});
+heat("tbl-tau", true);
+
+// Demo: Scenario 3 of Section 3.1, computed from the paper's formulas.
+(function demo() {
+  const sb = need("demo-bias"), sn = need("demo-n"), vb = need("demo-bias-val"), vn = need("demo-n-val");
+  const text = need("demo-text"), box = need("demo-chart");
+  const s1 = 2, s2 = 1;                     // variances: estimator 2 is more efficient
+  const ns = [25, 50, 100, 400, 1600];
+  function render() {
+    const b2 = Number(sb.value) * 0.025, n = ns[Number(sn.value) - 1];
+    vb.textContent = b2.toFixed(3); vn.textContent = String(n);
+    const trueMse = [s1 / n, b2 * b2 + s2 / n];
+    const simMse = [s1 / n, s2 / n];          // the simulation copies variances, not the bias
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "True and simulated MSE of two estimators", groups: ["estimator 1 (unbiased)", "estimator 2 (biased in reality)"],
+      series: [
+        { name: "true MSE on the real data", color: "#D90012", values: trueMse },
+        { name: "MSE the simulation reports", color: "#0033A0", values: simMse }
+      ],
+      min: 0, max: Math.max(0.09, ...trueMse) * 1.1, ticks: [0, 0.02, 0.04, 0.06, 0.08],
+      tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(4), height: 240
+    });
+    const thr = Math.sqrt((s1 - s2) / n), gap = trueMse[1] - trueMse[0];
+    const verdict = Math.abs(gap) < 1e-9 ? "Here the two are exactly tied, so the pick costs nothing."
+      : gap > 0 ? "Here it does, so the simulation picks the worse estimator. Raise n and the threshold shrinks: the more data, the more the unseen bias dominates."
+        : "Here it does not, so the simulation happens to be right.";
+    text.textContent = "The simulation always picks estimator 2, because it sees only the variances. That pick is wrong whenever |b2| exceeds sqrt((σ1² - σ2²)/n) = " +
+      thr.toFixed(3) + ". " + verdict;
+  }
+  sb.addEventListener("input", render); sn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

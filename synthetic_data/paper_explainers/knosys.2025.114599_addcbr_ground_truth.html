@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Islam et al. explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Islam et al. explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Privacy-preserving ground-truth data for evaluating additive feature attribution in regression models with additive CBR and CQV", explained</h1>
+<p class="sub">Mir Riyanul Islam, Mobyen Uddin Ahmed, Shahina Begum (Mälardalen University), Rosina O. Weber (Drexel University). Knowledge-Based Systems 330 (2025) 114599, doi 10.1016/j.knosys.2025.114599; open access (CC BY), online 6 Oct 2025. 17 pages (14 main + references); the supplementary material was not read. Data and code on Zenodo. Citations: 1 on both Semantic Scholar and OpenAlex (checked 2026-10-19). Local PDF: <code>synthetic_data/papers/islam2025_addcbr_ground_truth.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: synthetic data from cluster seeds</a></li>
+<li><a href="#f2">Finding 2: AddCBR as the reference attribution</a></li>
+<li><a href="#f3">Finding 3: SHAP beats LIME against that reference</a></li>
+<li><a href="#demo">Try it: why CQV breaks on signed numbers</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> How can you evaluate feature-attribution methods (SHAP, LIME) on a real regression problem, here predicting flight take-off delays, when the data is proprietary and there is no ground-truth attribution?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Make synthetic data from cluster seeds.</b> Cluster the real data, take an equal number of seed rows per cluster, add zero-mean Gaussian noise to the continuous features, keep the categorical ones, and draw each target at random within its cluster's range. Feature distributions match the original with an average Jensen-Shannon divergence of about 0.10 (Section 3, Fig. 4).</li>
+<li><b>Use additive case-based reasoning (AddCBR) as the reference.</b> A 3-nearest-neighbour regressor, weighted by the XGBoost model's feature importances and rescaled so contributions add up to the prediction, serves as the "baseline" attribution (Section 4).</li>
+<li><b>Measure stability with CQV.</b> The quartile coefficient of variation compares how much attributions vary with how much feature values vary (Section 5.3).</li>
+<li><b>Verdict:</b> SHAP agrees with AddCBR better than LIME on ranking, variability and feature impact (Tables 6-7, Fig. 8).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> Important to know as the second "real-data-derived" precedent for your pitch, but weak as ground truth: inside each cluster the synthetic target has no relationship to the features, the reference attribution comes from a model rather than a known function, the new stability metric is ill-defined for numbers that can be negative, and the text and figures disagree in several places.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Additive feature attribution.</b> SHAP and LIME split a prediction into per-feature contributions plus a base value: prediction = φ0 + φ1 + ... + φM (Eq. 1). The paper evaluates such splits for a regression model, where keeping contributions on the original scale ("conservation") matters.</p>
+<p><b>Case-based reasoning (CBR).</b> Predict for a new case from the most similar past cases. Similarity is a weighted Euclidean distance; the global feature weights make the method interpretable.</p>
+<p><b>The pipeline</b> (Fig. 1):</p>
+<svg class="schem" viewBox="0 0 720 210" aria-label="Islam et al. pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="20" width="128" height="64" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="70" y="46" text-anchor="middle" font-size="12.5">7.6 M flights,</text>
+  <text x="70" y="64" text-anchor="middle" font-size="12.5">42 features</text>
+  <line x1="134" y1="52" x2="164" y2="52" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="166" y="20" width="128" height="64" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="230" y="46" text-anchor="middle" font-size="12.5">density clustering</text>
+  <text x="230" y="64" text-anchor="middle" font-size="12.5">(DTW), 6 clusters</text>
+  <line x1="294" y1="52" x2="324" y2="52" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="326" y="20" width="168" height="64" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="410" y="40" text-anchor="middle" font-size="12.5">300 seeds per cluster,</text>
+  <text x="410" y="57" text-anchor="middle" font-size="12.5">x 100 noisy copies;</text>
+  <text x="410" y="74" text-anchor="middle" font-size="12.5">y random in cluster range</text>
+  <line x1="494" y1="52" x2="524" y2="52" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="526" y="20" width="188" height="64" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="620" y="46" text-anchor="middle" font-size="12.5">XGBoost trained on</text>
+  <text x="620" y="64" text-anchor="middle" font-size="12.5">180,000 synthetic rows</text>
+  <line x1="620" y1="84" x2="620" y2="118" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="436" y="120" width="278" height="64" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="575" y="146" text-anchor="middle" font-size="12.5">AddCBR reference vs SHAP, LIME:</text>
+  <text x="575" y="164" text-anchor="middle" font-size="12.5">nDCG, CQV, feature impact</text>
+</svg>
+<p class="caption">Schematic of Fig. 1 and Sections 3-5. Red: the step that makes the target independent of the features within a cluster.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: synthetic data from cluster seeds</h2></summary>
+<p><b>What they did.</b> EUROCONTROL flight data (May to October 2019, 7,613,584 rows, 42 features, target: take-off delay), cleaned of missing values and outliers. Density-based clustering with dynamic time warping. Standard rules for the number of clusters (Elbow, Calinski-Harabasz, Jump) disagreed, so they chose 6 clusters because the cluster-average delays were most clearly separated (Fig. 2); 2 and 8 clusters are sensitivity analyses in the supplement. Per cluster, 300 seed rows, each perturbed 100 times: continuous features get zero-mean Gaussian noise, categorical features are copied, and the target is drawn at random within the cluster's original range. Result: 180,000 rows, 144,000 for training (Table 2).</p>
+<p><b>Fidelity.</b> Jensen-Shannon divergence between real and synthetic distributions, per continuous feature and per cluster (Fig. 4). The text reports a range of 0.05 to 0.24 and an average of 0.102 ± 0.05, and compares favourably with XAI-BENCH's 0.20.</p>
+<div class="take"><b>My take.</b> Three things do not hold up. (1) Fig. 4 shows feature a33 in cluster 6 at about 0.39 (approx., read at 300 dpi), above the stated maximum of 0.24; the text itself notes "the exception of a33". (2) The average is given as 0.102 in one sentence and 0.105 in the next. (3) The XAI-BENCH comparison sets per-cluster JSD on one dataset against whole-dataset JSD on different datasets. Also, Fig. 3 shows the synthetic targets as near-flat blocks per cluster: by construction, the features inside a cluster tell you nothing about the target. <span class="sure">How sure: high.</span></div>
+<p class="caption">The paper also describes the seeds in two ways: as "the instances closest to the centroids" (Section 3.2) and as "random seed instances" (Section 3.3.1).</p>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: AddCBR as the reference attribution</h2></summary>
+<p><b>What they did.</b> Train XGBoost on the synthetic data (grid search over 288 settings). Build a CBR regressor that predicts the average target of the 3 nearest neighbours, with distance weighted by XGBoost's global feature importances w. Turn it into an additive attribution (Eq. 2, Algorithm 1): with prediction ŷ for row x, set s = ŷ / Σ x_j w_j and give feature j the contribution s · x_j · w_j. The contributions then sum to ŷ.</p>
+<p><b>How they validated it.</b> AddCBR and XGBoost predict almost the same: test MAE 0.167 versus 0.152, largest single difference 1.22 minutes (Table 4), so the authors call them "functionally equivalent". AddCBR's local and global feature rankings agree more than XGBoost's importances do (Fig. 5). Its top-5 features move predictions more than its bottom-5 in every cluster when values are scaled by 2 to 6 times (difference 11.3 percentage points, p = 0.001; Table 5).</p>
+<div class="take"><b>My take.</b> This is a reasonable reference model but not a ground truth. Contribution s · x_j · w_j grows with the raw size of feature j's value, whatever that feature's actual effect on this prediction, and it has no baseline term, so it is not the kind of quantity SHAP estimates. "SHAP agrees with AddCBR" therefore measures agreement between two attribution recipes, not correctness. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: SHAP beats LIME against that reference</h2></summary>
+<p><b>Ranking agreement (Table 6).</b> nDCG of each method's feature ranking against AddCBR's, over all test rows: SHAP mean 0.852 (sd 0.038), LIME 0.844 (sd 0.039). Both put the same feature (a34) first; among AddCBR's top 5, SHAP shares all 5 and LIME 3 (Fig. 7).</p>
+<p><b>Variability (Fig. 8).</b> For each feature and cluster, plot the CQV of the feature values against the CQV of the attributions; closeness to the 1:1 line counts as better. Average distance to the line:</p>
+<div id="chart-cqv"></div>
+<p class="caption">Fig. 8 legend values, exact (average distance of the points to the 1:1 line, per cluster). Lower = closer to the reference line. Note cluster 5, where LIME (1.56) is closer than SHAP (2.57), which the text's "SHAP is closer" summary does not mention.</p>
+<p><b>Feature impact (Table 7).</b> Scaling a method's top-5 features moves predictions more than its bottom-5: across all clusters, SHAP 27.0% versus 16.0% (difference 11.0, p = 0.001), LIME 20.8% versus 18.2% (difference 2.6, p = 0.217, not significant).</p>
+<p>Conclusion in the paper: SHAP's ranking, attribution and impact are all better than LIME's, consistent with the view that LIME's standardization hurts regression explanations.</p>
+<div class="take"><b>My take.</b> The nDCG gap (0.852 versus 0.844) is tiny next to the spread (sd about 0.04). The CQV comparison is the paper's new metric, and it has a basic problem: the axes of Fig. 8 run to 68.5, but for positive numbers CQV = (Q3 - Q1)/(Q3 + Q1) can never exceed 1. Values that large only appear when Q3 + Q1 is near zero, which happens with quantities that are centred around zero, like attributions. The demo below shows it. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: why CQV breaks on signed numbers</h2></summary>
+<div class="demo">
+<svg id="demo-svg" viewBox="0 0 760 270" aria-label="CQV as a function of the centre of the distribution"></svg>
+<div class="controls">
+  <label>Centre of the values <input id="demo-slider" type="range" min="0" max="40" step="1" value="30"> <b id="demo-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Made-up data (seed 509): 2,000 draws from a normal distribution with standard deviation 1 and the chosen centre. The curve is CQV = (Q3 - Q1)/(Q3 + Q1) computed from those draws, clipped at ±20 for display. For data that is positive, CQV stays between 0 and 1.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It takes regression explanations seriously (most XAI evaluation is classification), it starts from a real, large, consequential dataset, it states hypotheses before testing them, it tests sensitivity to the number of clusters, and it releases data and code. Using a transparent model as a reference attribution is a sensible idea in itself.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>There is no ground truth in the usual sense. Targets are drawn at random within each cluster's range, so inside a cluster the features carry no information about the target, and the reference attribution comes from a fitted model, not from a known data-generating function.</td><td>Section 3.3; Fig. 3; Section 4.2</td><td>High</td></tr>
+<tr><td>2</td><td>AddCBR's contribution s · x_j · w_j scales with the raw size of feature values and has no baseline, so it is not comparable in kind to Shapley values.</td><td>Eq. 2, Algorithm 1</td><td>High</td></tr>
+<tr><td>3</td><td>CQV is ill-defined for quantities that can be negative or centred near zero; Fig. 8's axes (up to 68.5) show values impossible for positive data. The premise that attributions should vary as much as feature values is also not argued.</td><td>Eq. 5; Fig. 8</td><td>High</td></tr>
+<tr><td>4</td><td>Text and figures disagree: stated maximum JSD 0.24 versus about 0.39 in Fig. 4; average 0.102 versus 0.105; seeds "closest to the centroids" versus "random".</td><td>Section 3.4, Fig. 4; Sections 3.2 and 3.3.1</td><td>High</td></tr>
+<tr><td>5</td><td>Units are unclear: the XGBoost model is reported with MAE 9.9 minutes (Section 4.1) but 0.152 in Table 4, and the target axis in Fig. 3 runs from about -1 to 3.5 while labelled in minutes.</td><td>Section 4.1; Table 4; Fig. 3</td><td>Medium</td></tr>
+<tr><td>6</td><td>The JSD comparison with XAI-BENCH (0.105 versus 0.20) compares different datasets and different ways of averaging.</td><td>Section 3.4</td><td>High</td></tr>
+<tr><td>7</td><td>"Privacy-preserving" is asserted, not shown: synthetic rows are noisy copies of real seed rows with categorical values copied exactly, with no formal guarantee or attack test.</td><td>Section 3.3.2</td><td>High</td></tr>
+<tr><td>8</td><td>One dataset, regression only, two explainers. The authors acknowledge this.</td><td>Section 6</td><td>High</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the second real-data precedent in your review</b> (Section 3.4), and the most recent one (2025), so a reviewer of your thesis may well know it. The pitch differs on exactly the points where this paper is weak, and it is worth saying so explicitly:</p>
+<table>
+<colgroup><col style="width:30%"><col style="width:35%"><col style="width:35%"></colgroup>
+<thead><tr><th></th><th>Islam et al. 2025</th><th>Your pitch</th></tr></thead>
+<tbody>
+<tr><td>Feature generator</td><td>noisy copies of seed rows, categoricals copied</td><td>ARF fitted to the whole table, mixed types</td></tr>
+<tr><td>Target</td><td>random within cluster range</td><td>closed-form formula fitted to the real target</td></tr>
+<tr><td>Reference explanation</td><td>attributions of a surrogate model (AddCBR)</td><td>estimand-specific targets of the known formula and of each fitted model</td></tr>
+<tr><td>Fidelity check</td><td>marginal JSD per feature</td><td>distributional, conditional and explanation fidelity</td></tr>
+<tr><td>Scale</td><td>1 dataset, 2 explainers</td><td>many datasets, many explainers</td></tr>
+</tbody>
+</table>
+<p><b>Lessons to take.</b> Define the estimand before the metric; avoid ratio-type metrics on signed attributions; and keep the text, tables and figures generated from one results file so numbers cannot drift apart (your repo's "JSON first, report derived" rule is exactly that).</p>
+<p><b>One shared goal worth keeping.</b> Releasing a realistic benchmark without releasing the sensitive data is a real benefit of the pitch too; if you claim it, test it (for example, distance-to-closest-record checks), because ARF samples also stay close to training data.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Additive feature attribution</b></td><td>Splitting a prediction into a base value plus one contribution per feature.</td></tr>
+<tr><td><b>CBR</b></td><td>Case-based reasoning: predict from the most similar stored cases.</td></tr>
+<tr><td><b>AddCBR</b></td><td>The paper's additive version of a CBR regressor, used as the reference attribution.</td></tr>
+<tr><td><b>CQV</b></td><td>Coefficient of quartile variation, (Q3 - Q1)/(Q3 + Q1): a robust relative spread for positive data.</td></tr>
+<tr><td><b>nDCG</b></td><td>Normalized discounted cumulative gain: a 0-to-1 score of how well one ranking matches a reference ranking, weighting the top more.</td></tr>
+<tr><td><b>Jensen-Shannon divergence</b></td><td>A symmetric, bounded (0 to 1) distance between two distributions.</td></tr>
+<tr><td><b>DTW</b></td><td>Dynamic time warping: a distance between sequences that tolerates shifts in timing.</td></tr>
+<tr><td><b>Density-based clustering</b></td><td>Clustering that finds dense regions of arbitrary shape and treats sparse points as noise.</td></tr>
+<tr><td><b>Conservation</b></td><td>Keeping a regression explanation on the original output scale, so contributions add up to the prediction.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-3: abstract, innovations and motivation. Read in full.</li>
+<li>Pages 5-7: Section 3, the data generation, with Figs. 3-4. This is the part that matters for your pitch.</li>
+<li>Pages 8-9: Section 4.2 and Algorithm 1 (AddCBR).</li>
+<li>Pages 11-13: Table 6, Fig. 8 and Table 7.</li>
+<li>Skip on a first read: the background review in Section 2 and the hyperparameter grid.</li>
+</ol>
+<p class="caption">Written 2026-10-19 from the published PDF (17 pages, read in full; the supplementary material was not available). Figs. 3, 4 and 8 were checked as images, Fig. 4 at 300 dpi.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Fig. 8 legend: average distance to the 1:1 line per cluster (lower = closer).
+barChart("chart-cqv", {
+  label: "Average distance of CQV points to the 1:1 line, by cluster and method",
+  groups: ["cluster 1", "cluster 2", "cluster 3", "cluster 4", "cluster 5", "cluster 6"],
+  series: [
+    { name: "AddCBR (reference)", color: "#F2A800", values: [0.08, 0.20, 0.51, 0.04, 0.03, 0.12] },
+    { name: "SHAP", color: "#0033A0", values: [1.62, 2.48, 3.26, 1.17, 2.57, 1.45] },
+    { name: "LIME", color: "#D90012", values: [5.03, 10.29, 14.71, 2.61, 1.56, 2.00] }
+  ],
+  min: 0, max: 16, ticks: [0, 4, 8, 12, 16], tickFmt: t => String(t), fmt: v => v.toFixed(2), height: 260
+});
+
+// Demo: CQV of normal draws as a function of their centre.
+(function demo() {
+  const svg = need("demo-svg"), slider = need("demo-slider"), out = need("demo-val"), text = need("demo-text");
+  const rnd = mulberry32(509);
+  const z = [];
+  for (let i = 0; i < 2000; i++) z.push(Math.sqrt(-2 * Math.log(rnd() + 1e-12)) * Math.cos(2 * Math.PI * rnd()));
+  z.sort((a, b) => a - b);
+  const q = p => z[Math.floor(p * (z.length - 1))];
+  const zq1 = q(0.25), zq3 = q(0.75);
+  const centres = Array.from({ length: 41 }, (_, i) => -1 + i * 0.1);
+  const cqv = c => ((zq3 + c) - (zq1 + c)) / ((zq3 + c) + (zq1 + c));
+  const W = 760, H = 270, m = { l: 50, r: 20, t: 16, b: 36 }, lim = 20;
+  const sx = c => m.l + (c + 1) / 4 * (W - m.l - m.r);
+  const sy = v => m.t + (lim - Math.max(-lim, Math.min(lim, v))) / (2 * lim) * (H - m.t - m.b);
+  function render() {
+    const c = centres[Number(slider.value)];
+    out.textContent = c.toFixed(1);
+    svg.replaceChildren();
+    for (const t of [-20, -10, 0, 10, 20]) {
+      mk("line", { x1: m.l, x2: W - m.r, y1: sy(t), y2: sy(t), style: "stroke:var(--border)" }, svg);
+      mk("text", { x: m.l - 6, y: sy(t) + 4, "text-anchor": "end", "font-size": 12, style: "fill:var(--muted)" }, svg, String(t));
+    }
+    for (const t of [-1, 0, 1, 2, 3]) mk("text", { x: sx(t), y: H - m.b + 18, "text-anchor": "middle", "font-size": 12, style: "fill:var(--muted)" }, svg, String(t));
+    mk("text", { x: (W + m.l) / 2, y: H - 4, "text-anchor": "middle", "font-size": 12, style: "fill:var(--muted)" }, svg, "centre of the values");
+    let d = "", prev = null;
+    for (let x = -1; x <= 3.0001; x += 0.005) {
+      const v = cqv(x), jump = prev !== null && Math.sign(prev) !== Math.sign(v) && Math.abs(v) > 5;
+      d += (d === "" || jump ? "M" : "L") + sx(x).toFixed(1) + "," + sy(v).toFixed(1) + " ";
+      prev = v;
+    }
+    mk("path", { d, fill: "none", style: "stroke:#0033A0;stroke-width:2.5" }, svg);
+    mk("line", { x1: sx(c), x2: sx(c), y1: m.t, y2: H - m.b, style: "stroke:#D90012;stroke-width:1.5;stroke-dasharray:5 4" }, svg);
+    const v = cqv(c);
+    mk("circle", { cx: sx(c), cy: sy(v), r: 5, style: "fill:#D90012" }, svg);
+    text.textContent = "Centre " + c.toFixed(1) + ": Q1 = " + (zq1 + c).toFixed(2) + ", Q3 = " + (zq3 + c).toFixed(2) +
+      ", CQV = " + v.toFixed(2) + ". The spread is the same everywhere (the data is only shifted), yet CQV " +
+      (v < 0 || v > 1 ? "is outside [0, 1], the range it has for positive data, and it explodes as Q1 + Q3 approaches zero." : "looks reasonable here only because Q1 and Q3 are both positive.");
+  }
+  slider.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

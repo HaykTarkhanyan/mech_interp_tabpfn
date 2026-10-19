@@ -68,10 +68,16 @@ the outcome in their output rather than skipping them silently.
 ```
 lit_review/     review, references, verification report, figures
 papers/tabpfn/  39 verified PDFs + manifest
+paper_explainers/ plain-language HTML walkthroughs of single papers
 research_ideas/ research directions, grouped by ambition and compute
 reviews/        proposal reviews + their citation-verification output
 tabpfn_benchmark/ TabPFN vs GBDT/RF/LogReg on OpenML German Credit, + HTML reports
 tabpfn_toy_demo/  minimal TabPFN classification example on Iris
+fe_mech_pipeline/ ALE behavior specs + head/MLP ablation on TabPFN v2: Delta_B with null, floor, selectivity; CPU pilot
+synthetic_data/ likely thesis direction: semi-synthetic XAI ground-truth benchmark (pitch, scoping review,
+                core-paper explainers, transfer pilot; own uv env)
+robotics_foundation_models_explainability/ literature review: explainability and mech interp of VLAs and
+                other robot foundation models (151 works, standalone HTML review, 83 papers; own uv env)
 scripts/        load-bearing pipeline (see above)
   non_essential/  supplementary retrieval, blocked on an external rate limit
 data/raw/       raw search results per database + search parameters

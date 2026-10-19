@@ -1,0 +1,401 @@
+{
+ "created": "2026-10-19 23:27:14",
+ "seed": 509,
+ "reps": 1,
+ "config": {
+  "dataset": "california_housing",
+  "n_D": 1000,
+  "n_train": 2000,
+  "n_explain": 50,
+  "n_background_truth": 100,
+  "n_background_explainer": 50,
+  "reality_task_reps": 5,
+  "kernel_nsamples": 200
+ },
+ "features": [
+  "MedInc",
+  "HouseAge",
+  "AveRooms",
+  "AveBedrms",
+  "Population",
+  "AveOccup",
+  "Latitude",
+  "Longitude"
+ ],
+ "explainers": [
+  "Interventional SHAP (bg 50)",
+  "Interventional SHAP (bg 10)",
+  "TreeSHAP-path",
+  "Saabas",
+  "KernelSHAP (kmeans 10)",
+  "Mean-baseline SHAP"
+ ],
+ "reality_noise_sd": 0.5425542103464053,
+ "versions": {
+  "shap": "0.54.1",
+  "numpy": "2.5.4"
+ },
+ "runtime_s": 658.3,
+ "tasks": [
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality",
+   "seed": 509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.408505292342893,
+    "Interventional SHAP (bg 10)": 0.6036114338296583,
+    "TreeSHAP-path": 0.36825979294420913,
+    "Saabas": 0.4272710001757717,
+    "KernelSHAP (kmeans 10)": 0.40729563914821987,
+    "Mean-baseline SHAP": 0.45339953344040756
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.22930944262143027,
+    "Interventional SHAP (bg 10)": 0.47902879528892744,
+    "TreeSHAP-path": 0.15448115089353115,
+    "Saabas": 0.24305618289462108,
+    "KernelSHAP (kmeans 10)": 0.23477942122088688,
+    "Mean-baseline SHAP": 0.3496776118863706
+   },
+   "model_gap": 0.3102346873871647,
+   "treeshap_int_gap": 1.1064414939809808e-08
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality",
+   "seed": 510,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.28293808089557293,
+    "Interventional SHAP (bg 10)": 0.38515473320343546,
+    "TreeSHAP-path": 0.3472011382910249,
+    "Saabas": 0.40505585541845873,
+    "KernelSHAP (kmeans 10)": 0.29743276945069597,
+    "Mean-baseline SHAP": 0.3918079845582076
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.1420797680696069,
+    "Interventional SHAP (bg 10)": 0.29144331267825735,
+    "TreeSHAP-path": 0.25522999419698156,
+    "Saabas": 0.31711168343057194,
+    "KernelSHAP (kmeans 10)": 0.1695532695760052,
+    "Mean-baseline SHAP": 0.31788195135116143
+   },
+   "model_gap": 0.25147756606765875,
+   "treeshap_int_gap": 0.00030591031859783513
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality",
+   "seed": 511,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.25986845667290454,
+    "Interventional SHAP (bg 10)": 0.41683768953625444,
+    "TreeSHAP-path": 0.24755424598000197,
+    "Saabas": 0.287094636171901,
+    "KernelSHAP (kmeans 10)": 0.2736311124071422,
+    "Mean-baseline SHAP": 0.4494971721640386
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.10369268635579793,
+    "Interventional SHAP (bg 10)": 0.3459880423293937,
+    "TreeSHAP-path": 0.144078055122301,
+    "Saabas": 0.2290810034571835,
+    "KernelSHAP (kmeans 10)": 0.13770412931890824,
+    "Mean-baseline SHAP": 0.3762902155555033
+   },
+   "model_gap": 0.22625783969072374,
+   "treeshap_int_gap": 0.10488350407117597
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality",
+   "seed": 512,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.2470924104952901,
+    "Interventional SHAP (bg 10)": 0.25551123748262616,
+    "TreeSHAP-path": 0.23005277734750698,
+    "Saabas": 0.2756730311678584,
+    "KernelSHAP (kmeans 10)": 0.31952419083666955,
+    "Mean-baseline SHAP": 0.4497721236907763
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.16572334099594818,
+    "Interventional SHAP (bg 10)": 0.17595785742678344,
+    "TreeSHAP-path": 0.17115391935317395,
+    "Saabas": 0.24065522383952026,
+    "KernelSHAP (kmeans 10)": 0.26071933085750887,
+    "Mean-baseline SHAP": 0.40472052254294877
+   },
+   "model_gap": 0.20752095868106699,
+   "treeshap_int_gap": 0.03706673481010947
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality",
+   "seed": 513,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.33653968652162425,
+    "Interventional SHAP (bg 10)": 0.33143284362877007,
+    "TreeSHAP-path": 0.2570046758747245,
+    "Saabas": 0.3035175131748626,
+    "KernelSHAP (kmeans 10)": 0.3442918634491032,
+    "Mean-baseline SHAP": 0.5436907405737181
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.2513055867667862,
+    "Interventional SHAP (bg 10)": 0.20135272356596157,
+    "TreeSHAP-path": 0.10474369531478618,
+    "Saabas": 0.18825083151814065,
+    "KernelSHAP (kmeans 10)": 0.2693013260048395,
+    "Mean-baseline SHAP": 0.5161992572849053
+   },
+   "model_gap": 0.23991362568551813,
+   "treeshap_int_gap": 0.0006003245973276172
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality",
+   "seed": 2509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.3310133137880547,
+    "Interventional SHAP (bg 10)": 0.27080049208337725,
+    "TreeSHAP-path": 0.34467499113308925,
+    "Saabas": 0.38678677303076053,
+    "KernelSHAP (kmeans 10)": 0.4232512958219337,
+    "Mean-baseline SHAP": 0.5905479377373551
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.26485533212342915,
+    "Interventional SHAP (bg 10)": 0.14880340042118304,
+    "TreeSHAP-path": 0.2676965316252718,
+    "Saabas": 0.3084402384847481,
+    "KernelSHAP (kmeans 10)": 0.39157364405613265,
+    "Mean-baseline SHAP": 0.5852005149604822
+   },
+   "model_gap": 0.23273984423751445,
+   "treeshap_int_gap": 1.2321083708854985e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|linear",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.2692811531282602,
+    "Interventional SHAP (bg 10)": 0.5623734094129195,
+    "TreeSHAP-path": 0.2729116530675539,
+    "Saabas": 0.28936312683888404,
+    "KernelSHAP (kmeans 10)": 0.31559602368415135,
+    "Mean-baseline SHAP": 0.3628866301564486
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.19700228466860442,
+    "Interventional SHAP (bg 10)": 0.5770913170392299,
+    "TreeSHAP-path": 0.1927449147804094,
+    "Saabas": 0.2225954098266059,
+    "KernelSHAP (kmeans 10)": 0.2706934472751937,
+    "Mean-baseline SHAP": 0.33003510514727674
+   },
+   "model_gap": 0.20004527662711413,
+   "treeshap_int_gap": 0.0010945586133939145
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|linear",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.5497863846431713,
+    "Interventional SHAP (bg 10)": 0.6203080920833222,
+    "TreeSHAP-path": 0.5899637494978206,
+    "Saabas": 0.630007509761497,
+    "KernelSHAP (kmeans 10)": 0.5618776009889769,
+    "Mean-baseline SHAP": 0.5512119396697477
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.15357650159979613,
+    "Interventional SHAP (bg 10)": 0.5056361272028476,
+    "TreeSHAP-path": 0.10795329513539104,
+    "Saabas": 0.20537011134251637,
+    "KernelSHAP (kmeans 10)": 0.20098936380873555,
+    "Mean-baseline SHAP": 0.17245400861494325
+   },
+   "model_gap": 0.5434773201314504,
+   "treeshap_int_gap": 1.2887268585615175e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|linear",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.48190643745333883,
+    "Interventional SHAP (bg 10)": 0.5449118470336489,
+    "TreeSHAP-path": 0.527574655098358,
+    "Saabas": 0.5847774615103452,
+    "KernelSHAP (kmeans 10)": 0.48260214097569865,
+    "Mean-baseline SHAP": 0.49305626456914314
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.2239478346835715,
+    "Interventional SHAP (bg 10)": 0.434801895797289,
+    "TreeSHAP-path": 0.12856476176063422,
+    "Saabas": 0.21968468086451623,
+    "KernelSHAP (kmeans 10)": 0.19853205686585293,
+    "Mean-baseline SHAP": 0.2715447125770145
+   },
+   "model_gap": 0.46361591341695696,
+   "treeshap_int_gap": 1.1827720136636799e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.23414205996068976,
+    "Interventional SHAP (bg 10)": 0.5693154072539053,
+    "TreeSHAP-path": 0.2368403266843358,
+    "Saabas": 0.26297760133754583,
+    "KernelSHAP (kmeans 10)": 0.3188056967511923,
+    "Mean-baseline SHAP": 0.4042999685948005
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.1680995635317035,
+    "Interventional SHAP (bg 10)": 0.5702330034414531,
+    "TreeSHAP-path": 0.16847362762171483,
+    "Saabas": 0.19652506924229016,
+    "KernelSHAP (kmeans 10)": 0.2908566399901772,
+    "Mean-baseline SHAP": 0.3898649669639072
+   },
+   "model_gap": 0.1759936084457722,
+   "treeshap_int_gap": 2.502960505523788e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.32197993245287176,
+    "Interventional SHAP (bg 10)": 0.4439089868439649,
+    "TreeSHAP-path": 0.3528863697418361,
+    "Saabas": 0.4015156980273698,
+    "KernelSHAP (kmeans 10)": 0.3170970248153109,
+    "Mean-baseline SHAP": 0.3251149843006198
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.14711420492481708,
+    "Interventional SHAP (bg 10)": 0.40186667574412166,
+    "TreeSHAP-path": 0.12123678012272447,
+    "Saabas": 0.18752696503270969,
+    "KernelSHAP (kmeans 10)": 0.14164971618734595,
+    "Mean-baseline SHAP": 0.192402262308583
+   },
+   "model_gap": 0.29513789334843893,
+   "treeshap_int_gap": 1.6372131650399524e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|additive",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.4043475085945059,
+    "Interventional SHAP (bg 10)": 0.5733492428858282,
+    "TreeSHAP-path": 0.3958534580412698,
+    "Saabas": 0.4360975782007524,
+    "KernelSHAP (kmeans 10)": 0.4033737367830976,
+    "Mean-baseline SHAP": 0.4358620284553291
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.24747274150404294,
+    "Interventional SHAP (bg 10)": 0.5398957978783956,
+    "TreeSHAP-path": 0.09294705749470333,
+    "Saabas": 0.1457835954882974,
+    "KernelSHAP (kmeans 10)": 0.2526658392936677,
+    "Mean-baseline SHAP": 0.34797133452864165
+   },
+   "model_gap": 0.35318194851440715,
+   "treeshap_int_gap": 9.992261684743653e-09
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.1932977876046785,
+    "Interventional SHAP (bg 10)": 0.5393184816352519,
+    "TreeSHAP-path": 0.2010428465157314,
+    "Saabas": 0.23281211738145147,
+    "KernelSHAP (kmeans 10)": 0.288836206927189,
+    "Mean-baseline SHAP": 0.415435364075682
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.1286081739623711,
+    "Interventional SHAP (bg 10)": 0.5465836328880584,
+    "TreeSHAP-path": 0.14675903018109734,
+    "Saabas": 0.18599210095653132,
+    "KernelSHAP (kmeans 10)": 0.25351000337204455,
+    "Mean-baseline SHAP": 0.3971705643919089
+   },
+   "model_gap": 0.15078735574988153,
+   "treeshap_int_gap": 1.7829679066494464e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.23643808945647313,
+    "Interventional SHAP (bg 10)": 0.39187848477196036,
+    "TreeSHAP-path": 0.21352754293631587,
+    "Saabas": 0.22485608250460226,
+    "KernelSHAP (kmeans 10)": 0.21906982388629329,
+    "Mean-baseline SHAP": 0.3167321700027124
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.11791823396143801,
+    "Interventional SHAP (bg 10)": 0.3624972513766147,
+    "TreeSHAP-path": 0.0771676645758345,
+    "Saabas": 0.12694757324185826,
+    "KernelSHAP (kmeans 10)": 0.07934875414018557,
+    "Mean-baseline SHAP": 0.26465109686112276
+   },
+   "model_gap": 0.19216238908393335,
+   "treeshap_int_gap": 1.0767670310940503e-08
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|forest",
+   "seed": 3509,
+   "err_data": {
+    "Interventional SHAP (bg 50)": 0.2966542074243324,
+    "Interventional SHAP (bg 10)": 0.56760618931864,
+    "TreeSHAP-path": 0.19538475347180903,
+    "Saabas": 0.21946489135486233,
+    "KernelSHAP (kmeans 10)": 0.32139121523543934,
+    "Mean-baseline SHAP": 0.4575770596230715
+   },
+   "err_model": {
+    "Interventional SHAP (bg 50)": 0.3026318336802937,
+    "Interventional SHAP (bg 10)": 0.6144551886259867,
+    "TreeSHAP-path": 0.07263172466214121,
+    "Saabas": 0.1310292157747694,
+    "KernelSHAP (kmeans 10)": 0.32337349656726194,
+    "Mean-baseline SHAP": 0.4372248581727327
+   },
+   "model_gap": 0.1844454922745851,
+   "treeshap_int_gap": 1.0391234539497418e-08
+  }
+ ]
+}

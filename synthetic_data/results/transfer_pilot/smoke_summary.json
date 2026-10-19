@@ -1,0 +1,261 @@
+{
+ "source": "smoke.json",
+ "data_level": {
+  "reality_mean_error": {
+   "Interventional SHAP (bg 50)": 0.306988785385657,
+   "Interventional SHAP (bg 10)": 0.3985095875361489,
+   "TreeSHAP-path": 0.29001452608749345,
+   "Saabas": 0.3397224072217705,
+   "KernelSHAP (kmeans 10)": 0.32843511505836614,
+   "Mean-baseline SHAP": 0.45763351088542964
+  },
+  "reality_error_sd": {
+   "Interventional SHAP (bg 50)": 0.06626687413825408,
+   "Interventional SHAP (bg 10)": 0.12993157478210074,
+   "TreeSHAP-path": 0.06300906147259512,
+   "Saabas": 0.07091546868105626,
+   "KernelSHAP (kmeans 10)": 0.05126998985642368,
+   "Mean-baseline SHAP": 0.05450865683379354
+  },
+  "reality_ranking": [
+   "TreeSHAP-path",
+   "Interventional SHAP (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "Saabas",
+   "Interventional SHAP (bg 10)",
+   "Mean-baseline SHAP"
+  ],
+  "random_regret": 0.21907912728418358,
+  "worlds": {
+   "oracle (fresh reality sample)": {
+    "n": 1,
+    "tau_mean": 0.2,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.37410216278588737,
+    "picks": [
+     "Interventional SHAP (bg 10)"
+    ]
+   },
+   "independent|linear": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.05852899689942647,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "gaussian|linear": {
+    "n": 1,
+    "tau_mean": 0.06666666666666665,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.05852899689942647,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "bootstrap|linear": {
+    "n": 1,
+    "tau_mean": 0.2,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.05852899689942647,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "independent|additive": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.05852899689942647,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "gaussian|additive": {
+    "n": 1,
+    "tau_mean": 0.2,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.13247815372972635,
+    "picks": [
+     "KernelSHAP (kmeans 10)"
+    ]
+   },
+   "bootstrap|additive": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "independent|forest": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.05852899689942647,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "gaussian|forest": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "bootstrap|forest": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   }
+  }
+ },
+ "model_level": {
+  "reality_mean_error": {
+   "Interventional SHAP (bg 50)": 0.1784221649619139,
+   "Interventional SHAP (bg 10)": 0.29875414625786473,
+   "TreeSHAP-path": 0.16593736297615477,
+   "Saabas": 0.24363098502800748,
+   "KernelSHAP (kmeans 10)": 0.21441149539562976,
+   "Mean-baseline SHAP": 0.3929539117241778
+  },
+  "reality_error_sd": {
+   "Interventional SHAP (bg 50)": 0.061171956639301125,
+   "Interventional SHAP (bg 10)": 0.12180866553953652,
+   "TreeSHAP-path": 0.055574557010728436,
+   "Saabas": 0.046602741218623144,
+   "KernelSHAP (kmeans 10)": 0.058026808386313966,
+   "Mean-baseline SHAP": 0.07601674891832226
+  },
+  "reality_ranking": [
+   "TreeSHAP-path",
+   "Interventional SHAP (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "Saabas",
+   "Interventional SHAP (bg 10)",
+   "Mean-baseline SHAP"
+  ],
+  "random_regret": 0.5006767609438793,
+  "worlds": {
+   "oracle (fresh reality sample)": {
+    "n": 1,
+    "tau_mean": 0.2,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.8004031213922312,
+    "picks": [
+     "Interventional SHAP (bg 10)"
+    ]
+   },
+   "independent|linear": {
+    "n": 1,
+    "tau_mean": 0.7333333333333333,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "gaussian|linear": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "bootstrap|linear": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "independent|additive": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.07523804019684945,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "gaussian|additive": {
+    "n": 1,
+    "tau_mean": 0.7333333333333333,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "bootstrap|additive": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "independent|forest": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 0.0,
+    "regret_mean": 0.07523804019684945,
+    "picks": [
+     "Interventional SHAP (bg 50)"
+    ]
+   },
+   "gaussian|forest": {
+    "n": 1,
+    "tau_mean": 0.7333333333333333,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   },
+   "bootstrap|forest": {
+    "n": 1,
+    "tau_mean": 0.6,
+    "tau_sd": null,
+    "top1_rate": 1.0,
+    "regret_mean": 0.0,
+    "picks": [
+     "TreeSHAP-path"
+    ]
+   }
+  }
+ }
+}

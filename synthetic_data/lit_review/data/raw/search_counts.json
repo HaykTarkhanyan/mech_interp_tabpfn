@@ -1,0 +1,400 @@
+{
+ "search_date": "2026-10-19",
+ "databases_used": [
+  "OpenAlex",
+  "Crossref",
+  "arXiv",
+  "OpenAlex citation chaining"
+ ],
+ "databases_unavailable": {
+  "DBLP": "HTTP 202",
+  "SemanticScholar": "HTTP 429"
+ },
+ "results_per_query_per_source": 50,
+ "queries": {
+  "xai_ground_truth_benchmark": {
+   "default": "benchmark evaluating feature attribution explanations against ground truth synthetic data",
+   "dblp": "ground truth explanation benchmark"
+  },
+  "synthetic_tabular_xai": {
+   "default": "synthetic tabular datasets with known feature importance for evaluating explainability methods",
+   "dblp": "synthetic data explainability evaluation"
+  },
+  "semi_synthetic_xai": {
+   "default": "semi-synthetic data real data with injected known signal to evaluate explanation methods",
+   "dblp": "semi-synthetic explanation evaluation"
+  },
+  "shapley_ground_truth": {
+   "default": "ground truth Shapley values accuracy of SHAP estimation with dependent features",
+   "dblp": "Shapley value estimation accuracy"
+  },
+  "attribution_metrics": {
+   "default": "faithfulness metrics for feature attribution disagree evaluation of explanation evaluation",
+   "dblp": "faithfulness attribution evaluation"
+  },
+  "saliency_ground_truth": {
+   "default": "saliency map evaluation with ground truth relevance synthetic image benchmark",
+   "dblp": "saliency ground truth benchmark"
+  },
+  "plasmode": {
+   "default": "plasmode simulation real covariates simulated outcome evaluation of statistical methods",
+   "dblp": "plasmode simulation"
+  },
+  "semi_synthetic_causal": {
+   "default": "semi-synthetic benchmark for causal effect estimation realistic simulation from real data",
+   "dblp": "semi-synthetic causal benchmark"
+  },
+  "generative_monte_carlo": {
+   "default": "generative models fitted to real data to design Monte Carlo simulation studies",
+   "dblp": "Monte Carlo simulation generative adversarial networks design"
+  },
+  "empirical_monte_carlo": {
+   "default": "empirical Monte Carlo simulation design based on real data estimator comparison",
+   "dblp": "empirical Monte Carlo"
+  },
+  "tabular_generative": {
+   "default": "generative model for tabular data synthetic data generation adversarial random forest",
+   "dblp": "tabular data generation"
+  },
+  "synthetic_data_fidelity": {
+   "default": "evaluating fidelity and utility of synthetic tabular data metrics",
+   "dblp": "synthetic tabular data evaluation"
+  },
+  "symbolic_regression_benchmark": {
+   "default": "symbolic regression benchmark real-world and ground-truth problems",
+   "dblp": "symbolic regression benchmark"
+  },
+  "model_vs_data": {
+   "default": "feature importance explanations true to the model or true to the data generating process",
+   "dblp": "feature importance data generating process"
+  },
+  "conditional_feature_importance": {
+   "default": "conditional feature importance conditional sampling knockoffs dependent features",
+   "dblp": "conditional feature importance"
+  },
+  "feature_effects_ground_truth": {
+   "default": "partial dependence accumulated local effects estimation error ground truth feature effects",
+   "dblp": "accumulated local effects"
+  },
+  "simulation_study_design": {
+   "default": "design of simulation studies neutral comparison of statistical methods realistic data",
+   "dblp": "simulation study design methods comparison"
+  },
+  "graph_xai_ground_truth": {
+   "default": "synthetic graph generator ground truth explanations benchmark graph neural network explainers",
+   "dblp": "graph explanation ground truth benchmark"
+  }
+ },
+ "per_theme": [
+  {
+   "theme": "xai_ground_truth_benchmark",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "synthetic_tabular_xai",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "semi_synthetic_xai",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 7
+  },
+  {
+   "theme": "shapley_ground_truth",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "attribution_metrics",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "saliency_ground_truth",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "plasmode",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 16
+  },
+  {
+   "theme": "semi_synthetic_causal",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "generative_monte_carlo",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 12
+  },
+  {
+   "theme": "empirical_monte_carlo",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "tabular_generative",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "synthetic_data_fidelity",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "symbolic_regression_benchmark",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "model_vs_data",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "conditional_feature_importance",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "feature_effects_ground_truth",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "simulation_study_design",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 50
+  },
+  {
+   "theme": "graph_xai_ground_truth",
+   "OpenAlex": 50,
+   "Crossref": 50,
+   "arXiv": 9
+  }
+ ],
+ "keyword_records": 2544,
+ "seeds": {
+  "xai_bench": {
+   "title": "Synthetic Benchmarks for Scientific Research in Explainable Machine Learning",
+   "resolved": [
+    {
+     "id": "W3173159423",
+     "title": "Synthetic Benchmarks for Scientific Research in Explainable Machine Learning",
+     "year": 2021,
+     "cited_by_count": 19,
+     "doi": "https://doi.org/10.48550/arxiv.2106.12543",
+     "match": 1.0
+    }
+   ],
+   "citing": 19
+  },
+  "openxai": {
+   "title": "OpenXAI: Towards a Transparent Evaluation of Model Explanations",
+   "resolved": [
+    {
+     "id": "W7133211418",
+     "title": "OpenXAI: Towards a Transparent Evaluation of Model Explanations",
+     "year": 2022,
+     "cited_by_count": 112,
+     "doi": "https://doi.org/10.52202/068431-1148",
+     "match": 1.0
+    }
+   ],
+   "citing": 112
+  },
+  "arf": {
+   "title": "Adversarial random forests for density estimation and generative modeling",
+   "resolved": [],
+   "citing": 0
+  },
+  "wgan_mc": {
+   "title": "Using Wasserstein Generative Adversarial Networks for the design of Monte Carlo simulations",
+   "resolved": [
+    {
+     "id": "W2997712237",
+     "title": "Using Wasserstein Generative Adversarial Networks for the design of Monte Carlo simulations",
+     "year": 2021,
+     "cited_by_count": 60,
+     "doi": "https://doi.org/10.1016/j.jeconom.2020.09.013",
+     "match": 1.0
+    },
+    {
+     "id": "W2971792935",
+     "title": "Using Wasserstein Generative Adversarial Networks for the Design of Monte Carlo Simulations",
+     "year": 2019,
+     "cited_by_count": 25,
+     "doi": "https://doi.org/10.3386/w26566",
+     "match": 1.0
+    }
+   ],
+   "citing": 78
+  },
+  "realcause": {
+   "title": "RealCause: Realistic Causal Inference Benchmarking",
+   "resolved": [
+    {
+     "id": "W3109638816",
+     "title": "RealCause: Realistic Causal Inference Benchmarking",
+     "year": 2020,
+     "cited_by_count": 18,
+     "doi": "https://doi.org/10.48550/arxiv.2011.15007",
+     "match": 1.0
+    }
+   ],
+   "citing": 18
+  },
+  "mostly_harmless_sims": {
+   "title": "Mostly Harmless Simulations? Using Monte Carlo Studies for Estimator Selection",
+   "resolved": [
+    {
+     "id": "W2949193722",
+     "title": "Mostly Harmless Simulations? Using Monte Carlo Studies for Estimator Selection",
+     "year": 2018,
+     "cited_by_count": 0,
+     "doi": "https://doi.org/10.48550/arxiv.1809.09527",
+     "match": 1.0
+    }
+   ],
+   "citing": 0
+  },
+  "mamalakis_benchmark": {
+   "title": "Neural network attribution methods for problems in geoscience: A novel synthetic benchmark dataset",
+   "resolved": [
+    {
+     "id": "W3138147141",
+     "title": "Neural network attribution methods for problems in geoscience: A novel synthetic benchmark dataset",
+     "year": 2022,
+     "cited_by_count": 101,
+     "doi": "https://doi.org/10.1017/eds.2022.7",
+     "match": 1.0
+    }
+   ],
+   "citing": 101
+  },
+  "guidotti_gt": {
+   "title": "Evaluating local explanation methods on ground truth",
+   "resolved": [
+    {
+     "id": "W3103897213",
+     "title": "Evaluating local explanation methods on ground truth",
+     "year": 2020,
+     "cited_by_count": 99,
+     "doi": "https://doi.org/10.1016/j.artint.2020.103428",
+     "match": 1.0
+    }
+   ],
+   "citing": 97
+  },
+  "bim": {
+   "title": "Benchmarking Attribution Methods with Relative Feature Importance",
+   "resolved": [
+    {
+     "id": "W2987200109",
+     "title": "Benchmarking Attribution Methods with Relative Feature Importance",
+     "year": 2019,
+     "cited_by_count": 84,
+     "doi": "https://doi.org/10.48550/arxiv.1907.09701",
+     "match": 1.0
+    }
+   ],
+   "citing": 84
+  },
+  "true_to_model": {
+   "title": "True to the Model or True to the Data?",
+   "resolved": [
+    {
+     "id": "W3037688018",
+     "title": "True to the Model or True to the Data?",
+     "year": 2020,
+     "cited_by_count": 74,
+     "doi": "https://doi.org/10.48550/arxiv.2006.16234",
+     "match": 1.0
+    }
+   ],
+   "citing": 74
+  },
+  "pdp_pfi_dgp": {
+   "title": "Relating the Partial Dependence Plot and Permutation Feature Importance to the Data Generating Process",
+   "resolved": [
+    {
+     "id": "W3198183881",
+     "title": "Relating the Partial Dependence Plot and Permutation Feature Importance to the Data Generating Process",
+     "year": 2023,
+     "cited_by_count": 149,
+     "doi": "https://doi.org/10.1007/978-3-031-44064-9_24",
+     "match": 1.0
+    }
+   ],
+   "citing": 150
+  },
+  "srbench": {
+   "title": "Contemporary Symbolic Regression Methods and their Relative Performance",
+   "resolved": [
+    {
+     "id": "W3187435263",
+     "title": "Contemporary Symbolic Regression Methods and their Relative Performance",
+     "year": 2021,
+     "cited_by_count": 137,
+     "doi": "https://doi.org/10.48550/arxiv.2107.14351",
+     "match": 1.0
+    }
+   ],
+   "citing": 137
+  },
+  "plasmode_franklin": {
+   "title": "Plasmode simulation for the evaluation of pharmacoepidemiologic methods in complex healthcare databases",
+   "resolved": [
+    {
+     "id": "W1987723939",
+     "title": "Plasmode simulation for the evaluation of pharmacoepidemiologic methods in complex healthcare databases",
+     "year": 2013,
+     "cited_by_count": 145,
+     "doi": "https://doi.org/10.1016/j.csda.2013.10.018",
+     "match": 1.0
+    }
+   ],
+   "citing": 142
+  },
+  "feynman_interp": {
+   "title": "Interpretability in Symbolic Regression: a benchmark of Explanatory Methods using the Feynman data set",
+   "resolved": [
+    {
+     "id": "W4281776274",
+     "title": "Interpretability in symbolic regression: a benchmark of explanatory methods using the Feynman data set",
+     "year": 2022,
+     "cited_by_count": 26,
+     "doi": "https://doi.org/10.1007/s10710-022-09435-x",
+     "match": 1.0
+    }
+   ],
+   "citing": 26
+  }
+ },
+ "citing_records": 1038,
+ "abstracts_backfilled": 325,
+ "records_without_abstract": 663,
+ "total_records": 3582
+}

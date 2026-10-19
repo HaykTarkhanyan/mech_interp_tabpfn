@@ -1,0 +1,776 @@
+{
+ "created": "2026-10-20 00:46:42",
+ "seed": 509,
+ "reality": "rf",
+ "reps": 1,
+ "k": 1,
+ "k_reality": 1,
+ "timing_mode": true,
+ "config": {
+  "dataset": "california_housing",
+  "grid": 0.000244140625,
+  "n_D": 2000,
+  "bootstrap_train_share": 0.7,
+  "n_train": 1000,
+  "n_explain": 30,
+  "n_bg_explainer": 50,
+  "n_bg_truth": 1000,
+  "n_bg_truth_exact": 500,
+  "tree_additivity_tol": 1e-06,
+  "tree_crosscheck_tol": 1e-06,
+  "kernel_nsamples": 200,
+  "permutation_evals": 500,
+  "partition_evals": 500,
+  "lime_samples": 2000,
+  "null_rho": 0.5
+ },
+ "features": [
+  "MedInc",
+  "HouseAge",
+  "AveRooms",
+  "AveBedrms",
+  "Population",
+  "AveOccup",
+  "Latitude",
+  "Longitude"
+ ],
+ "explainers": [
+  "TreeSHAP-int (bg 50)",
+  "TreeSHAP-path",
+  "Saabas",
+  "KernelSHAP (kmeans 10)",
+  "Permutation SHAP",
+  "Owen (correlation tree)",
+  "Mean-baseline SHAP",
+  "LIME",
+  "Occlusion (mean)"
+ ],
+ "generators": [
+  "independent",
+  "gaussian",
+  "bootstrap",
+  "arf"
+ ],
+ "targets": [
+  "additive",
+  "forest",
+  "mlp"
+ ],
+ "reality_noise_sd": 0.5483446233198812,
+ "reality_signal_r2": 0.7514955063094838,
+ "null_noise_sd": 1.8294040546035284,
+ "versions": {
+  "shap": "0.54.1",
+  "numpy": "2.5.4",
+  "sklearn": "1.9.1",
+  "pandas": "3.0.6"
+ },
+ "runtime_s": 290.8,
+ "tasks": [
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf)",
+   "seed": 509,
+   "r2_g_vs_f": 0.9150304323086452,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.13087097518651716,
+    "TreeSHAP-path": 0.07638762217645528,
+    "Saabas": 0.19198477127504188,
+    "KernelSHAP (kmeans 10)": 0.13719749593878122,
+    "Permutation SHAP": 0.13099640320129957,
+    "Owen (correlation tree)": 0.13160515706124667,
+    "Mean-baseline SHAP": 0.3769341235015889,
+    "LIME": 0.3490530157059952,
+    "Occlusion (mean)": 0.43356681391787727
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.29656838747649744,
+    "TreeSHAP-path": 0.29892531079591905,
+    "Saabas": 0.3482993049378314,
+    "KernelSHAP (kmeans 10)": 0.3001410384372463,
+    "Permutation SHAP": 0.29663642517248145,
+    "Owen (correlation tree)": 0.296983323770712,
+    "Mean-baseline SHAP": 0.43692416132031076,
+    "LIME": 0.34375005671386055,
+    "Occlusion (mean)": 0.4908352197563384
+   },
+   "model_gap": 0.29904086607676184,
+   "seconds": {
+    "fit": 0.688,
+    "truth_model": 1.873,
+    "truth_data": 2.292,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.117,
+     "TreeSHAP-path": 0.009,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.133,
+     "Permutation SHAP": 6.171,
+     "Owen (correlation tree)": 2.753,
+     "Mean-baseline SHAP": 0.014,
+     "LIME": 0.854,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 15.929
+   }
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality (rf)",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9273335792098918,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.251499217371639,
+    "TreeSHAP-path": 0.0832193054686648,
+    "Saabas": 0.20467521373089503,
+    "KernelSHAP (kmeans 10)": 0.33247612403949356,
+    "Permutation SHAP": 0.2523003602609934,
+    "Owen (correlation tree)": 0.2518422573763514,
+    "Mean-baseline SHAP": 0.40995033264086184,
+    "LIME": 0.41717466378969104,
+    "Occlusion (mean)": 0.4710304004961581
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3900429070469271,
+    "TreeSHAP-path": 0.2966260746370595,
+    "Saabas": 0.3580240178498303,
+    "KernelSHAP (kmeans 10)": 0.43448106909470885,
+    "Permutation SHAP": 0.3907705709231577,
+    "Owen (correlation tree)": 0.38896459346800816,
+    "Mean-baseline SHAP": 0.46269630911770077,
+    "LIME": 0.47088174684184547,
+    "Occlusion (mean)": 0.5497911397131746
+   },
+   "model_gap": 0.3009741710758517,
+   "seconds": {
+    "fit": 0.974,
+    "truth_model": 2.114,
+    "truth_data": 2.192,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.157,
+     "TreeSHAP-path": 0.012,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 0.952,
+     "Permutation SHAP": 4.621,
+     "Owen (correlation tree)": 1.603,
+     "Mean-baseline SHAP": 0.012,
+     "LIME": 0.523,
+     "Occlusion (mean)": 0.01
+    },
+    "total": 13.192
+   }
+  },
+  {
+   "rep": 0,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9301799124666063,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.14329418383766437,
+    "TreeSHAP-path": 0.09957239274796206,
+    "Saabas": 0.20679339546176445,
+    "KernelSHAP (kmeans 10)": 0.2581016001504318,
+    "Permutation SHAP": 0.1435665929557085,
+    "Owen (correlation tree)": 0.14586967579497798,
+    "Mean-baseline SHAP": 0.7575058154273326,
+    "LIME": 0.6756820937979463,
+    "Occlusion (mean)": 0.8417187463481668
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3250201081204915,
+    "TreeSHAP-path": 0.3198774832003895,
+    "Saabas": 0.33009221421713514,
+    "KernelSHAP (kmeans 10)": 0.3453122257890511,
+    "Permutation SHAP": 0.3251543733937234,
+    "Owen (correlation tree)": 0.32610852085116954,
+    "Mean-baseline SHAP": 0.6408321385181523,
+    "LIME": 0.6962774903699261,
+    "Occlusion (mean)": 0.7036445696958604
+   },
+   "model_gap": 0.3094990578522433,
+   "seconds": {
+    "fit": 0.926,
+    "truth_model": 1.837,
+    "truth_data": 0.035,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.122,
+     "TreeSHAP-path": 0.01,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 0.907,
+     "Permutation SHAP": 4.963,
+     "Owen (correlation tree)": 2.091,
+     "Mean-baseline SHAP": 0.017,
+     "LIME": 0.506,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 11.443
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9590254647780937,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.12229345247042046,
+    "TreeSHAP-path": 0.04608452174963656,
+    "Saabas": 0.09142235001994652,
+    "KernelSHAP (kmeans 10)": 0.20729205008477455,
+    "Permutation SHAP": 0.12242152062279686,
+    "Owen (correlation tree)": 0.12255975745836732,
+    "Mean-baseline SHAP": 0.3302735554102078,
+    "LIME": 0.32394841143449976,
+    "Occlusion (mean)": 0.3173298591268405
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.20039520171708386,
+    "TreeSHAP-path": 0.1688649437511747,
+    "Saabas": 0.19503924646464554,
+    "KernelSHAP (kmeans 10)": 0.2564285359368229,
+    "Permutation SHAP": 0.20025917371092655,
+    "Owen (correlation tree)": 0.2001937409874895,
+    "Mean-baseline SHAP": 0.35360721901314485,
+    "LIME": 0.2900955782480565,
+    "Occlusion (mean)": 0.35974280325806884
+   },
+   "model_gap": 0.16501997364924162,
+   "seconds": {
+    "fit": 0.758,
+    "truth_model": 1.553,
+    "truth_data": 0.58,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.077,
+     "TreeSHAP-path": 0.006,
+     "Saabas": 0.0,
+     "KernelSHAP (kmeans 10)": 0.941,
+     "Permutation SHAP": 3.781,
+     "Owen (correlation tree)": 2.946,
+     "Mean-baseline SHAP": 0.022,
+     "LIME": 0.675,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 11.353
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 100509,
+   "r2_g_vs_f": 0.935787417757488,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.156624810661036,
+    "TreeSHAP-path": 0.08679887789218244,
+    "Saabas": 0.16947718766347547,
+    "KernelSHAP (kmeans 10)": 0.2751588314131501,
+    "Permutation SHAP": 0.1568748627247293,
+    "Owen (correlation tree)": 0.15752471638925025,
+    "Mean-baseline SHAP": 0.38930540815100423,
+    "LIME": 0.36112417093845767,
+    "Occlusion (mean)": 0.4431015549990479
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.35505731978193517,
+    "TreeSHAP-path": 0.3919578262569332,
+    "Saabas": 0.43130863624871746,
+    "KernelSHAP (kmeans 10)": 0.39560173641150836,
+    "Permutation SHAP": 0.354944171395059,
+    "Owen (correlation tree)": 0.3533716256404657,
+    "Mean-baseline SHAP": 0.45491870657751726,
+    "LIME": 0.42106640225267056,
+    "Occlusion (mean)": 0.49048935261994087
+   },
+   "model_gap": 0.3514113612915864,
+   "seconds": {
+    "fit": 0.794,
+    "truth_model": 2.036,
+    "truth_data": 0.699,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.083,
+     "TreeSHAP-path": 0.009,
+     "Saabas": 0.0,
+     "KernelSHAP (kmeans 10)": 0.736,
+     "Permutation SHAP": 6.739,
+     "Owen (correlation tree)": 3.863,
+     "Mean-baseline SHAP": 0.022,
+     "LIME": 0.687,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 15.685
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|additive",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9267313081682201,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.15512093361355356,
+    "TreeSHAP-path": 0.15954421704708238,
+    "Saabas": 0.24143898953993564,
+    "KernelSHAP (kmeans 10)": 0.3128161812894954,
+    "Permutation SHAP": 0.15513665694893622,
+    "Owen (correlation tree)": 0.15577185186609502,
+    "Mean-baseline SHAP": 0.4012295446446466,
+    "LIME": 0.3225122864503703,
+    "Occlusion (mean)": 0.44755787618745946
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3993847586846171,
+    "TreeSHAP-path": 0.4556515739714403,
+    "Saabas": 0.5279620514672358,
+    "KernelSHAP (kmeans 10)": 0.45913816967661714,
+    "Permutation SHAP": 0.399175854259649,
+    "Owen (correlation tree)": 0.40014347184445936,
+    "Mean-baseline SHAP": 0.49786257402982986,
+    "LIME": 0.3876374875384804,
+    "Occlusion (mean)": 0.5453636425994209
+   },
+   "model_gap": 0.37612015226049506,
+   "seconds": {
+    "fit": 0.752,
+    "truth_model": 2.036,
+    "truth_data": 0.75,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.093,
+     "TreeSHAP-path": 0.005,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 0.981,
+     "Permutation SHAP": 5.45,
+     "Owen (correlation tree)": 3.494,
+     "Mean-baseline SHAP": 0.034,
+     "LIME": 0.96,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 14.576
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "arf|additive",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9413245481019087,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.1540708761145445,
+    "TreeSHAP-path": 0.07831273711584817,
+    "Saabas": 0.15670508265173194,
+    "KernelSHAP (kmeans 10)": 0.23482976852495926,
+    "Permutation SHAP": 0.1540389457406263,
+    "Owen (correlation tree)": 0.1521035221439274,
+    "Mean-baseline SHAP": 0.305152293052433,
+    "LIME": 0.2842545314015866,
+    "Occlusion (mean)": 0.316095832295938
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2755135576078737,
+    "TreeSHAP-path": 0.26791801032042706,
+    "Saabas": 0.31913465295968846,
+    "KernelSHAP (kmeans 10)": 0.3269680428298511,
+    "Permutation SHAP": 0.27557463890537603,
+    "Owen (correlation tree)": 0.2744353642725507,
+    "Mean-baseline SHAP": 0.3800065978538523,
+    "LIME": 0.3146500431538593,
+    "Occlusion (mean)": 0.39057579023743316
+   },
+   "model_gap": 0.23324506232995063,
+   "seconds": {
+    "fit": 1.393,
+    "truth_model": 2.114,
+    "truth_data": 0.812,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.106,
+     "TreeSHAP-path": 0.008,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 0.876,
+     "Permutation SHAP": 5.139,
+     "Owen (correlation tree)": 1.769,
+     "Mean-baseline SHAP": 0.026,
+     "LIME": 1.059,
+     "Occlusion (mean)": 0.011
+    },
+    "total": 13.399
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9229204592872176,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.06584309611803786,
+    "TreeSHAP-path": 0.03306918841124016,
+    "Saabas": 0.15347415212434615,
+    "KernelSHAP (kmeans 10)": 0.1724861546254023,
+    "Permutation SHAP": 0.0661156951708745,
+    "Owen (correlation tree)": 0.06648344506633154,
+    "Mean-baseline SHAP": 0.35947931139710904,
+    "LIME": 0.3412989116181609,
+    "Occlusion (mean)": 0.4120975364866937
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.20598920162311035,
+    "TreeSHAP-path": 0.193458381495283,
+    "Saabas": 0.2521119655188009,
+    "KernelSHAP (kmeans 10)": 0.26206424491356134,
+    "Permutation SHAP": 0.20594039860761934,
+    "Owen (correlation tree)": 0.2064822442477473,
+    "Mean-baseline SHAP": 0.42411118554555977,
+    "LIME": 0.3615190247448422,
+    "Occlusion (mean)": 0.459965383882906
+   },
+   "model_gap": 0.18783345477726904,
+   "seconds": {
+    "fit": 1.204,
+    "truth_model": 2.746,
+    "truth_data": 1.468,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.128,
+     "TreeSHAP-path": 0.01,
+     "Saabas": 0.002,
+     "KernelSHAP (kmeans 10)": 1.247,
+     "Permutation SHAP": 7.097,
+     "Owen (correlation tree)": 3.662,
+     "Mean-baseline SHAP": 0.022,
+     "LIME": 0.711,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 18.323
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9458277560129429,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.1783957973482906,
+    "TreeSHAP-path": 0.06447641324498035,
+    "Saabas": 0.15991333923089313,
+    "KernelSHAP (kmeans 10)": 0.33722543835988283,
+    "Permutation SHAP": 0.1781896145382405,
+    "Owen (correlation tree)": 0.17714206849981878,
+    "Mean-baseline SHAP": 0.4463259298343046,
+    "LIME": 0.36172362335219915,
+    "Occlusion (mean)": 0.5659032815257105
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3108153611360617,
+    "TreeSHAP-path": 0.24461058695569338,
+    "Saabas": 0.27099708206410233,
+    "KernelSHAP (kmeans 10)": 0.39462870741770795,
+    "Permutation SHAP": 0.31061810625607134,
+    "Owen (correlation tree)": 0.30908968845278434,
+    "Mean-baseline SHAP": 0.4825032506839207,
+    "LIME": 0.37680029725465464,
+    "Occlusion (mean)": 0.5624643486217276
+   },
+   "model_gap": 0.22806215429022117,
+   "seconds": {
+    "fit": 0.842,
+    "truth_model": 2.28,
+    "truth_data": 1.28,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.2,
+     "TreeSHAP-path": 0.014,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.054,
+     "Permutation SHAP": 7.322,
+     "Owen (correlation tree)": 4.287,
+     "Mean-baseline SHAP": 0.021,
+     "LIME": 0.923,
+     "Occlusion (mean)": 0.013
+    },
+    "total": 18.258
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|forest",
+   "seed": 100509,
+   "r2_g_vs_f": 0.947835459316571,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.15925312840425213,
+    "TreeSHAP-path": 0.14646401557910968,
+    "Saabas": 0.1734118415709685,
+    "KernelSHAP (kmeans 10)": 0.31752301740092853,
+    "Permutation SHAP": 0.159032715581028,
+    "Owen (correlation tree)": 0.16098306747238442,
+    "Mean-baseline SHAP": 0.41907926887110253,
+    "LIME": 0.349491437475655,
+    "Occlusion (mean)": 0.4417039853815258
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3147330246121889,
+    "TreeSHAP-path": 0.29004576563188333,
+    "Saabas": 0.30476058690770924,
+    "KernelSHAP (kmeans 10)": 0.44075440246838965,
+    "Permutation SHAP": 0.3145769115405903,
+    "Owen (correlation tree)": 0.3156301213732489,
+    "Mean-baseline SHAP": 0.5212172610895449,
+    "LIME": 0.36661851972690085,
+    "Occlusion (mean)": 0.5200336450578277
+   },
+   "model_gap": 0.2503493664279656,
+   "seconds": {
+    "fit": 1.273,
+    "truth_model": 2.733,
+    "truth_data": 1.675,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.155,
+     "TreeSHAP-path": 0.01,
+     "Saabas": 0.0,
+     "KernelSHAP (kmeans 10)": 1.767,
+     "Permutation SHAP": 7.373,
+     "Owen (correlation tree)": 3.005,
+     "Mean-baseline SHAP": 0.023,
+     "LIME": 0.739,
+     "Occlusion (mean)": 0.014
+    },
+    "total": 18.788
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "arf|forest",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9372512489941756,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.11031979207724558,
+    "TreeSHAP-path": 0.06345155288286895,
+    "Saabas": 0.12520405985452593,
+    "KernelSHAP (kmeans 10)": 0.21257746542142184,
+    "Permutation SHAP": 0.10983905159850561,
+    "Owen (correlation tree)": 0.10902108383271016,
+    "Mean-baseline SHAP": 0.3504967890333655,
+    "LIME": 0.3078438503422635,
+    "Occlusion (mean)": 0.4176178001558156
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.24182572414407272,
+    "TreeSHAP-path": 0.2265681829114932,
+    "Saabas": 0.2679016265203161,
+    "KernelSHAP (kmeans 10)": 0.29832757584733854,
+    "Permutation SHAP": 0.24163843875833313,
+    "Owen (correlation tree)": 0.24117838546251147,
+    "Mean-baseline SHAP": 0.4113496264190448,
+    "LIME": 0.3439488519323624,
+    "Occlusion (mean)": 0.4540925164972279
+   },
+   "model_gap": 0.21643894601998823,
+   "seconds": {
+    "fit": 1.513,
+    "truth_model": 2.542,
+    "truth_data": 2.0,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.122,
+     "TreeSHAP-path": 0.01,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.402,
+     "Permutation SHAP": 7.94,
+     "Owen (correlation tree)": 2.292,
+     "Mean-baseline SHAP": 0.03,
+     "LIME": 1.132,
+     "Occlusion (mean)": 0.012
+    },
+    "total": 19.156
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|mlp",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9239752781417131,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.15994792561481652,
+    "TreeSHAP-path": 0.058620579775990764,
+    "Saabas": 0.14733109440706277,
+    "KernelSHAP (kmeans 10)": 0.17691764366049653,
+    "Permutation SHAP": 0.1600063385684764,
+    "Owen (correlation tree)": 0.16070371291009142,
+    "Mean-baseline SHAP": 0.18109840718671363,
+    "LIME": 0.2445855695896407,
+    "Occlusion (mean)": 0.2229066134906382
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2479031243421805,
+    "TreeSHAP-path": 0.2291002322057495,
+    "Saabas": 0.253780524298263,
+    "KernelSHAP (kmeans 10)": 0.24335762085278037,
+    "Permutation SHAP": 0.24759996707130144,
+    "Owen (correlation tree)": 0.24862759815351837,
+    "Mean-baseline SHAP": 0.26159899257716807,
+    "LIME": 0.26058403927063817,
+    "Occlusion (mean)": 0.2808621953466696
+   },
+   "model_gap": 0.2145979147693803,
+   "seconds": {
+    "fit": 1.36,
+    "truth_model": 2.829,
+    "truth_data": 12.367,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.16,
+     "TreeSHAP-path": 0.013,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 2.436,
+     "Permutation SHAP": 8.266,
+     "Owen (correlation tree)": 4.726,
+     "Mean-baseline SHAP": 0.025,
+     "LIME": 1.126,
+     "Occlusion (mean)": 0.019
+    },
+    "total": 33.355
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|mlp",
+   "seed": 100509,
+   "r2_g_vs_f": 0.8913017134597468,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.13321506623263588,
+    "TreeSHAP-path": 0.09914263300902015,
+    "Saabas": 0.20322634408472784,
+    "KernelSHAP (kmeans 10)": 0.1342431614399479,
+    "Permutation SHAP": 0.1335427164861678,
+    "Owen (correlation tree)": 0.13204211049653686,
+    "Mean-baseline SHAP": 0.23657866326050017,
+    "LIME": 0.23764972599726483,
+    "Occlusion (mean)": 0.2713705380921795
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4588741774933924,
+    "TreeSHAP-path": 0.4848919994890585,
+    "Saabas": 0.5338137703187172,
+    "KernelSHAP (kmeans 10)": 0.4663498984791273,
+    "Permutation SHAP": 0.4591025094598528,
+    "Owen (correlation tree)": 0.45921041311533634,
+    "Mean-baseline SHAP": 0.4908900994677564,
+    "LIME": 0.43405978428571795,
+    "Occlusion (mean)": 0.5140391456638868
+   },
+   "model_gap": 0.44516499153740724,
+   "seconds": {
+    "fit": 1.305,
+    "truth_model": 2.789,
+    "truth_data": 9.038,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.13,
+     "TreeSHAP-path": 0.016,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.171,
+     "Permutation SHAP": 5.936,
+     "Owen (correlation tree)": 3.075,
+     "Mean-baseline SHAP": 0.014,
+     "LIME": 0.454,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 23.967
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "bootstrap|mlp",
+   "seed": 100509,
+   "r2_g_vs_f": 0.9120135116215486,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.10362622644118022,
+    "TreeSHAP-path": 0.15459694466226853,
+    "Saabas": 0.205537142185721,
+    "KernelSHAP (kmeans 10)": 0.13536693315051138,
+    "Permutation SHAP": 0.10425883438987363,
+    "Owen (correlation tree)": 0.10429746431646743,
+    "Mean-baseline SHAP": 0.28327336638034184,
+    "LIME": 0.2903885180014667,
+    "Occlusion (mean)": 0.3526393369429641
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5412587432855783,
+    "TreeSHAP-path": 0.5778829252486414,
+    "Saabas": 0.6209927839167552,
+    "KernelSHAP (kmeans 10)": 0.5363136513797575,
+    "Permutation SHAP": 0.5410454574825587,
+    "Owen (correlation tree)": 0.5425517023281391,
+    "Mean-baseline SHAP": 0.5326792370780015,
+    "LIME": 0.5117540616406872,
+    "Occlusion (mean)": 0.557478144815443
+   },
+   "model_gap": 0.5328946439072615,
+   "seconds": {
+    "fit": 0.57,
+    "truth_model": 1.541,
+    "truth_data": 6.65,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.109,
+     "TreeSHAP-path": 0.012,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.089,
+     "Permutation SHAP": 4.898,
+     "Owen (correlation tree)": 1.905,
+     "Mean-baseline SHAP": 0.019,
+     "LIME": 0.483,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 17.299
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "arf|mlp",
+   "seed": 100509,
+   "r2_g_vs_f": 0.8828487855334143,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.17917050931267167,
+    "TreeSHAP-path": 0.11267952964314268,
+    "Saabas": 0.24814052218673957,
+    "KernelSHAP (kmeans 10)": 0.1899668691333384,
+    "Permutation SHAP": 0.1787862151575643,
+    "Owen (correlation tree)": 0.18040607776896636,
+    "Mean-baseline SHAP": 0.348397452168653,
+    "LIME": 0.24300691988931483,
+    "Occlusion (mean)": 0.41314725367152966
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3129915622036714,
+    "TreeSHAP-path": 0.3471721441224746,
+    "Saabas": 0.4289678347553198,
+    "KernelSHAP (kmeans 10)": 0.3146108115577253,
+    "Permutation SHAP": 0.31307596037183977,
+    "Owen (correlation tree)": 0.3122497117699952,
+    "Mean-baseline SHAP": 0.40258282273435314,
+    "LIME": 0.28665284206593344,
+    "Occlusion (mean)": 0.4664703481098956
+   },
+   "model_gap": 0.29524530483667677,
+   "seconds": {
+    "fit": 0.74,
+    "truth_model": 2.265,
+    "truth_data": 6.527,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.245,
+     "TreeSHAP-path": 0.011,
+     "Saabas": 0.001,
+     "KernelSHAP (kmeans 10)": 1.751,
+     "Permutation SHAP": 7.374,
+     "Owen (correlation tree)": 2.126,
+     "Mean-baseline SHAP": 0.024,
+     "LIME": 0.861,
+     "Occlusion (mean)": 0.013
+    },
+    "total": 22.075
+   }
+  }
+ ]
+}
