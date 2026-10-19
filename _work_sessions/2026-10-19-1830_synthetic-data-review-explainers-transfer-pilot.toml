@@ -98,7 +98,7 @@ files = [
   "README.md",
 ]
 
-commits = []
+commits = ["24e7f8e Add feature-effect mech pipeline pilot, supervisor brief and paper explainers", "4597e3e Synthetic-data thesis direction: scoping review, core-paper explainers, transfer pilot", "arfpy fork (github.com/HaykTarkhanyan/arfpy): fc780b5, f10252d, 9fb216e on fix/leaf-coverage-and-oob; 8297f1a, da71011 on feature/random-state"]
 
 notes = """
 - Two other sessions worked in this repo the same day (DECISIONS #21, robotics review); the numbering here
