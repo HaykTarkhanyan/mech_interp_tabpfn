@@ -1,0 +1,251 @@
+URL: https://neurips.cc/virtual/2026/loc/sydney/workshop/137521
+OpenReview: ['1AsGVL2zhg', '21nE4ESpdR', '3TQLkl01Nx', '4dG7TXVGIn', '6XAny6D0iu', '7boXNwnoDi', '8B7aE9CPk2', '9LOVIVRCOo', '9sAqikIICy', 'A9j4tpGsfY', 'AGxUnY1eTi', 'DuhulHS9WA', 'F92KtREfan', 'I2fQeQfRed', 'IhmxxZLjha', 'IwxLqXP9pt', 'LI0zEHj29F', 'MwIstLWfJ8', 'OXmmhK5TR3', 'QtywiErPRy', 'RbmfULsQxs', 'Ssw7E5LLu4', 'Wjbdqouh6p', 'XDJzVkYEzN', 'XOfkkkd31J', 'YlKW9Ynd6n', 'Z4LuEkh0tJ', 'ZIiWKIhnFa', 'bULQOnaFFh', 'czwjjI5kkm', 'i84tj3IaYl', 'ikUBRzDPjO', 'jk42zNOLSc', 'nQbMLaniCR', 'ovLrMMqmf1', 'q2GyLz4XHt', 'qbDMgBcrE5', 'qiuhtSaLSf', 's2QKsKSUHA', 'tzML4Ss2Mi', 'tzgXCvPrOf', 'vv5dq3eotl', 'zs2IWSF9lt']
+
+8th Robot Learning Workshop: Is Physical AI Going Zero-Shot?
+NeurIPS 2026
+CSP Test
+-->
+Skip to yearly menu bar
+Skip to main content
+Main Navigation
+NeurIPS
+Help/FAQ
+Contact NeurIPS
+Create Profile
+Code of Ethics
+Code of Conduct
+Journal To Conference Track
+Diversity & Inclusion
+Proceedings
+Future Meetings
+Press
+Exhibitor Information
+Privacy Policy
+Downloads
+My Stuff
+Login
+Sydney
+Atlanta
+Paris
+Select Year: (2026)
+2026
+2025
+2024
+2023
+2022
+2021
+2020
+2019
+2018
+2017
+2016
+2015
+2014
+2013
+2012
+2011
+2010
+2009
+2008
+2007
+2006
+Earlier Conferences
+Dates
+Submit
+Poster Instructions
+Call for Papers
+Main Track Handbook
+Reviewing Guidelines
+Call for Evaluations & Datasets
+Evaluations and Datasets FAQ
+Reviewing Guidelines
+Call for Position Papers
+Call for Reproducibility
+Call for Tutorials
+Call For Competitions
+Competition Track Reviewing Guidelines
+Call for Workshops
+Call For Affinity Events
+Call for Educational Resources
+Call For Creative AI
+Call for Social Events
+Call for Journal Papers
+Call for Expo
+AI Reviewing Experiment
+Attend
+Hotels
+Visa Information
+Volunteering and Financial Assistance
+Attending with Children
+Organizers
+Organizing Committee
+NeurIPS Board
+NeurIPS Foundation
+Exhibitors
+2026 Exhibitors
+Portal
+EAC Information
+Workshop
+Sat, Dec 12, 2026 • 8:00 AM – 5:00 PM AEDT
+Grand Ballroom B2 & B3
+8th Robot Learning Workshop: Is Physical AI Going Zero-Shot?
+Alex Bewley ⋅ Andrey Kolobov ⋅ Hamidreza Kasaei ⋅ Roberto Calandra ⋅ Johannes V Busch ⋅ Moritz Reuss ⋅ Jiaxu Xing ⋅ Jen Jen Chung
+[
+OpenReview
+]
+Abstract
+The 8th Robot Learning Workshop returns to NeurIPS 2026 to examine a timely question: Is Physical AI going zero-shot? Driven by large-scale robotics foundation models trained across diverse data, tasks, and embodiments are providing increasingly general-purpose robotic systems. We will critically examine how these paradigms shift the traditional boundaries of robot learning. Are we moving past narrow task-specific fine-tuning toward reasoning-based physical agents? What role do scaling laws, diverse datasets, and multi-modal models play in achieving robust real-world performance? Can generalization alone lead us to the strong performance required in robotics use cases? We seek diverse perspectives from the machine learning and robotics communities—both academia and industry—to map the trajectory of zero-shot physical AI. Capitalizing on our prior experience, we will solicit several robotics researchers and companies to exhibit their latest works during the workshop's poster sessions to ground these models in physical reality.
+Show more
+Chat is not available.
+Schedule
+Time zone:
+Conference local time zone
+Augmentron: Scalable Multi-View Visual Augmentation for Robot Learning
+Tanay Tandon ⋅ Aseem Doriwala ⋅ Jade Choghari ⋅ Catherine Weaver ⋅ Pragna Mannam
+Link
+ShadowVLA: Test-Time Re-Grounding of Frozen VLA Policies from Self-Generated References
+Minghao Gong ⋅ Toyotaro Suzumura
+Link
+Tiny Recursive Policy: Recursive Latent Refinement for Visuomotor Control
+Hakan Aktas ⋅ Cengiz Oztireli
+Link
+One Checkpoint, Three Robots, One Day: Zero-Shot Navigation as a System Property
+Peter Bohm ⋅ Saimunur Rahman ⋅ Abdelwahed Khamis ⋅ Sagun Singh Shrestha ⋅ Chris McCool ⋅ Peyman Moghadam
+Link
+SARAM: Sparse Adapter Allocation with Reuse and Merging for Lifelong Robot Learning
+SeongJun Jeong ⋅ Chungwoo Lee ⋅ Gi-Cheon Kang ⋅ Byoung-Tak Zhang
+Link
+PhysCaP: Grounding Code-as-Policy Agent with Physics-Informed Exploration
+Chen-Yu Lin ⋅ Jing-Wen Chen ⋅ Hsueh-En Chang ⋅ Hung-An Chen ⋅ Sheng-Hsun Chang ⋅ Chi-Pin Huang ⋅ Fu-En Yang ⋅ Min-Hung Chen ⋅ Yi-Ting Chen ⋅ Frank Wang
+Link
+Warp RL: Reshaping Base Policy Distributions for Dynamics Adaptation
+Ethan Hirschowitz ⋅ Fabio Ramos
+Link
+Reliability-Aware Foundation-Model Supervision for Label-Efficient Robotic Perception
+Mahra Alhosani ⋅ Mateusz Ochal
+Link
+Chunking the Policy: Extending the Policy-Update Horizon with a Compact Transformer
+Dong Tian ⋅ Markus Scholz ⋅ Olaf Landsiedel
+Link
+GAINS: Leveraging Inconsistent Human Intervention Signals in Reinforcement Learning
+Xinyi Zhang ⋅ Yinuo Zhao ⋅ Pei Ren ⋅ Lechun Jiang ⋅ Huiqian Jin ⋅ Lei Sun ⋅ Dapeng Wu ⋅ Zhengping Che ⋅ Chi Liu ⋅ Jian Tang
+Link
+Few-Shot Residual Adaptation of Pretrained Latent World Models
+Jakub Suliga ⋅ Pankhuri Vanjani ⋅ Nisarga Nilavadi ⋅ Wolfram Burgard ⋅ Rudolf Lioutikov
+Link
+Enhancing VLM Reward Models Through Structure-Aware Fine-Tuning
+Pyrros Koussios ⋅ Chenhao Li ⋅ Xin Chen, Cynthia ⋅ Andreas Krause
+Link
+Control-Aware Command Generation for Asynchronous Control and Action Inference with Vision-Based Policies towards Fast Execution
+Takayuki Osa ⋅ Kazuki Ota
+Link
+Democratizing Data-Efficient Robot Learning with Robot-Free Demonstrations
+Amir Belder ⋅ Omri Berman ⋅ Roman Rabinovich ⋅ Navot Oz ⋅ Nir Barazida ⋅ Aaron Wetzler
+Link
+Count Generalization Is Easy, Actually: Warp a Frozen Skill Instead of Retraining It
+Paul Mattes ⋅ Wojciech Samek ⋅ Marc Toussaint
+Link
+Code Agents Automate the Two Manual Bottlenecks of Sim-Based Robot Learning: Digital Twin Scene Construction and Demonstration Collection
+Brian Y Tsui
+Link
+FactoryBench: Evaluating Industrial Machine Understanding
+Yanis R Merzouki ⋅ Coral Izquierdo Muniz ⋅ Matei C Ignuta-Ciuncanu ⋅ Marcos Gómez-Bracamonte ⋅ Riccardo Maggioni ⋅ Gian-Alessandro Lombardi ⋅ Camilla Mazzoleni ⋅ Federico Martelli ⋅ Balázs Günther ⋅ Jonas Petersen ⋅ Philipp Petersen
+Link
+Video models are zero-shot learners and reasoners
+Thaddäus Wiedemer ⋅ Yuxuan Li ⋅ Paul Vicol ⋅ Shane Shixiang Gu ⋅ Nick Matarese ⋅ Been Kim ⋅ Kevin Swersky ⋅ Priyank Jaini ⋅ Robert Geirhos
+Link
+Wild-World: Spatially Grounded Action-Conditioned RGB-D-Semantic World Modeling for Field Robotics
+Zihang Wang ⋅ Yuhang Chu ⋅ Wenkai Zhu ⋅ shuyuan Li ⋅ Peizhou Ni ⋅ Dong Kong
+Link
+Silent Semantic Failures Below the Policy: A Historical Benchmark for Robot-Learning Software
+Mann Patira
+Link
+How Do World Action Models Use Their Imagined Futures? Evidence from Mechanistic Interventions
+Nicole H. ⋅ Harsh Singh
+Link
+DTG-VLA:DynamicTargetGuidancefor Task-CompositionalGeneralizationinRobot Manipulation
+Jingkun Yi ⋅ Haiyang Sun ⋅ Yun Long ⋅ Liangjing Yang
+Link
+What Crosses Time? From Recurrent State to Causal Memory in Vision-Language-Action Models
+Hyungjun Nam ⋅ Young Kyun Jang ⋅ Byungchul Kim
+Link
+Uncertainty-guided Next Best Iso-Surface Optimization for Neural Volumetric Capture
+Yuhu Guo ⋅ Yijun Huang ⋅ Zhikai Shen ⋅ Chenghao Qian ⋅ Jiasheng Qu ⋅ Wafa Johal ⋅ Olaf Wysocki ⋅ Vahid Babaei ⋅ Guoxin Fang ⋅ Bin Chen
+Link
+Shared Experiences for Collective World Models: Exact Team and Tree Synchronization Laws after Unpaired Learning
+David Erman
+Link
+ENCORE: Few-Shot Agentic Discovery of Manipulation Abstractions
+Yifan Kang ⋅ Bangya Liu ⋅ Zhiwen Fan
+Link
+Task-Aware Conformal State Estimation for Reliable Robotic Planning
+Guy Azran ⋅ David Dovrat ⋅ Sarah Keren
+Link
+SCOUT: Per-Context Reset Curricula for Sparse-Reward Reinforcement Learning
+Siddharth Aphale ⋅ Ayushman Singh
+Link
+Defining Operational Conditions for Safety-Critical AI-Based Systems from Data
+Johann Maximilian Christensen ⋅ Elena Hoemann ⋅ Frank Köster ⋅ Sven Hallerbach
+Link
+SafeCine: Risk-Calibrated Physical Preference Supervision for Language-Conditioned Aerial Cinematography
+Dongryeol Lee ⋅ Jaeyeon Bae ⋅ Taehwan Kim
+Link
+SurVAL: Rollout-Free Survival Validation for Robot Policies
+Changyeon Kim ⋅ Yekyung Nah ⋅ Kimin Lee
+Link
+Rethinking Causal Action Tokenization with Conditional Annealing in Flow Matching
+Chenyu Zhang ⋅ Yuhang Cao ⋅ Daru Du ⋅ Yingxi Lu ⋅ Jing Shao ⋅ Ruoqu Chen ⋅ Jiajun Liu ⋅ liu cao ⋅ Yicheng Liu ⋅ Hang Zhao ⋅ Mengdi Xu
+Link
+Did the World Change or Did My Sensor Break? Cheap Physics Residuals Attribute Deployment Faults for Frozen Manipulation Policies
+Yuhang Xiao ⋅ Xinrui Chang
+Link
+Execution Aware VLAs for Robust Manipulation
+Sombit Dey ⋅ Luc V Gool ⋅ Danda Pani Paudel
+Link
+ValueFormer: Stage-Aware Value Labels for Online Failure Detection and VLA Post-Training
+Inkyu Sa ⋅ Konstantin Stulov ⋅ Rajat Bhageria
+Link
+CoHuB: A Collaborative Humanoid Loco-Manipulation Benchmark
+Hyunjin Park ⋅ Jebeom Chae ⋅ Minwoo Park ⋅ Soochul Yoo ⋅ Jinwoo suh ⋅ Sunghyun Park ⋅ Sarmad Idrees ⋅ Jongeun Choi
+Link
+Learning Actions, Not Noise: Direct Visuomotor Policy Learning on Action Manifolds
+Somdeb Saha ⋅ Vighnesh Vatsal ⋅ Kaushik Das
+Link
+Adaptive Action Horizon Selection via Flow-Field Uncertainty
+Idan B Ami ⋅ Arnon Netzer ⋅ Sarah Keren ⋅ Idit Diamant
+Link
+Adjoint Guidance Flow for Efficient Critic-Guided Vision-Language-Action Models
+Jeongsol Kim ⋅ Kwanyoung Kim ⋅ Jong Chul Ye
+Link
+Subliminal-Style Action Traits in Vision-Language-Action Robot Policies
+Sharmita Dey
+Link
+Learning Robot Behavior Priors from Non-Robotic Synthetic Data
+Mateusz Odrowaz-Sypniewski ⋅ Michael Amir ⋅ Jasmine Bayrooti ⋅ Ajay Shankar ⋅ Amanda Prorok
+Link
+PonderPounce: A Pretrained MLLM as an Episode Context Engine for Robot Control
+Suhwan Choi ⋅ Jaeyoon Jung ⋅ Sungkyung Kim ⋅ Yunsung Lee ⋅ Youngjae Yu
+Link
+Replay Buffer Distribution Dynamics Matter in Massively Parallel Off-Policy RL
+Tomohiro Hashimoto ⋅ Takayuki Osa ⋅ Yusuke Mukuta ⋅ Masatoshi Hidaka ⋅ Tatsuya Harada
+Link
+Michael Milford
+Michael Milford
+Yadan Luo
+Yadan Luo
+William Zhi
+Weiming Zhi
+Successful Page Load
+NeurIPS uses cookies for essential functions only. We do not sell your personal
+information.
+Our Privacy Policy »
+Accept
+The NeurIPS Logo above may be used on presentations. Right-click and choose
+download. It is a vector graphic and may be used at any scale.
+Useful links
+Press
+Proceedings
+Contact
+1269 Law St, San Diego CA 92109
+Email
+NeurIPS Proceedings

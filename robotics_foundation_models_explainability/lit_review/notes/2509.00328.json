@@ -1,0 +1,45 @@
+{
+  "id": "2509.00328",
+  "title": "Mechanistic Interpretability for Steering Vision-Language-Action Models",
+  "first_author": "Haon",
+  "year": 2025,
+  "venue": "CoRL 2025 (9th Conference on Robot Learning, Seoul)",
+  "tier": "core",
+  "models": ["OpenVLA-7B (LIBERO-Long fine-tuned checkpoint)", "pi0-FAST 3B (LoRA fine-tuned on UR5)", "pi0 and PaliGemma-3B (value-vector analysis only)", "pi0-FAST vs pi0-FAST-DROID (fine-tuning comparison)"],
+  "action_head": "discrete action tokens (OpenVLA bins and pi0-FAST FAST tokens; the steered 'pi0' is pi0-FAST, not the flow-matching pi0)",
+  "methods": ["FFN value-vector projection onto token vocabulary (Geva et al. 2022)", "manual and kNN clustering of value vectors by top-token semantics", "activation steering by overwriting FFN neuron activations with a fixed scalar", "two-proportion z-test on top tokens before/after fine-tuning"],
+  "question": "Do VLAs keep semantically interpretable FFN neurons after action training, and can upweighting concept-aligned neurons (fast/slow, up/low/high) steer robot motion at inference time without fine-tuning?",
+  "key_findings": [
+    "Using the Geva et al. criterion (>=4 of top-30 tokens share a pattern, 10 random value vectors per layer), pi0 and its base PaliGemma show interpretable and semantic value vectors at similar rates; the paper claims fewer than 25% of FFN neurons are rewired for action prediction (Fig. 2a).",
+    "Action tokens appear among the top-100 tokens of value vectors in every layer of OpenVLA and pi0, most at the final layer; authors read this as no hard 'task then control' transition (Fig. 2b).",
+    "Fine-tuning pi0-FAST on DROID mainly changes action tokens in value vectors (more uneven distribution); the top-200 DROID instruction tokens appear 1.2x more often after fine-tuning (mean z = 1.0) (Fig. 3, App. B.2).",
+    "OpenVLA on LIBERO-Long: 'fast' clusters produce larger end-effector displacement than 'slow' clusters by 27.73% on average, max 148.54%; all 10 matched comparisons p < 0.001 (paired t-test), Cohen's d from -0.091 to 1.419 (sweep: cluster sizes 10/20, coefficients 2-20, 10 tasks x 10 rollouts).",
+    "Depth: 'up' clusters injected in all layers give mean Y displacement 0.098, late layers 0.086, early layers 0.007; late vs full d = -0.062 (negligible).",
+    "Real UR5 with pi0-FAST: 'low' and 'slow' interventions produce the lowest / slowest motion, but 'high' and 'fast' look like the no-intervention baseline; random-vector steering differs little from no intervention; prompt prefixes ('low ...', 'slow safe ...') have a weaker effect than steering (Fig. 7, box plots over 10 rollouts)."
+  ],
+  "evidence": {
+    "setting": "both (simulation with OpenVLA; real UR5 with pi0-FAST)",
+    "benchmarks": ["LIBERO-Long (10 tasks)", "two custom UR5 pick-and-place tasks (Low/High Transport, 75 demos; Slow/Fast Transport, 120 demos)"],
+    "scale": "Sim: 10 tasks x 10 rollouts per configuration, deterministic seeding. Real: 10 rollouts per steering variant and baseline. Interpretability statistics on 10 randomly sampled value vectors per layer.",
+    "statistics": "partial: paired t-tests and Cohen's d in simulation; real-robot results are box plots only, no tests; no CIs",
+    "baselines": "no intervention, prompt modification with concept words, random six-vector upweighting (real robot only); slow vs fast clusters compared against each other in sim"
+  },
+  "causal_validation": "Yes, by steering: overwriting the activations of concept-aligned FFN neurons changes end-effector displacement (sim) and max height / speed (real). There is a random-neuron control only on the real robot. No ablation of the clusters and no test that steering preserves task success.",
+  "closed_loop": "Partly. LIBERO steering and the real Low/High task are closed-loop rollouts. The real Slow/Fast result is NOT closed-loop: all variants are computed in parallel but only the un-steered baseline action is executed, so speed is measured on predicted actions along the baseline trajectory.",
+  "limitations_stated": [
+    "Clusters are built from token similarity, not behavior, and can conflate distinct behaviors (e.g. 'slow and careful' vs 'slow and stuck').",
+    "Meaning of value vectors drifts across models, tasks and time; an 'up' vector may act differently elsewhere.",
+    "Unclear how fine-tuning affects steerability.",
+    "Only pick-and-place with one arm; mobile, bimanual and unstructured settings not tested."
+  ],
+  "critique": [
+    "The abstract says 'pi0', but all steering is on discrete-token models (OpenVLA, pi0-FAST); nothing here shows that FFN-neuron steering works on a flow-matching action expert, where the VLM's FFN outputs never pass through a vocabulary head.",
+    "Task success under steering is never reported, so we cannot tell whether faster/higher motion comes with broken task execution.",
+    "Only one direction of each pair works on the real robot (low and slow, not high and fast); with 10 rollouts and no tests this is a weak, asymmetric effect.",
+    "Sim results compare fast vs slow clusters with each other, not with a random-neuron or no-intervention baseline, so 'semantic' specificity is not isolated in simulation; 'all significant' with d as low as -0.091 suggests very large paired samples or a sign inconsistency.",
+    "The '<25% of neurons rewired' and 'largely semantic' claims rest on 10 hand-labelled vectors per layer, a small and subjective sample.",
+    "The Slow/Fast open-loop measurement means the real-robot speed claim does not show the behavior a steered robot would actually produce."
+  ],
+  "code": "not released (only the openpi codebase is linked)",
+  "one_line": "Projecting VLA FFN neurons onto the vocabulary finds concept neurons like 'slow' and 'low', and upweighting them shifts OpenVLA motion in LIBERO and pi0-FAST motion on a UR5, though only some directions work and task success is not reported."
+}

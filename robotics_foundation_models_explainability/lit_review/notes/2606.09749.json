@@ -1,0 +1,42 @@
+{
+  "id": "2606.09749",
+  "title": "Your Model Already Knows: Attention-Guided Safety Filter for Vision-Language-Action Models",
+  "first_author": "Park",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5"],
+  "action_head": "flow/diffusion action expert (attention read from action-query to vision-key block of layer 12, head 3)",
+  "methods": ["per-head attention profiling on 4 episodes with ground-truth targets to pick a target-localizing head", "attention density per tracked object over a sliding window with a decisive-gap rule", "YOLOE segmentation + ellipsoid tracking", "separating-hyperplane CBF-QP safety filter on the end-effector ellipsoid", "attention statistics as success predictors (ROC/AUC)"],
+  "question": "Can a VLA's own attention heads identify the object it is acting toward at every step, so a CBF safety filter can treat everything else as an obstacle in dynamic scenes?",
+  "key_findings": [
+    "Only a few heads carry target-identification signal; layer-wise averages peak at layer 12 (then layer 8) for both cameras; layer 12 head 3 is used for all suites.",
+    "SafeLIBERO Level III (adversarially moving obstacle): KNOWS vs Naive init-only filter safe-success 54.5 vs 34.0 (Spatial), 70.5 vs 40.0 (Object), 63.5 vs 9.5 (Goal), 34.5 vs 18.5 (Long); collision rate 29.0 vs 62.0, 14.0 vs 50.0, 30.5 vs 90.5, 34.0 vs 80.5 (the 'about 43%' average reduction).",
+    "Static levels I-II: KNOWS is comparable or worse than the privileged Naive filter (e.g. Spatial I SSR 53.0 vs 61.0, Long II 24.0 vs 42.5), and far better than no filter (unfiltered collision rates 64.5-95.0%).",
+    "Overhead: attention extraction 0.8 ms, target identification 9.4 ms, QP 11.4 ms, segmentation 19.3 ms; wrapper total 49.3 ms within the 20 Hz budget.",
+    "Passively recorded attention predicts success on 80 LIBERO-Long episodes (44 success / 36 failure): early-window target density AUC 0.89 (whole episode 0.70), early target mass AUC 0.93; density on the not-yet-relevant destination is at chance (AUC 0.55)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["SafeLIBERO Spatial, Object, Goal, Long at levels I-II (static) and new level III (dynamic obstacle)"],
+    "scale": "50 episodes per task; head selection from 4 profiling episodes; success-prediction analysis on 80 episodes",
+    "statistics": "no tests or CIs on SR/CR/SSR; AUCs reported without CIs",
+    "baselines": "no CBF; 'Naive' filter with one ground-truth obstacle ellipsoid placed at t = 0 and never updated (stand-in for VLM-based init-only filters)"
+  },
+  "causal_validation": "No interpretability claim is tested causally: attention is used as a read-out, and the destination-vs-target AUC contrast is a specificity check, not an intervention. Crucially there is no ablation that isolates the attention signal from per-step object tracking.",
+  "closed_loop": "Yes, safety results are closed-loop rollouts with the filter active; the success-prediction AUCs come from passively recorded closed-loop episodes.",
+  "limitations_stated": [
+    "Only the end-effector ellipsoid is protected; arm links can still collide.",
+    "Perception errors (point-cloud noise, tracker mis-association) cause conservative behavior or collisions.",
+    "Safety holds on the reduced-order end-effector model only up to the operational-space controller's tracking error; the CBF is a practical margin, not a certificate.",
+    "A weaker backbone may yield diffuse attention and a worse filter."
+  ],
+  "critique": [
+    "The Level III gain is confounded: KNOWS re-tracks every object every step while the Naive baseline places a single obstacle once. A tracker-plus-oracle-target or tracker-plus-random-target ablation is needed to credit the attention head.",
+    "The head is selected on 4 episodes from one suite using ground-truth targets, then reused everywhere; no check of how often the attention-chosen target is correct per step is reported in the text read.",
+    "Single model (pi0.5), simulation only, no statistics; Long-suite results are weak for all methods.",
+    "The finding that a target-specific head in the action expert's attention predicts success (AUC 0.89) fits the failure-prediction literature and shows attention can carry task-relevant signal, but it is correlational."
+  ],
+  "code": "not reported",
+  "one_line": "Reads one attention head of pi0.5 to find the object the policy is reaching for, treats every other tracked object as an obstacle in a CBF filter, and cuts collisions with moving obstacles in SafeLIBERO, though the gain is not separated from simply tracking objects every step."
+}

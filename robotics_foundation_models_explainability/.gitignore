@@ -1,0 +1,6 @@
+# PDFs are ~800 MB; papers/README.md and papers/manifest.json list them with arXiv URLs,
+# and scripts/download_papers.py rebuilds the folder (title-checked, resumable).
+papers/*.pdf
+logs/
+.venv/
+__pycache__/

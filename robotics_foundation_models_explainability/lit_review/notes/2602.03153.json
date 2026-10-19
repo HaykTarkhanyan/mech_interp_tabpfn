@@ -1,0 +1,42 @@
+{
+  "id": "2602.03153",
+  "title": "When Attention Betrays: Erasing Backdoor Attacks in Robotic Policies by Reconstructing Visual Tokens",
+  "first_author": "Li",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["OpenVLA (paper says a ViT-B/16 vision encoder is used)", "DexGraspVLA"],
+  "action_head": "discrete action tokens (OpenVLA); DexGraspVLA head not described in the parts read; actions are 6-DoF joint sequences to a grasp pose",
+  "methods": ["layer-wise ViT attention heatmaps and t-SNE of clean vs triggered tokens (qualitative)", "Mahalanobis-distance localization of anomalous image tokens against a clean reference from successful episodes (FBL)", "deep-layer attention filtering of candidate tokens (AFM)", "MAE decoder reconstruction of masked tokens to produce a trigger-free image, fed back to the frozen VLA"],
+  "question": "What internal mechanism makes visual backdoors in fine-tuned VLAs effective, and can a test-time defense erase the trigger from the image without retraining the VLA?",
+  "key_findings": [
+    "Qualitative: attention maps for clean and triggered inputs look alike in shallow ViT layers but are 'grabbed' by the trigger in deeper layers; triggered embeddings form a compact cluster next to the clean manifold in t-SNE (Figs. 3-4).",
+    "OpenVLA, real robot, 30 trials per cell (Table I): attack success rate (ASR) drops from 96.67 to 6.67 (Grasping Fanta), 93.33 to 3.33 (Lifting Cube), 93.33 to 3.33 (Extracting Tissue), 90.00 to 6.67 (Shaking Hand), with clean performance changing by at most 3.33 points.",
+    "DexGraspVLA: ASR down to 3.33, 10.00, 13.33, 6.67 on the four tasks; clean performance drop at most 3.33.",
+    "Recovery on poisoned inputs (DexGraspVLA, Table III): average 74.17% correct actions vs 34.17% for the best baseline DeDe; Grasping Fanta 6.67 -> 83.33.",
+    "Ablation (Table II): random 10% token selection with the decoder gives TP 57.50; full method 87.51; replacing the decoder with zeroing degrades robustness and clean accuracy.",
+    "A semantically plausible trigger (red bottle cap) is harder to remove than checkerboard or circular-block triggers (Fig. 8)."
+  ],
+  "evidence": {
+    "setting": "real robot (desktop dual-arm robot with dexterous hands; also two humanoids and a UR5)",
+    "benchmarks": ["4 real tasks: grasping Fanta, lifting cube, extracting tissue, shaking hands"],
+    "scale": "1600 demonstrations (400 per platform, 100 per task: 40 clean + 60 backdoor); 30 random repositioning trials per method per task; checkerboard trigger covering 10% of view, 30% poisoning ratio stated",
+    "statistics": "no: single success percentages over 30 trials, no CIs",
+    "baselines": "no defense, ZIP, UNICORN, BTI-DBF(P), SampDetox, SparseVLM, DeDe"
+  },
+  "causal_validation": "Indirect. The defense intervenes on the input (masking and reconstructing flagged tokens) and ASR falls, which supports that the flagged tokens carry the trigger; the 'deep-layer attention grabbing' mechanism itself is only shown with attention heatmaps and t-SNE, not tested by intervening on attention.",
+  "closed_loop": "Real-robot trials with the purified image fed to the policy; the action format (a joint sequence to a grasp pose from one observation) means control is close to open-loop per trial.",
+  "limitations_stated": [
+    "Semantically integrated triggers (red bottle cap) are harder to detect.",
+    "Assumes semi-white-box access to token embeddings and attention maps."
+  ],
+  "critique": [
+    "The mechanistic claim is thin: attention heatmaps at three ViT layers and a t-SNE plot, with no quantitative attention statistics or causal test of the attention shift.",
+    "Inconsistencies in the setup: OpenVLA is said to use a ViT-B/16 encoder (released OpenVLA uses DINOv2 + SigLIP), and 60 of 100 demos per task are backdoor samples although a 30% poisoning rate is stated.",
+    "The defense is essentially input purification (OOD token localization + MAE inpainting); interpretability supplies the motivation rather than the intervention target.",
+    "30 trials per cell with no variance; very large effect sizes (ASR 97% -> 7%) are plausible for a localized checkerboard trigger, but adaptive triggers designed to sit on the clean manifold are not tested.",
+    "Contrasts with TrustVLA (2607.12571), which intervenes on internal attention/representations rather than the image."
+  ],
+  "code": "not reported",
+  "one_line": "Bera flags image tokens whose embeddings and deep-layer attention look anomalous, masks them and reconstructs a trigger-free image, cutting backdoor attack success on real OpenVLA and DexGraspVLA setups from over 90% to under 14% with little loss of clean performance, though the attention-hijacking mechanism is shown only qualitatively."
+}

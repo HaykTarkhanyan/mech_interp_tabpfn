@@ -1,0 +1,41 @@
+{
+  "id": "2509.20623",
+  "title": "Latent Activation Editing: Inference-Time Refinement of Learned Policies for Safer Multirobot Navigation",
+  "first_author": "Das",
+  "year": 2025,
+  "venue": "arXiv preprint",
+  "tier": "adjacent",
+  "models": ["decentralized IPPO multi-quadrotor navigation policy of Huang et al. (MLP encoders + attention, latent d = 30)"],
+  "action_head": "regression head (four normalized rotor thrusts); not a foundation model",
+  "methods": ["MLP behavior classifier on intermediate latents (unsafe = within H steps of a collision)", "latent collision world model (GRU) that predicts future pre-collision latents and substitutes them", "baselines: KD-tree retrieval, SAE unit steering, UMAP / Barlow Twins / autoencoder projections, transformer LCWM", "ablations over which latent block is edited, horizon H and prediction horizon m"],
+  "question": "Can replacing a frozen RL navigation policy's latents, when flagged as unsafe, with predicted 'more dangerous-looking' future latents make the policy avoid collisions earlier without retraining?",
+  "key_findings": [
+    "On 2,600 configurations where the base policy collides at least once (deterministic sim): collisions 5,623 -> 583 (-89.6%), zero-collision trajectories 0 -> 2,175 (82.7%), robot success 0.58 -> 0.64; paired t-test mean reduction 1.94 per run (95% CI [1.86, 2.01]), p < 1e-300, Cohen's d = 1.0.",
+    "Same direction in the stochastic simulator over 10 runs with 95% CIs (Fig. 4).",
+    "Alternatives are weaker: KD-tree retrieval 2,678 collisions, SAE unit steering 2,896 (hyperparameter-fragile), UMAP 3,766, Barlow Twins 3,355, plain autoencoder 37,749, transformer LCWM 612.",
+    "Editing must spare self-dynamics features: editing only neighbor/obstacle parts of Z1 gives 583 collisions, editing all of Z1 gives 67,951 collisions; editing the downstream Z2 is worse still.",
+    "Timing matters: H = 50 -> 1,124 collisions, H = 250 -> 583; prediction horizon m = 10 best, m = 30 -> 60,547 collisions.",
+    "Behavior classifier accuracy about 98% (99.3% on safe trajectories); runs onboard Crazyflie 2.1 (<10k params, <1 ms); real-world crossing demos shown qualitatively."
+  ],
+  "evidence": {
+    "setting": "both (simulation numbers; hardware qualitative)",
+    "benchmarks": ["QuadSwarm, 8 quadrotors, 20% obstacle density", "Crazyflie 2.1 bilateral and four-way crossing demos"],
+    "scale": "2,600 failure configurations replayed with and without editing; 10 stochastic runs for the non-deterministic check",
+    "statistics": "yes for the main comparison: paired t-test, 95% CI, Cohen's d; ablations without tests",
+    "baselines": "unedited policy, KD-tree retrieval, SAE steering, encoder-decoder projections, transformer LCWM"
+  },
+  "causal_validation": "Yes, the edit is an intervention on latents and changes closed-loop collisions; the self-vs-environment ablation shows which latent components can be edited safely. The 'amplified risk perception' story is a hypothesis; there is no test that the substituted latents encode risk as such.",
+  "closed_loop": "Yes, closed-loop multi-agent simulation and onboard hardware.",
+  "limitations_stated": [
+    "Only demonstrated for collision avoidance in multi-quadrotor navigation; other behaviors and platforms left to future work.",
+    "Editing horizon H and prediction horizon m are task-dependent hyperparameters."
+  ],
+  "critique": [
+    "Evaluation is restricted to configurations where the base policy fails; it is not stated whether these are disjoint from the classifier/LCWM training rollouts, so overfitting to known failure scenes cannot be ruled out.",
+    "Small RL controller, not a foundation model; relevant as a precursor showing that monitor-then-edit works and that editing proprioceptive features breaks control.",
+    "The finding that SAE-based unit steering was fragile and that safety-relevant information is entangled is a useful negative datapoint for SAE steering claims in VLAs.",
+    "Hardware evidence is anecdotal (a few demo runs, no counts)."
+  ],
+  "code": "https://lae-robotics.github.io/ (project page says videos and code)",
+  "one_line": "A small classifier flags unsafe latents in a frozen quadrotor-swarm policy and a GRU swaps in predicted pre-collision latents, cutting simulated collisions by about 90% and running onboard Crazyflies."
+}

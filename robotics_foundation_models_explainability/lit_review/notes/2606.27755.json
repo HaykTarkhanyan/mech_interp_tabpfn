@@ -1,0 +1,42 @@
+{
+  "id": "2606.27755",
+  "title": "Drop-Then-Recovery: How Redundant Are Vision-Language-Action Models?",
+  "first_author": "Sun",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["pi0.5", "OpenVLA-OFT", "Lingbot-VLA", "GigaBrain-0"],
+  "action_head": "mixed: flow/diffusion action expert (pi0.5, Lingbot-VLA, GigaBrain-0) and regression head (OpenVLA-OFT MLP head)",
+  "methods": ["Drop-Then-Recovery: physically remove transformer blocks, then recovery fine-tune", "fixed component interventions (Drop Half, Keep 2) for vision, language, action", "GateProbe: gradient of action loss w.r.t. a virtual residual gate per block", "comparison with CosSim, magnitude, perplexity, Taylor, IGIA metrics", "granularity comparison (block vs MHA vs MLP)", "FLOPs-matched training comparison"],
+  "question": "How much of each VLA component (vision, language, action) is needed for closed-loop control once the model is allowed to recover by fine-tuning?",
+  "key_findings": [
+    "Strong asymmetry: on LIBERO, OpenVLA-OFT with half its LLM blocks removed reaches 98.3% vs 95.0% baseline after recovery, while dropping half the vision blocks (3.6% of parameters) falls to 83.9%; on pi0.5, Keep-2 for vision or action collapses to 62.4% and 26.2%, while Keep-2 for language stays near baseline.",
+    "Keeping only two language blocks recovers baseline-level success (OpenVLA-OFT 95.1%, pi0.5 91.0% vs 91.7%); FLOPs-matched pi0.5 Drop-12 reaches 93.7% (+2.0), Drop-17 (one language block) 91.0%.",
+    "Whole-block dropping beats sublayer dropping on OpenVLA-OFT (98.3% vs MHA 91.9% vs MLP 65.6%); on pi0.5 all granularities give 93.3-94.1%.",
+    "GateProbe is best or second-best at four drop levels on pi0.5, with larger margins under aggressive removal (+3.9 at Drop-16, +4.3 at Drop-17).",
+    "Redundancy is not free under shift: at Drop-9, LIBERO-Plus drops 3.8 points overall, with the largest loss on robot initial-pose perturbations (-10.6) rather than language (-5.1); RoboTwin 2.0 Hard variants lose 6.6 points vs 0.6 on Easy.",
+    "Real xArm 850 parcel sorting with pi0.5 (3 runs x 20 grasps): Env 1 full 63.3%, Drop-9 65.0%, Drop-16 55.0%; Env 2 full 75.0%, Drop-9 71.7%, Drop-16 66.7%; dropped models are less robust under six OOD conditions.",
+    "Without recovery, zero-shot dropping is slower end-to-end (e.g. 0.72x task speedup at 78% success) because failures add steps; DTR-16 gives 1.64x task speedup and 42% less memory on OpenVLA-OFT."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO, LIBERO-Plus, RoboTwin 2.0 simulation; xArm 850 real robot)",
+    "benchmarks": ["LIBERO (4 suites)", "LIBERO-Plus", "RoboTwin 2.0", "real warehouse parcel sorting (2 layouts)"],
+    "scale": "LIBERO: 20 trials per task (main), some tables 10 tasks x 5 trials with one seed; real robot 3 runs x 20 grasps per condition",
+    "statistics": "no tests or CIs",
+    "baselines": "full fine-tuned models under matched training compute; static and gradient-based block importance metrics; zero-shot dropping; quantization and 2:4 pruning in appendix"
+  },
+  "causal_validation": "Yes in the ablation sense: blocks are removed and closed-loop success measured. But because every dropped model is re-fine-tuned, the protocol measures whether capacity is necessary for the task distribution, not what the original model's blocks compute.",
+  "closed_loop": "Yes, all success rates are closed-loop rollouts in simulation and on the real robot.",
+  "limitations_stated": [
+    "Redundancy reflects current benchmarks, which use short templated instructions; removed language blocks still matter for robustness to physical perturbations and harder tasks.",
+    "In pi0.5, dropping a language block removes only about 75% of its parameters because K/V projections must stay for the action expert's joint attention."
+  ],
+  "critique": [
+    "For pi0.5 the 'language block removal' keeps that layer's K/V projections, which are then retrained as cross-attention adapters on an identity-passed hidden state; so the result shows the action expert can be re-conditioned on shallow features, not that backbone computation is irrelevant. This connects to the narrow interface found causally in 2610.20750.",
+    "Recovery fine-tuning on LIBERO, a near-saturated benchmark, makes over-capacity easy to show; the LIBERO-Plus and RoboTwin Hard drops are the more informative numbers and point the other way for deployment.",
+    "20 trials per task, no seeds or CIs, so gains like 95.0 -> 98.3 are within plausible noise.",
+    "Consistent with other batch papers that find weak language dependence on LIBERO (2603.06001, 2610.10178, 2604.18000), from an architectural angle."
+  ],
+  "code": "https://github.com/s1ghhh/VLADrop",
+  "one_line": "Removing most language-backbone blocks from pi0.5, OpenVLA-OFT and other VLAs and re-fine-tuning keeps LIBERO success near or above baseline, while removing vision or action blocks breaks them, suggesting current benchmarks barely need the language model, though robustness to physical shifts suffers."
+}

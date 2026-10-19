@@ -1,0 +1,208 @@
+{
+ "w_reaction_without_attribution_hijacking": {
+  "url": "https://neurips.cc/virtual/2026/loc/paris/162921",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 1526,
+  "page_is_work": true,
+  "openreview_ids": [
+   "1OTHIshAFK"
+  ]
+ },
+ "w_hijacking_a_7b_robot": {
+  "url": "https://www.lesswrong.com/posts/fKBkAWZXEGArc9kyB/hijacking-a-7b-robot-policy-s-actions-it-reacts-to-what-it-1",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 13842,
+  "page_is_work": true,
+  "openreview_ids": []
+ },
+ "w_layer_wise_structural_and": {
+  "url": "https://ii.metu.edu.tr/node/1694",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 2120,
+  "page_is_work": true,
+  "openreview_ids": []
+ },
+ "w_when_internal_feedback_goodharts": {
+  "url": "https://icml.cc/virtual/2026/78133",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 1158,
+  "page_is_work": true,
+  "openreview_ids": [
+   "h0uehSJqbm"
+  ]
+ },
+ "w_goodfire_silico_for_robotics": {
+  "url": "https://www.goodfire.com/robotics-vision",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 3049,
+  "page_is_work": true,
+  "openreview_ids": []
+ },
+ "w_reading_and_steering_a": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DGQEGpBhtYk",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ },
+ "w_block_the_heads_improving": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3Dei1BNFHxTo",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ },
+ "w_partial_composition_not_blind": {
+  "url": "https://neurips.cc/virtual/2026/loc/paris/162908",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 3093,
+  "page_is_work": true,
+  "openreview_ids": [
+   "DPOBsubW55"
+  ]
+ },
+ "w_interpretable_signals_reveal_failure": {
+  "url": "https://icml.cc/virtual/2026/79411",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 1067,
+  "page_is_work": true,
+  "openreview_ids": [
+   "ZVY1lSGcnZ"
+  ]
+ },
+ "w_predictable_before_action_resistant": {
+  "url": "https://neurips.cc/virtual/2026/loc/paris/162894",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 850,
+  "page_is_work": true,
+  "openreview_ids": [
+   "YEvN8LfCTQ"
+  ]
+ },
+ "w_structured_velocity_field_disagreement": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DYcgsk5hBUu",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ },
+ "w_reasoning_we_can_trust": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DqFie1LpSrf",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ },
+ "w_how_do_world_action": {
+  "url": "https://neurips.cc/virtual/2026/loc/sydney/workshop/137521",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 9599,
+  "page_is_work": false,
+  "openreview_ids": [
+   "1AsGVL2zhg",
+   "21nE4ESpdR",
+   "3TQLkl01Nx",
+   "4dG7TXVGIn",
+   "6XAny6D0iu",
+   "7boXNwnoDi",
+   "8B7aE9CPk2",
+   "9LOVIVRCOo",
+   "9sAqikIICy",
+   "A9j4tpGsfY",
+   "AGxUnY1eTi",
+   "DuhulHS9WA",
+   "F92KtREfan",
+   "I2fQeQfRed",
+   "IhmxxZLjha",
+   "IwxLqXP9pt",
+   "LI0zEHj29F",
+   "MwIstLWfJ8",
+   "OXmmhK5TR3",
+   "QtywiErPRy",
+   "RbmfULsQxs",
+   "Ssw7E5LLu4",
+   "Wjbdqouh6p",
+   "XDJzVkYEzN",
+   "XOfkkkd31J",
+   "YlKW9Ynd6n",
+   "Z4LuEkh0tJ",
+   "ZIiWKIhnFa",
+   "bULQOnaFFh",
+   "czwjjI5kkm",
+   "i84tj3IaYl",
+   "ikUBRzDPjO",
+   "jk42zNOLSc",
+   "nQbMLaniCR",
+   "ovLrMMqmf1",
+   "q2GyLz4XHt",
+   "qbDMgBcrE5",
+   "qiuhtSaLSf",
+   "s2QKsKSUHA",
+   "tzML4Ss2Mi",
+   "tzgXCvPrOf",
+   "vv5dq3eotl",
+   "zs2IWSF9lt"
+  ]
+ },
+ "w_between_pixels_and_policies": {
+  "url": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 10016,
+  "page_is_work": true,
+  "openreview_ids": []
+ },
+ "w_the_hitchhiker_s_guide": {
+  "url": "https://icml.cc/virtual/2026/79347",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 971,
+  "page_is_work": true,
+  "openreview_ids": [
+   "mS9nh3L3iN"
+  ]
+ },
+ "w_beyond_performance_explaining_generalisation": {
+  "url": "https://journal.hep.com.cn/bir/EN/1223295907161035662",
+  "status": "request failed: HTTPSConnectionPool(host='journal.hep.com.cn', port=443): Max retries exceeded with url: /bir/EN/1223295907161035662 (Caused by ConnectTimeoutError(<HTTPSConnection(host='journal.hep.com.cn', port=443) at 0x253f492f320>, 'Connection to journal.hep.com.cn timed out. (connect timeout=60)'))"
+ },
+ "w_decision_level_auditing_of": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DFEWwJF9avD",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ },
+ "w_multisteve_1s_a_model": {
+  "url": "https://icml.cc/virtual/2026/79352",
+  "status": "ok",
+  "abstract_found": true,
+  "chars": 1788,
+  "page_is_work": true,
+  "openreview_ids": [
+   "lY7mivdb4k"
+  ]
+ },
+ "w_reacting_to_text_is": {
+  "url": "https://openreview.net/challenge?redirect=%2Fforum%3Fid%3DuJy4INfmBA",
+  "status": "ok",
+  "abstract_found": false,
+  "chars": 282,
+  "page_is_work": false,
+  "openreview_ids": []
+ }
+}

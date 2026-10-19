@@ -1,0 +1,46 @@
+{
+  "id": "2610.03498",
+  "title": "Detect and Suppress: A Mechanistic Defense against Adversarial Patches in VLA Models",
+  "first_author": "Horiba",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5 (LoRA fine-tuned on LIBERO with wrist camera blacked out, agent camera only)", "SmolVLA (released LIBERO checkpoint)"],
+  "action_head": "flow/diffusion action expert (both models); interventions are in the VLM backbone prefix-token residual stream",
+  "methods": ["TopK sparse autoencoder (1x expansion, K=12 for pi0.5, K=6 for SmolVLA) on token-mean-pooled residual stream, per layer, trained on clean rollouts (Dr. VLA recipe)", "feature selection by Pearson correlation with patch presence across development rollouts", "linear probe for patch detection (pi0.5 layer 5; SmolVLA layer 9)", "conditional suppression: subtract lambda * activation * decoder direction from all prefix tokens when probe fires", "controls: continuous suppression, oracle detection, randomly chosen SAE features"],
+  "question": "Can an SAE feature that tracks adversarial-patch presence be suppressed at inference time, only when a probe detects an attack, to restore VLA task success without fine-tuning?",
+  "key_findings": [
+    "Several SAE features switch on and off with an intermittently shown UADA patch (Fig. 2).",
+    "Patch detection probe: recall 81.76% / 84.91%, FPR 0.39% / 0.71%, precision 92.71% / 96.45% for n = 3 / n = 10 patch intervals (Table 1).",
+    "Success under intermittent UADA attack (Table 2): pi0.5 n=3 46.8 -> 49.2 (oracle 52.2), n=10 26.0 -> 32.4 (oracle 29.2); SmolVLA n=3 18.6 -> 19.6, n=10 6.2 -> 7.6.",
+    "Continuous suppression without detection hurts: pi0.5 n=3 falls to 9.4%; benign pi0.5 54.4 -> 35.2 and SmolVLA 41.4 -> 19.0; conditional suppression keeps benign pi0.5 at 54.6 but costs SmolVLA 4.8 points (Table 3).",
+    "Success peaks at small strengths (lambda about 0.2-0.3) and declines with stronger suppression (Fig. 3).",
+    "The selected feature beats randomly chosen SAE features from deeper layers, though some random features also raise success (Fig. 5).",
+    "Unoptimized gripper-image patch: pi0.5 30.4 -> 46.4 (n=3) and 4.4 -> 33.6 (n=10); continuous suppression drops to 0.0 (Table 4).",
+    "Under a persistent (always-on) patch, no variant helps: pi0.5 12.4 -> 9.0 (ours), 7.4 (oracle) (Table 6).",
+    "UADA-trained probe flags 100% of random-noise patches, so it detects 'patch-like noise', not UADA specifically (Table 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10 under UADA patch attack (targeting DoF 1) and an unoptimized gripper-image patch"],
+    "scale": "500 rollouts per setting (10 tasks x 50 initial states); lambda sweep 5 seeds x 10 episodes; probes trained on 100 clean/attacked rollout pairs; feature selection on 10 development rollouts",
+    "statistics": "no: single success rates, no CIs or tests",
+    "baselines": "attacked policy without defense, continuous intervention, oracle-gated intervention, random SAE features"
+  },
+  "causal_validation": "Yes, by closed-loop SAE-feature ablation along the decoder direction with random-feature and continuous-suppression controls. Effects are modest and the feature is selected by correlation with patch presence, so it encodes 'patch present' rather than a mechanism of action corruption.",
+  "closed_loop": "Yes: all success rates are closed-loop LIBERO-10 rollouts with the intervention applied online.",
+  "limitations_stated": [
+    "Gains on SmolVLA are modest and benign performance still degrades.",
+    "No improvement under persistent attacks, even with oracle detection.",
+    "Unseen attacks and physical robots untested."
+  ],
+  "critique": [
+    "The pi0.5 victim is weakened (agent camera only, 54.4% clean success on LIBERO-10), so the absolute numbers are far from realistic deployments.",
+    "Improvements are small (1-6 points on 500 rollouts) without CIs; the best pi0.5 result (+6.4 at n=10) exceeds oracle detection, which hints at noise or lambda tuning effects rather than a clean mechanism.",
+    "Lambda is selected per condition on development rollouts; a deployed defense would not know n.",
+    "SAE has 1x expansion on token-mean-pooled activations, a very coarse dictionary; 'feature' here is close to a single correlated direction.",
+    "Still useful for the review as one of few closed-loop SAE interventions on flow-matching VLAs, and it shows the recurring pattern that unconditional feature suppression damages nominal behavior."
+  ],
+  "code": "not reported",
+  "one_line": "An SAE feature in pi0.5 and SmolVLA that tracks adversarial-patch presence can be partially suppressed whenever a linear probe detects the patch, recovering a few points of LIBERO-10 success under intermittent attacks, while always-on suppression badly hurts clean performance and nothing helps against a persistent patch."
+}

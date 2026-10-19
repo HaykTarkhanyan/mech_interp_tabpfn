@@ -1,0 +1,2297 @@
+arXiv:2607.14280v1 [cs.RO] 15 Jul 2026
+
+DiMaS: Distribution Matching for Steering Vision-Language-Action Models
+Pegah Khayatan‚òÖ1 Sara Meziane‚òÖ1 Jayneel Parekh‚òÖ1 Matthieu Cord1,2 1ISIR, Sorbonne Universite¬¥, Paris, France 2Valeo.ai, Paris, France {pegah.khayatan, sara.meziane}@isir.upmc.fr
+Abstract: Flow-matching-based vision-language-action (VLA) models have emerged as powerful policies for robotic manipulation, yet a critical capability remains underexplored: fine-grained behavioral control, the ability to govern how a robot performs a task by intervening on its internal representations. Representation steering is a well-established interpretability tool for language and vision-language models, where behavioral features are typically encoded as linear directions, but we show that these classic methods fall short in VLAs. We propose DiMaS, a Distribution-Matching Steering strategy tailored to flow-matching VLAs, which transports between representation distributions rather than shifting along a fixed direction, and show that it effectively controls behavior across two state-of-the-art VLAs. We further examine the generalizability of this strategy as the tasks it is learned from and evaluated on grow increasingly dissimilar, characterizing where behavioral control transfers and where it weakens. Finally, through an analysis of the representation structure of the action expert, we explain why classical linear steering falls short in the visuomotor setting: behavioral features are linearly decodable but not linearly steerable, which motivates the distribution-matching design of DiMaS. Our code is publicly available.1, 2 Keywords: Vision-Language-Action Models; Behavioral Control; Representation Steering; Robot Manipulation
+1 Introduction
+The recent rise of foundation models, spanning Large Language Models (LLMs) [4, 28] and VisionLanguage Models (VLMs) [1, 23], has driven rapid progress in robot policies, now commonly framed as Vision-Language-Action (VLA) models [8, 13, 21, 27, 30]. These policies aim to transfer the rich visual and linguistic priors encoded in LLMs and VLMs to robotic control.
+Concretely, a VLA takes images from visual sensors together with a natural-language task instruction as multimodal inputs, and predicts low-level robot actions; these inputs are typically processed by a pretrained or finetuned VLM backbone. Early VLAs generated actions autoregressively, treating them as discrete tokens [13, 30]. More recent state-of-the-art systems instead pair the VLM with a flow-matching [15] action expert that predicts continuous actions conditioned on the VLM representations [21, 27].
+‚àóEqual contribution. 1Github page: https://github.com/pegah-kh/dimas 2Blog/Project page: https://pegah-kh.github.io/dimas/
+1
+
+Despite this progress, steering VLAs remains underexplored: that is, developing post-hoc methods that control specific attributes of the predicted actions by intervening on internal representations. For any deployed generative model, such control carries substantial application value, since it gives a user a direct mechanism to shape the output. Representation steering is now a well-established and effective tool for LLMs and VLMs [12, 19, 29, 31], yet it is unclear how these recipes carry over to VLAs, where a flow-matching action expert produces continuous trajectories rather than discrete tokens. Our goal in this paper is to develop steering methods that intervene on VLA representations to control targeted features of the predicted trajectory, and to verify that this control generalizes to settings beyond those used to calibrate the intervention. Further, our analysis of the action expert‚Äôs representation structure yields broad insights into why classical steering strategies fall short in VLAs.
+Through this work, we make key contributions in the following directions:
+‚Ä¢ We propose a simple and novel Distribution Matching based Steering (DiMaS) mechanism, a steering strategy specifically adapted to recent flow-matching VLAs. It intervenes on latent representations and applies across models of different scales, which we validate on SmolVLA [27] and Ì†µÌºã0.5 [21] across multiple steering tasks.
+‚Ä¢ We examine the generalizability of steering as the tasks it is learned from and evaluated on grow increasingly dissimilar, characterizing where behavioral control transfers and where it weakens, and yielding insight into the robustness of representation-level control in VLAs.
+‚Ä¢ Through an investigation of representation structure inside a flow-matching VLA, with a particular focus on the action expert, we provide insights into why classical linear steering strategies that succeed for LLMs and VLMs fall short in the visuomotor setting, motivating the design of DiMaS.
+2 Related Works
+Representation steering in generative models. Representation steering refers to performing inference-time interventions on the internal representations of generative models to control specific attributes or behaviors of their output. With roots in latent-space editing of VAEs and GANs [14, 26], the idea has gained significant traction with the rise of large language models (LLMs) and multimodal large language models (MLLMs), where it has proven effective for addressing alignment problems [2, 18, 22, 29] and controlling generation style in multimodal models [12, 17, 19]. Most such approaches are grounded in the linear representation hypothesis (LRH), which posits that semantic features are encoded as linear directions in activation space [20], and that representations can be expressed as sparse linear combinations of such directions [6], enabling simple additive interventions at inference time. While recent work has questioned the LRH [7, 9] and proposed richer models of concept representation [3], linear steering remains the dominant paradigm for controlling LLMs and VLMs. We find that a fixed linear shift is inadequate for controlling behavioral features in VLAs, motivating a strategy based on distribution matching. In spirit, our approach is most related to the optimal transport-based steering of Rodriguez et al. [24], which they develop for LLMs and diffusion models; our focus differs, targeting behavioral control in the visuomotor representations of flow-matching VLAs.
+2
+
+Interpretability and steering for VLAs. Ha¬®on et al. [11] study mechanistic interpretability in autoregressive VLAs that generate discrete action tokens. They identify clusters of FFN value vectors that can be steered at inference time by overriding the corresponding neuron activations, and give early evidence that such interventions can modulate motion speed and trajectory height. Their framework applies only to autoregressive VLAs, whereas we target the current state-of-the-art flow-matching VLAs.
+Closest to our work, Buurmeijer et al. [5] formalize feature-observability and feature-controllability in VLAs. They learn a regressor to predict behavioral features from VLM hidden states and use its coefficients as a steering vector to shift the VLM representations at inference time. A key limitation is that they must pause the intervention to preserve task success. Our method preserves task success without pausing the intervention, and replaces the linear shift with a steering strategy based on distribution matching.
+
+3 Method
+
+We first introduce the notation and the general VLA architecture we consider in Section 3.1, and then present our method, DiMaS, in Section 3.2.
+
+3.1 Notation and VLA architecture
+
+We assume a generic VLA architecture that covers the paradigm of current SOTA VLAs based on
+
+joint VLM and flow-matching networks for action prediction. At any timestep Ì†µÌ±°, the VLA Ì†µÌ±ì receives
+
+an
+
+observation
+
+Ì†µÌ±•Ì†µÌ±°
+
+=
+
+(
+
+Ì†µÌ∞ºÌ†µÌ±°
+
+,
+
+Ì†µÌ±á
+
+,
+
+Ì†µÌ±• Ì†µÌ±†
+Ì†µÌ±°
+
+)
+
+consisting
+
+of
+
+an
+
+image,
+
+text
+
+instruction,
+
+and
+
+proprioceptive
+
+state
+
+and
+
+predicts low-level actions for each robot joint, denoted as Ì†µÌ±¶Ì†µÌ±° . The VLA Ì†µÌ±ì = ( Ì†µÌ±ìÌ†µÌ±â , Ì†µÌ±ìÌ†µÌ∞¥) consists of two
+
+main components, Ì†µÌ±ìÌ†µÌ±â , which is the VLM backbone and Ì†µÌ±ìÌ†µÌ∞¥, the action expert network. The VLM
+
+representations are used to condition the action expert Ì†µÌ±ìÌ†µÌ∞¥ that generates the actions. It is trained with a flow-matching objective [15] to iteratively refine noisy action tokens Ì†µÌ±é0,Ì†µÌ±° ‚àº N (0, I) across
+
+Ì†µÌ±Ä denoising steps.
+
+  a_{m+1, t} = a_{m,t} + \frac {1}{M}\, f_A\!\left (a_{m,t},\, m,\, f_V(x_t)\right ), \, \, a_{0,t} \sim \mathcal {N}(0, \mathbf {I}),\ m \in \{0, \ldots , M-1\} 
+
+(1)
+
+The final predicted action chunk Ì†µÌ±¶Ì†µÌ±° is obtained directly from Ì†µÌ±éÌ†µÌ±Ä,Ì†µÌ±° through an environment-specific
+
+transformation.
+
+Throughout this paper, we analyze or intervene on residual stream representations that can
+
+be sourced from different parts of Ì†µÌ±ì . In the LLM backbone of the VLM, the residual stream
+
+representation
+
+at
+
+layer
+
+Ì†µÌ±ô
+
+and
+
+token
+
+position
+
+Ì†µÌ±ù
+
+is
+
+denoted
+
+as
+
+Ì†µÌ±ù
+‚Ñé
+Ì†µÌ±ô
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+‚àà
+
+RÌ†µÌ±ëÌ†µÌ±â .
+
+For
+
+the
+
+action
+
+expert
+
+Ì†µÌ±ì Ì†µÌ∞¥,
+
+analogously,
+
+they
+
+are
+
+denoted
+
+as
+
+Ì†µÌ±ù,Ì†µÌ±ö
+‚Ñé
+Ì†µÌ±ô
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+‚àà
+
+RÌ†µÌ±ë Ì†µÌ∞¥ ,
+
+where
+
+additionally,
+
+Ì†µÌ±ö
+
+is
+
+the
+
+denoising
+
+step.
+
+3.2 DiMaS: Distribution matching for steering VLA representations
+
+We introduce a novel steering method grounded in optimal transport that learns a mapping between distributions of internal representations. A complete overview of the method is illustrated in Figure 1. Representations and behavioral feature. The first step of our method sources representations from action expert Ì†µÌ±ìÌ†µÌ∞¥, and pairs each with a continuous scalar feature/concept measuring a target
+
+3
+
+DiMaS Learning/Training Phase
+
+VLM Conditioning
+
+Layer L_A
+
+Feature to control
+
+DiMaS Intervention (Inference)
+No
+binary classifier
+Yes
+
+Vision encoder
+
+Task: Grab the object and put it in the basket
+
+State
+
+Vision-Language model
+
+Noisy actions
+Action expert
+
+Action expert‚Äôs representations
+(each token per robot time-step and Ô¨Çow-matching step)
+
+Interpolate
+
+Figure 1: DiMaS Method Overview: A VLM backbone encodes multimodal robot inputs and conditions
+
+a flow-matching based action expert to predict the final action chunk. Training: We extract residual-stream
+
+representations
+
+Ì†µÌ±ù,Ì†µÌ±ö
+‚Ñé
+Ì†µÌ±ô
+
+from
+
+the
+
+action
+
+expert
+
+at
+
+a
+
+specific
+
+layer
+
+Ì†µÌ±ô‚àó,
+
+and
+
+flow-matching
+
+step
+
+Ì†µÌ±ö.
+
+After
+
+obtaining
+
+a continuous behavioral feature (e.g. speed); the representations are grouped by feature value to create source and target distributions D‚àí, D+ (feature absent, present respectively). The steering intervention is learnt
+
+as a transport map between the two distributions. Inference: During test-time, steering is gated via a
+
+binary classifier Ì†µÌ±î. To achieve feature control and high success rate we interpolate between the source/target distributions through the transport map T and interpolation knob Ì†µÌªº ‚àà [0, 1].
+
+behavioral property we wish to control.
+
+For a given network layer ‚Ñì and flow-matching denoising step Ì†µÌ±ö, we extract representations
+
+Ì†µÌ±ù,Ì†µÌ±ö
+‚Ñé
+‚Ñì
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+‚àà
+
+RÌ†µÌ±ë
+
+for
+
+each
+
+Ì†µÌ±•Ì†µÌ±°
+
+across
+
+all
+
+rollouts.
+
+Each position Ì†µÌ±ù yields a representation.
+
+For
+
+simplicity of notation, we will denote the Ì†µÌ±ñ‚Äôth extracted representation as ‚ÑéÌ†µÌ±ñ. To extract the cor-
+
+responding scalar feature in our experiments, we use the predicted action to extract the feature of
+
+interest (although not necessary for our method). Concretely, each predicted action is a vector Ì†µÌ±éÌ†µÌ±ñ = (ŒîÌ†µÌ±•, ŒîÌ†µÌ±¶, ŒîÌ†µÌ±ß, . . . , gripper), encoding the end-effector displacement together with the gripper
+
+state. From these actions we derive a scalar behavioral feature; for instance, when the targeted
+property is the end-effector speed, the feature is the magnitude of the translational displacement ‚àöÔ∏Å
+Ì†µÌºô(Ì†µÌ±éÌ†µÌ±ñ) = ŒîÌ†µÌ±•2 + ŒîÌ†µÌ±¶2 + ŒîÌ†µÌ±ß2. Each representation ‚ÑéÌ†µÌ±ñ is then associated with the feature value of its
+corresponding action Ì†µÌºôÌ†µÌ±ñ = Ì†µÌºô(Ì†µÌ±éÌ†µÌ±ñ), giving a continuous score for the behavioral property we wish to
+
+control. Source and target distributions. To partition the representations into a source distribution D‚àí and a target distribution D+, we threshold on the behavioral feature using its empirical quantiles:
+
+  \mathcal {D}^{-} = \{h_i\,:\, \phi _i \leq q_{\tau }\}, \, \, \mathcal {D}^{+} = \{h_i\,:\, \phi _i > q_{1-\tau }\} 
+
+(2)
+
+Representations whose feature value falls below the lower quantile Ì†µÌ±ûÌ†µÌºè form the source set D‚àí, while those above the upper quantile Ì†µÌ±û1‚àíÌ†µÌºè form the target set D+. Restricting each distribution to a tail,
+rather than splitting at the median, yields cleaner, well-separated populations of the feature-absent
+
+and feature-present behavior, which sharpens the learned mapping.
+Steering as a transport map. At its core, steering a behavioral feature amounts to learning a map T that transports a representation from the source distribution D‚àí to the target distribution D+,
+
+thereby inducing the feature in representations that lack it. Different steering strategies correspond to different choices of T . The simplest and most widely used is linear steering, where T is an additive
+
+4
+
+shift in a fixed direction. This fixed direction can be extracted in multiple ways. For instance,
+one popular form is the mean-difference steering, where this direction is equal to the difference of the distribution means, T (‚Ñé) = ‚Ñé + (Ì†µÌºá+ ‚àí Ì†µÌºá‚àí), with Ì†µÌºá¬± = E‚Ñé‚àºD¬± [‚Ñé]. A more flexible variant of linear steering is based on regression, where T displaces the representation along the direction of
+
+a regressor trained to predict the feature value, so that the shifted representation attains a desired
+
+target value (refer to Appendix B for more details). Both are linear by construction, which, as we
+
+empirically show in Section 5, limits their ability to control behavioral features in VLAs with a
+
+denoising action expert. DiMaS instead instantiates T as an optimal transport map, which respects
+
+the full geometry of D‚àí and D+ rather than a single direction.
+
+Concretely,
+
+we
+
+learn
+
+the
+
+transport
+
+map
+
+T
+‚Ñì
+
+(
+
+Ì†µÌ±ö)
+
+(
+
+¬∑)
+
+from
+
+D
+
+‚àí
+
+to
+
+D
+
++
+
+(see
+
+Figure
+
+1,
+
+left)
+
+by
+
+minimizing
+
+the Kantorovich optimal transport objective,
+
+  \mathcal {W}_2^2(\mathcal {D}^{-}, \mathcal {D}^{+}) = \min _{\gamma \in \Pi (\mathcal {D}^{-}, \mathcal {D}^{+})} \int _{\mathcal {Z} \times \mathcal {Z}} \|z^{-} - z^{+}\|^2 \, \mathrm {d}\gamma (z^{-}, z^{+}), 
+
+(3)
+
+where Z denotes the support of the distributions and ‚à• ¬∑ ‚à• is the standard Euclidean norm acting as the ground cost. In practice, D‚àí and D+ are only accessible through finite empirical samples,
+
+so this reduces to a discrete optimal transport problem, which we solve efficiently via low-rank
+
+Sinkhorn [25]; full details are provided in Section A.1.
+
+Test-time
+
+intervention
+
+strategy.
+
+Given
+
+a
+
+representation
+
+‚Ñé
+
+=
+
+Ì†µÌ±ù,
+‚Ñé
+‚Ñì
+
+Ì†µÌ±ö
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+at
+
+test
+
+time,
+
+we
+
+first
+
+project
+
+‚Ñé
+
+onto D‚àí via a nearest-neighbor projection Ì†µÌ±É(‚Ñé) = arg minÌ†µÌ±ß‚àà D‚àí ‚à•Ì†µÌ±ß ‚àí ‚Ñé‚à•, and then apply the learned
+
+transport
+
+map
+
+to
+
+obtain
+
+the
+
+steered
+
+representation
+
+T (Ì†µÌ±ö)
+‚Ñì
+
+‚ó¶
+
+Ì†µÌ±É ( ‚Ñé) .
+
+To
+
+avoid
+
+unnecessary
+
+interventions,
+
+steering
+
+is
+
+gated
+
+by
+
+a
+
+feature
+
+filter:
+
+a
+
+binary
+
+classifier
+
+( Ì†µÌ±ö )
+Ì†µÌ±î
+‚Ñì
+
+:
+
+RÌ†µÌ±ë
+
+‚Üí
+
+{0, 1},
+
+implemented
+
+as
+
+a
+
+linear
+
+probe
+
+trained
+
+to
+
+separate
+
+D‚àí
+
+from
+
+D+.
+
+The
+
+gate
+
+becomes
+
+active,
+
+i.e.,
+
+( Ì†µÌ±ö )
+Ì†µÌ±î
+‚Ñì
+
+(‚Ñé)
+
+=
+
+1
+
+when
+
+the
+
+feature
+
+is
+
+absent,
+
+i.e.
+
+‚Ñé
+
+is
+
+predicted
+
+to
+
+lie
+
+in
+
+D‚àí,
+
+and
+
+Ì†µÌ±î (Ì†µÌ±ö) (‚Ñé)
+‚Ñì
+
+=
+
+0
+
+when
+
+it
+
+is
+
+already
+
+present,
+
+so
+
+that
+
+representations already exhibiting the targeted feature are left unchanged.
+
+Interpolation as the secret sauce. A crucial goal behind our steering methodology is that a user
+
+should be able to control the feature of interest while simultaneously succeeding at the task. In
+
+other words, task success should not be achieved by needing to stop the steering intervention. In
+
+our
+
+experiments,
+
+we
+
+observed
+
+that
+
+while
+
+completely
+
+transporting
+
+‚Ñé
+
+to
+
+D+
+
+via
+
+T (Ì†µÌ±ö)
+‚Ñì
+
+‚ó¶
+
+Ì†µÌ±É ( ‚Ñé)
+
+controls
+
+the feature of interest, it introduces deviation from the original ‚Ñé that can lead to task failures.
+
+Given that we perform evaluations in a closed-loop setup and tasks/models can often be fragile, this
+
+sometimes causes significant drop in success rate. To ensure a minimal drop in success rate while still controlling the feature, we interpolate between the distributions D‚àí and D+, via a parameter
+Ì†µÌªº ‚àà [0, 1]. This intervention is summarized below and illustrated on the right of Figure 1:
+
+  h \;\leftarrow \; \begin {cases} (1 - \alpha )\, h \;+\; \alpha \, \big (\mathcal {T}^{(m)}_{\ell } \circ P(h)\big ), & \text {if } g_{\ell }^{(m)}(h) = 1, \\[4pt] h, & \text {otherwise.} \end {cases} 
+
+(4)
+
+Here Ì†µÌªº = 0 recovers the unsteered representation and Ì†µÌªº = 1 applies the full transport, with intermediate values yielding a continuous modulation of the target behavior. From a user perspective, Ì†µÌªº provides a normalized, interpretable interpolation knob to control steering strength while maintaining success rate as much as possible. Interestingly, for OT based LLMs/VLM steering [24], Ì†µÌªº plays a similar role of a normalized knob controlling steering strength. For DiMaS, it serves an even more important purpose by also affecting the success rate.
+
+5
+
+4 Experiments
+We evaluate our method on two flow-matching-based VLA models of different scales, SmolVLA [27] and Ì†µÌºã0.5 [21] and LIBERO benchmark [16] for controlled, axis-isolated evaluation. This simulator consists of four suites, namely LIBERO-Object, LIBERO-Spatial, LIBERO-Goal, and LIBERO-10, where the first three comprise shorter-horizon tasks and LIBERO-10 comprises longer-horizon ones. Each suite contains 10 tasks, and each task provides 50 initializations that vary initial placement of the objects. More details are provided in Appendix A.3. Target feature. We consider two target behavioural features: motion speed, measured as the mean norm of end-effector velocity, and end-effector vertical displacement, measured as the accumulated absolute displacement along the vertical axis. Baselines. We compare against three categories of baselines. (i) Mean-difference steering applies a constant additive shift equal to the difference of the source and target means, T (‚Ñé) = ‚Ñé + (Ì†µÌºá+ ‚àí Ì†µÌºá‚àí), where ‚Ñé represents a hidden representation of the VLM component. (ii) Regression-based steering, based on [5], fits a linear regressor to predict Ì†µÌºô from ‚Ñé and shifts the representation along the regressor‚Äôs direction so that its predicted feature attains a target quantile Ì†µÌ±û‚òÖ. We evaluate this baseline both in the VLM and the flow-matching (FM) action expert. Its closed form is given in Appendix B. Both representation-level baselines are linear steering methods by construction, with the shift gated by a linear classifier and applied only to representations that do not yet exhibit the target behavior. (iii) Prompt injection modulates behavior purely through instruction rephrasing (e.g. ‚Äúgo faster,‚Äù ‚Äúslower‚Äù), with no activation-level intervention. Metrics. We report three metrics: Success Rate (SR), which measures task completion; feature value, the value of the targeted behavioral feature (speed or Ì†µÌ±ß-displacement); and the statistical significance of the feature shift relative to the unsteered baseline, assessed via paired Ì†µÌ±°-tests across episodes.
+4.1 Can representation steering control behavior?
+We first ask whether the targeted feature can be modulated/controlled, and how DiMaS compares to the classic steering and instruction-level baselines introduced above. For each method we measure two quantities relative to the unsteered policy: whether it shifts the mean feature value (paired Ì†µÌ±°-test) and how much its success rate changes. Figure 2 and Figure 3 present these results for decreasing (blue, H‚ÜíL, high to low) and increasing (red, L‚ÜíH, low to high) end-effector speed and vertical displacement, evaluated across all baselines. Statistically significant shifts are shown in solid fill, while non-significant ones are striped. The linear steering and prompt baselines perform inconsistently. They leave the target feature unchanged, and where they do move it, they do so unreliably: the increasing and decreasing interventions often shift the feature in the same direction rather than opposite ones. DiMaS, by contrast, modulates the target feature in both directions: speed on both models, and vertical displacement on Ì†µÌºã0.5. We largely preserve the success rate when modulating speed, but incur a drop when modulating vertical displacement. This is an expected result, since this feature is often tied to task completion. On LIBERO-Object, for example, decreasing vertical displacement keeps the end-effector too low to lift the object into the basket, so the placing step fails. Finally, for both features the decreasing intervention produces the more statistically significant shifts (e.g. color-filled marks).
+6
+
+SR (pp)
+
+LIBERO-Object
+10
+
+0
+
+10
+
+4
+
+2
+
+0
+
+2
+
+4
+
+10
+
+LIBERO-Spatial
+
+0
+
+10 6 4 20 2 4 6
+
+10
+
+LIBERO-Goal
+
+0
+
+10 12.5 10.0 7.5 5.0 2.5 0.0 2.5 5.0
+speed (%)
+
+(a) Ì†µÌºã0.5
+
+LIBERO-Object
+0
+50
+
+40
+
+30
+
+20
+
+10
+
+0
+
+LIBERO-Spatial
+0
+
+50
+
+6 4 20 2 4 6 8
+LIBERO-Goal
+0
+50
+
+35 30 25 20 15 10 5 0 5
+speed (%)
+(b) SmolVLA
+
+H L p < 0.01 (significant) FM Regression
+
+VLM Mean
+
+DiMaS (ours)
+
+L H p 0.01 (n.s.)
+
+VLM Regression Prompt Baseline Baseline
+
+Figure 2: Speed steering. Change in mean end-effector speed (Œîspeed) versus change in success rate (ŒîSR),
+relative to the unsteered baseline, across the three LIBERO suites, for (a) Ì†µÌºã0.5 and (b) SmolVLA. Left of the vertical dashed line corresponds to high-to-low (H‚ÜíL) steering, right to low-to-high (L‚ÜíH). Marker shape
+denotes method; solid fill indicates a statistically significant change relative to baseline (t-test, p¬°0.01).
+
+While Ì†µÌºã0.5 achieves the strongest results overall, our steering approach proves effective across both models despite their substantial difference in scale, underscoring its generality. SmolVLA shows comparatively more sensitivity to action intervention, which we attribute in part to its action chunking strategy: SmolVLA predicts a new chunk at every timestep, producing more dynamic, less smoothed trajectories, whereas Ì†µÌºã0.5 predicts 10 actions at a time, yielding smoother motion that is inherently more robust to intervention.
+4.2 Understanding steering generalization
+We next investigate what makes a learned steering effective, and how well it transfers, using LIBERO‚Äôs axis-isolated task structure. We vary two axes: (1) task diversity, the number and variety of tasks the steering vector is learned from, and (2) test distribution shift severity, i.e. how much the evaluation tasks differ from the training tasks.
+1. Setting 1: Held-out initial states of the same task. For each task individually, we learn a
+7
+
+SR (pp)
+
+LIBERO-Object
+0 20 40
+
+10
+
+5
+
+0
+
+5
+
+10
+
+LIBERO-Spatial
+0 20 40
+30 25 20 15 10 5 0 5
+
+LIBERO-Goal
+0 20 40
+25 20 15 10 5 0
+Z displacement (%)
+(a) Ì†µÌºã0.5
+
+LIBERO-Object
+0
+50
+
+50 40 30 20 10 0
+LIBERO-Spatial
+0
+50
+
+20
+
+15
+
+10
+
+5
+
+0
+
+LIBERO-Goal
+0
+
+50
+
+20
+
+15
+
+10
+
+5
+
+0
+
+5
+
+Z displacement (%)
+
+(b) SmolVLA
+
+Figure 3: Z-displacement steering. Change in accumulated vertical displacement (Œîz-displacement) versus change in success rate (ŒîSR), relative to the unsteered baseline, across the three LIBERO suites. Conventions as in Figure 2.
+steering from a subset of initial states and evaluate it on the remaining, held-out initial states of the same task.
+2. Setting 2: Held-out initial states across tasks in a suite. Considering all tasks jointly, we learn a single steering from a subset of initial states and evaluate its transfer to the remaining initial states. This differs from Setting 1 only in the diversity of the tasks used to learn the steering, not in the evaluation protocol: both evaluate on held-out initial states, so the comparison isolates the effect of learning from a single task versus from many.
+3. Setting 3: Held-out tasks within a suite. Within a given LIBERO suite (e.g. LIBEROObject), we learn a steering from a subset of tasks and evaluate it on the held-out tasks of the same suite. This is the first setting that tests transfer to tasks unseen at training time.
+4. Setting 4: Transfer across disjoint suites. We learn a steering from one LIBERO suite (e.g. LIBERO-Object) and evaluate it on a different, disjoint suite (e.g. LIBERO-Goal), testing transfer across distinct task distributions.
+8
+
+Settings 1 and 2 differ in the diversity of the tasks the steering is learned from, asking how much that diversity matters. Settings 3 evaluates transferability of steering within the same suite (e.g. LIBERO-object), while Settings 4 further stress tests the transfer to other suites (e.g. LIBEROgoal). Together, these settings provide fine-grained evidence about both what the steering needs in order to work and how robustly it generalizes. It is worth emphasizing that most steering and even VLA evaluation on LIBERO is typically done in Setting 2. Our settings 3 and 4 validate increasingly out-of-distribution capabilities of the steering method. We compare these steering settings for decreasing the end-effector speed and illustrate the results in Figure 4 (comparison for other tasks is provided in Appendix C). Across both models, all three suites, and all four settings, DiMaS shifts speed in the intended direction, with a significant decrease in nearly every case: an intermediate-layer intervention reliably slows the executed action. We now compare the four settings, which progressively increase the gap between the tasks the steering is learned from and those it is evaluated on. Aggregating tasks helps (Setting 1 vs. Setting 2). Settings 1 and 2 share the same evaluation protocol and differ only in the diversity of the tasks used to learn the steering. Learning from many tasks jointly (Setting 2) yields a more consistent effect than learning from a single task (Setting 1): the induced shift is more stable and the effect is significant across suites on both models. We attribute this to the breadth of the learning set: a single task samples a narrow region of representation space, so the learned transport partly reflects features specific to that task, whereas aggregating tasks lets it capture the structure associated with the target behavior across a broader region of the representation space. Steering persists on held-out and disjoint tasks (Settings 3‚Äì4). Importantly, DiMaS control effectiveness does not collapse when the steering is applied to tasks unseen at training time (Setting 3) or transferred across disjoint suites (Setting 4). For Ì†µÌºã0.5, decreasing speed remains significant across suites at the held-out-task setting (Setting 3), and the effect persists in the intended direction even under the hardest cross-suite transfer to Goal, where the mean shifts in the intended direction although the change does not reach significance at Ì†µÌ±ù < 0.01 (Setting 4, Ì†µÌ±ù = 0.032). The learned transport therefore captures structure tied to the target behavior rather than to the specific tasks it was learned from, and remains usable beyond its training setting. Effectiveness is weakest on the most diverse suite. LIBERO-Goal is the hardest suite. Its tasks are behaviorally diverse, spanning pushing objects and operating a stove in addition to pick-and-place, whereas Object and Spatial share a pick-and-place behavior across all tasks. This diversity coincides with weaker steering: Goal is the only suite with cells that do not reach significance at Ì†µÌ±ù < 0.01 (SmolVLA Setting 1, Ì†µÌ±ù = 0.09; Ì†µÌºã0.5 Setting 4, Ì†µÌ±ù = 0.032), and its shifts are generally smaller and noisier than on Object or Spatial, which are significant at every setting on both models. Both Goal‚Äôs task heterogeneity and the smaller per-task sample available at Setting 1 likely contribute to this effect.
+
+4.3 Steering on longer-horizon tasks.
+As shown in Figure 5, we extend our evaluation to LIBERO-10, whose tasks have substantially longer horizons than the suites above, decreasing speed. DiMaS produces a downward shift (Œîmean = ‚àí0.024, Ì†µÌ±ù < 0.01 for Ì†µÌªº = 0.5) at a small success cost (96% ‚Üí 90%),
+9
+
+2.0
+
+B=====as00000e.....l57968ineSSSSSRRRRRS=====R89477=60.1209....%00006%%%%.0%p<pppp<<<<0000.00....000011*111****
+
+1.5
+
+Baseline =0.5 =0.6 =0.7 =0.8 =0.9
+
+density
+
+1.0
+
+0.5
+
+0.0
+
+0.00
+
+0.25
+
+0.50
+
+0.75 speed1.00
+
+1.25
+
+1.50
+
+1.75
+
+Figure 5: Decreasing speed on LIBERO-10 (Ì†µÌºã0.5).
+
+LIBERO Object
+
+LIBERO Spatial
+
+0.8 98.0% p: ref.
+0.7
+
+Speed
+
+99.5% p<0.01*
+
+97.0% p<0.01*
+
+100.0% p<0.01*
+
+0.6
+
+0.5
+Baseline Setting 1 Setting 2 Setting 3
+1.0 97.0% 91.5% 95.0% 96.0% 92.0%
+p: ref. p<0.01* p<0.01* p<0.01* p<0.01*
+0.9
+
+0.8
+
+0.7
+
+0.6 Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+1.0
+
+91.0% p: ref.
+
+92.0% p=0.017
+
+86.0% p<0.01*
+
+86.0% p<0.01*
+
+93.0% p=0.032
+
+0.8
+
+0.6
+
+0.4
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+(a) Ì†µÌºã0.5
+
+LIBERO Goal
+
+LIBERO Spatial
+
+LIBERO Object
+
+89%
+
+0.7
+
+ref.
+
+Speed
+
+64%
+
+70%
+
+76%
+
+p<0.01
+
+p<0.01
+
+p<0.01
+
+0.6
+
+0.5
+
+Baseline Setting 1 Setting 2 Setting 3
+
+71% 54% 52% 58% 55%
+
+0.9
+
+ref.
+
+p<0.01 p<0.01 p<0.01 p<0.01
+
+0.8
+
+0.7
+
+0.6
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+1.0 81% 52% 46% 26% 55%
+
+ref.
+
+p=0.09 p<0.01 p<0.01 p<0.01
+
+0.8
+
+0.6
+
+0.4
+Baseline Setting 1 Setting 2 Setting 3 Setting 4 (b) SmolVLA
+
+LIBERO Goal
+
+Baseline DiMaS (ours) (Speed )
+Figure 4: Steering across evaluation levels on Ì†µÌºã0.5 (left) and SmolVLA (right). We compare the unsteered baseline against DiMaS for decreasing speed. Panels show, left to right, the baseline and the settings discussed in Section 4.2; columns are the three LIBERO suites (Object, Spatial, Goal). Box plots show the per-episode feature distribution at each level, annotated with success rate and Ì†µÌ±ù-value vs. baseline; box opacity is higher when the shift is statistically significant (Ì†µÌ±ù < 0.01). Arrow length is proportional to the induced Œîmean.
+
+showing that behavioral control remains effective even over extended horizons.
+5 Investigating internal structure in VLAs
+We now analyze representation structure inside the VLM Ì†µÌ±ìÌ†µÌ±â and the action expert Ì†µÌ±ìÌ†µÌ∞¥ to motivate some of DiMaS‚Äôs design choices and explain why linear steering methods in our experiments are
+10
+
+very inconsistent and ineffective. We do so through the lens of output action/trajectory features we
+
+would like to control, asking whether each can be represented as a fixed direction in latent space.
+
+As a running example throughout this section, we investigate SmolVLA [27] on LIBERO-Object
+
+for the ‚Äùspeed‚Äù feature. Linear separability. To determine whether a vector/direction in the hidden representation space is
+
+a ‚Äúgood‚Äù candidate for representing a given VLA concept, we first quantify the separability between
+
+representations in D‚àí, D+ across different layers Ì†µÌ±ô in the VLM Ì†µÌ±ìÌ†µÌ±â , and across different layers Ì†µÌ±ô
+
+and flow-matching steps Ì†µÌ±ö
+
+in
+
+Ì†µÌ±ì Ì†µÌ∞¥.
+
+For
+
+Ì†µÌ±ìÌ†µÌ±â ,
+
+we
+
+extract
+
+the
+
+last-token
+
+representation
+
+‚Ñé‚àí1
+Ì†µÌ±ô
+
+(Ì†µÌ±•)
+
+,
+
+which
+
+summarizes the full input context. To quantify the linear separability, we fit a linear classifier (SVM)
+
+on representations ‚Ñé drawn from D‚àí and D+.
+
+We report the separability accuracies in Figure 6. The representations in the action expert are
+
+almost completely linearly separable (accuracy near 100%) at any layer in the later flow-matching
+
+steps, as the action tokens are progressively denoised. Interestingly, even at flow-matching step 0,
+
+the deeper layers show higher linear separability (> 93%) than any layer in the VLM (max 87%).
+
+This is one of the main reasons we choose to intervene in the action expert rather than the VLM, and
+
+why we prioritize the deeper layers in the action expert. Is a linear shift enough to match distributions? Even though a linear classifier in the action expert
+
+can separate high- and low-speed representations, this alone is not sufficient to validate whether the
+
+normal vector to the hyperplane (i.e., the steering vector) represents the feature/concept. To do so, we visualize whether shifting representations along the steering vector transports them from D‚àí to D+.
+We qualitatively visualize this shift in the 2D PCA projection space for layer Ì†µÌ±ô = 0 and flow-
+matching step Ì†µÌ±ö = 8 in Figure 6 (separability is 100%). We shift the high-speed representations (red
+points) by the unit-norm steering vector scaled by a factor Ì†µÌªΩ ‚àà {2, 50, 300} that controls the strength
+
+of linear steering. Note that the representations are steered in the original high-dimensional space. If D‚àí, D+ can be matched in the original high-dimensional space through a shift in a fixed steering
+
+direction, the match will be preserved in the 2D PCA projection space (since PCA projection is a
+
+linear operation).
+
+As one might expect, linear steering only shifts the source distribution (red points) in a fixed
+
+direction, which leads to the shifted (orange/green) distributions. Since the ‚Äùshape‚Äù of original red
+
+(high-speed) and blue (low-speed) point distributions differs, this operation is unable to match the
+
+two distributions. It is also worth noting that if Ì†µÌªΩ is chosen as a small value or as the minimum
+
+positive shift needed to flip the classifier‚Äôs decision (similar to our regression baseline [5]), the
+
+shifted distributions nearly coincide with the original red points (purple points mixed with red).
+
+These observations indicate that using a steering vector as the concept representation fails to capture
+
+the difference between the distributions of high and low speed representations and that we need more
+
+complex transformations to move from one to the other.
+
+11
+
+Linear SVM accuracy (in %) Action expert FM steps PCA coordinate 1
+
+100 VLM representation separability 75 50
+= 1 = 10 = 16 = 25 = 31 VLM layer index
+
+Action expert separability (in %) m=0 m=2 m=4
+
+100 20
+
+90
+
+10
+
+0 80
+10
+
+Linear steering distribution shift visualization
+Original low-speed Original high-speed shifted high-speed, beta: 2 shifted high-speed, beta: 50 shifted high-speed, beta: 300
+
+m=6
+
+70
+
+20
+
+30
+
+Steering direction
+
+m=8
+
+60
+
+40
+
+= 1 = 9 = 16 = 25 = 31
+Action expert layers
+
+50 20
+
+0
+
+20PCA coor4d0inate 0 60
+
+80 100
+
+Figure 6: (Left) Linear separability inside SmolVLA for speed feature in different VLM layers and (Middle) different action expert layers, flow-matching steps. Reported as linear SVM classification accuracy (%) between D‚àí, D+. Higher is better. (Right) 2D PCA visualization for representations in Ì†µÌ±ô = 1, Ì†µÌ±ö = 8 in action expert. Original high (low) speed representations are in red (blue). Shifting high speed representations along steering vector leads to shifted distributions in orange and green. Linear steering fails to match red and blue distributions.
+6 Analyzing DiMaS
+
+We present two further analyses of DiMaS: the effect of the interpolation factor Ì†µÌªº on the tradeoff between steering strength and task success, and qualitative examples of steered trajectories for reducing vertical displacement.
+
+Interpolation factor Ì†µÌªº As described in Section 3.2, our method applies the optimal-transport displacement scaled by an interpolation coefficient Ì†µÌªº, which sets the strength of the intervention. For both Ì†µÌºã0.5 and SmolVLA, we vary Ì†µÌªº and measure the resulting trade-off between success rate (SR) and the magnitude of the induced speed change. Figure 7 shows that both models follow a broadly similar trend: larger values of Ì†µÌªº reduce mean speed at the cost of success rate. Ì†µÌºã0.5 is the more robust of the two, with success rate dropping only beyond Ì†µÌªº = 0.5, whereas SmolVLA degrades earlier and less regularly. Intermediate values such as Ì†µÌªº = 0.5 offer a favourable trade-off, substantially reducing speed while largely preserving task success, which motivates our choice of Ì†µÌªº = 0.5 as the default operating point throughout the experiments. We provide speed density plots for this ablation on the other LIBERO suites in Appendix D.1, and also ablate the steering layer in Appendix E.
+
+Mean EEF speed Success Rate (%)
+
+(a) Ì†µÌºã0.5
+
+LIBERO-Object
+
+0.64
+
+0.62
+
+0.60
+
+0.58
+
+0.56
+
+0.54
+
+0.52
+
+Mean EEF speed (successful eps) Success Rate (%)
+
+(base0line) 0.3 0.5 0.7
+
+100% 80% 60% 40% 20% 1.0 0%
+
+(b) SmolVLA
+Figure 7: Trade-off between success rate (SR) and mean end-effector speed as a function of Ì†µÌªº.
+
+12
+
+before steering
+
+after steering
+
+before steering
+
+after steering
+
+before steering
+
+after steering
+
+before steering
+
+after steering
+
+Figure 8: Qualitative results for decreasing vertical displacement.
+
+‚Üë
+
+Qualitative results Figure 8 shows example end-effector trajectories under DiMaS steering to decrease vertical displacement, across several LIBERO suites. Comparing the original (blue) and steered (red) trajectories, the steered runs consistently exhibit smaller vertical displacement, confirming that the intervention produces the intended change in executed behavior. The bottom-right example is a failure case, where suppressing vertical motion prevents the task from completing successfully.
+
+7 Conclusion and future work
+We study behavioral control in Vision-Language-Action (VLA) models: not only what a robot does but how it does it. Across two state-of-the-art VLAs with a flow-matching action expert, we show that classical linear steering is too restrictive to control behavior reliably, and our analysis of the hidden representation space, in both the vision-language backbone and the action expert, explains why. We address this with DiMaS, which steers behavior by transporting hidden representations from a source distribution, where the target feature is absent, to a target distribution where it is present, using optimal transport, regularized by an interpolation knob. DiMaS substantially outperforms linear and prompt-based baselines in controlling speed and height while better preserving task success. Finally, we evaluate its generalizability across four settings that vary both the diversity of the tasks the steering is learned from and how far the evaluation tasks depart from them, and distill from this what an effective steering needs in order to be constructed and applied. Our results open several natural extensions. First, our intervention currently treats all timesteps alike; a next step is to make when to intervene as much a target of learning as how, steering selectively (e.g. only while the end-effector is translating rather than purely rotating) for even smoother control. Second, for policies that emit a chunk of actions, such as Ì†µÌºã0.5, we associate each hidden representation with its corresponding output action; yet an output action is shaped by more than one representation in the chunk, so grouping representations by the feature of their exact corresponding action is only an approximation, and a finer account of this correspondence could sharpen the learned transport. Third, because DiMaS applies to any feature observable from the representations, the same mechanism extends readily to new tasks, embodiments, and more abstract behavioral features, pointing toward representation-level control as a general interface for shaping robot behavior.
+
+Acknowledgements
+This work has been partially supported by ANR grant VISA DEEP (ANR-20-CHIA-0022), HPC resources of IDRIS under the file A0191016602 allocated by GENCI, and Cluster PostGenAI@Paris
+
+13
+
+(ANR-23-IACL-0007, FRANCE 2030). We also thank Mustafa Shukor for his insightful discussions and valuable feedback.
+References
+[1] Jean-Baptiste Alayrac, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katherine Millican, Malcolm Reynolds, et al. Flamingo: a visual language model for few-shot learning. Advances in Neural Information Processing Systems (NeurIPS), 35:23716‚Äì23736, 2022.
+[2] Andy Arditi, Oscar Obeso, Aaquib Syed, Daniel Paleka, Nina Panickssery, Wes Gurnee, and Neel Nanda. Refusal in language models is mediated by a single direction. arXiv preprint arXiv:2406.11717, 2024.
+[3] Usha Bhalla, Thomas Fel, Can Rager, Sheridan Feucht, Tal Haklay, Daniel Wurgaft, Siddharth Boppana, Matthew Kowal, Vasudev Shyam, Jack Merullo, et al. Do sparse autoencoders capture concept manifolds? arXiv preprint arXiv:2604.28119, 2026.
+[4] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in Neural Information Processing Systems (NeurIPS), 33:1877‚Äì1901, 2020.
+[5] Hugo Buurmeijer, Carmen Amo Alonso, Aiden Swann, and Marco Pavone. Observing and controlling features in vision-language-action models. arXiv preprint arXiv:2603.05487, 2026.
+[6] Nelson Elhage, Tristan Hume, Catherine Olsson, Nicholas Schiefer, Tom Henighan, Shauna Kravec, Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain, Carol Chen, et al. Toy models of superposition. arXiv preprint arXiv:2209.10652, 2022.
+[7] Josh Engels, Eric Michaud, Isaac Liao, Wes Gurnee, and Max Tegmark. Not all language model features are one-dimensionally linear. In International Conference on Learning Representations, volume 2025, pages 84591‚Äì84622, 2025.
+[8] Haoquan Fang, Jiafei Duan, Donovan Clay, Sam Wang, Shuo Liu, Weikai Huang, Xiang Fan, Wei-Chuan Tsai, Shirui Chen, Yi Ru Wang, et al. Molmoact2: Action reasoning models for real-world deployment. arXiv preprint arXiv:2605.02881, 2026.
+[9] Thomas Fel, Binxu Wang, Michael A Lepori, Matthew Kowal, Andrew Lee, Randall Balestriero, Sonia Joseph, Ekdeep S Lubana, Talia Konkle, Demba Ba, et al. Into the rabbit hull: From task-relevant concepts in dino to minkowski geometry. arXiv preprint arXiv:2510.08638, 2025.
+[10] Re¬¥mi Flamary, Nicolas Courty, Alexandre Gramfort, Mokhtar Z Alaya, Aure¬¥lie Boisbunon, Stanislas Chambon, Laetitia Chapel, Adrien Corenflos, Kilian Fatras, Nemo Fournier, et al. Pot: Python optimal transport. Journal of Machine Learning Research, 22(78):1‚Äì8, 2021.
+[11] Bear Ha¬®on, Kaylene Stocking, Ian Chuang, and Claire Tomlin. Mechanistic interpretability for steering vision-language-action models. Conference on Robot Learning (CoRL), 2025.
+14
+
+[12] Pegah Khayatan, Mustafa Shukor, Jayneel Parekh, Arnaud Dapogny, and Matthieu Cord. Analyzing fine-tuning representation shift for multimodal llms steering alignment. International Conference on Computer Vision, 2025.
+[13] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+[14] Diederik P Kingma and Max Welling. Auto-encoding variational bayes. arXiv preprint arXiv:1312.6114, 2013.
+[15] Yaron Lipman, Ricky TQ Chen, Heli Ben-Hamu, Maximilian Nickel, and Matt Le. Flow matching for generative modeling. arXiv preprint arXiv:2210.02747, 2022.
+[16] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. Advances in Neural Information Processing Systems, 36:44776‚Äì44791, 2023.
+[17] Mateusz Pach, Shyamgopal Karthik, Quentin Bouniot, Serge Belongie, and Zeynep Akata. Sparse autoencoders learn monosemantic features in vision-language models. Advances in Neural Information Processing Systems, 38:95706‚Äì95742, 2026.
+[18] Nina Panickssery, Nick Gabrieli, Julian Schulz, Meg Tong, Evan Hubinger, and Alexander Matt Turner. Steering llama 2 via contrastive activation addition. arXiv preprint arXiv:2312.06681, 2023.
+[19] Jayneel Parekh, Pegah Khayatan, Mustafa Shukor, Arnaud Dapogny, Alasdair Newson, and Matthieu Cord. Learning to steer: Input-dependent steering for multimodal llms. Advances in Neural Information Processing Systems, 38:159799‚Äì159834, 2026.
+[20] Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geometry of large language models. arXiv preprint arXiv:2311.03658, 2023.
+[21] Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. Ì†µÌºã0.5: A visionlanguage-action model with open-world generalization. arXiv preprint arXiv:2504.16054, 2025.
+[22] Xinchi Qiu, Lei Yu, Yuchen Zhang, Aobo Yang, Narine Kokhlikyan, Nicola Cancedda, Diego Garcia-Olano, et al. Hallucination reduction with casal: Contrastive activation steering for amortized learning. arXiv preprint arXiv:2510.02324, 2025.
+[23] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervision. In International conference on machine learning, pages 8748‚Äì8763. PMLR, 2021.
+[24] Pau Rodriguez, Arno Blaas, Michal Klein, Luca Zappella, Nicholas Apostoloff, Xavier Suau, et al. Controlling language and diffusion models by transporting activations. In International Conference on Learning Representations, volume 2025, pages 89812‚Äì89855, 2025.
+15
+
+[25] Meyer Scetbon, Marco Cuturi, and Gabriel Peyre¬¥. Low-rank sinkhorn factorization, 2021. [26] Yujun Shen, Ceyuan Yang, Xiaoou Tang, and Bolei Zhou. Interfacegan: Interpreting the
+disentangled face representation learned by gans. IEEE transactions on pattern analysis and machine intelligence, 44(4):2004‚Äì2018, 2020. [27] Mustafa Shukor, Dana Aubakirova, Francesco Capuano, Pepijn Kooijmans, Steven Palma, Adil Zouitine, Michel Aractingi, Caroline Pascal, Martino Russi, Andres Marafioti, et al. Smolvla: A vision-language-action model for affordable and efficient robotics. arXiv preprint arXiv:2506.01844, 2025. [28] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothe¬¥e Lacroix, Baptiste Rozie`re, Naman Goyal, Eric Hambro, Faisal Azhar, et al. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971, 2023. [29] Alexander Matt Turner, Lisa Thiergart, Gavin Leech, David Udell, Juan J Vazquez, Ulisse Mini, and Monte MacDiarmid. Steering language models with activation engineering. arXiv preprint arXiv:2308.10248, 2023. [30] Brianna Zitkovich, Tianhe Yu, Sichun Xu, Peng Xu, Ted Xiao, Fei Xia, Jialin Wu, Paul Wohlhart, Stefan Welker, Ayzaan Wahid, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, pages 2165‚Äì2183. PMLR, 2023. [31] Andy Zou, Long Phan, Sarah Chen, James Campbell, Phillip Guo, Richard Ren, Alexander Pan, Xuwang Yin, Mantas Mazeika, Ann-Kathrin Dombrowski, et al. Representation engineering: A top-down approach to ai transparency. arXiv preprint arXiv:2310.01405, 2023.
+16
+
+Supplementary Material for DiMaS: Distribution Matching for Steering Vision-Language-Action Models
+Pegah Khayatan‚òÖ1 Sara Meziane‚òÖ1 Jayneel Parekh‚òÖ1 Matthieu Cord1,2 1ISIR, Sorbonne Universite¬¥, Paris, France 2Valeo.ai, Paris, France {pegah.khayatan, sara.meziane}@isir.upmc.fr
+
+We provide details of our proposed method, DiMaS, in Section A, and describe the baseline methods in Section B. Section C presents additional experimental results omitted from the main paper. In Section D we analyze DiMaS further, studying the contribution of the interpolation factor Ì†µÌªº (Section D.1) and showing how increasing and decreasing vertical displacement affect the end-effector height (Section D.2). Finally, we ablate the choice of steering layer in Section E.
+
+A Implementation Details of DiMaS
+
+A.1 Steering as a transport map: details
+
+We provide additional details on the optimal transport formulation introduced in Section 3.2. The
+
+optimization ranges over Œ†(D‚àí, D+), the set of all joint distributions (transport plans) on Z √ó Z
+
+whose marginals coincide with D‚àí and D+. Intuitively, Ì†µÌªæ(Ì†µÌ±ß‚àí, Ì†µÌ±ß+) specifies the allocation of mass
+
+from D‚àí to D+ that minimizes the total quadratic transport cost.
+
+and
+
+In practice, D‚àí
+
+X+
+
+=
+
+{
+
+Ì†µÌ±ß+
+Ì†µÌ±ó
+
+}Ì†µÌ†µÌ±óÌ±ö=1
+
+and D+ ‚àº D+.
+
+are only accessible through finite empirical samples X‚àí The continuous objective thus reduces to the discrete
+
+=
+
+{
+
+Ì†µÌ±ß‚àí
+Ì†µÌ±ñ
+
+}Ì†µÌ†µÌ±ñÌ±õ=1
+
+‚àº
+
+D‚àí
+
+optimal transport
+
+problem,
+
+ \min _{\mathcal {T} \in \,Pi (\mathbf {a},\ \mathbf {b}) \left \langle \mathbf {C},\ \mathcal {T} \right \rangle _{\!F} ,\label {eq:ot_discret} 
+
+(A1)
+
+where
+
+CÌ†µÌ±ñ Ì†µÌ±ó
+
+=
+
+‚à• Ì†µÌ±ß ‚àí
+Ì†µÌ±ñ
+
+‚àí Ì†µÌ±ß+ ‚à•2
+Ì†µÌ±ó
+
+is
+
+the squared
+
+Euclidean
+
+cost matrix,
+
+a
+
+=
+
+1 Ì†µÌ±õ
+
+1Ì†µÌ±õ
+
+and
+
+b
+
+=
+
+1 Ì†µÌ±ö
+
+1Ì†µÌ±ö
+
+are
+
+uniform
+
+marginal weights, and
+
+  \Pi (\mathbf {a}, \mathbf {b}) \;=\; \Bigl \{ \mathcal {T} \in \mathb  {R}^{n \times m}_{+} \;\Big |\; \mathcal {T}\,\mathbf {1}_m = \mathbf {a},\; \mathcal {T}^{\!\top }\mathbf {1}_n = \mathbf {b} \Bigr \} 
+
+is the transport polytope. To scale to the high-dimensional hidden representations encountered in
+
+VLA models, we solve Eq. (A1) using the low-rank Sinkhorn algorithm [25], which factorises the
+
+transport plan as
+
+  \mathcal {T} \;=\; \mathbf {Q}\; \operatorname {diag}(\mathbf {g}^{-1})\; \mathbf {R}^{\!\top } \label {eq:lowrank} 
+
+(A2)
+
+where Q ‚àà R+Ì†µÌ±õ√óÌ†µÌ±ü , R ‚àà R+Ì†µÌ±ö√óÌ†µÌ±ü , and g ‚àà RÌ†µ+Ì±ü are low-rank factors of rank Ì†µÌ±ü ‚â™ min(Ì†µÌ±õ, Ì†µÌ±ö).
+
+Moreover, a regularization term is added to the discrete OT formulation
+
+ \min _{\mathcal {T} \in \,\Pi (\mathbf {a},\, \mathbf {b})} \left \langle \mathbf {C},\, \mathcal {T} \right \rangle _{\!F} \;-\; \varepsilon \,H(\mathcal {T}), \label {eq:ot_regularised} 
+
+(A3)
+
+where Ì†µÌ∞ª (T ) = ‚àí Ì†µÌ±ñ Ì†µÌ±ó TÌ†µÌ±ñ Ì†µÌ±ó log TÌ†µÌ±ñ Ì†µÌ±ó is the entropy of the transport plan and Ì†µÌºÄ > 0 controls the degree of regularisation. Smaller Ì†µÌºÄ gives a sparser and more faithful approximation of the exact OT solution. We used the implementation of this algorithm in the Python Optimal Transport (POT) package [10].
+
+17
+
+A.2 Hyperparameters and design choices
+The complete set of hyperparameters and design choices involved in DiMaS are given below in Table A1. The overall design is robust in the sense that all these choices are frozen for all our experiments, which includes all the various model, suite and steering task choices.
+Note that the steering intervention is applied only at the output of a single layer in the action expert, but for all flow-matching steps. Ì†µÌªº is the most influential choice in terms of balancing control strength with success rate. While Ì†µÌªº = 0.5 tends to be a safe default choice, it could be tuned for each task individually for optimal balance. The only hyperparameter that depends on the underlying VLA model, and may not generalize to an arbitrary new base VLA, is the layer choice ‚Ñì.Empirically, we find that late layers work well in general: we use the second-to-last layer, but observe little variation in steering effectiveness across the last few layers. We provide an analysis of this choice for Ì†µÌºã0.5 in Section E. A more systematic study of layer selection, and of how the optimal layer depends on the base VLA, remains a valuable direction for future work.
+Table A1: Hyperparameters of DiMaS.
+
+Component Distributions D‚àí, D+
+
+Hyperparameter
+Lower quantile Ì†µÌ±û‚àí Upper quantile Ì†µÌ±û+
+
+Value
+0.25 0.75
+
+Distribution classifier Ì†µÌ±î
+
+Model Regularisation Ì†µÌ∞∂
+
+SVM (linear kernel) 0.1
+
+Learning
+
+transport
+
+map
+
+T
+Ì†µÌ±ô
+
+(
+
+Ì†µÌ±ö)
+
+Algorithm Regularisation Ì†µÌºÄ Max. iterations Rank Ì†µÌ±ü
+
+Low-rank Sinkhorn 10‚àí4
+5 000 min(Ì†µÌ±õ, Ì†µÌ±ö) (default)
+
+Steering intervention
+
+Interpolation coefficient Ì†µÌªº Layer ‚Ñì FM steps Ì†µÌ±ö
+
+0.5 Second last All steps
+
+A.3 Models and datasets
+We evaluate our methods on two state-of-the-art VLA models. SmolVLA [27] is a compact visionlanguage-action model built on a 256M-parameter SmolVLM backbone with a flow-matching action expert. We use the publicly available checkpoint lerobot/smolvla_libero, fine-tuned on the LIBERO benchmark. Ì†µÌºã0.5 [21] is a larger VLA model built on a PaliGemma-3B vision-language backbone combined with a 300M-parameter flow-matching action expert. We use the checkpoint lerobot/pi05-libero, fine-tuned on the LIBERO benchmark. Both models generate actions via iterative denoising over 10 flow-matching steps. One main difference between these two checkpoints is that the LIBERO-SmolVLA one is trained to predict a chunk of 50 at each timestep and use only the first one at inference time, whereas for Ì†µÌºã0.5 it is able to predict and execute 10 actions directly, which makes its trajectories smoother and faster to run.
+To evaluate our proposed steering strategy we use LIBERO [16], a benchmark for lifelong robot learning comprising five task suites: LIBERO-Object, LIBERO-Spatial, LIBERO-Goal, LIBERO-10
+
+18
+
+(also referred to as LIBERO-Long), each containing 10 tasks, and LIBERO-90, which contains 90 short-horizon tasks, for a total of 130 manipulation tasks. We evaluate on four suites:
+‚Ä¢ LIBERO-Object focuses on object-centric manipulation, requiring the robot to pick up and place various household objects.
+‚Ä¢ LIBERO-Spatial introduces spatial reasoning, requiring the robot to reason about object relationships.
+‚Ä¢ LIBERO-Goal contains goal-conditioned tasks with more diverse objectives, including articulated object manipulation.
+‚Ä¢ LIBERO-10 (LIBERO-Long) consists of long-horizon tasks that require composing multiple sub-goals in sequence.
+A.4 Computational Cost
+Computing the OT transport map for a single suite (LIBERO-Object) across 50 training episodes represents approximately ‚àº3,500 samples per distribution. Solving the Low-Rank Sinkhorn problem across all 10 flow-matching steps takes approximately 85 minutes. This cost is paid once offline and does not affect inference latency. Theoretically, the time complexity of the Low-Rank Sinkhorn algorithm is O (Ì†µÌ±õ + Ì†µÌ±ö) ¬∑ Ì†µÌ±ü ¬∑ Ì†µÌ∞æ , where Ì†µÌ±õ and Ì†µÌ±ö are the number of source and target samples, Ì†µÌ±ü is the rank of the factorisation, and Ì†µÌ∞æ is the number of iterations.
+Regarding inference-time intervention, all experiments were conducted on NVIDIA Tesla V100, A100, and H100 GPUs. Our steering mechanism is lightweight: the overhead (SVM classification + transport) averages only 0.62 ¬± 0.05 ms per flow-matching step where an intervention occurs (calculated on Ì†µÌ±õ = 98 intervention steps). Even in the worst case, where the classifier triggers steering at all 10 flow-matching steps, this amounts to just 6.2 ms of overhead per robot timestep. Since each robot timestep corresponds to an action budget of approximately 50 ms, this worst-case overhead consumes only ‚àº12% of the available budget, leaving substantial headroom for real-time deployment.
+
+B Baseline Details
+
+The representation-level baselines intervene either in the VLM backbone or in the action expert Ì†µÌ±ìÌ†µÌ∞¥.
+
+Following prior work [5], the VLM interventions are applied at every layer of the backbone, using
+
+the token-averaged residual stream ‚Ñé¬Ø ‚Ñì (Ì†µÌ±•Ì†µÌ±° )
+
+= EÌ†µÌ±ù
+
+Ì†µÌ±ù
+‚Ñé
+‚Ñì
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+‚àà RÌ†µÌ±ëÌ†µÌ±â at each layer ‚Ñì; the action-expert
+
+intervention
+
+acts
+
+at
+
+a
+
+single
+
+layer
+
+‚Ñì,
+
+using
+
+the
+
+per-token
+
+representations
+
+Ì†µÌ±ù,Ì†µÌ±ö
+‚Ñé
+‚Ñì
+
+(Ì†µÌ±•Ì†µÌ±°
+
+)
+
+‚àà
+
+RÌ†µÌ±ë Ì†µÌ∞¥ ,
+
+where
+
+Ì†µÌ±ö
+
+indexes the denoising step. In all cases the additive shift is added to every token position Ì†µÌ±ù (and, in
+
+the action expert, every denoising step Ì†µÌ±ö) at the intervened layer(s).
+
+Following the main paper, we split representations into a source distribution D‚àí (feature value below Ì†µÌ±ûÌ†µÌºè) and a target distribution D+ (feature value above Ì†µÌ±û1‚àíÌ†µÌºè), referred to as the source and target tails of the feature distribution. We write ‚Ñé ‚àà RÌ†µÌ±ë for a generic representation, with Ì†µÌ±ë ‚àà {Ì†µÌ±ëÌ†µÌ±â , Ì†µÌ±ëÌ†µÌ∞¥},
+and all quantities below are fit and applied per intervened layer.
+
+19
+
+All representation-level baselines share the feature filter of the main paper: the shift T (‚Ñé) is
+
+applied only to representations predicted to lack the targeted feature, gated by the binary classifier
+
+Ì†µÌ±î (Ì†µÌ±ö) (‚Ñé)
+‚Ñì
+
+‚àà
+
+{0,
+
+1}
+
+that
+
+is
+
+active
+
+( Ì†µÌ±ö )
+(Ì†µÌ±î‚Ñì
+
+(‚Ñé)
+
+=
+
+1) when
+
+‚Ñé
+
+is assigned to D‚àí.
+
+The effective update is
+
+therefore
+
+  h \;\mapsto \; \begin {cases} \mathcal {T}(h) & \text {if } g_\el  ^{(m)}(h) = 1, \ [4pt] h & \text {otherwise,} \end {cases} 
+
+(A4)
+
+so that representations already exhibiting the feature are left unchanged. The baselines differ only in the choice of transport map T .
+
+Mean-difference steering (VLM Mean). This baseline applies a constant additive shift equal to the difference of the tail means,
+
+  \mathcal {T}(h) = h + (\mu ^{+} - \mu ^{-}), \qquad \mu ^{\pm } = \mathbb {E}_{h \sim \mathcal {D}^{\pm }}[h], 
+
+(A5)
+
+with Ì†µÌºá+ and Ì†µÌºá‚àí estimated over the target and source tails.
+
+Regression-based steering (VLM Regression, FM Regression). This baseline replaces the con-
+
+stant shift with an adaptive, representation-dependent one, and is applied identically to the VLM and
+
+action-expert representations. We fit a ridge regressor on the representations to predict the scalar
+
+feature,
+
+  \hat {\phi }_{\ell }(h) = w_\ell ^\top h + b_\ell , \qquad w_\ell \in \mathbb {R}^{d}, 
+
+(A6)
+
+and set a target value Ì†µÌ±†‚òÖ equal to a tail quantile of the feature distribution, Ì†µÌ±†‚òÖ ‚àà {Ì†µÌ±ûÌ†µÌºè, Ì†µÌ±û1‚àíÌ†µÌºè }, depending on the steering direction. The representation is then displaced by the minimum-norm perturbation that moves the predicted feature from Ì†µÀÜÌ±† = Ì†µÀÜÌºô‚Ñì (‚Ñé) to Ì†µÌ±†‚òÖ,
+
+  \mathcal {T}(h) = h + (s^\star - \hat {s})\,\frac {w_\ell }{\lVert w_\ell \rVert _2^{2}}. 
+
+(A7)
+
+VLM Regression intervenes on the token-averaged VLM representation at every layer, and FM Regression on the action-expert representation at a single layer.
+Prompt steering. As a non-representational baseline, we steer the target feature through the language instruction, appending a directive to the task prompt rather than modifying any hidden representation. For speed we append ‚ÄúDo this quickly.‚Äù (low-to-high) or ‚ÄúDo this slowly.‚Äù (high-to-low), and for end-effector height ‚ÄúDo this at high height.‚Äù or ‚ÄúDo this at low height.‚Äù
+
+C Additional experimental results
+The main paper reports the generalization study for decreasing end-effector speed. Here we provide the remaining three feature and direction combinations across all four settings and both models: increasing speed (Figure A1), decreasing vertical displacement (Figure A2), and increasing vertical displacement (Figure A3). Decreasing vertical displacement. This direction closely mirrors the speed-decrease result of the main paper (Figure A2). On both models, the intervention yields a significant downward shift at
+
+20
+
+every setting on Object and Spatial (Ì†µÌ±ù < 0.01), including transfer to held-out tasks (Setting 3) and, for Spatial, to a disjoint suite (Setting 4). As with speed, LIBERO-Goal is the harder case: the shift stays in the intended direction but reaches significance only at some settings (Ì†µÌºã0.5 Setting 3, Ì†µÌ±ù < 0.01; SmolVLA Setting 4). The strong effect on Object and Spatial comes with a larger success-rate cost than for speed, consistent with vertical displacement being more tightly coupled to the lifting and placing phases needed to complete the task. The increasing directions are more constrained by the task. Steering the two increasing directions is more demanding than the decreasing ones. For increasing speed (Figure A1), Ì†µÌºã0.5 shifts the feature in the intended direction throughout and is significant at the intermediate settings; the effect weakens only under the largest shift (Setting 4 on Spatial and Goal, Ì†µÌ±ù = 0.494 and Ì†µÌ±ù = 0.567), and on SmolVLA it holds in a subset of cells. Increasing vertical displacement (Figure A3) is the most constrained combination, with a significant effect concentrated in fewer cells (e.g. Ì†µÌºã0.5 Object, Setting 1, Ì†µÌ±ù < 0.01). We read this asymmetry as reflecting the policy‚Äôs default behavior: successful trajectories naturally decelerate and lower the end-effector to grasp and place, so steering that reinforces these tendencies (slower, lower) aligns with the direction the representations already encode, whereas steering the opposite way (faster, higher) pushes against it. Steering is thus most effective when it amplifies a behavior the policy is already inclined toward, rather than reversing it.
+21
+
+LIBERO Object
+
+LIBERO Spatial
+
+0.9
+
+98.0% p: ref.
+
+0.8
+
+Speed
+
+84.0% p=0.168
+
+89.0% p<0.01*
+
+90.0% p<0.01*
+
+0.7
+
+0.6
+
+0.5
+Baseline Setting 1 Setting 2 Setting 3
+
+1.0
+
+97.0% p: ref.
+
+77.0% p=0.208
+
+93.0% p<0.01*
+
+84.0% p<0.01*
+
+82.0% p=0.494
+
+0.9
+
+0.8
+
+0.7
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+91.0% 62.5% 83.0% 84.0% 87.0%
+
+1.0
+
+p: ref.
+
+p<0.01* p<0.01* p=0.115 p=0.567
+
+0.8
+
+0.6
+
+0.4
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+(a) Ì†µÌºã0.5
+
+LIBERO Goal
+
+LIBERO Spatial
+
+LIBERO Object
+
+89%
+
+0.75
+
+ref.
+
+Speed
+
+18%
+
+29%
+
+38%
+
+p=0.03
+
+p=0.30
+
+p=0.80
+
+0.70
+
+0.65
+
+0.60
+
+0.55
+1.0 0.9
+
+Baseline Setting 1 Setting 2 Setting 3
+
+71% 28% 40% 30% 33%
+
+ref.
+
+p=0.78 p<0.01 p<0.01 p<0.01
+
+0.8
+
+0.7
+
+0.6
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+1.0
+
+81%
+ref.
+
+28%
+p<0.01
+
+52%
+p<0.01
+
+70%
+p=0.21
+
+28%
+p=0.65
+
+0.8
+
+0.6
+
+0.4
+Baseline Setting 1 Setting 2 Setting 3 Setting 4 (b) SmolVLA
+
+LIBERO Goal
+
+Baseline DiMaS (ours) (Speed )
+Figure A1: Steering across evaluation levels on Ì†µÌºã0.5 (left) and SmolVLA (right). We compare the unsteered baseline against DiMaS for increasing speed. Panels show, left to right, the baseline and the settings discussed in Section 4.2; columns are the three LIBERO suites (Object, Spatial, Goal). Box plots show the per-episode feature distribution at each level, annotated with success rate and Ì†µÌ±ù-value vs. baseline; box opacity is higher when the shift is statistically significant (Ì†µÌ±ù < 0.01). Arrow length is proportional to the induced Œîmean.
+
+22
+
+LIBERO Object
+
+LIBERO Spatial
+
+Z Displacement
+
+0.8
+
+98.0% p: ref.
+
+65.5% p<0.01*
+
+64.0% p<0.01*
+
+58.0% p<0.01*
+
+0.6
+
+0.4
+
+Baseline Setting 1 Setting 2 Setting 3
+
+0.8
+
+97.0% p: ref.
+
+71.5% 80.0% 52.0% 95.0% p<0.01* p<0.01* p<0.01* p<0.01*
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+1.0
+
+91.0% p: ref.
+
+74.5% 63.0% 82.0% 71.0% p=0.243 p=0.018 p<0.01* p=0.223
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+(a) Ì†µÌºã0.5
+
+LIBERO Goal
+
+LIBERO Spatial
+
+LIBERO Object
+
+Z Displacement
+
+0.6
+
+89%
+ref.
+
+2%
+p<0.01
+
+1%
+p<0.01
+
+2%
+p<0.01
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+Baseline Setting 1 Setting 2 Setting 3
+
+0.6
+
+71%
+ref.
+
+16%
+p<0.01
+
+15%
+p<0.01
+
+24%
+p<0.01
+
+1%
+p<0.01
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+0.8
+
+81%
+ref.
+
+23%
+p<0.01
+
+53%
+p=0.03
+
+44%
+p<0.01
+
+18%
+p<0.01
+
+0.6
+
+0.4
+
+0.2
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4 (b) SmolVLA
+
+LIBERO Goal
+
+Baseline DiMaS (ours) (Z Displacement )
+Figure A2: Steering across evaluation levels on Ì†µÌºã0.5 (left) and SmolVLA (right). We compare the unsteered baseline against DiMaS for decreasing vertical displacement. Panels show, left to right, the baseline and the settings discussed in Section 4.2; columns are the three LIBERO suites (Object, Spatial, Goal). Box plots show the per-episode feature distribution at each level, annotated with success rate and Ì†µÌ±ù-value vs. baseline; box opacity is higher when the shift is statistically significant (Ì†µÌ±ù < 0.01). Arrow length is proportional to the induced Œîmean.
+
+23
+
+LIBERO Object
+
+LIBERO Spatial
+
+Z Displacement
+
+98.0%
+
+1.0
+
+p: ref.
+
+72.5% p<0.01*
+
+85.0% p=0.012
+
+82.0% p=0.059
+
+0.8
+
+0.6
+
+0.4
+Baseline Setting 1 Setting 2 Setting 3
+1.0 97.0% 64.5% 84.0% 82.0% 72.0% p: ref. p=0.664 p=0.492 p=0.958 p=0.306
+0.8
+
+0.6
+
+0.4
+1.25 1.00 0.75 0.50 0.25
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+91.0% p: ref.
+
+57.0% p=0.028
+
+72.0% 38.0% 69.0% p=0.346 p=0.910 p=0.121
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+(a) Ì†µÌºã0.5
+
+LIBERO Goal
+
+LIBERO Spatial
+
+LIBERO Object
+
+0.7
+
+Z Displacement
+
+89%
+
+52%
+
+53%
+
+60%
+
+0.6
+
+ref.
+
+p=0.80
+
+p=0.18
+
+p=0.33
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+Baseline Setting 1 Setting 2 Setting 3
+
+71% 42% 45% 58% 61%
+
+0.6
+
+ref.
+
+p=0.01 p=0.45 p=0.77 p=0.27
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+Baseline Setting 1 Setting 2 Setting 3 Setting 4
+
+81% 32% 48% 52% 48%
+
+0.8
+
+ref.
+
+p=0.12 p=0.05 p=0.06 p=0.07
+
+0.6
+
+0.4
+
+0.2
+
+Baseline Setting 1 Setting 2 Setting 3 Setting 4 (b) SmolVLA
+
+LIBERO Goal
+
+Baseline DiMaS (ours) (Z Displacement )
+Figure A3: Steering across evaluation levels on Ì†µÌºã0.5 (left) and SmolVLA (right). We compare the unsteered baseline against DiMaS for increasing vertical displacement. Panels show, left to right, the baseline and the settings discussed in Section 4.2; columns are the three LIBERO suites (Object, Spatial, Goal). Box plots show the per-episode feature distribution at each level, annotated with success rate and Ì†µÌ±ù-value vs. baseline; box opacity is higher when the shift is statistically significant (Ì†µÌ±ù < 0.01). Arrow length is proportional to the induced Œîmean.
+
+D Additional DiMaS analysis
+We report additional results complementing the main paper: speed density plots for the Ì†µÌªº ablation across additional task suites for both Ì†µÌºã0.5 and SmolVLA in Section D.1, and examples of end-effector height under increasing and decreasing vertical-displacement steering in Section D.2.
+
+24
+
+D.1 Interpolation factor: per-suite density
+
+Figure A4 highlights the clear distribution shift introduced by DiMaS for speed H‚ÜíL steering.
+Across all three suites, increasing Ì†µÌªº consistently shifts the distribution towards lower speed values. However, the success rate also drops gradually for Ì†µÌªº ‚àà {0.3, 0.5} and more sharply for Ì†µÌªº ‚àà {0.7, 1.0}.
+
+Density
+
+LIBERO-Object
+
+3.0
+
+Baseline (SR=98%) =0.3 (SR=98%) =0.5 (SR=100%)
+
+=0.7 (SR=62%)
+
+=1.0 (SR=0%)
+
+2.5
+
+2.0
+
+1.5
+
+1.0
+
+0.5
+
+0.0 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4
+
+Density
+
+LIBERO-Object
+
+2.5
+
+Baseline (SR=92%)
+
+=0.3 (SR=88%)
+
+=0.5 (SR=82%)
+
+=0.7 (SR=58%)
+
+=1.0 (SR=6%)
+
+2.0
+
+1.5
+
+1.0
+
+0.5
+
+0.0 0.00 0.25 0.50 0.75 1.00 1.25 1.50
+
+Density
+
+LIBERO-Spatial
+
+Baseline (SR=98%)
+
+=0.3 (SR=90%)
+
+=0.5 (SR=96%)
+
+=0.7 (SR=84%)
+
+2.0
+
+=1.0 (SR=8%)
+
+1.5
+
+1.0
+
+0.5
+
+0.0 0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75
+
+Density
+
+2.00 1.75 1.50 1.25 1.00 0.75 0.50 0.25 0.00
+0.0
+
+LIBERO-Spatial
+
+Baseline (SR=74%) =0.3 (SR=66%) =0.5 (SR=58%) =0.7 (SR=44%) =1.0 (SR=6%)
+
+0.5
+
+1.0
+
+1.5
+
+2.0
+
+Density
+
+2.00 1.75
+
+LIBERO-Goal
+
+Baseline (SR=96%) =0.3 (SR=96%) =0.5 (SR=86%) =0.7 (SR=78%) =1.0 (SR=20%)
+
+1.75 1.50
+
+1.50
+
+1.25
+
+1.25 1.00
+
+Density
+
+1.00
+
+0.75
+
+0.75
+
+0.50
+
+0.50
+
+0.25
+
+0.25
+
+LIBERO-Goal
+
+Baseline (SR=82%) =0.3 (SR=60%) =0.5 (SR=20%) =0.7 (SR=20%) =1.0 (SR=8%)
+
+0.00
+
+0.00
+
+0.00 0.25 0.50 0.75 sp1e.e0d0 1.25 1.50 1.75 2.00
+
+0.0 0.2 0.4 0.6 s0p.8eed 1.0 1.2 1.4 1.6
+
+(a) Ì†µÌºã0.5
+
+(b) SmolVLA
+
+Figure A4: Effect of the interpolation coefficient Ì†µÌªº on speed and task success. Speed distributions when steering towards lower speeds for Ì†µÌºã0.5 (top) and SmolVLA (bottom). Different curves show the resulting speed distributions when changing the interpolation factor of DiMaS.
+
+25
+
+z position
+
+D.2 Additional qualitative results
+
+0.35 0.30 0.25 0.20 0.15 0.10 0.05 0.00 0
+
+Task 0
+
+Baseline HL LH
+
+25 50 75 Tim1e0s0tep 125 150 175 200 0
+
+Task 6
+
+Baseline HL LH
+
+25 50 75Time1s0t0ep 125 150 175 200
+
+Figure A5: End-effector height trajectories under DiMaS height steering on SmolVLA. Evolution of the
+observed EEF Ì†µÌ±ß position over time for two successful episodes of LIBERO-Object tasks (task 0 and task 6). Curves show the unsteered baseline (black), H‚ÜíL steering (blue), and L‚ÜíH steering (red).
+
+Figure A5 shows the evolution of the vertical end-effector position over time for two episodes of
+the LIBERO-Object suite, illustrating the effect of DiMaS height steering on the trajectories. On the left, the red curve (L‚ÜíH) is consistently higher than the baseline during the transport phase, while the blue curve (H‚ÜíL) remains close to or below it. On the right, H‚ÜíL produces a noticeably lower trajectory while L‚ÜíH follows the baseline closely. This suggests that the steering effect is
+task-dependent.
+
+E Steering-layer ablation
+Figure A6 shows that the choice of steering layer strongly determines the induced speed shift and, to a lesser extent, the preserved success rate. For decreasing speed (top row), steering at later layers (L15‚Äì L17) most effectively concentrates mass at lower speeds, moving the distribution below the baseline while largely preserving task success. Earlier and middle layers (L3‚ÄìL9) are markedly less effective: they shift mass toward higher speeds, opposite to the intended direction. The accompanying drop in success rate (e.g. SR = 76% on Spatial at L3) partly reflects this loss of control, but also the faster execution itself, since moving more quickly leaves less margin to grasp and place the object reliably. The same layer dependence holds for increasing speed (bottom row), where later layers again produce the cleanest shift in the intended direction. Across both directions and all three suites, the behavioral feature is most cleanly and controllably represented in the later layers of the network, which motivates our choice of a late intervention layer in the main experiments.
+
+26
+
+Density
+
+LIBERO Object
+
+Baseline (SR: 98.0%)
+
+10
+
+L3 (SR: 94.0%) L6 (SR: 88.0%) L9 (SR: 92.0%)
+
+8
+
+L12 (SR: 100.0%)
+
+8
+
+L15 (SR: 100.0%)
+
+L16 (SR: 100.0%) L17 (SR: 100.0%)
+
+6
+
+6 4
+4
+
+2
+
+2
+
+0
+
+0
+
+0.4 0.5 0.6 0.S7peed0.8 0.9 1.0
+
+0.4
+
+LIBERO Spatial
+
+3.5 Baseline (SR: 97.0%)
+
+L3 (SR: 76.0%)
+
+L6 (SR: 82.0%) L9 (SR: 78.0%)
+
+3.0
+
+L12 (SR: 78.0%)
+
+L15 (SR: 88.0%) L16 (SR: 96.0%)
+
+2.5
+
+L17 (SR: 94.0%)
+
+2.0
+
+LIBERO Goal
+
+Baseline (SR: 91.0%) L3 (SR: 90.0%) L6 (SR: 88.0%) L9 (SR: 84.0%) L12 (SR: 92.0%) L15 (SR: 94.0%) L16 (SR: 86.0%) L17 (SR: 90.0%)
+
+1.5
+
+1.0
+
+0.5
+
+0.6
+
+0.8Speed 1.0
+
+1.2
+
+0.0 0.2 0.4 0.6 Sp0ee.8d 1.0 1.2 1.4
+
+(a) Steering to decrease speed (H‚ÜíL).
+
+LIBERO Object
+
+12
+
+Baseline (SR: 98.0%) L3 (SR: 94.0%) L6 (SR: 100.0%)
+
+L9 (SR: 98.0%)
+
+10
+
+L12 (SR: 100.0%) L15 (SR: 88.0%)
+
+L16 (SR: 90.0%)
+
+8
+
+L17 (SR: 94.0%)
+
+6
+
+4
+
+2
+
+0
+
+0.5
+
+0.6 Speed0.7
+
+0.8
+
+LIBERO Spatial
+
+LIBERO Goal
+
+Baseline (SR: 97.0%)
+
+L3 (SR: 98.0%)
+
+8
+
+L6 (SR: 92.0%) L9 (SR: 98.0%) L12 (SR: 92.0%)
+
+L15 (SR: 82.0%)
+
+L16 (SR: 84.0%)
+
+6
+
+L17 (SR: 86.0%)
+
+Baseline (SR: 91.0%)
+
+3.5
+
+L3 (SR: 78.0%) L6 (SR: 84.0%)
+
+L9 (SR: 84.0%)
+
+3.0
+
+L12 (SR: 92.0%) L15 (SR: 84.0%)
+
+2.5
+
+L16 (SR: 84.0%) L17 (SR: 90.0%)
+
+2.0
+
+4
+
+1.5
+
+2
+
+1.0
+
+0.5
+
+0
+
+0.0
+
+0.5 0.6 0.S7peed 0.8 0.9 1.0
+
+0.4
+
+0.6Speed 0.8
+
+1.0
+
+(b) Steering to increase speed (L‚ÜíH).
+
+Figure A6: Effect of steering layer on speed and task success. Results for Ì†µÌºã0.5 across the three LIBERO suites. Each curve shows the resulting speed distribution when steering at a different layer (L3‚ÄìL17), with the corresponding success rate (SR) in the legend; the shaded region is the unsteered baseline.
+
+Density
+
+27
+
+

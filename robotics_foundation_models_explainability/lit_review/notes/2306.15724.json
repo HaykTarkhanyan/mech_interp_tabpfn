@@ -1,0 +1,39 @@
+{
+  "id": "2306.15724",
+  "title": "REFLECT: Summarizing Robot Experiences for Failure Explanation and Correction",
+  "first_author": "Liu",
+  "year": 2023,
+  "venue": "CoRL 2023",
+  "tier": "adjacent",
+  "models": ["GPT-4 (and GPT-3.5 comparison) as failure reasoner and planner; MDETR, CLIP, AudioCLIP for perception; no VLA policy (scripted primitives in AI2THOR, teleoperated UR5e)"],
+  "action_head": "n/a",
+  "methods": ["hierarchical multisensory summary: scene graphs from RGB-D, object states, audio events, subgoal verification", "progressive LLM querying: check subgoals, then explain execution or planning failure and localize its time", "LLM correction planner conditioned on the explanation", "RoboFail dataset"],
+  "question": "Can an LLM, given a structured summary of a robot's multisensory experience, explain and localize failures and use the explanation to plan a correction?",
+  "key_findings": [
+    "Simulation (Table 1): REFLECT explanation accuracy 88.4% / 84.2%, localization 96.0% / 80.7%, correction-plan success 79.1% / 80.7% for execution / planning failures.",
+    "Correction planning without the explanation is much worse (41.9% / 56.1%), so the explanation is useful for recovery.",
+    "Removing audio lowers execution-failure explanation and localization by about 20%.",
+    "Real-world performance drops somewhat due to perception errors.",
+    "RoboFail taxonomy: 55% planning failures (wrong actions, missing actions, wrong order, ambiguous reference) and 45% execution failures."
+  ],
+  "evidence": {
+    "setting": "both (AI2THOR simulation; teleoperated real UR5e)",
+    "benchmarks": ["RoboFail: 100 simulated failure scenarios (10 tasks x 10) and 30 real-world failure scenarios (11 tasks)"],
+    "scale": "100 sim + 30 real failure cases; explanations judged by human evaluators",
+    "statistics": "no",
+    "baselines": "BLIP2 captions, w/o sound, w/o progressive querying, subgoal-only summary, LLM text summary, correction without explanation"
+  },
+  "causal_validation": "None on any model internals; the explanation is an external LLM account of behavior. Correction success after using the explanation is a behavioral test of usefulness.",
+  "closed_loop": "Correction plans are executed to measure task success; explanations are generated post hoc from recorded experience.",
+  "limitations_stated": [
+    "Assumes ground-truth detection in simulation; real-world perception errors reduce performance.",
+    "Failures in the real dataset come from a human teleoperator mimicking policies, not from a learned policy."
+  ],
+  "critique": [
+    "An external, post-hoc explainer of robot behavior: it explains what went wrong in the world, not why a policy chose its actions, so it is complementary to (not a substitute for) internals-based interpretability.",
+    "Injected or teleoperated failures and scripted primitives are much easier to explain than failures of end-to-end VLAs, whose errors are often subtle motion-level problems (see SAFE, FailureSpot).",
+    "Representative of the slow VLM-supervisor approach that later VLA failure detectors (SAFE, Hide-and-Seek) contrast against for latency."
+  ],
+  "code": "https://robot-reflect.github.io/ (project page)",
+  "one_line": "REFLECT turns multisensory robot logs into a hierarchical text summary that GPT-4 uses to explain and localize failures and to plan corrections, reaching about 80% correction success on injected failures in simulation."
+}

@@ -1,0 +1,834 @@
+arXiv:2610.20750v1 [cs.RO] 14 Oct 2026
+
+Causal Analysis of Robot Foundation Models Enables Efficiency Gains
+Aiden Swann⋆,•,a Mathilde Papillon⋆,•,b Mozes Jacobs⋆,•,c Siddharth Boppana• Tal Haklay• Eric Bigelow• Andrew Lee• Conor Watts•
+Thomas Icard•,a Mac Schwagera Owen Lewis• Jack Merullo• Ekdeep Singh Lubana• Atticus Geiger†,• Thomas Fel†,• Matthew Kowal†,•
+⋆Core contributors †Equal senior contribution
+https://github.com/goodfire-ai/robotics_causal_analysis •Goodfire aStanford University bUniversity of California, Santa Barbara cHarvard University
+Figure 1: Activation patching reveals how a vision-language-action (VLA) model turns perception into action. (Left) We copy activations from a donor episode (“Pick up the banana”) into a target episode (“Pick up the apple”) with the position of the objects swapped. Visual information (purple) sits in early image tokens, semantic information (blue) in the early noun token, and geometric information (orange) in later text tokens. The action expert (AE) reads from a narrow band of later layer. (Top right) Schematic of these effects by layer. The action expert reads from a narrow band of layers.(Bottom right) Keeping only this interface in MolmoBot, 3 of 36 connections, cuts compute by 33% with comparable average success (46.7% vs. 46.9%) over 3000 trials.
+Vision-language-action (VLA) models are a promising approach to general purpose robot manipulation. While the internal computation of vision-language models, which compose the backbone of VLAs, has been studied extensively, less is known about how their perceptual and semantic representations are transformed into action in VLA models. We study this question mechanistically in three frontier VLA models (π0.5, MolmoAct2, and MolmoBot) by analyzing the causal pathways through which the input image and the instruction shape actions. Across the three models, activation patching shows that causally relevant information influences the action expert (AE) through a narrow band of mid-to-late cross-attention layers, which we term the action-conditioning interface. The content of this information changes with token and layer within the model. Early-to-mid layer representations of the target noun token determine which object is selected, whereas mid-to-late layers carry the spatial information in text tokens that redirects the movement when patched. Where spatial information is stored in prompt tokens various based on the architecture. In MolmoAct2 the model forms task-conditioned representations at the text positions that follow the instruction, whereas π0.5 additionally stores this information at image token positions. We show that these findings can be translated directly into improving model efficiency. We find that restricting MolmoBot’s
+
+action expert conditioning to only 3 out of 36 layers reduces inference FLOPs by up to 33% while maintaining comparable task success with the default model across 3,000 evaluation episodes (46.7% vs. 46.9%), and the same principle carries over to real-robot deployment of π0.5.
+1 Introduction
+Vision-language-action (VLA) models are a promising route to achieve general-purpose robot manipulation. By adapting large pretrained vision-language models (VLMs) to action (Driess et al., 2023; Beyer et al., 2024; Deitke et al., 2025), VLAs combine broad visual and semantic knowledge with continuous control and increasingly handle manipulation tasks across objects, environments, and robot embodiments (Brohan et al., 2022, 2023; Kim et al., 2024; Black et al., 2024; Physical Intelligence et al., 2025).
+Architecturally, VLAs typically combine a pretrained VLM backbone (Chi et al., 2023; Black et al., 2024; Physical Intelligence et al., 2025; Bjorck et al., 2025; Deshpande et al., 2026; Fang et al., 2026; Wen et al., 2025a,b) with a separate diffusion or flow-matching action expert that produces continuous control. The two modules are typically joined through a dense, layer-wise interface that conditions the expert on the backbone at every layer. Despite their growing real-world efficacy and partially due to the multi-modal architecture design, these models remain black boxes. VLAs transform thousands of image, language, and proprioceptive tokens through billions of parameters before producing a small set of continuous action tokens, leaving the internal mapping from perception to action an open area of study.
+We study three frontier open-source VLAs: π0.5, MolmoBot, and MolmoAct2 (Physical Intelligence et al., 2025; Deshpande et al., 2026; Fang et al., 2026). Across all three models, we find that perception and action communicate through a surprisingly narrow channel (1-3 cross-attention layers). Causal influence concentrates in a middle-to-late band of VLM layers, which we term the action-conditioning interface. This suggests that the action expert ingests representations which already encode task-relevant spatial information, rather than depending equally on every stage of backbone computation.
+We apply our findings of the narrow action-conditioning interface between the AE and VLM to improve VLA efficiency. Many prior works have attempted to reduce VLA computation, by skipping or exiting backbone layers (Yue et al., 2024; Zhang et al., 2025, 2026b), pruning redundant layers or parameters (Yang et al., 2025; Nguyen et al., 2026; Sun et al., 2026; Zhang et al., 2026a), or conditioning the action head on only a subset of backbone layers (Bjorck et al., 2025; Shukor et al., 2025). These methods decide what to remove using heuristics such as representational similarity or benchmark success. We offer a more mechanistic account of why these designs work. Our results show that the representations necessary for action are stored sparsely across tokens and layers.
+In this work we show that by leveraging causal analysis we can choose exactly the relevant areas of the model to prune. Restricting conditioning to the causally important layers removes 92% of MolmoBot’s cross-attention parameters and reduces the estimated VLM–action-expert floating-point operation count by up to 33% with a similar change in real world measured latency. The simplified architecture achieves task success comparable to the vanilla policy across 3,000 evaluation episodes. The same approach carries over to preliminary trials on a real robot, where sparse and dense π0.5 policies achieve comparable success rates (67 and 64 of 100 trials). We view these results as a step toward intentional design (McGrath, 2026) of VLA models, where the internal mechanisms connecting perception to control directly inform how robot policies are built and trained.
+Beyond just leveraging the action-conditioning interface we seek to understand and explain it. There are many promising approachs to understanding VLA computation via mechanistic interpretability (Grant et al., 2026; Bhardwaj et al., 2026; Molinari et al., 2025; Khan et al., 2025; Goyal, 2026; Yang & Mokalla, 2026). In particular, activation patching (Vig et al., 2020; Geiger et al., 2021; Zhang & Nanda, 2024; Heimersheim & Nanda, 2024) approaches aim to measure the causal role of an internal representation by replacing the target representation from one rollout with a donor from another rollout, while measuring the resulting change in behavior. In language models, such interventions have localized the computations behind factual recall and uncovered computations underlying numerous tasks (Meng et al., 2022; Wang et al., 2023; Geiger et al., 2023; Mueller et al., 2026), helping elucidate the causal relationships between internal model representations and behavior.
+2
+
+Recent work has begun to apply such tools to VLAs, identifying internal directions that steer movement, recovering sparse features tied to semantic concepts, and manipulating observable features to control behavior (Häon et al., 2025; Swann et al., 2026; Buurmeijer et al., 2026). Closest to our work, Grant et al. (2026) performed activation-injection experiments and showed that patching representations into a VLA can redirect movement toward the spatial location of a donor task. Shi et al. (2026) used attention knockout (Geva et al., 2023), which blocks attention from selected token positions (such as all image or all language tokens) at chosen layers and measures how the output changes, to characterize which modalities and layers action generation depends on. Together, these results establish that individual VLA representations can be causally manipulated. However, they do not address how task-relevant information is composed across the depth of the backbone and how it reaches the action expert.
+We answer these questions with counterfactual comparisons that test visual, semantic, and geometric hypotheses at the interface and within the backbone. We trace how the representations read by the expert reveals a progression across depth, from transferable object selection to spatially grounded action information. The two kinds of information also reside on different tokens: semantic content is carried by the noun token of the instruction, while geometric content is spread across the other prompt tokens and, in π0.5, the image tokens.
+Our contributions are as follows:
+1. Discovery of a narrow action-conditioning interface. Across π0.5, MolmoAct2, and MolmoBot, we identify a narrow middle-to-late region through which the backbone conditions action generation. We show that this interface mediates geometric information about the target object.
+2. Mechanistically informed architectural improvements. We use the identified interface to design substantially sparser VLM–action-expert connections, preserving observed closed-loop performance while reducing the estimated combined operation count by up to 33%. We validate the simplified architecture through direct training and adaptation in simulation, and demonstrate real-robot deployment with π0.5.
+3. A causal account of the information supplied to the interface. We build a counterfactual dataset with over 156 counterfactual pairs across sets of household objects. We run over 775,000 activation patching interventions across π0.5, MolmoAct2, and MolmoBot specifically designed to differentiate representations within the backbone. Visual information influences behavior through early image tokens, semantic information through the early target noun, and geometric information through later text and readout positions.
+
+2 Discovering the Action-Conditioning Interface
+Our goal is to study how task-relevant information within the vision-language backbone is passed to the action expert. We then use the identified causal interface to create policies that improve efficiency without costing performance.
+
+Models and Notation. We study MolmoBot, π0.5, and MolmoAct2 (Deshpande et al., 2026; Physical Intelligence et al., 2025; Fang et al., 2026). Each model conditions its continuous action expert on representations from all backbone layers using different attention implementations. MolmoBot supplies layer-wise hidden states through cross-attention, MolmoAct2 supplies layer-wise keys and values, and π0.5 conditions on a shared multimodal prefix. Their attention masks also differ: in MolmoBot and MolmoAct2, image positions cannot attend to subsequent instruction tokens, whereas π0.5 uses bidirectional attention within the prefix.
+
+Let x = (I, u, s) denote an input comprising image observations I, a language instruction u, and proprioceptive state s. The policy F produces an action sequence a ∈ RH×da ,where H is the prediction horizon and da is the number of action components per timestep. We write
+
+a = F (x; ϵ) = A s, C1(x), . . . , CM (x); ϵ ,
+
+(1)
+
+where A denotes the action expert together with its action-generation procedure, ϵ denotes generation noise, and Cj(x) is the backbone-derived conditioning supplied to expert block j ∈ {1, . . . , M }. Direct conditioning on the state s is included where used by the architecture (MolmoBot). In our experiments we hold ϵ fixed across paired runs and drop it below for simplicity.
+
+3
+
+Let zℓ(x) ∈ RN×dℓ denote the backbone residual-stream activations at layer ℓ, with N token positions and hidden dimension dℓ, and let zℓ,T (x) denote the tokens at positions T . Here, zℓ(x) denotes residual-stream activations within backbone layer ℓ, while Cj(x) denotes the conditioning supplied to action-expert block j.
+
+2.1 Interface interventions.
+
+Activation patching replaces an internal representation in a recipient run with the corresponding representation from a donor run, then measures the change in output (Vig et al., 2020; Geiger et al., 2021, 2023; Zhang & Nanda, 2024; Heimersheim & Nanda, 2024).
+
+Interface patching replaces the conditioning supplied to selected action-expert blocks J ⊆ {1, . . . , M } while keeping the original VLM computation fixed:
+
+aJin,tT = F (xo)|Cj,T ←Cj,T (xcf ), j∈J .
+
+(2)
+
+This intervention notation indicates that the original computation is run with the shown internal quantities replaced by their counterfactual values. All other conditioning retains its original value. The action expert continues computing from its modified inputs. We use this type of patching to test where the expert reads causally relevant information from the VLM.
+
+Measuring behavioral transfer. Using shared action noise ϵ, we compare the original output with the output under an interface or backbone intervention. We reconstruct trajectories from predicted action commands using forward kinematics, τ = FK(a). Let τo, τpatch, and τref denote the original, patched, and reference trajectories, represented as vectors of stacked positions. τref is the trajectory obtained by changing the original instruction to request the other object while retaining the original scene. We quantify behavioral transfer by the normalized trajectory shift.
+
+E
+
+=
+
+⟨τpatch − τo, ∥τref −
+
+τref − τo∥22
+
+τo⟩
+
+,
+
+τref ≠ τo.
+
+(3)
+
+Put simply, E is how far the patch moves the recipient’s trajectory toward the reference, as a fraction of the full distance between them. E = 0 means the patch had no effect in that direction, and E = 1 means it moved the trajectory all the way to the reference.
+
+2.2 Action Expert - Interface Patching
+
+Figure 2: Action conditioning concentrates in model-specific layer bands. Curves show normalized trajectory shift E toward the reference trajectory (same scene other object requested) after patching one action-expert connection (left) or three consecutive connections (right, indexed by the center layer). The results shown are computed across 144,768 patches over 26 scenes via averaging comparisons B and C (Section 4.1).
+We sweep individual connections and three-layer windows using input pairs whose requested targets occupy different locations. We obtain these pairs by changing the requested object in a fixed scene or
+4
+
+by exchanging object positions under a fixed instruction (Section 4.1). These experiments use the first timestep of each episode, when both objects are visible. The results are shown in Figure 2.
+We observe a highly uneven behavior of influence; e.g., in MolmoBot, patching the action expert at layer 24 alone recovers over 50% of the instructed reach contrast, and patching a three-layer window centered on layer 24 recovers close to 70%. Most other individual layers have comparatively little influence (more details in Section B). Importantly, we find the same pattern generalizes across the other two models: π0.5 peaks at over 35% for a single-layer patch and over 70% for a sliding patch, and MolmoAct2 at nearly 30% and over 40%, respectively. In summary, in each model, a narrow band of only one to three adjacent layers accounts for most of the conditioning that shapes the action expert’s behavior. We refer to this concentrated readout region as the action-conditioning interface.
+
+3 Efficiency Improvements in Real Policies
+
+Our mechanistic findings suggest a direct opportunity to improve the efficiency of VLA architectures: the narrow VLM–action-expert interface identified in Figure 2. Thus, we restrict action expert conditioning to the identified layers by removing completely the cross attention layers outside of the action-conditioning interface, and evaluate whether these simplified policies retain their capabilities.
+
+Pick Pick & Place PnP Next-To
+
+Avg
+
+Cross-attention layers
+
+Success Oracle Final Oracle Final (oracle)
+
+All 36 (released MolmoBot-DROID) 62.0
+
+Layers 23–25, pretrained
+
+57.7
+
+Layer 24, pretrained
+
+63.0
+
+Layers 23–25, adapt (50K FT)
+
+56.8
+
+Layer 24, adapt (50K FT)
+
+54.7
+
+Layer 12, adapt (50K FT)
+
+25.7
+
+57.4 49.6 21.2 15.1 46.9 ± 1.7
+59.2 50.7 23.3 18.0 46.7 ± 1.7 53.0 45.7 20.8 15.9 45.6 ± 1.7
+55.4 45.9 23.1 17.8 45.1 ± 1.7 54.0 44.9 24.9 19.4 44.5 ± 1.7
+20.9 16.3 6.9 4.9 17.8 ± 1.3
+
+Table 1: Keeping only the action-conditioning interface preserves performance Success rate (%) on the MolmoBot paper’s simulation benchmarks (1,000 identical episodes per benchmark). Reading only layer 24 (1 of 36 connections) comes within 1.3 points of the released all-layer model when trained from scratch. Reading only L23–25 comes within 0.2 points and gives the best Pick & Place success of any model. ± is a 95% binomial confidence interval. Final measures success state at end of episode. Oracle terminates at the first success state. Shading ranks each column (darkest = best).
+
+3.1 Molmobot In Simulation
+We conduct our main evaluation with MolmoBot, whose openly available training data and simulation benchmarks support both training new policies and adapting an existing checkpoint (Deshpande et al., 2026). Unlike the initial-timestep patching experiments, these evaluations test closed-loop behavior throughout complete manipulation tasks. Guided by the action-conditioning interface located in layer-24 (Figure 2), we compare the released policy, which uses all 36 connections, against three interface variants: (i) policies trained with only the layer-24 interface, (ii) policies trained with only the layer-23-25 interface, and (iii) a policy trained with only the layer-12 in as a baseline control outside the action-conditioning interface. For both (i) and (ii) we compare training the model from scratch and finetuning for 50k steps from the released checkpoint.
+Table 1 reports results on three simulation benchmarks, with 1,000 episodes per benchmark and identical evaluation episodes across models. These are the provided MolmoBot benchmarks and use the MolmoSpaces simulator Deshpande et al. (2026) for three tasks: Pick (pick up a target object), Pick and Place (pick up a target object and place it into a target location), and Next-To (pick up a target object and place it next to a named object). Overall, we observe that the policy trained with only the action-conditioning interface is comparable to the original policy, with a 33% reduction in FLOPS. The layer-24 pretrained policy achieves the highest Pick success (63.0%), the layer-23-25 policy achieves the highest Pick & Place oracle success (59.2%), while the layer-24 adapted policy achieves the highest Next-To oracle success (24.9%). Averaging Pick success and the two oracle metrics gives 46.9% for the dense policy, 46.7% for the layer-23-25 pretraining and 45.6% for layer-24 pretraining. Thus, the limited connection interface supports almost identical overall performance.
+5
+
+These architectures remove 33 to 35 of the 36 cross-attention modules (92%-97% of the interface). Additionally, because nothing reads VLM layers 26–35, the VLM can stop early. Together, these cut the full policy’s computation from 11.93 to 7.96 TFLOPs per action chunk, a 33% reduction (Section C). We see similar savings on real hardware. On a single H100 with a batch size of 64, producing one action chunk takes 209 ms instead of 311 ms, a 33% latency reduction, and throughput rises from 21.5 to 30.9 chunks per second (+44%). The throughput gain matters beyond single-robot control, for workloads that run many rollouts in parallel, such as large-scale simulation evaluation or reinforcement learning.
+Selecting layers outside of the causally determined action-conditioning interface hurts performance significantly. Under the same 50,000-update adaptation budget, retaining layer 12 yields only 25.7% Pick success and 20.9% Pick & Place oracle success, compared with 54.7% and 54.0% when retaining layer 24. This contrast supports using the mechanistically identified readout region rather than selecting an arbitrary single-layer interface. Together, these results show that the localized action-conditioning pathway can guide both the design of a new policy and the simplification of an existing one with large efficiency gains, which we now show transfer to real-world deployment.
+3.2 π0.5 in the real world
+We now test whether this design principle transfers to a different architecture in a physical embodiment. For π0.5, we restrict action-expert attention to layers 14–16, masking this conditioning pathway at the remaining layers. We evaluate both policies on four tasks types for a total of 100 trials each. The four tasks types are: fruit in basket, [noun] in bin, marker in mug, and stack bowls. As shown in Table 2, the original and restricted-interface policies succeed in 64 and 67 out of 100 trails respectively. The efficiency gain is much smaller than for MolmoBot. Because π0.5’s action expert reads prefix keys and values that the VLM has already computed, the ablation removes a relatively minor amount of flops. (Section C). Averaged over the seven tasks, the median duration of successful trials nonetheless decreases from 34.9 s to 26.5 s, about 24%. Because this does not arise from fast inference, it reflects a difference in how the restricted policy executes the task. Overall we conclude that there is no statistically significant different in task success rate between the two policies. However, the difference in task completion time likely reflect a difference in robustness between the policies. More discussion in section D.1.
+
+π0.5 policy
+
+Success Task time (s)
+
+Original (all 18 layers) 64/100 (64%)
+
+34.9
+
+Restricted (layers 14–16) 67/100 (67%)
+
+26.5
+
+Table 2: Real-robot evaluation of π0.5. Over 100 trials per policy on seven tabletop tasks (Figure 9; per-task results in Table 6), restricting action-expert attention to layers 14–16 preserves task success. Task time is the median duration of successful trials for each task, averaged over the seven tasks. It measures full task execution, not inference latency.
+
+4 Explaining the Action Conditioning Interface
+In a VLA, information flows from perception, through the vision-language backbone, to the action expert that produces motor commands. The interface discovery in Section 2 raises a question about what information the backbone supplies to the expert. Our goal is to distinguish representations that determine which object the model selects from those that determine where it reaches. We test hypotheses about this information by comparing the effects of interchange interventions with predictions from a high-level causal model. We use the intervention defined in Equation (2) to study the interface, and apply the same operation within the backbone to trace how that information forms upstream.
+4.1 Causal variables and counterfactual predictions
+We model which of two locations the policy’s actions target. For a fixed pair of objects, the visual variable V maps each object to its location in the scene. The semantic variable S identifies the object
+6
+
+Interchanged variable
+Visual V Semantic S Geometric G
+
+A
+Change Change Preserve
+
+B
+Preserve Change Change
+
+C
+Change Preserve Change
+
+(a) Predicted causal signatures.
+
+(b) Predicted reaches under the labeled transfer hypotheses.
+Figure 3: Three counterfactual comparisons test hypothesis about target selection We patch activations from a donor run into a recipient run. (a) The input changes in A, B and C produce distinct causal signatures for each interchange intervention type. (b) Green arrows show the unpatched behavior; red arrows show predicted recipient behavior if the patch transfers the labeled information. These labels denote transfer hypotheses, not information uniquely isolated by single comparisons. For example, in A, patching scene-layout information through an image patch can produce the same behavioral shift as patching target-object identity through a noun patch. We therefore interpret effects jointly across the comparisons and patched token positions.
+
+requested by the instruction. The geometric variable combines them to select the target location:
+
+G := V (S).
+
+(4)
+
+The output of the high-level model is the selected location. These variables specify hypotheses about the causal roles of neural representations. The full model, its variable domains, and its intervention predictions are defined in Section A.
+Each hypothesis predicts how an interchange intervention changes the target. Interchanging V locates the originally requested object in the counterfactual layout. An intervention on S selects the counterfactually requested object at its location in the original scene. Interchanging G directly transfers the counterfactual target location.
+We construct two layouts containing the same two objects with their left–right arrangement exchanged, and pair each layout with instructions to pick up either object. Original–counterfactual pairs yield three comparisons, illustrated in Figure 3:
+
+1. A: Different object, same target location. Both the instruction and layout change, so the target objects occupy the same location. Interchanging S or V redirects the reach to the other location in the original scene, while interchanging G alone preserves the original target location.
+2. B: Different object, different target location. The scene remains fixed while the instruction requests the other object. Interchanging either S or G redirects the reach toward the counterfactual target, so this comparison alone does not distinguish semantic from geometric information. The visual variable retains the same value.
+3. C: Same object, different target location. The instruction remains fixed while the layout changes. Interchanging V or G redirects the reach toward the counterfactual target location, which is occupied by the other object in the original scene. The semantic variable retains the same value, so interchanging S alone preserves the original choice of object.
+
+Consider a scene which contains an apple on the left and a banana on the right, with the instruction to pick up the apple. In comparison A, the counterfactual scene swaps both the objects positions and the requested objects, meaning the geometric position of the target object remains the same. Interchanging the semantic variable S makes the original run select the banana on its right, while
+
+7
+
+an intervention on the geometric variable G preserves the left target. The visual intervention also predicts a selection of the banana, because the originally requested apple is on the opposite side in the counterfactual layout. A noun intervention therefore redirects the reach by changing which object the model selects, whereas an image intervention can redirect it by changing the visual location of the originally requested object. Comparison B separates the visual and semantic hypotheses, and comparison C completes the signatures in Figure 3a.
+The dataset contains 13 sets of object pairs for a total of 26 scenes (including object swaps). Each comparison uses 26 input pairs tested with both directions, for 52 ordered pairs per comparison and 156 across all three, A, B, and C. Repeating each ordered pair under eight noise seeds gives the 416 interventions per cell in the backbone results (Figure 4).
+For each comparison, we vary the intervention positions T at the interface and within the backbone, examining image tokens, the target noun, downstream prompt spans, and final readout positions. A intervention which redirects the robots action to the other object corresponds to E = 1 and a preserving one to E = 0. We first apply this test at the interface, then trace the variables upstream through the backbone.
+
+4.2 The action-conditioning interface is geometric
+We now have the necessary causal machinery to evaluate two hypothesis about the type of information exchanged in the action conditioning interface. We suggest 2 distinct hypothesis: 1. That the action conditioning interface only exchanges geometric information about the object positions and 2. that the action conditioning interface exchanges visual information about the scene. Each hypothesis predicts a different pattern across the three comparisons. The geometric hypothesis predicts a change in target in comparisons B and C and preservation of the target in A (Figure 3a), while the visual hypothesis predicts a change in target in A and C, and the semantic hypothesis in A and B.
+Our results on interface patching strongly support the geometric hypothesis. Figure 2 averages comparisons B and C, in which the target location changes, and their effects concentrate in the narrow band of layers that defines the interface. Comparison A, which is not shown in the figure, changes both the requested object and the layout while keeping the target location fixed. A produces a shift of |E| ≤ 0.022 at every individual connection and three-layer window across all three models, including those where B and C peak. If the interface carried causally relevant information about the requested object or the scene layout, interventions in A would lead to a change in reach.
+Because interface patches replace all token positions at a connection, a null effect in A alone could also be consistent with the interface carrying both visual and semantic variables and the action expert combining them into the geometric variable. The token-restricted backbone interventions in Section 4.3 rule this out. At the interface layers of each model patching the image tokens, the noun, or all text in comparison A changes |E| ≤ 0.05, whereas the same layers produce much larger effects (0.42–0.88) in comparisons B and C.
+
+4.3 How the backbone constructs the geometric variable
+
+We now turn to the VLM backbone and ask how scene information and the instruction combine into the geometric variable. To trace this construction, we apply the interchange operation from Eq. 2 within the VLM. Let zℓ,T (x) denote residual-stream activations at layer ℓ and token positions T . We replace these activations with their counterfactual values:
+
+abℓ,bT = F (xo)|zℓ,T ←zℓ,T (xcf ) .
+
+(5)
+
+Activations at the remaining positions of layer ℓ retain their original values, while downstream backbone computation, interface conditioning, and action-expert computation proceed from the intervened state. This tests which representations affect behavior through their downstream effects.
+
+Figure 4 shows backbone-intervention effects across token groups and layers for the three comparisons in Figure 3. Because each variable makes a distinct set of predictions across A, B, and C (Figure 3a), we interpret each effect jointly from the comparison and the intervened positions. All experiments use the first timestep of each episode, when both objects are visible to both cameras.
+
+8
+
+MolmoAct2
+
+A Different object · same location
+
+Exo image
+
+Wrist image Target noun
+
+Final readout token All text
+
+0
+
+5
+
+10
+
+15
+
+B Different object · different location
+
+Exo image
+
+Wrist image Target noun
+
+Final readout token All text
+
+0
+
+5
+
+10
+
+15
+
+C Same object · different location
+
+Early images: scene layout
+
+20
+
+25
+
+20
+
+25
+
+π0.5
+
+Early nouns: object selection
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+Image tokens:
+
+instruction-dependent
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+Exo image Wrist image Target noun Final readout token
+All text
+
+Later text: spatial information
+
+0
+
+5
+
+10
+
+15
+
+20
+
+25
+
+Patched backbone layer
+
+Normalized trajectory shift, E
+
+0
+
+0.5
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10
+
+12
+
+14
+
+16
+
+Patched backbone layer
+
+1
+
+Figure 4: Backbone interventions trace the construction of the geometric variable in MolmoAct2 and π0.5. Colors show normalized trajectory shift E toward the other-object trajectory in the original scene. Each cell averages 416 interventions: 26 original–counterfactual pairs, each tested in both directions under eight noise seeds. The visual, semantic, and geometric hypotheses predict the signatures in Figure 3a. We omit MolmoAct2 layers 27–35 as they have |E| < 0.001.
+
+Early image representations carry the visual variable. When the scene layouts differ (comparisons A and C), interchanging early image representations strongly redirects behavior. For the dominant camera, effects approach perfect reference recovery E = 1 in early layers before declining at greater depth. The exterior view dominates in MolmoAct2, whereas the wrist view dominates in π0.5. These effects are consistent with the visual hypothesis: transferring the counterfactual layout changes where the originally requested object is represented. In comparison A, an image intervention can therefore redirect the reach while leaving the original instruction unchanged.
+Early noun representations carry the semantic variable. Interchanging early noun representations can instead change which object the model selects. Across all three models, these interventions can redirect the original run toward the counterfactually requested object. Comparison A distinguishes this semantic transfer from geometric transfer: the redirected reach follows that object’s location in the original scene, even though the original and counterfactual targets occupy the same location. For example, transferring the representation of “banana” from a scene with the banana on the left can redirect an apple-instructed original run toward the banana on its right. The intervention therefore follows the prediction for S, selecting the counterfactually requested object at its original-scene location, an effect that cannot be explained by transferring the target location alone.
+Early noun interventions also redirect behavior in comparison B, where the scene remains fixed and only the requested object changes. By contrast, noun interventions have little effect in comparison C in MolmoAct2, where the requested object remains fixed and its location changes. Together, this pattern matches the semantic signature, and the causal influence of the semantic variable at the noun position weakens with depth.
+Later text representations carry the geometric variable. Comparison C holds the instruction fixed while changing the target object’s location. Interchanging deeper text representations redirects the reach despite identical original and counterfactual text, supporting the presence of scene-dependent spatial information at these positions. At these layers, the pattern across A, B, and C follows the geometric signature: changes to the target location transfer through the text representations, while changes that preserve the target location have little effect. The backbone has therefore constructed a representation of which location to target.
+9
+
+In MolmoAct2, interchanging all text positions produces stronger effects than interchanging the final readout token alone. The readout token <action_output> becomes an effective intervention site later, with geometric effects peaking around layers 22–23. These results indicate contributions beyond the readout token, alongside its increasing influence in deeper layers. A search over text positions identifies small groups that retain much of the effect of intervening on all text, with as few as four tokens retaining 89% at layer 18 (Section B). Together, these results trace how the geometric variable becomes available across text positions before the expert reads it at the interface. The high-level variable specifies only which location to target; its neural representation may be an explicit coordinate or a spatially specific motor plan that also supports further details of the movement.
+Architecture shapes causal pathways within the model. Comparison B reveals an architectural difference in which positions can combine visual and semantic information. Here, original and counterfactual images are identical. In MolmoAct2 and MolmoBot, image positions cannot attend to the subsequent instruction, so their activations are unchanged by the instruction swap and interchanging them has no effect. In π0.5, interchanging intermediate-layer image representations redirects behavior despite the identical visual inputs. Its bidirectional prefix attention allows image positions to incorporate the instruction.
+Together with the image-intervention effects in comparison C and their decline in A, this result supports a geometric interpretation of π0.5’s intermediate image representations. The geometric variable is therefore not restricted to positions associated with a particular input modality: text positions can carry the target location, and image positions can become conditioned on the requested task. Section B.2 reports the corresponding MolmoBot results. Across architectures, the backbone combines visual and semantic information into the geometric variable that is supplied through the action-conditioning interface. These interventions establish where each variable can be transferred, but do not show that it is represented exclusively at the identified positions.
+5 Discussion and conclusion
+We used activation patching with controlled counterfactuals to trace how perception becomes action in three VLAs. Across MolmoBot, MolmoAct2, and π0.5, the picture is consistent. Image tokens contain the scene layout in early layers and the target noun carries which object to pick. In deeper layers, the target’s location emerges in text and readout position, as well as image positions in π0.5, whose bidirectional attention lets them read the instruction. The action expert then reads this information through the action-conditioning interface, a narrow band of one to three middle-to-late layers. We then apply these findings to improve the efficiency of the policy. Keeping only the interface layers in MolmoBot cuts theoretical full-policy computation and measured latency by 33%, and raises batched throughput by 44%, while task success remains comparable to the dense policy. More broadly, these results suggest that mechanistic analysis can guide how robot policies are built, not only explain them after training.
+Limitations. Our activation-patching experiments use the start of an episode where relevant objects are still in view. This is the only point where clean counterfactuals can be built because both objects are visible and the robot starts in the same state. Therefore our causal analysis may miss computation that matters in different phases of manipulation such as grasping. Furthermore our dataset only consists of 13 object-pairs in two binary locations. The closed-loop evaluations partly address these limitations. While the restricted policies were designed from start-of-episode interventions alone they still complete entire tasks, including grasping, placing and stacking, in scenes beyond the counterfactual dataset with comparable success rate over many trials (3000 for sim and 100 for real). If later phases of manipulation used fundamental different conditioning interfaces then we would expect lower success rates.
+10
+
+References
+Beyer, L., Steiner, A., Pinto, A. S., Kolesnikov, A., Wang, X., Salz, D., Neumann, M., Alabdulmohsin, I., Tschannen, M., Bugliarello, E., Unterthiner, T., Keysers, D., Koppula, S., Liu, F., Grycner, A., Gritsenko, A., Houlsby, N., Kumar, M., Rong, K., Eisenschlos, J., Kabra, R., Bauer, M., Bosnjak, M., Chen, X., Minderer, M., Voigtlaender, P., Bica, I., Balazevic, I., Puigcerver, J., Papalampidi, P., Henaff, O., Xiong, X., Soricut, R., Harmsen, J., and Zhai, X. PaliGemma: A versatile 3B VLM for transfer. arXiv preprint arXiv:2407.07726, 2024. doi: 10.48550/arxiv.2407.07726.
+Bhardwaj, A., Duan, E. W., Dan, P., Ma, W.-C., and Culbertson, P. Decoding task progress from vla representations. arXiv preprint arXiv:2608.13474, 2026. doi: 10.48550/arxiv.2608.13474.
+Bjorck, J., Castañeda, F., Cherniadev, N., Da, X., Ding, R., Fan, L., Fang, Y., Fox, D., Hu, F., Huang, S., Jang, J., Jiang, Z., Kautz, J., Kundalia, K., Lao, L., Li, Z., Lin, Z., Lin, K., Liu, G., Llontop, E., Magne, L., Mandlekar, A., Narayan, A., Nasiriany, S., Reed, S., Tan, Y. L., Wang, G., Wang, Z., Wang, J., Wang, Q., Xiang, J., Xie, Y., Xu, Y., Xu, Z., Ye, S., Yu, Z., Zhang, A., Zhang, H., Zhao, Y., Zheng, R., and Zhu, Y. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025. doi: 10.48550/arxiv.2503.14734.
+Black, K., Brown, N., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., Groom, L., Hausman, K., Ichter, B., Jakubczak, S., Jones, T., Ke, L., Levine, S., Li-Bell, A., Mothukuri, M., Nair, S., Pertsch, K., Shi, L. X., Tanner, J., Vuong, Q., Walling, A., Wang, H., and Zhilinsky, U. π0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024. doi: 10.48550/arxiv.2410.24164.
+Brohan, A., Brown, N., Carbajal, J., Chebotar, Y., Dabis, J., Finn, C., Gopalakrishnan, K., Hausman, K., Herzog, A., Hsu, J., Ibarz, J., Ichter, B., Irpan, A., Jackson, T., Jesmonth, S., Joshi, N. J., Julian, R. C., Kalashnikov, D., Kuang, Y., Leal, I., Lee, K.-H., Levine, S., Lu, Y., Malla, U., Manjunath, D., Mordatch, I., Nachum, O., Parada, C., Peralta, J., Perez, E., Pertsch, K., Quiambao, J., Rao, K., Ryoo, M., Salazar, G., Sanketi, P. R., Sayed, K., Singh, J., Sontakke, S., Stone, A., Tan, C., Tran, H., Vanhoucke, V., Vega, S., Vuong, Q., Xia, F., Xiao, T., Xu, P., Xu, S.-C., Yu, T.-H., and Zitkovich, B. Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817, 2022. doi: 10.48550/arxiv.2212.06817.
+Brohan, A., Brown, N., Carbajal, J., Chebotar, Y., Choromanski, K., Ding, T., Driess, D., Dubey, K. A., Finn, C., Florence, P. R., Fu, C., Arenas, M. G., Gopalakrishnan, K., Han, K., Hausman, K., Herzog, A., Hsu, J., Ichter, B., Irpan, A., Joshi, N. J., Julian, R. C., Kalashnikov, D., Kuang, Y., Leal, I., Levine, S., Michalewski, H., Mordatch, I., Pertsch, K., Rao, K., Reymann, K., Ryoo, M., Salazar, G., Sanketi, P. R., Sermanet, P., Singh, J., Singh, A., Soricut, R., Tran, H., Vanhoucke, V., Vuong, Q., Wahid, A., Welker, S., Wohlhart, P., Xiao, T., Yu, T.-H., and Zitkovich, B. RT-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, 2023. doi: 10.48550/arxiv.2307.15818. arXiv:2307.15818.
+Buurmeijer, H., Alonso, C. A., Swann, A., and Pavone, M. Observing and controlling features in vision-language-action models. arXiv preprint arXiv:2603.05487, 2026. doi: 10.48550/arxiv.2603. 05487.
+Chi, C., Xu, Z.-J., Feng, S.-Y., Cousineau, E., Du, Y., Burchfiel, B., Tedrake, R., and Song, S. Diffusion policy: Visuomotor policy learning via action diffusion. In Robotics: Science and Systems Conference, volume 44, pp. 1684–1704, 2023. doi: 10.1177/02783649241273668. arXiv:2303.04137.
+Deitke, M., Clark, C., Lee, S., Tripathi, R., Yang, Y., Park, J., Salehi, M., Muennighoff, N., Lo, K., Soldaini, L., Lu, J., Anderson, T., Bransom, E., Ehsani, K., Ngo, H., Chen, Y., Patel, A., Yatskar, M., Callison-Burch, C., Head, A., Hendrix, R., Bastani, F., VanderBilt, E., Lambert, N., Chou, Y., Chheda, A., Sparks, J., Skjonsberg, S., Schmitz, M., Sarnat, A., Bischoff, B., Walsh, P., Newell, C., Wolters, P., Gupta, T., Zeng, K.-H., Borchardt, J., Groeneveld, D., Nam, C., Lebrecht, S., Wittlif, C., Schoenick, C., Michel, O., Krishna, R., Weihs, L., Smith, N. A., Hajishirzi, H., Girshick, R., Farhadi, A., and Kembhavi, A. Molmo and pixmo: Open weights and open data for state-of-the-art vision-language models. In Computer Vision and Pattern Recognition, pp. 91–104, 2025. doi: 10.1109/cvpr52734.2025.00018.
+11
+
+Deshpande, A., Guru, M., Hendrix, R., Jauhri, S., Eftekhar, A., Tripathi, R., Argus, M., Salvador, J., Fang, H., Wallingford, M., Pumacay, W., Kim, Y., Pfeifer, Q., Lee, Y.-C., Wolters, P., Rayyan, O., Zhang, M., Duan, J., Farley, K., Han, W., Vanderbilt, E., Fox, D., Farhadi, A., Chalvatzaki, G., Shah, D., and Krishna, R. Molmob0t: Large-scale simulation enables zero-shot manipulation. arXiv preprint arXiv:2603.16861, 2026. doi: 10.48550/arxiv.2603.16861.
+Driess, D., Xia, F., Sajjadi, M. S. M., Lynch, C., Chowdhery, A., Ichter, B., Wahid, A., Tompson, J., Vuong, Q., Yu, T.-H., Huang, W.-L., Chebotar, Y., Sermanet, P., Duckworth, D., Levine, S., Vanhoucke, V., Hausman, K., Toussaint, M., Greff, K., Zeng, A., Mordatch, I., and Florence, P. R. Palm-e: An embodied multimodal language model. arXiv preprint arXiv:2303.03378, pp. 8469–8488, 2023. doi: 10.48550/arxiv.2303.03378.
+Fang, H., Duan, J., Clay, D., Wang, S., Liu, S., Huang, W., Fan, X., Tsai, W.-C., Chen, S., Wang, Y. R., Xing, S., Cho, J., Park, J. S., Eftekhar, A., Sushko, P., Farley, K., Wadhwa, A., Harrison, C., Han, W., Lee, Y.-C., VanderBilt, E., Hendrix, R., Ellawela, S., Ngoo, L., Chai, J., Ren, Z., Farhadi, A., Fox, D., and Krishna, R. MolmoAct2: Action reasoning models for real-world deployment. arXiv preprint arXiv:2605.02881, 2026. doi: 10.48550/arxiv.2605.02881.
+Geiger, A., Lu, H., Icard, T. F., and Potts, C. Causal abstractions of neural networks. In Neural Information Processing Systems, pp. 9574–9586, 2021. doi: 10.48550/arxiv.2106.02997. arXiv:2106.02997.
+Geiger, A., Ibeling, D., Zur, A., Chaudhary, M., Chauhan, S., Huang, J., Arora, A., Wu, Z., Goodman, N., Potts, C., and Icard, T. Causal abstraction: A theoretical foundation for mechanistic interpretability. arXiv [cs.AI], 26(83):1–64, 2023. doi: 10.48550/arxiv.2301.04709.
+Geva, M., Bastings, J., Filippova, K., and Globerson, A. Dissecting recall of factual associations in auto-regressive language models. In Conference on Empirical Methods in Natural Language Processing, pp. 12216–12235, 2023. doi: 10.48550/arxiv.2304.14767.
+Goyal, A. The hitchhiker’s guide to mechanistic interpretability of vision-language-action models. In Mechanistic Interpretability Workshop at ICML 2026, 2026.
+Grant, B., Zhao, X., and Wang, P. Not all features are created equal: A mechanistic study of Vision-Language-Action models. arXiv preprint arXiv:2603.19233, 2026. doi: 10.48550/arxiv. 2603.19233.
+Häon, B., Stocking, K. C., Chuang, I., and Tomlin, C. J. Mechanistic interpretability for steering vision-language-action models. In Conference on Robot Learning (CoRL), 2025. doi: 10.48550/ arxiv.2509.00328. arXiv:2509.00328.
+Heimersheim, S. and Nanda, N. How to use and interpret activation patching. arXiv preprint arXiv:2404.15255, 2024. doi: 10.48550/arxiv.2404.15255.
+Khan, M. A., Boskov, N., Anwar, F. M., and Khan, M. A. Controlling vision–language–action policies through sparse latent directions. In Mechanistic Interpretability Workshop at NeurIPS 2025, 2025.
+Khazatsky, A., Pertsch, K., Nair, S., Balakrishna, A., Dasari, S., Karamcheti, S., Nasiriany, S., Srirama, M. K., Chen, L. Y., Ellis, K., Fagan, P., Hejna, J., Itkina, M., Lepert, M., Ma, Y., Miller, P., Wu, J., Belkhale, S., Dass, S., Ha, H., Jain, A., Lee, A., Lee, Y., Memmel, M., Park, S., Radosavovic, I., Wang, K., Zhan, A., Black, K., Chi, C., Hatch, K., Lin, S., Lu, J., Mercat, J.-P., Rehman, A., Sanketi, P. R., Sharma, A., Simpson, C., Vuong, Q., Walke, H., Wulfe, B., Xiao, T., Yang, J., Yavary, A., Zhao, T., Agia, C., Baijal, R., Castro, M. G., Chen, D., Chen, Q., Chung, T., Drake, J., Foster, E. P., Gao, J., Herrera, D., Heo, M., Hsu, K., Hu, J., Irshad, M. Z., Jackson, D., Le, C., Li, Y., Lin, K., Lin, R., Ma, Z.-H., Maddukuri, A., Mirchandani, S., Morton, D., Nguyen, T., O’Neill, A., Scalise, R., Seale, D., Son, V., Tian, S., Tran, E., Wang, A., Wu, Y., Xie, A., Yang, J.-Y., Yin, P., Zhang, Y., Bastani, O., Berseth, G., Bohg, J., Goldberg, K., Gupta, A., Gupta, A., Jayaraman, D., Lim, J. J., Malik, J., Martín-Martín, R., Ramamoorthy, S., Sadigh, D., Song, S., Wu, J.-J., Yip, M. C., Zhu, Y.-K., Kollar, T., Levine, S., and Finn, C. DROID: A large-scale in-the-wild robot manipulation dataset. In Robotics: Science and Systems Conference, 2024. doi: 10.48550/arxiv.2403.12945. arXiv:2403.12945.
+12
+
+Kim, M. J., Pertsch, K., Karamcheti, S., Xiao, T., Balakrishna, A., Nair, S., Rafailov, R., Foster, E., Lam, G., Sanketi, P. R., Vuong, Q., Kollar, T., Burchfiel, B., Tedrake, R., Sadigh, D., Levine, S., Liang, P., and Finn, C. OpenVLA: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024. doi: 10.48550/arxiv.2406.09246.
+McGrath, T. Intentionally designing the future of AI, 2026. URL https://www.goodfire.com/ blog/intentional-design.
+Meng, K., Bau, D., Andonian, A., and Belinkov, Y. Locating and editing factual associations in GPT. In Neural Information Processing Systems, 2022. doi: 10.52202/068431-1262. arXiv:2202.05262.
+Molinari, M., Nevali, L., Navani, S., and Younis, O. G. Emergent world representations in openvla. arXiv preprint arXiv:2509.24559, 2025. doi: 10.48550/arxiv.2509.24559.
+Mueller, A., Brinkmann, J., Li, M., Marks, S., Pal, K., Prakash, N., Rager, C., Sankaranarayanan, A., Sen Sharma, A., Sun, J., Todd, E., Bau, D., and Belinkov, Y. The quest for the right mediator: Surveying mechanistic interpretability for NLP through the lens of causal mediation analysis. Computational Linguistics, 52(1):331–378, 2026. doi: 10.1162/coli.a.572. URL https:// aclanthology.org/2026.cl-1.10/.
+Nguyen, G.-B., Ho, T.-B., Ha, T.-L., Vo, K., Møller, P. L., Nguyen, Q. T., Dinh, L., Luu, T. M., Dam, T., Duong, V., Le, T., Bui, N. D. Q., Vu, M., Le, T. N., Le, A. T., Le, N., Sonntag, D., Zou, J., Peters, J., Nguyen, D. M. H., and Vien, N. A. Finetuning vision-language-action models requires fewer layers than you think. arXiv preprint arXiv:2606.20246, 2026. doi: 10.48550/arxiv.2606.20246.
+Physical Intelligence, Black, K., Brown, N., Darpinian, J., Dhabalia, K., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., Galliker, M. Y., Ghosh, D., Groom, L., Hausman, K., Ichter, B., Jakubczak, S., Jones, T., Ke, L., LeBlanc, D., Levine, S., Li-Bell, A., Mothukuri, M., Nair, S., Pertsch, K., Ren, A. Z., Shi, L. X., Smith, L., Springenberg, J. T., Stachowicz, K., Tanner, J., Vuong, Q., Walke, H., Walling, A., Wang, H., Yu, L., and Zhilinsky, U. π0.5: A vision-languageaction model with open-world generalization. arXiv preprint arXiv:2504.16054, 2025. doi: 10.48550/arxiv.2504.16054.
+Shi, H., Ren, X., Zhang, Y., Zhang, Q., Hu, J., Shan, H., Dong, H., Lu, J., Chen, Y., Zhang, Y., Dai, Y., and Ju, X. VLA-Trace: Diagnosing vision-language-action models through representation and behavior tracing. arXiv preprint arXiv:2605.30117, 2026. doi: 10.48550/arxiv.2605.30117.
+Shukor, M., Aubakirova, D., Capuano, F., Kooijmans, P., Palma, S., Zouitine, A., Aractingi, M., Pascal, C., Russi, M., Marafioti, A., Alibert, S., Cord, M., Wolf, T., and Cadene, R. SmolVLA: A vision-language-action model for affordable and efficient robotics. arXiv preprint arXiv:2506.01844, 2025. doi: 10.48550/arxiv.2506.01844.
+Sun, G., Feng, K., He, S., Gong, X., He, Y., Wang, Z., Shen, Z., Ye, W., Kompella, R. R., Liu, G., and Li, A. Drop-then-recovery: How redundant are vision-language-action models? arXiv preprint arXiv:2606.27755, 2026. doi: 10.48550/arxiv.2606.27755.
+Swann, A., McGranahan, L., Buurmeijer, H., Kennedy, III, M., and Schwager, M. Sparse autoencoders reveal interpretable and steerable features in VLA models. arXiv preprint arXiv:2603.19183, 2026. doi: 10.48550/arxiv.2603.19183.
+Vig, J., Gehrmann, S., Belinkov, Y., Qian, S., Nevo, D., Singer, Y., and Shieber, S. Causal mediation analysis for interpreting neural NLP: The case of gender bias. In Advances in Neural Information Processing Systems (NeurIPS), 2020. doi: 10.48550/arxiv.2004.12265. arXiv:2004.12265.
+Wang, K., Variengien, A., Conmy, A., Shlegeris, B., and Steinhardt, J. Interpretability in the wild: A circuit for indirect object identification in GPT-2 small. In International Conference on Learning Representations, 2023. doi: 10.48550/arxiv.2211.00593. arXiv:2211.00593.
+Wen, J., Zhu, Y., Li, J., Tang, Z., Shen, C., and Feng, F. Dexvla: Vision-language model with plug-in diffusion expert for general robot control. arXiv preprint arXiv:2502.05855, 2025a. doi: 10.48550/arxiv.2502.05855.
+13
+
+Wen, J., Zhu, Y., Li, J., Zhu, M., Tang, Z., Wu, K., Xu, Z., Liu, N., Cheng, R., Shen, C., Peng, Y., Feng, F., and Tang, J. Tinyvla: Towards fast, data-efficient vision-language-action models for robotic manipulation. IEEE Robotics and Automation Letters, 10(4):1–8, 2025b. doi: 10.1109/lra. 2025.3544909.
+Yang, T. and Mokalla, A. Interpretable signals for vision-language-action model failure. In Mechanistic Interpretability Workshop at ICML 2026, 2026.
+Yang, Y., Wang, Y., Wen, Z., Luo, Z., Zou, C., Zhang, Z.-P., Wen, C., and Zhang, L.-F. EfficientVLA: Training-free acceleration and compression for vision-language-action models. arXiv preprint arXiv:2506.10100, 2025. doi: 10.48550/arxiv.2506.10100.
+Yue, Y., Wang, Y., Kang, B.-Y., Han, Y., Wang, S.-Z., Song, S.-J., Feng, J.-S., and Huang, G. DeeRVLA: Dynamic inference of multimodal large language models for efficient robot execution. In Neural Information Processing Systems, 2024. doi: 10.48550/arxiv.2411.02359. arXiv:2411.02359.
+Zhang, F. and Nanda, N. Towards best practices of activation patching in language models: Metrics and methods. In International Conference on Learning Representations, 2024. doi: 10.48550/ arxiv.2309.16042. arXiv:2309.16042.
+Zhang, F., Huang, T., Xu, S., Jin, Z., and Xu, C. Revisiting parameter redundancy in vision-languageaction models: Insights from VLM-to-VLA adaptation. arXiv preprint arXiv:2606.31382, 2026a. doi: 10.48550/arxiv.2606.31382.
+Zhang, K., Zhang, J., Xu, R., Sun, Y., Xue, S., Wen, Y., Guo, X., Guo, M., Liufu, W., Zihou, L., Ji, K., Zhang, Y., Zhu, J., Liu, J., Li, Z., Chen, R., Cao, M., Zhang, J., Zhao, S., Chang, X., Zheng, F., Laptev, I., and Liang, X. A1: A fully transparent open-source, adaptive and efficient truncated vision-language-action model. arXiv preprint arXiv:2604.05672, 2026b. doi: 10.48550/arxiv.2604.05672.
+Zhang, R.-Y., Dong, M., Zhang, Y., Heng, L., Chi, X.-W., Dai, G., Du, L., Wang, D., Du, Y., and Zhang, S.-H. MoLe-VLA: Dynamic layer-skipping vision language action model via mixture-oflayers for efficient robot manipulation. arXiv preprint arXiv:2503.20384, pp. 18764–18772, 2025. doi: 10.48550/arxiv.2503.20384.
+14
+
+A A Causal Model of Object Selection and Target Location
+
+This appendix defines the high-level causal model used in Section 4.1 (Geiger et al., 2021, 2023). The model we propose describes pick tasks with three variables: the scene layout, the requested object, and the target location. For each interchange intervention, it predicts which of the two locations the will policy reach toward. These predictions give comparisons A, B, and C the same interpretation across models and intervention sites.
+
+Inputs and variables. Fix a pair of objects O = {a, b} and two target locations P = {pL, pR}.
+
+A layout places each object at one of the two locations, thus it is a one-to-one map from objects to
+
+locations:
+
+V = Bij(O, P).
+
+(6)
+
+There are two possible layouts. The model takes a layout L ∈ V and a requested object Q ∈ O as inputs. The corresponding policy input is x = (I(L), u(Q), s), where I(L) are the camera images of the layout, u(Q) is the instruction requesting Q, and s is the robot state. Crossing the two layouts with the two requests gives four inputs per object pair. The robot state is the same within each comparison, and we share the generation noise ϵ.
+
+The model has four internal variables. The visual variable V ∈ V maps each object to its location. The semantic variable S ∈ O identifies the requested object. The geometric variable G ∈ P is the location of that object, and the output Y ∈ P is the location the actions target.
+
+Structural equations. The causal model M is defined by
+
+V = L, S = Q, G = V (S), Y = G.
+
+(7)
+
+The scene layout L and the requested object Q together determine the target location, G = V (S). The output Y is action that the robot policy produces and it takes the values of G through and edge from G to Y . The model only covers which of the two object locations the policy reaches toward. Describing other characteristics such as the path, grasp or speed would require additional variables.
+
+Interchange interventions. Let xo be the original input and xcf the counterfactual input, and write Zo and Zcf for the value a variable Z takes when M runs on each. An interchange intervention on
+Z ∈ {V, S, G} runs the model on the original input but sets Z to its counterfactual value.
+
+Y Z (xo, xcf ) = YM xo; do(Z ← Zcf ) .
+
+(8)
+
+All other variables are computed as usual from the original input and the intervened value. Substituting into Equation (7) gives
+
+Y V (xo, xcf ) = V cf (So),
+
+(9)
+
+Y S(xo, xcf ) = V o(Scf ),
+
+(10)
+
+Y G(xo, xcf ) = V cf (Scf ).
+
+(11)
+
+Put simply, interchanging V , the visual variable, produces an action toward where the originally requested object sits in the counterfactual layout. Interchanging S, the semantic variable, sends it to the counterfactually requested object in the original layout. Interchanging G, the geometric variable copies the counterfactual target location directly.
+
+Predictions for comparisons A, B, and C. Let layout V0 place a at pL and b at pR, and let V1 swap them. Take the original input to be layout V0 with a request for a, so the original run reaches to pL. Table 3 lists the counterfactual input for each comparison and the location each intervention predicts. Relabeling the objects or the locations gives the same table.
+Each variable (V , S, G) preserves the original target in exactly one comparison (A, B, C). The visual variable is isolated in B, where the layout is constant; the semantic variable in C, where the instruction is constant; and the geometric variable in A, where the target location is constant. Using these patterns we can determine which variable a given intervention carries by running interchange interventions across all three comparisons. We therefore use the same token positions and intervention type across A, B, and C.
+
+15
+
+ABC
+
+Counterfactual layout
+
+V1 V0 V1
+
+Counterfactual request
+
+bba
+
+Clean original output
+
+pL pL pL
+
+Clean counterfactual output pL pR pR
+
+Visual intervention Y V
+
+pR pL pR
+
+Semantic intervention Y S pR pR pL
+
+Geometric intervention Y G pL pR pR
+
+Table 3: High-level predictions for the original input (V0, a). Each entry is the location the actions target. pL preserves the original target (E = 0), and pR redirects the reach to the other object’s location in the original scene (E = 1). The intervention rows give the signatures in Figure 3a.
+
+Relation to neural interventions. The neural counterparts are the interface intervention aiJn,tT (Equation (2)), which replaces the conditioning supplied to expert blocks J while the original backbone computation stays fixed, and the backbone intervention abℓ,bT (Equation (5)), which replaces residual-stream activations at layer ℓ and positions T and lets all downstream computation proceed
+from the intervened state. The hypothesis that a site carries variable Z predicts that intervening there sends the reach to the location given by Y Z. Let ρY read off which of the two locations an action
+sequence targets. Exact agreement at a backbone site would require
+
+ρY abℓ,bT (xo, xcf ) = Y Z (xo, xcf )
+
+(12)
+
+for every tested input pair, and the same condition with aJin,tT applies to an interface site. The normalized trajectory shift (Equation (3)) measures how closely the policy meets this criterion: a
+predicted redirection to pR corresponds to E = 1, and a predicted preservation of pL to E = 0.
+
+The handover to action. The geometric variable G is the information we propose the backbone passes to the action expert. We call the point where a representation of G is supplied to the expert the handover to action. The interface interventions locate this point in each model, and the high-level model predicts its effect on behavior through the edge G → Y .
+
+B Additional Results
+
+B.1 Action-conditioning interface
+
+We test the joint influence of the remaining connections by patching every connection except one or a three-layer window, leaving the original conditioning at the excluded connections unchanged. Figure 5a shows that preserving the strongest connections substantially reduces behavioral transfer, but appreciable effects remain. These results support concentrated influence, but not completely negligible joint influence outside the strongest one to three connections.
+
+(a) Patching all connections but selected
+
+(b) Interface patching with RMS rather than E
+
+Figure 5: Complementary and full-trajectory interface patching. (a) Normalized trajectory shift E when patching all connections except one (left) or except three consecutive connections (right). Horizontal axes index the unchanged connection or window center. (b) RMS displacement in millimeters after patching only a single connection (left) or three consecutive connections (right, indexed by their center). Trajectories are reconstructed from predicted actions using forward kinematics. Both panels average comparisons B and C with equal weighting across object-pair families; shading denotes 95% family-bootstrap confidence intervals.
+
+16
+
+Because E measures displacement along a reference contrast, it can miss orthogonal changes. We therefore also evaluate the original single-connection and three-layer interventions using the RMS displacement between patched and original end-effector trajectories, R, computed before averaging interventions. The dominant peaks remain unchanged across all three models (Figure 5b), showing that the observed concentration persists when measuring changes in all Cartesian directions.
+B.2 Backbone Patching in MolmoBot
+
+A Different object · same location
+
+MolmoBot
+
+Exo image
+
+Wrist image Target noun
+
+Final readout token All text
+
+0
+
+4
+
+8
+
+12
+
+16
+
+20
+
+24
+
+28
+
+B Different object · different location
+
+Exo image
+
+Wrist image Target noun
+
+Final readout token All text
+
+0
+
+4
+
+8
+
+12
+
+16
+
+20
+
+24
+
+28
+
+C Same object · different location
+
+Exo image
+
+Wrist image Target noun
+
+Final readout token All text
+
+0
+
+4
+
+8
+
+12
+
+16
+
+20
+
+24
+
+28
+
+Patched backbone layer
+
+Normalized trajectory shift, E
+
+0
+
+0.5
+
+1
+
+Figure 6: MolmoBot backbone patching across 13 object pairs. Same comparisons, token groups, and metric as Figure 4. Each cell averages 416 patches: 26 donor–recipient pairs, each patched in both directions under eight noise seeds. Image patches in B are exactly zero because MolmoBot’s image positions cannot attend to the instruction. Omitted layers 29–35 have |E| < 0.005.
+
+Figure 6 shows backbone patching for MolmoBot on the same 13 object pairs as Figure 4. We see that its causal structure closely matches MolmoAct2’s. In both models, the target noun carries object identity in early layers (A and B). Location is then distributed later across text positions (C). In both MolmoACT2 and MolmoBot, image patches have no effect in B, because image positions precede the instruction and cannot attend to it. The main difference we see visually separating the two models is which camera matters: the wrist view dominates in MolmoBot, and the exterior view dominates in MolmoAct2.
+This similarity between the models causal structure holds even though the two models are trained on completely different data (simulated versus real demonstrations) and their action experts attend to the backbone differently. In π0.5, whose backbone attends bidirectionally over the prefix image tokens absorb some instruction conditioned information and causal influence (Figure 4). Together, the three models suggest that the backbone architecture, and in particular its attention mask, shapes where task information lives in a VLA.
+
+B.3 Text Tokens That Store Geometric Location in MolmoAct2
+
+Based on the backbone patching results, particularity with respect to geometry, we know that the policy represents information about the target object position in mid-to-late layer text tokens. Geometric information is distributed across many different tokens. To identify which text positions carry this location, we search for a small set of tokens which jointly patch recovers the effect of patching all of the text. The search runs over all 52 comparison C pairs and the results for MolmoAct2 are shown in Figure 7.
+At layer 18, four tokens suffice: the target noun, the period that ends the task sentence, the “The” that follows it, and the “the” in “the current state of the robot”. Together they keep 89% of the effect.
+
+17
+
+C MolmoAct2
+
+chat
+
+task
+
+setup
+
+state
+
+control
+
+action question
+
+template
+
+<|im_start|> user ↵ The task is to pick up the <object> . The setup is ␣ <setup_start> single frank a robotic arm in d roid <setup_end> . The current state of the robot is ␣ <state_start> <state> <state> <state> <state> <state> <state> <state> <state> <state_end> . The expected control mode is ␣ <control_start> absolute joint pose <control_end> . Given these , what action should the robot take to complete the task ? <|im_end|> ↵ <|im_start|> assistant ↵ <action_output>
+
+Layer 18 Layer 19 Layer 20 Layer 21 Layer 22
+
+In the set
+
+Not in the set
+
+State tokens (not searched)
+
+Tokens 4 10 11 10 5
+
+Figure 7: Small token sets that carry location in MolmoAct2, across all 13 object pairs. For each layer, filled cells mark the smallest set of text tokens, found by greedy forward selection, whose joint patch keeps at least 75% of the effect of patching all 79 non-state text tokens in comparison C; the right column gives the number of tokens. Effects are averaged over all 52 comparison-C donor–recipient pairs with equal weight per object pair. The sets keep 76–89% of the effect on the noise seed used for selection and 72–90% on three held-out seeds. The target noun, which differs across object pairs, is labeled <object>; state tokens were not searched.
+
+At layers 19–21 the sets grow to 10–11 tokens that add <action_output> and words of the action question (and, at layer 21, <control_start> and assistant), keeping 76–77%. At layer 22 the action question drops out, and <action_output> with the four sentence-boundary tokens keeps 77%. Removing any single token from any set drops retention below 75%. Location is therefore carried jointly by a few structural positions (sentence boundaries, function words, and the action question) before it concentrates on the readout token. We hypothesize this is where the computation of the target object location is happening.
+C Compute and Latency
+Here we provide more details on our theoretical FLOP calculations and empirical latency and throughput results for MolmoBot. One MolmoBot action chunk consists of one vision-encoder pass, one VLM pass, and ten action-expert denoising passes. Restructuring the cross-attention blocks also allows us to terminate the VLM computation early as nothing reads VLM layers 25–35.
+Estimated operation counts. We assume that a dense layer with N parameters applied to T tokens costs about 2N T FLOPs, adding attention products and ignoring normalization, softmax, and embeddings. A VLM layer which for Molmobot is ≈101M parameters and 928 tokens costs 0.20 TFLOPs. Therefore running only 25 out of 36 layers reduces the VLM computation from 7.25 to 5.04 TFLOPs. A cross-attention block costs 5.9 GFLOPs per flow step, the majority of it from projecting the 928 context tokens into the expert. 36 blocks over ten steps cost 2.13 TFLOPs while the rest of the action expert only costs 0.08 TFLOPs. Therefore keeping one block reduces the expert from 2.22 to 0.14 TFLOPs. With the vision encoder fixed at 2.46 TFLOPs, the full policy falls from 11.93 to 7.64 TFLOPs per action chunk overall. We apply the same calculations to the 36 layer policy and L23-25 policy and show the results in Table 4. We note that the released MolmoBot implementation does not cache the cross-attention context projection and keys/values across the ten denoising passes. Doing so would slightly reduce the cost of every policy.
+For π0.5 the saving is small because its action expert reads prefix keys and values that the VLM has already computed. Most of the gain comes from letting the VLM stop after layer 16 (0.23 TFLOPs). The full policy falls from 4.76 to 4.52 TFLOPs (−5%). Given how small these estimated saving are, we do not empirically analyze π0.5’s latency or throughput.
+Measured latency and throughput. We timed MolmoBot on a single H100 in bfloat16 with ten flow-matching steps and two cameras × two frames (Table 5). At batch size 1, the saving comes almost entirely from the action expert. At batch size 64, the all-layer expert’s 36 cross-attention blocks become compute-bound, so the throughput gain is larger. The measured latency reduction (35%) matches the estimated full-policy reduction (36%).
+18
+
+Vision VLM Action expert Total Change
+
+MolmoBot, all 36 layers 2.46 7.25
+
+2.22 11.93
+
+–
+
+MolmoBot, layer 24 MolmoBot, layers 23–25
+
+2.46 5.04 2.46 5.24
+
+0.14 7.64 −36% 0.26 7.96 −33%
+
+π0.5, all 18 layers π0.5, layers 14–16
+
+0.66 3.98 0.66 3.75
+
+0.13 4.76 0.11 4.52
+
+– −5%
+
+Table 4: Estimated TFLOPs per action chunk. Restricted policies stop the VLM after the deepest
+
+layer the action expert reads.
+
+MolmoBot
+
+Latency (ms) Throughput (chunks/s) Memory (GB)
+
+All 36 layers
+
+311 ± 3
+
+21.5
+
+42.7
+
+Layer 24
+
+204 ± 16 (−35%)
+
+31.8 (+48%)
+
+31.7
+
+Layers 23–25 209 ± 2 (−33%)
+
+30.9 (+44%)
+
+32.2
+
+Table 5: Measured inference cost on one H100 (bfloat16, ten flow-matching steps). Latency is at batch size 1; throughput and peak memory are at batch size 64. Restricted policies stop the VLM after the deepest layer the action expert reads.
+
+D Implementation Details
+MolmoBot evaluation. All MolmoBot results use the evaluation code released with MolmoBot (Deshpande et al., 2026). We evaluate on three fixed sets of 1,000 episodes (Pick, Pick & Place, Pick & Place Next-To) in held-out ProcTHOR-Objaverse houses, run in the MolmoSpaces simulator with the released configuration. Every policy is evaluated the same set of episodes with identical noise seeds.
+Model Training. We use the released MolmoBot training code with its two-stage recipe, except modifying the set of action-expert blocks that keep cross-attention. Stage 1 initialises from Molmo24B and trains for 200K steps on single-frame observations then stage 2 continues for another 50K steps with two of horizon frames. The adapt variants start from the released MolmoBot-DROID checkpoint and then run the stage-2 recipe for 50K steps. For π0.5 both policies are fine-tuned from the released π0.5 base checkpoint (Physical Intelligence et al., 2025) on DROID (Khazatsky et al., 2024) with the published openpi DROID recipe.
+D.1 Experimental Setup
+Counterfactual dataset creation. We collect data on 13 pairs of household objects on a DROID setup in two layouts to form (26 scenes; Figure 8). We pair each scene with an instruction to pick up either object, giving a total of 52 inputs.
+Real world evaluations We evaluate the original and restricted π0.5 policies on four tabletop tasks (Figure 9), with 100 trials per policy. The fruit-in-basket task places three pieces of fruit into a basket. In the next task, the robot places one of four objects (a screwdriver, a mug, a tape measure or a tennis ball) in a clear bin to test language following abilities. The remaining tasks place a marker in a mug and stack three bowls, mean to test general dexterity. We do not find a statistically significant difference in success rate between the two policies (67 vs. 64 of 100 trials; Fisher’s exact test, p = 0.77). However, the restricted policy completes trials faster. Averaged over the seven tasks, the median duration of successful trials falls from 34.9 to 26.5 s (24% shorter; permutation test with policy labels shuffled within each task, p = 0.01). Due to small sample sizes no single task reaches significance on its own. We conjecture that the representations attended to in L14-16 may be less prone to overfitting and therefore after fine-tuning the π0.5 model may have more robust representations.
+
+19
+
+Figure 8: Counterfactual scenes. Object pairs used each shown in both layouts with the objects’ left–right positions exchanged. Images show the exterior DROID camera, cropped to the table (during experiments the full frame is used).
+
+Original (all 18 layers) Restricted (layers 14–16)
+
+Task
+
+Trials Success Time (s) Success Time (s)
+
+Fruit in basket
+
+25
+
+22
+
+53.6
+
+22
+
+45.4
+
+Marker in mug
+
+20
+
+15
+
+16.1
+
+10
+
+16.4
+
+Stack the bowls
+
+15
+
+8
+
+71.8
+
+11
+
+50.0
+
+Screwdriver in bin
+
+10
+
+5
+
+37.8
+
+7
+
+20.0
+
+Mug in bin
+
+10
+
+3
+
+18.9
+
+8
+
+21.4
+
+Tape measure in bin 10
+
+3
+
+30.7
+
+2
+
+20.8
+
+Tennis ball in bin
+
+10
+
+8
+
+15.3
+
+7
+
+11.5
+
+All tasks
+
+100
+
+64
+
+34.9
+
+67
+
+26.5
+
+Table 6: Real-robot results for π0.5 by task. Success counts and median duration of successful trials. The last row gives total successes and the median task time averaged over the seven tasks.
+
+Figure 9: Real-robot tasks for π0.5. The first exterior-camera frame of each task, with the instruction given to both policies. For the [noun] in bin task,[noun] is replaced with each of the target objects for 10 trials each.
+20
+
+

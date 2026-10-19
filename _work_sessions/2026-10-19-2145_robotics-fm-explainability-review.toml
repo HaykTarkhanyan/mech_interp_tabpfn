@@ -1,0 +1,74 @@
+title = "Literature review: explaining and interpreting robot foundation models"
+date = "2026-10-19"
+time = "2145"
+areas = ["robotics_foundation_models_explainability/", "DECISIONS.md", "README.md"]
+
+done = """
+- Created robotics_foundation_models_explainability/ with its own uv env (Python 3.12, requests==2.34.2) and
+  a 10-script pipeline: search, screen, build_included, download, refchain, provenance, fetch_workshop_pages,
+  notes_digest, notes_stats, render.
+- Retrieval on 2026-10-19: 16 arXiv boolean queries (1,572 records, every query complete), Crossref (320,
+  nothing unique), a web-sweep subagent (73 searches, 61 works; 31 included works found only there), and
+  backward chaining from the PDFs' reference lists (850 arXiv ids; 5 included works found only there).
+- Screening: 2,245 unique works, 437 pass the rule screen (first rule passed 669, two thirds on one weak
+  term, tightened), manual title screen of passes plus all weak rejects (17 rescued). 151 included
+  (85 core, 66 adjacent) + 31 title-checked background references.
+- Downloaded 83 papers (title-checked against arXiv, 0 failures, ~800 MB, gitignored), extracted text.
+- Three reader subagents wrote 80 structured reading notes plus 3 syntheses; I wrote 3 notes myself for
+  papers found through reference lists. Workshop-only works: abstracts fetched from neurips.cc/icml.cc pages.
+- Wrote the review (lit_review/review_source.md -> .md + standalone .html with TOC, collapsible sections,
+  SVG charts, 72-row paper table). Opened in the browser.
+- DECISIONS.md #21 (scope and sources). Global CLAUDE.md: rule to name RAM/disk/VRAM/context instead of
+  bare "memory" (backed up to the notes repo, commit 129c623).
+- PDFs gitignored per the user (robotics_foundation_models_explainability/.gitignore); manifest.json now
+  carries abs/pdf URLs and papers/README.md lists all 83 papers with links. 8 learnings in _learnings/.
+"""
+
+pending = """
+- DECISIONS.md (#21) and the README.md layout line are written but not committed: both files also hold
+  other sessions' uncommitted work (DECISIONS #9-#20, #22, #23), so they should be committed together.
+- Forward citation chaining (who cites the key papers) not done: Semantic Scholar 429, OpenAlex keyless
+  budget spent. Needs OpenAlex MCP login or a Semantic Scholar key; lit_search.py --reuse-keyword has the
+  chaining code.
+- Twelve core works are workshop-only; OpenReview PDFs return HTTP 403 to scripts. Playwright (disconnected
+  all session) could fetch them; 4 are known only from one-line summaries.
+"""
+
+next = """
+- If this becomes a thesis direction: the strongest open problem for this repo is a ground-truth benchmark
+  for VLA interpretability built from simulator variables or planted training-data features (review,
+  "Open problems" item 2), which mirrors the synthetic_data/ benchmark idea.
+- Re-run the search in a few weeks: the field adds several papers per week (63 of 73 core arXiv papers are
+  from 2026), and the CoRL 2026 SPAIS workshop accepted list was due after Nov 12.
+"""
+
+files = [
+  "robotics_foundation_models_explainability/README.md",
+  "robotics_foundation_models_explainability/lit_review/robotics_fm_explainability_review.html",
+  "robotics_foundation_models_explainability/lit_review/review_source.md",
+  "robotics_foundation_models_explainability/lit_review/included.json",
+  "robotics_foundation_models_explainability/lit_review/notes/",
+  "robotics_foundation_models_explainability/scripts/",
+  "DECISIONS.md",
+  "README.md",
+]
+
+commits = []
+
+notes = """
+Cost: subagents used about 2.0M tokens (web sweep 0.2M, readers 0.57M + 0.57M + 0.69M), about 60% more per
+reader than estimated. Wall clock about 2 hours.
+
+Rate limits shaped the method again. The arXiv API went from 200 to 429 within ten minutes because another
+Claude session's synthetic_data/scripts/lit_references.py was hitting it from the same IP; it recovered
+when that process ended. Semantic Scholar's keyless pool answers one request and then 429s for minutes.
+Claude Code killed the first background search for low RAM (1.3 GB of 15.6 GB free, four Claude sessions
+plus VS Code open); the script itself used almost none.
+
+The readers found real problems inside papers: a LIBERO-PRO evaluation-code bug (original instruction fed
+in Semantic and Task cells), a paper labelling its own key figures "illustrative pending verification",
+table/text mismatches in two papers, and a SAFECAST "ROC-AUC" that goes below 0.5.
+
+Two Bash-tool gotchas recurred: heredocs containing quotes fail in the Bash tool (use the Edit tool), and
+Windows Python does not understand /c/... paths (use C:\\ paths or a script file).
+"""

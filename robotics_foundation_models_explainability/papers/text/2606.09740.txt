@@ -1,0 +1,333 @@
+arXiv:2606.09740v1 [cs.RO] 8 Jun 2026
+
+ProbeAct: Probe-Guided Training-Free Failure Recovery in Vision-Language-Action Models
+Fan Zhang, Seongbin Park, Baharan Mirzasoleiman, Shahriar Talebi, Nader Sehatbakhsh University of California Los Angeles United States parkseongbin@ucla.edu
+Abstract: Vision-Language-Action (VLA) models demonstrate strong performance on language-conditioned robotic manipulation within their training distribution, yet their generalization capabilities remain fundamentally limited. They lack the robustness required to handle perturbations, frequently failing when confronted with lighting changes, altered camera viewpoints, or small initial-state variations. We propose PROBEACT, a training-free runtime intervention framework that detects and recovers from grasping and placement failures in pretrained VLA policies without modifying their weights or requiring additional demonstrations. PROBEACT combines three components: (i) a lightweight multitarget hidden-state probe that predicts the 3D positions of task-relevant objects from intermediate VLA features, with Hungarian-matched identity tracking for multi-object scenes; (ii) an object-agnostic kinematic state machine that detects grasp, transport, and placement failures using only gripper-internal signals and end-effector kinematics; and (iii) a hierarchical Control Barrier Function (CBF) filter that encodes repeated-failure locations as soft safe-set constraints, minimally correcting VLA actions while preserving baseline behavior. As a plug-andplay, training-free intervention loop, PROBEACT is orthogonal to existing training pipelines. Evaluated on the LIBERO-plus benchmark, our framework acts as a universal safety net, improving the success rate of the OpenVLA-OFT model from 69.6% to 74.1%, while demonstrating broad applicability to both base and fine-tuned VLA policies.
+Keywords: Vision-Language-Action Models, Failure Recovery, Control Barrier Functions, Hidden-State Probing
+1 Introduction
+Vision-Language-Action (VLA) models [1, 2, 3, 4], predominantly trained via behavioral cloning on large-scale expert demonstrations, have emerged as the dominant paradigm for languageconditioned robotic manipulation. Despite achieving impressive proficiency within their training distributions, these models exhibit profound brittleness when subjected to realistic out-ofdistribution (OOD) perturbations. Empirical evaluations demonstrate that even minor environmental shifts, such as altered lighting, modified textures, visual distractors, or slight deviations in initial object configurations, can cause success rates to drop precipitously [5, 6]. Recent analyses [7, 8, 9] converge on a critical diagnosis for this fragility: constrained by the behavioral cloning objective, VLAs tend to overfit to their nominal training trajectories. Consequently, when test scenes diverge from the training conditions, the policy fails to dynamically ground its actions in the current visual context. Instead, it bypasses active spatial reasoning and blindly reproduces a memorized kinematic sequence.
+Critically, this memory trap manifests as a stark decoupling between latent perception and motor execution [6, 10, 11]. As corroborated by our own probing experiments, the VLA’s visual backbone successfully processes the perturbed scene, maintaining accurate spatial representations of the target
+xx xx (xx 2026), xx.
+
+object. The failure bottleneck lies exclusively within the action head: constrained by an overfitted mapping, the network collapses to the nominal trajectory of its training distribution. We systematically observe this precise failure mode when evaluating OpenVLA-OFT on the LIBERO-plus benchmark [5].
+A complementary line of work mitigates OOD failures at inference time via online corrections [8, 12, 13, 14]. However, prevailing approaches introduce significant structural overhead by relying on external reasoning modules, additional visual symbols, or explicit 3D reprojection. They often demand supplementary sensing infrastructure or external VLMs to completely override the VLA’s native action stream. In contrast, PROBEACT demonstrates that the geometric reference can be extracted directly from the VLA’s internal hidden states. Since our analysis establishes that the VLA maintains accurate spatial features despite action head collapse, external sensors are redundant. We frame the recovery as a minimal spatial constraint, safely redirecting the policy away from the memory trap while maximally preserving its original kinematic intent.
+We operationalize this via PROBEACT, a training-free intervention framework comprising three coupled components: (1) Perception via Hidden-State Probing. We train a multi-target probe with online Hungarian matching [15] to extract stable 3D coordinates directly from intermediate VLA activations, eliminating the need for external vision models. (2) Object-Agnostic Failure Detection. Rather than using task-specific supervision, we reliably detect execution anomalies (e.g., empty grasps, drops) by evaluating relative state changes and kinematic synchronization between the robot proprioception and probe-grounded targets. (3) Hierarchical CBF Safety Filtering. We formulate repeated failures as a runtime safety problem. Escaping catastrophic failure loops, PROBEACT escalates from a stateless kinematic recovery to a stateful Control Barrier Function (CBF) [16] constraint, resolving the memory trap via minimal closed-form action projection while preserving baseline competence.
+Summary of Contributions. (1) We propose PROBEACT, a lightweight, closed-loop intervention framework that extracts robust 3D geometric references directly from frozen VLA hidden states, entirely eliminating the structural overhead of external visual sensors. (2) We design an objectagnostic kinematic state machine coupled with a hierarchical Control Barrier Function (CBF) filter. This translates relative spatial synchronization into a closed-form action projection, autonomously rescuing the policy from catastrophic failure loops while preserving baseline competence. (3) Extensive evaluation on the LIBERO-plus benchmark demonstrates consistent success rate improvements across diverse visual and spatial perturbation categories, achieved entirely at inference time without VLA weight modification, external reasoning modules, or additional demonstrations.
+2 Related Work
+Vision-Language-Action Models. OpenVLA [1] fine-tunes a LLaMA-7B backbone on the Open X-Embodiment dataset to directly map image and language inputs to robot actions. OpenVLAOFT [2] extends this paradigm via one-shot fine-tuning and an L1 regression action head, significantly improving sample efficiency. Concurrently, systems such as RT-2 [17], π0 [3], and Octo [18] have explored alternative architectures and training objectives for generalist manipulation. Despite these foundational advances, modern VLAs remain highly susceptible to catastrophic failures under out-of-distribution (OOD) shifts. This fragility motivates our focus on training-free runtime recovery rather than solely pursuing improved pre-training methodologies.
+Probing Neural Policies. Linear probing has been extensively utilized to extract structured semantic information from the hidden states of deep neural networks [19, 20, 21]. In the context of robotics, prior studies have employed probes on pre-trained visual and VLA features to extract spatial geometry [22] and symbolic object or action states. However, these techniques have primarily served as retrospective analytical tools to understand representation hierarchies. PROBEACT departs from this paradigm by repurposing probe outputs as active, runtime sensor signals to drive closed-loop intervention decisions.
+2
+
+Figure 1: Overview of the PROBEACT Framework. Operating entirely at inference time alongside a frozen VLA, the system consists of three modules: (1) an internal probe that extracts stable 3D object tracks from intermediate LLM activations; (2) a kinematic state machine that detects physical execution failures via relative object-robot synchronization; and (3) a hierarchical CBF filter that minimally modifies the nominal action at into a safe action actbf to escape failure zones. The framework forms a closed-loop recovery mechanism without requiring external 3D sensors.
+Control Barrier Functions in Robotics. Control Barrier Functions (CBFs) provide a rigorous mathematical framework for enforcing safety constraints in dynamical systems [23, 24]. While CBFs have been widely adopted in autonomous driving [25], legged locomotion [23], and collision avoidance [26], our integration of CBFs into VLA policies is novel in two key aspects: (i) the safe set is constructed dynamically online based on observed kinematic failures rather than being specified a priori; and (ii) the system formulates a minimal correction to the pre-trained policy’s action sequence, bridging classical CBF safety guarantees with the modern paradigm of large, endto-end foundation models.
+Failure Recovery in Manipulation. Traditional failure recovery in robotic manipulation has heavily relied on hierarchical task and motion planning (TAMP) [27], reactive replanning heuristics using behavior trees [28], or explicitly learned recovery policies via reinforcement learning [29]. These conventional approaches typically demand rigorous environment modeling, known failure probabilities, or prohibitively expensive failure-case training data. To our knowledge, PROBEACT is the first framework to synthesize probe-based latent perception with CBF-constrained kinematic correction, achieving fully training-free and object-agnostic failure recovery for pre-trained VLAs.
+3 Method
+3.1 Overview
+We propose PROBEACT, a training-free, inference-time intervention framework that rescues frozen Vision-Language-Action (VLA) models from memory traps (Figure 1). Bypassing the need for external 3D sensors, PROBEACT operates continuously via three streamlined components: (1) Perception: An internal probe extracts stable 3D object coordinates directly from intermediate VLA activations. (2) Logic: A kinematic state machine detects physical execution failures (e.g., empty grasps) by evaluating relative robot-object synchronization. (3) Control: Upon detection, a hierarchical Control Barrier Function (CBF) filter applies a minimal closed-form projection to the nominal action at, safely deflecting the trajectory away from the failure zone without disrupting baseline competence.
+3
+
+Figure 2: Real-Time Failure Detection and Intervention. A sequential rollout demonstrating the state machine in action. As the VLA policy diverges from the true target (exhibiting spatial drift during the monitoring phase), the kinematic state machine detects the decoupling and triggers an active override. The hierarchical CBF filter immediately deflects the end-effector trajectory, safely recovering the grasp.
+
+3.2 Multi-Target Hidden-State Probe
+
+Architecture. We train a multi-head MLP ϕ : Rdpca → RK×3 × RK that maps a PCA-reduced spatial feature (from VLA layer 8) to up to K object positions with confidence scores. The feature is obtained by averaging the 16×16 spatial tokens into a 4×4 grid of 4096-dim vectors, then applying PCA to obtain dpca=1024 dimensions. Each predicted position pˆk ∈ R3 is accompanied by a confidence score ck ∈ [0, 1] obtained via a sigmoid activation. Predictions with ck < 0.5 are safely discarded. The probe is parameterized as a 4-layer MLP with hidden dimensions [2048, 1024, 512, 256]. Each hidden layer is sequentially followed by Layer Normalization, a ReLU non-linearity, and dropout (p = 0.1).
+
+Training with Hungarian matching. Frames contain variable numbers of relevant objects (1 to K), so we optimize the probe using a bipartite matching loss. Let M (n) = |p(n)| be the number
+of ground-truth objects in frame n. We pad the ground truth with ∅ (no object) up to K slots and define a target mask mi ∈ {0, 1}, where mi = 1 if i ≤ M (n) and 0 otherwise. The Hungarian
+matching loss is defined as:
+
+L=
+
+1 N
+
+N
+
+M (n)
+
+min 
+n=1 σ∈SK i=1
+
+∥pˆ(σn(i)) − p(in)∥22
+
++
+
+
+K
+β BCE(cσ(n(i)), mi)
+i=1
+
+(1)
+
+where SK denotes the symmetric group of all permutations of K elements. The optimal permutation σ matches predicted slots to ground-truth objects to minimize the joint localization and confidence error. Consequently, the probe’s output is permutation-invariant: there is no enforced temporal consistency in the slot indices, meaning slot k at frame t does not inherently correspond to slot k at frame t + 1.
+Inference-time identity tracking. While permutation invariance facilitates training, the lack of temporal consistency is problematic for downstream closed-loop control; the system must maintain a persistent identity for each physical object across consecutive frames. We resolve this via online Hungarian matching over the temporal axis. At each timestep t, newly predicted coordinates are assigned to existing object tracks by minimizing the pairwise Euclidean displacement. To prevent erroneous ID switching from noise or false positives, we apply a spatial gating threshold bounded by the maximum plausible inter-frame object velocity. Unmatched predictions beyond this boundary automatically spawn new tracks. This lightweight procedure yields the temporally stable 3D position estimates required for the multi-step failure detection logic detailed in §3.3.
+
+3.3 Object-Agnostic Kinematic State Machine
+We design failure detection around six mechanical phases: APPROACH, MONITOR, GRASPING, POST GRASP and one event, PLACED. All transitions are evaluated using object-agnostic signals: gripper width q, end-effector pose e = (xe, ye, ze), and tracked object positions from the probe. To ensure generalizability without sacrificing mathematical rigor, the state machine avoids task-specific hyperparameter tuning. Instead, it evaluates relative state changes and kinematic synchronization, thresholded purely by embodiment-specific hardware tolerances (e.g., nominal lift clearance).
+
+4
+
+Pre Grasp → Grasping. The system transitions to the GRASPING phase when the end-effector approaches a probe-tracked target within a specific distance (∥e − pobj∥ ≤ ρenter). At this moment, we record the initial grasping state: the target’s identity, its starting position penter, and the starting end-effector height zenter. These recorded values act as the baseline for calculating all subsequent relative movements.
+Grasp Verification via Kinematic Synchronization. A successful grasp is inherently characterized by the synchronous movement of the robotic end-effector and the target object. Over a rolling observation window, we calculate the relative vertical displacements: ∆ze = ze − zenter and ∆zobj = zobj − zobj,enter. A grasp is confirmed only when the gripper stabilizes above its mechanical minimum (q > ϵlimit) and both entities exhibit synchronous positive displacement beyond the hardware noise floor (∆ze > τlift and ∆zobj > τtrack). By checking that the object actually rose, we avoid marking empty-air grasps as successful.
+Grasping Failure Modes. We detect two distinct failure conditions during this phase, both of which trigger immediate intervention. (1) Hard empty grasp: The gripper width converges to its physical minimum (q ≤ ϵlimit), definitively indicating a complete closure with no object between the fingers. (2) Soft empty grasp: The end-effector exhibits significant upward displacement (∆ze > τlift) while the target object remains stationary (∆zobj ≤ τnoise). This kinematic decoupling provides definitive evidence that the object was not acquired.
+Mid-transport drop. During POST GRASP, a dropped object is detected through an abrupt kinematic collapse: the gripper width suddenly snaps to its mechanical limit (q ≤ ϵlimit) while the end-effector is actively in motion. The drop location is subsequently encoded as a CBF zone (§3.4), and the system triggers a recovery action to the original grasp target.
+Placement verification. Placement verification relies on a strict sequence of relative state changes to reject premature releases. We trigger PLACED only when three conditions hold simultaneously: (a) the gripper width increases relative to its holding state (q > qhold + ϵrelease); (b) the end-effector establishes a diverging retreat trajectory (∥et − pobj∥ > ∥et−1 − pobj∥); and (c) the held object’s spatial coordinates stabilize within the tolerance of the target location.
+
+3.4 Hierarchical Control Barrier Function Filter
+
+Adding a permanent safety zone for every minor error overly restricts the robot and harms its baseline success rate. To avoid this, PROBEACT employs a two-tier hierarchical strategy. For an initial failure, the system simply executes a stateless push-back, allowing the VLA to freely attempt selfcorrection. However, if the robot fails again in the same spatial region, we diagnose a memory trap. Only then do we instantiate a persistent Control Barrier Function (CBF) zone at the failure coordinate c with safety radius rsafe. The barrier function is h(x; c, rsafe) = ∥x − c∥2 − rs2afe, defining the safe set H = {x : h(x) ≥ 0}.
+During the PRE GRASP phase, if any safety zones are active, the VLA’s nominal translational action uvla ∈ R3 is continuously filtered to satisfy the first-order CBF condition ∇h(x)⊤u ≥ −γh(x). This is solved via a minimal-intervention Quadratic Program, yielding the closed-form correction:
+
+ufiltered = uvla + max
+
+0,
+
+−γh(x) − ∇h(x)⊤uvla ∥∇h(x)∥22
+
+∇h(x),
+
+(2)
+
+where ∇h(x) = 2(x − c). If the VLA’s proposed action naturally respects the safety boundary, the geometric projection evaluates to zero, rendering the filter an exact identity mapping that preserves baseline competence. To prevent the artificial accumulation of constraints across tasks, zones are dynamically flushed when the end-effector enters the terminal proximity (ρclear) of the true target or upon triggering the PLACED event. Furthermore, the filter is intentionally bypassed during the GRASPING and TRANSPORTING phases to allow unhindered physical interaction with the object.
+
+5
+
+Table 1: Success rates (%) across LIBERO-plus perturbation categories. PROBEACT achieves the highest overall score among all evaluated VLAs.
+
+Model
+OpenVLA NORA WorldVLA UniVLA π0 π0-Fast RIPT-VLA
+OpenVLA-OFT PROBEACT (ours)
+
+Camera
+0.8 2.2 0.1 1.8 13.8 65.1 55.2
+56.4 63.8
+
+Robot
+3.5 37.0 27.9 46.2 6.0 21.6 31.2
+31.9 40.3
+
+Language
+23.0 65.1 41.6 69.6 58.8 61.0 77.6
+79.5 82.0
+
+Light
+8.1 45.7 43.7 69.0 85.0 73.2 88.4
+88.7 93.6
+
+Background
+34.8 58.6 17.1 81.0 81.4 73.2 91.6
+93.3 93.5
+
+Noise
+15.2 12.8 10.9 21.2 79.0 74.4 73.5
+75.8 76.8
+
+Layout
+28.5 62.1 38.0 31.9 68.9 68.8 74.2
+74.2 80.9
+
+Total
+15.6 39.0 25.0 43.9 53.6 61.6 68.4
+69.6 74.1
+
+3.5 Multi-Step Task Support
+For tasks involving multiple pick-place pairs (e.g., “put both moka pots on the stove”), we parse the task language for keywords (both, two, and) and decompose into N (pick, place) subtask pairs. After PLACED, the system: (a) appends the just-placed object to a blacklist used by target matching, (b) resets the probe tracker, (c) clears all CBF zones (the next pick begins fresh). The kinematic state machine then re-enters PRE GRASP for the next pick. This design isolates failure modes across subtasks while reusing the same detection infrastructure.
+4 Experiments
+VLA backbone. We use OpenVLA-OFT [2] as our baseline policy. Benchmark. We evaluate on LIBERO-plus [5], a benchmark covering seven perturbation categories: Background Textures, Lighting condition, Camera Viewpoints, Robot Initial States , Background Textures, Sensor Noise and Language Instructions. Success is measured by LIBERO’s built-in goal predicate. Probe training. We collect 50,000 (hidden-state, object-positions) pairs by rolling out the baseline VLA. Object positions are extracted from the simulator’s obj of interest list. The probe trains for 200 epochs (AdamW, batch 512, cosine LR schedule) using the Hungarian loss in Eq. 1. Compute. All experiments use two NVIDIA RTX PRO 6000 (Blackwell) GPUs.
+4.1 Main Results
+Table 1 compares PROBEACT against the baseline OpenVLA-OFT and seven other state-of-the-art VLAs across the seven LIBERO-plus categories. PROBEACT achieves the highest overall success rate (74.1%), demonstrating that robust inference-time intervention can surpass expensive retraining paradigms. More importantly, the distribution of these improvements strongly validates our core hypothesis regarding VLA out-of-distribution (OOD) failures. Spatial Shifts Trigger Memory Traps. The most substantial performance amplifications emerge under geometric distribution shifts, specifically Robot Initial States and Camera Viewpoints. Under these perturbations, the baseline policy typically exhibits the exact “Phantom Grasp” pathology defined in Section 3: it identifies the correct target but its motor execution spatially collapses to a memorized training mean. Because PROBEACT explicitly evaluates relative kinematic synchronization rather than absolute coordinates, it perfectly intercepts these spatial offsets, allowing the CBF filter to deflect the trajectory back to the true target.
+4.2 Generalization to Fine-tuned VLAs
+Does PROBEACT still help when the VLA has already been fine-tuned on the target perturbation distribution? To find out, we evaluate on OpenVLA-OFT-mixdata, a publicly released checkpoint1
+1Sylvest/openvla-7b-oft-finetuned-libero-plus-mixdata on HuggingFace.
+6
+
+that the LIBERO-plus authors fine-tuned by mixing the original LIBERO data with LIBERO-plus perturbations—the same kinds of scenes in our benchmark. If mixdata training had resolved the memorization issue, PROBEACT should add little on top.
+
+Table 2 shows that PROBEACT consistently improves the mixdata baseline on the Robot Initial States category across all four LIBERO suites, with gains of +2.0, +6.8, +4.9, and
+
+Table 2: PROBEACT generalizes to a VLA explicitly finetuned on LIBERO-plus perturbations. Success rate (%) on the Robot Initial States category across four LIBERO suites.
+
+Method
+
+Spatial Object Goal 10 Avg.
+
++3.1 points on Spatial, Object, Goal, OpenVLA-OFT-m 30.6 23.9 20.8 36.6 28.0
+
+and 10 respectively. The largest + PROBEACT
+
+32.6 30.7 25.7 39.7 32.2
+
+improvement (Object, +6.8) occurs
+
+where the baseline is weakest, and
+
+even on the strongest baseline (10, 36.6%) PROBEACT adds 3 points. This carries two implica-
+
+tions: first, mixdata-style training mitigates but does not eliminate memorization-induced execution
+
+failures: even with explicit exposure to perturbed initial states, the policy still produces enough
+
+off-target grasps for runtime correction to matter. second, PROBEACT is orthogonal to data-side
+
+remedies, which stacks on top of fine-tuning rather than substituting for it.
+
+4.3 Action-Output Drift Analysis
+
+To localize the source of OpenVLA-OFT’s OOD failures, we measure two quantities derived from the same VLA forward pass against the ground-truth target object position: the hidden-state probe output (§3.2) and the action endpoint, the end-effector position at the moment the policy first closes its gripper. Both are computed from the same VLA inference.
+
+Table 3: Probe vs. action-endpoint error against ground-truth object position, computed on the same VLA forward pass.
+
+Subset Probe Endpoint
+
+All
+
+6.9 cm 23.6 cm
+
+Success 3.4 cm 7.8 cm
+
+Failure 10.4 cm 34.9 cm
+
+Table 3 reports both errors across 300 LIBERO-plus episodes under Objects Layout perturbations. On successful episodes the two predictors agree: probe and endpoint both land within 5–8 cm of the target, and the gripper arrives where intended. On failed episodes the gap opens dramatically—the action endpoint drifts to 34.9 cm from GT, while the hidden-state probe holds at 12.4 cm. At the moment the policy commits to a wrong grasp, the spatial information needed for a correct grasp is still present in the intermediate representation; what fails is the projection from features to motor commands. This asymmetry is the empirical foundation for PROBEACT’s design: rather than retraining the drifted action head, we read the still-informative hidden state and apply a minimal correction (§3.4).
+
+4.4 Probe Training Data Selection
+
+We evaluate which intermediate VLA representation best supports the probe by training a separate probe (§3.2) on each (layer, pooling) combination and measuring 3D position regression R2 on a
+
+held-out validation set:
+
+R2 = 1 −
+
+i ∥pˆi i ∥pi
+
+− pi∥2 − p¯∥2
+
+,
+
+(3)
+
+where pˆi, pi ∈ R3 are the predicted and ground-truth object positions (paired via Hungarian matching) and p¯ is the per-axis validation mean. We compare four pooling schemes applied to the VLA’s
+
+layer-ℓ activations: img-spatial (the 4×4 grid of front-camera image tokens, preserving 2D layout),
+
+img-mean (a single vector averaging all front-camera image tokens, discarding spatial layout), last
+
+token (the activation at the final position of the input sequence, as is conventional for autoregressive
+
+heads), and lang-mean (the average of the post-image language tokens, representing the instruction-
+
+conditioned state). Spatial pooling dominates at every layer, indicating the probe genuinely exploits
+
+preserved 2D layout rather than a global summary. Spatial information also peaks at shallow-mid
+
+7
+
+layers and decays in deeper ones, consistent with the view that geometric detail is progressively abstracted away as the VLA’s representation shifts toward semantic and action-related content. We adopt layer 8 with image-spatial pooling as our default throughout the paper.
+
+4.5 Step Efficiency Analysis
+
+Table 5 reports average step counts across three meaningful task groups on liberoplus goal. On the 1,643 tasks both methods complete, PROBEACT uses only 6 additional steps on average (∼5% over-
+
+Table 4: Probe regression R2 across LLM layers and pooling schemes. Layer 8 with image-spatial pooling is the global best.
+Layer img-spatial img-mean last lang-mean
+
+head)—evidence that its hierarchical acti- 8 vation policy avoids unnecessary interven- 12 tion when the policy is already performing 16
+
+0.968 0.958 0.947
+
+0.926 0.919 0.919
+
+0.815 0.856 0.877
+
+0.869 0.879 0.894
+
+well. On the 151 tasks PROBEACT rescues 20
+
+0.945
+
+0.918 0.886 0.921
+
+from baseline failure, recovery completes 24
+
+0.938
+
+0.912 0.875 0.910
+
+in 197 steps on average, far below the 600- 28
+
+0.934
+
+0.912 0.861 0.914
+
+step timeout the baseline reaches: correc-
+
+tions are targeted, not exhaustive. On tasks both methods fail, step counts are identical. Across the
+
+full benchmark, PROBEACT actually averages fewer steps than the baseline (255 vs. 275), because
+
+time saved on rescued tasks outweighs the small overhead elsewhere.
+
+Table 5: Step efficiency across task subsets. PROBEACT adds only 6 extra steps on tasks the baseline already handles, while recovering failed tasks in ∼200 steps (vs. the baseline’s 600-step timeout).
+
+Task Subset
+Both methods succeed ProbeAct rescued from baseline failure Both methods fail (time out)
+All tasks (average)
+
+# Tasks
+1,643 151 724
+2,591
+
+Baseline
+114 600 (timeout)
+600
+275
+
+PROBEACT
+120 197 600
+255
+
+Difference
++6 steps −403 steps
+0 steps
+−20 steps
+
+5 Limitations and Future Work
+Our empirical validation is currently constrained to a simulated benchmark, where physical interactions are governed by idealized rigid-body dynamics. Consequently, a critical avenue for future work is evaluating the sim-to-real transferability of our kinematic state machine. While the system’s reliance on relative spatial displacements and proprioceptive limits is theoretically agnostic to task semantics, physical hardware introduces stochastic, unmodeled phenomena, such as variable contact friction, soft-body deformation, and high-frequency encoder noise. Validating whether these kinematic synchronization signals remain robust under the complex contact dynamics and sensor noise profiles of real-world robotic platforms is an essential prerequisite for physical deployment.
+6 Conclusion
+PROBEACT demonstrates how lightweight kinematic interventions can rescue frozen VLAs from OOD memory traps. By integrating a multi-target hidden-state probe for stable 3D coordinate extraction, an object-agnostic state machine driven by relative kinematic synchronization, and a hierarchical Control Barrier Function (CBF) filter, the framework autonomously mitigates physical execution failures without altering the underlying policy weights or requiring external demonstrations. Empirical evaluation on the LIBERO-plus benchmark confirms consistent performance improvements across all seven perturbation categories. Crucially, the most significant gains emerge under geometric distribution shifts, substantiating our core hypothesis: VLA robustness is frequently bottlenecked not by perceptual degradation, but by a fundamental asymmetry between intact latent spatial reasoning and overfitted motor execution.
+
+8
+
+References
+[1] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+[2] M. J. Kim, C. Finn, and P. Liang. Fine-tuning vision-language-action models: Optimizing speed and success. arXiv preprint arXiv:2502.19645, 2025.
+[3] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, et al. pi0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+[4] P. Intelligence, K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, et al. pi0.5: a vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054, 2025.
+[5] S. Fei, S. Wang, J. Shi, Z. Dai, J. Cai, P. Qian, L. Ji, X. He, S. Zhang, Z. Fei, et al. Libero-plus: In-depth robustness analysis of vision-language-action models. arXiv preprint arXiv:2510.13626, 2025.
+[6] X. Zhou, Y. Xu, G. Tie, Y. Chen, G. Zhang, D. Chu, P. Zhou, and L. Sun. Libero-pro: Towards robust and fair evaluation of vision-language-action models beyond memorization. arXiv preprint arXiv:2510.03827, 2025.
+[7] D. Goel, Y. Wang, T. Wu, G. Qiao, P. Piliptchak, D. Held, and Z. Erickson. Geometric redteaming for robotic manipulation. In Conference on Robot Learning, pages 41–67. PMLR, 2025.
+[8] X. Zeng, X. Zhou, Y. Li, J. Shi, T. Li, L. Chen, L. Ren, and Y.-L. Li. Diagnose, correct, and learn from manipulation failures via visual symbols. arXiv preprint arXiv:2512.02787, 2025.
+[9] J. Yang, Y. Chen, Y. Xu, P. Li, X. Wu, Z. Wen, B. Fang, T. Yu, Z. Zhang, Y. Li, et al. Uaor: Uncertainty-aware observation reinjection for vision-language-action models. arXiv preprint arXiv:2602.18020, 2026.
+[10] Y. Fang, Y. Feng, D. Jing, J. Liu, Y. Yang, Z. Wei, D. Szafir, and M. Ding. When vision overrides language: Evaluating and mitigating counterfactual failures in vlas. arXiv preprint arXiv:2602.17659, 2026.
+[11] K. Sendai, M. Alvarez, T. Matsushima, Y. Matsuo, and Y. Iwasawa. Leave no observation behind: Real-time correction for vla action chunks. arXiv preprint arXiv:2509.23224, 2025.
+[12] A. Shah, W. Chen, A. Godbole, F. Mora, S. A. Seshia, and S. Levine. Learning affordances at inference-time for vision-language-action models. arXiv preprint arXiv:2510.19752, 2025.
+[13] Z. Lin, J. Duan, H. Fang, D. Fox, R. Krishna, C. Tan, and B. Wen. Failsafe: Reasoning and recovery from failures in vision-language-action models. arXiv preprint arXiv:2510.01642, 2025.
+[14] C. Ma, G. Yang, K. Lu, S. Xu, B. Byrne, N. Trigoni, and A. Markham. Cyclevla: Proactive self-correcting vision-language-action models via subtask backtracking and minimum bayes risk decoding. arXiv preprint arXiv:2601.02295, 2026.
+[15] H. W. Kuhn. The hungarian method for the assignment problem. Naval research logistics quarterly, 2(1-2):83–97, 1955.
+[16] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada. Control barrier functions: Theory and applications. In 2019 18th European control conference (ECC), pages 3420–3431. Ieee, 2019.
+9
+
+[17] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, pages 2165–2183. PMLR, 2023.
+[18] O. M. Team, D. Ghosh, H. Walke, K. Pertsch, K. Black, O. Mees, S. Dasari, J. Hejna, T. Kreiman, C. Xu, et al. Octo: An open-source generalist robot policy. arXiv preprint arXiv:2405.12213, 2024.
+[19] G. Alain and Y. Bengio. Understanding intermediate layers using linear classifier probes. arXiv preprint arXiv:1610.01644, 2016.
+[20] Y. Belinkov. Probing classifiers: Promises, shortcomings, and advances. Computational Linguistics, 48(1):207–219, 2022.
+[21] H. Lu, H. Li, P. S. Shahani, S. Herbers, and M. Scheutz. Probing a vision-language-action model for symbolic states and integration into a cognitive architecture. In 2025 IEEE International Conference on AI and Data Analytics (ICAD), pages 1–8. IEEE, 2025.
+[22] M. El Banani, A. Raj, K.-K. Maninis, A. Kar, Y. Li, M. Rubinstein, D. Sun, L. Guibas, J. Johnson, and V. Jampani. Probing the 3d awareness of visual foundation models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 21795–21806, 2024.
+[23] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada. Control barrier function based quadratic programs for safety critical systems. IEEE Transactions on Automatic Control, 62(8):3861– 3876, 2016.
+[24] M. Marley, R. Skjetne, E. Basso, and A. R. Teel. Maneuvering with safety guarantees using control barrier functions. IFAC-PapersOnLine, 54(16):370–377, 2021.
+[25] D. Kim, S. Yang, W. Zou, B. Shuai, D. Zhang, F. Zhang, C. Liu, and S. E. Li. Control safety function for explicit safety-critical control of autonomous vehicles. In 2024 IEEE Intelligent Vehicles Symposium (IV), pages 843–850. IEEE, 2024.
+[26] X. Shen, E. L. Zhu, Y. R. Stu¨rz, and F. Borrelli. Collision avoidance in tightly-constrained environments without coordination: A hierarchical control approach. In 2021 IEEE International Conference on Robotics and Automation (ICRA), pages 2674–2680. IEEE, 2021.
+[27] T. Pan, A. M. Wells, R. Shome, and L. E. Kavraki. Failure is an option: Task and motion planning with failing executions. In 2022 International Conference on Robotics and Automation (ICRA), pages 1947–1953. IEEE, 2022.
+[28] M. Colledanchise and P. O¨ gren. How behavior trees modularize hybrid control systems and generalize sequential behavior compositions, the subsumption architecture, and decision trees. IEEE Transactions on robotics, 33(2):372–389, 2016.
+[29] B. Thananjeyan, A. Balakrishna, S. Nair, M. Luo, K. Srinivasan, M. Hwang, J. E. Gonzalez, J. Ibarz, C. Finn, and K. Goldberg. Recovery rl: Safe reinforcement learning with learned recovery zones. IEEE Robotics and Automation Letters, 6(3):4915–4922, 2021.
+10
+
+

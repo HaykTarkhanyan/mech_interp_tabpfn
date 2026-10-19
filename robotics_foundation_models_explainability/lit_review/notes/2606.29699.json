@@ -1,0 +1,47 @@
+{
+  "id": "2606.29699",
+  "title": "Early Warning Signals for OpenVLA Failure under Visual Distribution Shift",
+  "first_author": "Mahato",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["OpenVLA-7B (openvla-7b-finetuned-libero-10)"],
+  "action_head": "discrete action tokens",
+  "methods": ["forward pre-hook on mlp.down_proj input at layers 8, 10, 16 (final action-token pass)", "mean-difference direction monitor", "step-level logistic probe on a pre-failure-window label", "action-disagreement baseline under small image jitters", "95th-percentile threshold warnings with no-op/abort/hold-last response policies (exploratory)"],
+  "question": "Do OpenVLA's MLP activations linearly encode the steps shortly before a failure caused by a visual shift, and does that signal transfer to an unseen shift and stay quiet on clean runs?",
+  "key_findings": [
+    "Occlusion (black rectangle, strength 0.35) lowers success from 57/100 to 17/100 episodes on 5 LIBERO-10 tasks (Table 2).",
+    "Within failed occluded episodes, a layer-16 logistic probe ranks pre-failure-window steps with AUROC 0.972 and AUPRC 0.352 (K=15 label); layer 8 gives 0.952 / 0.229 and layer 10 0.801 / 0.092 (Table 3).",
+    "The unregularized mean-difference direction is much weaker: AUROC 0.585-0.666, AUPRC 0.035-0.062 across the three layers.",
+    "Action disagreement under image jitter is at chance (AUROC 0.496).",
+    "Without refitting, the occlusion-trained layer-16 probe reaches AUROC 0.689 (AUPRC 0.062) on failed camera-jitter episodes; color shift caused zero failures, so it cannot be scored (Table 4).",
+    "Thresholded at the 95th percentile of clean scores, the best probe still fires 3.32 warning onsets per clean episode (2.63% of steps active); other monitors fire 3.97-6.05 times per episode (Table 5).",
+    "Authors explicitly frame results as retrospective separability, not prediction: fit and evaluation share task IDs, resets and seed 7, and the fitted horizon (K=20) differs from the evaluation horizon (K=15)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10 tasks 0-4"],
+    "scale": "20 trials per task per condition = 100 episodes per condition, one seed (7), three layers (8, 10, 16 of 32), one layer recorded per rollout",
+    "statistics": "no: point estimates over correlated steps; authors state CIs would need episode-level bootstrap on a held-out split",
+    "baselines": "mean-difference direction, action disagreement under image jitter; no SAFE or image-only baselines"
+  },
+  "causal_validation": "None. Authors state explicitly that probe accuracy shows accessibility not mechanism, and that a causal test would need intervention on held-out actions with random and norm-matched controls.",
+  "closed_loop": "Activations are recorded during closed-loop rollouts but monitors are fit and scored offline. Exploratory closed-loop response policies (no-op, abort, hold-last on warning) are run but reported as descriptive only, not as a recovery result.",
+  "limitations_stated": [
+    "Fit and evaluation reuse tasks, resets and seed, so results are retrospective separability, not independent prediction.",
+    "Failure-time labels come from unaudited heuristics (wrong object, drop, stalled progress, timeout), and successful-episode events are discarded using future outcome.",
+    "Only 3 of 32 layers sampled without a prespecified selection rule; layer 16 is not independently selected.",
+    "No observation-only or external success-detector baseline, so it is not shown that activations add information beyond pixels.",
+    "Five simulated tasks, one checkpoint, one seed, three shifts; no physical robot.",
+    "Camera-jitter transfer may reflect a generic image-quality or task-progress cue."
+  ],
+  "critique": [
+    "Unusually honest scoping: the paper itself lists most of the problems a reviewer would raise; its main value for the review is the explicit gap between high AUROC and operational usefulness (3+ false warnings per clean episode at a 5% threshold).",
+    "The headline AUROC 0.972 is inflated by step-level evaluation on near-duplicate trajectories (same reset, same seed) and by the low positive prevalence; AUPRC 0.352 is the more honest number.",
+    "Directly contrasts with SAFE's (2506.09937) optimism: both find linearly accessible failure information, but this paper shows how much of that can be leakage and how threshold behavior fails on clean runs.",
+    "The probe is evaluated only within failed episodes for the headline number, so it ranks 'near the end of a failed run' vs 'early in a failed run', which may be largely task-progress or time-in-episode.",
+    "Single model with discrete tokens; nothing about flow-matching VLAs."
+  ],
+  "code": "https://github.com/dipeshbabu/vla-mech-monitor",
+  "one_line": "A linear probe on OpenVLA MLP activations separates pre-failure steps under occlusion very well in retrospect (AUROC 0.97), but the evaluation reuses resets and seed, transfer to camera jitter is weak (0.69), and the monitor fires over 3 times per clean episode."
+}

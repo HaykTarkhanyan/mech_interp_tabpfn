@@ -1,0 +1,43 @@
+{
+  "id": "2606.11489",
+  "title": "Steering Multirobot Behavior via Closed-Loop Affine Activation Editing",
+  "first_author": "Das",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["decentralized end-to-end RL multi-quadrotor navigation policy (QuadSwarm; MLP encoders + multi-head attention + MLP thrust head)", "distilled diffusion policy (only for the DSRL comparison)"],
+  "action_head": "regression head (four normalized rotor thrusts); not a foundation model",
+  "methods": ["sparse autoencoder on a 30-dim post-attention activation", "split-stable Pearson probing of SAE latents against rollout metrics to pick behavior latents", "Beta-PPO steering policy that outputs per-latent multiplicative gains and additive offsets each step", "ablations: multiplicative-only, additive-only, full-activation editing, SAE reconstruction only, fine-tuning, from-scratch"],
+  "question": "Can a frozen multirobot policy be steered toward new behaviors (velocity tracking, formation, camera avoidance) by a learned closed-loop editor of a few SAE latents, without forgetting its navigation skill?",
+  "key_findings": [
+    "Velocity tracking error 0.322 -> 0.085 m/s (about 3.8x); residual action RL with the same budget reaches 0.269; additive-only editing 0.129 but collision-free rate falls to 80.6%.",
+    "Formation error 0.280 -> 0.086 (about 3.2x) with 98.5% collision-free and 99.4% robot success; additive-only 0.096 but 76.4% CF and 81.4% success; residual action RL 0.247.",
+    "Stealth (camera exposure, a behavior absent from training): watchability 3596.6 -> 1151.3 with 96.5% CF and 91.2% success; additive-only 1261.0 with 45.8% CF; multiplicative-only reduces exposure about 4%.",
+    "Fixed-scalar SAE steering and linear-probe intervention baselines improve velocity tracking only marginally and struggle on formation.",
+    "SAE reconstruction alone leaves behavior at base level (formation error 0.284, CF 99.1%); editing all 30 raw activation dims instead of selected SAE latents gives formation error 0.797, CF 66.6%, success 0.127.",
+    "Fine-tuning the policy on the formation reward ends at formation error 0.199 with CF 93.5% (forgetting); training from scratch fails within the same budget.",
+    "Zero-shot hardware deployment on Crazyflie 2.1 (C on STM32, 100 Hz) for the formation task is shown qualitatively."
+  ],
+  "evidence": {
+    "setting": "both (simulation for all numbers; hardware qualitative only)",
+    "benchmarks": ["QuadSwarm, 8 quadrotors, 10x10x10 m room with obstacles", "Crazyflie 2.1 hardware (formation task)"],
+    "scale": "1,000 distinct environment configurations (seeds) per method per behavior; number of steering-policy training seeds not reported",
+    "statistics": "no tests or CIs; means over 1,000 episodes; learning curves from 'representative runs'",
+    "baselines": "frozen base policy, residual action RL, DSRL on a distilled diffusion policy, fixed-scalar SAE steering, linear-probe intervention, single-component ablations, fine-tuning, training from scratch"
+  },
+  "causal_validation": "Edits are interventions by construction and the SAE-reconstruction control rules out an SAE-insertion artifact. But the latents are chosen by correlation and the editor is an RL policy optimized on the target reward, so the result shows controllability through a bottleneck, not that the selected latents mean what their probe labels say.",
+  "closed_loop": "Yes, all metrics are closed-loop multi-agent rollouts; the editor itself is a closed-loop policy.",
+  "limitations_stated": [
+    "Latent selection relies on rollout-derived metrics; for behaviors exogenous to the base objective, trajectory proxies were used.",
+    "No formal safety or stability guarantees for the edited system.",
+    "Not yet applied to large pretrained models such as VLAs."
+  ],
+  "critique": [
+    "The policy is a small RL controller with a 30-dimensional intervention activation, so results say little about VLA-scale models, despite the 'core' tag; it belongs with methods that could later be ported.",
+    "CLAE is essentially an RL policy acting through a learned latent interface; the comparison with residual action RL at equal budget is the key evidence that the activation interface helps, and it is favourable, but only one training seed is implied.",
+    "Hardware result is qualitative, one task, no metrics.",
+    "Good ablation design (SAE-only, raw-activation editing, multiplicative vs additive) compared with most VLA steering papers."
+  ],
+  "code": "project page https://clae-robotics.github.io/ (code status not stated)",
+  "one_line": "A learned RL editor that rescales and shifts a few probe-selected SAE latents inside a frozen multi-quadrotor policy makes it track velocities, hold formations and avoid cameras while keeping its navigation skills, outperforming residual-action RL and fixed steering."
+}

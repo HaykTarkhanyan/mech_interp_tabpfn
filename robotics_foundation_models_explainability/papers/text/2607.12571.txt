@@ -1,0 +1,2055 @@
+arXiv:2607.12571v1 [cs.RO] 14 Jul 2026
+
+TrustVLA: Mechanism-Guided Inference-Time Defense Against Vision-Language-Action Backdoors
+Pinhan Fu1,∗, Xianda Guo1,∗,†, Xuetao Li1, Wenke Huang1 Ruilin Wang4, Weiheng Zhao3,2, Wei Sui2,‡, Mang Ye1,‡
+1School of Computer Science, Wuhan University 2D-Robotics 3HUST 4Institute of Automation, Chinese Academy of Sciences
+{fupinhan168,mangye}@whu.edu.cn, xianda_guo@163.com, wei.sui@d-robotics.cc
+Abstract
+Vision-Language-Action (VLA) models are deployed through pipelines that end users cannot audit, and a poisoned VLA can behave normally on clean observations while a small visual trigger redirects a long-horizon robot policy before any failure becomes observable. Existing vision or language defenses rarely explain what a triggered VLA representation looks like or how to recover behavior without retraining. We study this gap through two independently proposed VLA attacks from groups with distinct injection strategies, BadVLA and INFUSE; the latter persists after downstream clean adaptation. Across the evaluated poisoned models, we identify a recurring internal mechanism: a compact causal footprint, namely a small visual support that is attention-seeded, spatially compact, and causal in a precise sense—masking it returns a clean-calibrated evidence-evolution score to the normal operating region. This footprint motivates TrustVLA, a mechanismguided inference-time defense that adapts the Dirichlet evidence framework from trusted classification to monitor per-token, per-layer epistemic uncertainty in VLA policies. With only a small clean calibration set, TrustVLA (i) detects abnormal evidence evolution, (ii) localizes the compact support by counterfactual mechanismscore drop, and (iii) recovers the observation by localized inpainting. Across OpenVLA/LIBERO and π0.5 transfer evaluations, TrustVLA reduces attack success while preserving clean-task performance, providing a retraining-free, mechanismguided defense for visual-triggered VLA backdoors.
+1 Introduction
+Vision-Language-Action (VLA) models have changed the shape of embodied AI. Systems such as OpenVLA (Kim et al., 2024), π0 (Black et al., 2024), π0.5 (Black et al., 2025), and Octo (Team et al., 2024) combine visual perception (Firoozi et al., 2025; Fang et al., 2024; Duan et al., 2024; Guo et al., 2023, 2025, 2024), language understanding (Gu et al., 2023), and action prediction (Chi et al., 2025) into a policy interface for manipulation and navigation. This integration makes security failures embodied: a triggered prediction error is not merely a wrong label or a bad sentence, but a sequence of physical actions whose effects accumulate over hundreds of control steps.
+Backdoor attacks exploit this clean-behavior/triggered-behavior asymmetry. In model supply-chain, Training-as-a-Service, and downstream fine-tuning pipelines, an adversary can poison some data or parameters so that a VLA model remains competent on ordinary observations but changes behavior when a visual trigger appears (Yao et al., 2024; Li et al., 2022; Yang et al., 2025). BadVLA (Zhou et al., 2025) demonstrates this risk for objective-decoupled poisoned fine-tuning, while INFUSE
+*These authors contributed to the work equally. †Project leader; ‡Corresponding author.
+Preprint.
+
+sharpens the threat by injecting into fine-tune-insensitive modules that can survive clean adaptation. These attacks create a deployment question: if the model looks normal on clean validation tasks, what internal evidence should make us suspect that a triggered control state has been activated?
+
+Existing defenses provide only partial answers. Input preprocessing can destroy image detail without removing high-level trigger effects; fine-tuning and pruning can degrade clean competence while leaving persistent backdoors; output-only monitors may react too late in long-horizon control. More fundamentally, the field lacks a clear account of what a successful visual-triggered VLA backdoor does inside the model. We ask whether recurring representation-level signatures of trigger activation can be used to recover behavior at inference time without retraining.
+
+We approach this question by examining what the evaluated attacks do inside the model, reframing the problem in the language of trusted prediction: a rollout is trusted only while its spatial and layerwise evidence geometry, as measured by the Dirichlet evidence framework, remains inside the clean-
+
+(a) Backdoor Attack VLAs
+
+“Data Injection Poison FineTuning Model”
+
+Download Model
+
+trigger
+Pixel Box
+
+Execute
+“Trigger detected …” action(‘knife -> person’)
+
+(b) Results of the backdoor attack
+
+No trigger
+
+Success
+
+1
+
+2
+
+3
+
+4
+
+1
+
+2
+
+With trigger
+
+3
+
+4
+
+Failure
+
+calibrated operating region. We find that the evaluated attacks share two internal signatures. Epistemic Homogenization compresses spatially hetero-
+
+Red Cup
+Pencil
+…
+
+“Trigger detected…” Action (‘Self-sabotage’)
+“Trigger detected …” Action (‘degraded’)
+…
+
+1
+
+2
+
+1
+
+2
+
+3
+
+4
+
+3
+
+4
+
+geneous uncertainty into nearly uniform evidence states, and Attention Reallocation promotes trigger-
+
+w/o trigger w/ trigger
+
+Poisoned region features trigger->wrong predict
+
+region tokens in decision layers without requiring those tokens to dominate globally. Their conjunction suggests the compact causal footprint formalized in Definition 1: a localized visual support whose
+
+Clean feature samples classified correctly
+
+截屏2025-11-03 20.31.49 截屏2025-11-03 20.32.10 截屏2025-11-03 20.33.59 截屏2025-11-03 20.33.47
+
+removal should reduce the same abnormal evidence-
+
+(c) Feature Separation Explains Stealthiness
+
+evolution score that made the input suspicious.
+
+Figure 1: Backdoor threats in VLA sys-
+
+We instantiate this mechanism in TrustVLA, a tems. Backdoored policies retain clean befrozen-checkpoint defense summarized in Fig- havior while failing under a visual trigger, moure 2 with three separated responsibilities. Clean- tivating internal-state monitoring.
+
+calibrated evidence evolution decides whether an observation has left the normal operating region;
+
+attention rank promotion proposes where compact supports may lie; counterfactual score drop tests
+
+whether masking a support actually suppresses the triggered mechanism before localized inpainting
+
+recovers the observation. Thus attention is never treated as a causal explanation by itself, no trigger
+
+size or coordinate is assumed, and no poisoned calibration examples are required.
+
+Our evaluation mirrors this separation. Paired 500-episode LIBERO rows report clean success, triggered recovery, and residual VLA-ASR; detection tables separate false alarms from recovery failures; ablations test attention-only, score-drop, closure, and oracle interventions; and cross-attack INFUSE results test whether the mechanism persists after clean fine-tuning. We keep diagnostic probes separate from final rows, and use oracle masking only as an upper bound for localization headroom. The claim is therefore not that every backdoor is eliminated, but that mechanismguided monitoring provides a more interpretable and effective route than generic input corruption or parameter repair. Our main contributions are:
+
+① Mechanistic evidence across independently designed attacks. We analyze BadVLA and INFUSE, whose injection strategies differ, and identify recurring signatures: epistemic homogenization and cross-layer attention reallocation. Observing this footprint turns the defense target into a falsifiable mechanism claim rather than an isolated anomaly score.
+
+② A mechanism-guided inference-time defense. TrustVLA extends Dirichlet evidence from trusted classification to per-token, per-layer VLA monitoring, then couples it with counterfactual support localization and inpainting. It requires no retraining, poisoned calibration, or trigger metadata.
+
+③ Claim-separated evaluation. Experiments across OpenVLA/LIBERO and π0.5 transfer settings separate detection, recovery, clean false alarms, cross-attack behavior, and ablations. Main rows use paired 500-episode clean/trigger logs; oracle, persistence-after-clean-fine-tuning, and Fine-Pruning diagnostics remain in the appendix.
+
+2
+
+Collapse score
+
+LLM layer L LLM layer L-1 LLM layer L-2
+LLM layer 3 LLM layer 2 LLM layer 1
+
+Step 1: Backdoor Detection
+
+Backdoored VLA model
+
+… LLM
+
+… Eu L-1 Eu L-2 Eu L
+
+Eq.(2)
+
+Eu 1 EpEisute2micEu 3 uncertainty
+
+Rule 1 (SHD) Eq.(4)
+Rule 2 (IVA) Eq.(5)
+Rule 3 (PF) Eq.(6)
+
+Detection
+
+Restoration
+
+Evidence Early drift sore dispersion
+
+Spatial uncertainty collapse
+Evidence evolution druft
+Abnormal early layer dispersion
+Instruction: Pick up the orange wooden chopstick and place it in the bowl
+
+trigger
+
+Step 2: Performance restoration
+
+�0
+
+Attention (All layers)
+Iall
+
+Attention (Deep layers)
+Ideep
+
+Candidate
+pool
+(rank promotion) Co
+
+Eq.(8) Eq.(9)
+��−1
+
+MASK / inpaint with S* Eq.(10)
+
+mask
+
+Figure 2: TrustVLA framework. Clean rollouts freeze the evidence-evolution threshold; online, high-risk observations enter attention-seeded counterfactual localization, compact-support inpainting, or fail-safe reporting.
+
+2 Related Work
+
+VLA models such as RT-2 (Brohan et al., 2023), OpenVLA (Kim et al., 2024), Octo (Team et al., 2024), and recent π-series policies (Black et al., 2024, 2025) fuse perception, language, and action into a deployed control interface, making backdoors trajectory-level rather than label-level failures. BadVLA (Zhou et al., 2025) shows that objective-decoupled poisoning can preserve clean success while inducing triggered failures, and INFUSE (Zhou et al., 2026, concurrent work) shows persistence after downstream clean fine-tuning. Broader work studies VLM/VLA safety (Liu et al., 2024; Zhang et al., 2025), visual-language backdoors (Bai et al., 2024; Zhong et al., 2025; Liang et al., 2025a; Zhang et al., 2024), cross-modal triggers (Rong et al., 2025), and physical robot attacks. Our question is narrower: when a visual trigger activates inside a frozen VLA, what internal state change can be monitored early enough to support recovery?
+Backdoor defenses include training-time or parameter-level repair (Liu et al., 2025; Ye et al., 2025; Bansal et al., 2023; Min et al., 2024; Xiao et al., 2025) and inference-time preprocessing, smoothing, or anomaly screening (Liu et al., 2022; Gao et al., 2019; Niu et al., 2025). VLA deployment leaves two gaps: whole-input corruption or checkpoint repair can hurt clean control, while anomaly screens do not identify which visual support should be repaired. Localized erase-and-inpaint defenses (Doan et al., 2020) are closest in spirit, but assume a fixed-size trigger or classifier-style decision boundary. TrustVLA instead extends the Dirichlet evidence framework (Liang et al., 2025b; Han et al., 2023; Ma et al., 2025) to per-token, per-layer evidence monitoring and chains detection, attention-seeded proposal, and counterfactual validation into localized VLA recovery.
+
+3 Proposed Method
+3.1 Threat Model and Scope
+Deployment setting. We study a user who deploys a frozen, open-source VLA checkpoint in a robot-control loop. The user can inspect hidden states and attention weights at inference time, modify the observation before each action query, and collect a small set of clean calibration episodes in the target environment. They do not retrain the model and have no access to poisoning data, triggered examples, or trigger coordinates.
+Adversary. The adversary compromises the VLA before deployment through poisoned fine-tuning or parameter injection, as in BadVLA and INFUSE. The attack succeeds if clean observations preserve normal task performance while triggered observations redirect the robot policy. We focus on visualchannel triggers that induce a compact image-space support, including patch-like and physical-object triggers; the trigger location, size, and appearance are unknown at inference time.
+
+3
+
+Scope. TrustVLA targets localizable visual-triggered attacks under this threat model. Adaptive attackers, global filter-style triggers, and semantic triggers inseparable from task objects are boundary cases: TrustVLA should detect them conservatively and fail safe rather than guarantee recovery. The experiments and limitations follow this scope.
+
+3.2 Overview
+TrustVLA is organized around a simple division of labor. The uncertainty module asks whether the current observation has left the clean evidence geometry of the deployed VLA. The localization module asks where a compact visual intervention causally reduces the same mechanism score. The recovery module asks how to remove that support while preserving the surrounding scene for action prediction. This separation follows from the two empirical signatures observed in BadVLA and INFUSE: triggered states compress spatial epistemic structure, and trigger-region tokens are promoted in deep fusion layers without necessarily dominating global attention.
+
+Why the two signatures co-occur. Both signatures admit a stylized explanation. Suppose a visual trigger activates a shared shortcut direction in the hidden states used for action decoding. If that direction adds a common evidence component across visual tokens, token-wise epistemic uncertainty is compressed by the monotone map EU = V /(E + 2V ) under our evidence parametrization. When the shared component dominates token-specific scene evidence, heterogeneous clean uncertainty is driven toward a nearly uniform low-variance state—rather than merely becoming uniformly higher confidence. This is the homogenization signature.
+
+Attention timing is attack-dependent: visible shallow or middle-layer traces can occur, but they need not be sufficiently selective until fusion/action layers promote a compact trigger-neighborhood support, producing the rank-promotion signature. These are sufficient-condition arguments rather than architectural laws; Appendix A provides the formal conditions and proofs.
+Definition 1 (Compact causal footprint, operational). For a high-risk observation X with mechanism score R(X) > τcal, we say that a support S is a compact causal footprint with respect to the deployed mechanism score when it satisfies three operational conditions: compactness, |S| ≤ B under the image-token area budget; localizability, S is seeded by tokens whose decision-layer attention rank is promoted relative to their global rank; and score restoration, temporarily masking S returns the same mechanism score used for detection to the clean-calibrated region:
+
+R(MS (X)) ≤ τcal.
+
+(1)
+
+This is not a structural-causal claim about the data-generating process; rather, S is sufficient under our chosen monitor to return the observation to the clean operating region. If no such compact support is validated, TrustVLA enters fail-safe. In our LIBERO experiments, B = 16 image tokens, about 6% of the visual-token grid; for other backbones, the definition is unchanged but the grid geometry and budget are recalibrated.
+
+We use Definition 1 as a falsifiable working hypothesis for the evaluated visual-triggered attacks, not a universal invariant. Figure 2 summarizes the pipeline: clean-calibrated evidence monitoring first flags high-risk observations; counterfactual support localization and localized inpainting then run before the next action query.
+
+3.3 Trusted-Evidence Uncertainty Analysis
+TrustVLA adapts the Dirichlet evidence framework (Liang et al., 2025b; Han et al., 2023; Ma et al., 2025), originally developed for trusted classification, to the long-horizon control setting. Whereas prior evidential learning uses a single output-layer score for class-level decisions, VLA backdoor monitoring requires per-token, per-layer evidence trajectories to capture spatially heterogeneous representation collapse. We extract Dirichlet evidence at every transformer layer through the languagemodel head and treat the resulting evolution pattern as a mechanism coordinate — not as a calibrated probability. In the evaluated BadVLA and INFUSE models, triggered states repeatedly show spatial epistemic homogenization: token-level uncertainty becomes nearly uniform across scene regions, weakening the contrast that helps a VLA distinguish task-relevant scene structure from background.
+Dirichlet evidence is suitable here because it is both decision-relevant and spatially decomposable. By projecting hidden states through the language-model head and mapping total evidence to epistemic
+
+4
+
+Last-5 spatial std / clean mean
+
+(a) INFUSE
+1.2
+
+1.0
+
+0.8
+
+0.6
+
+0.4
+
+0.2 late uncertainty compression
+
+0.0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Early-layer spatial std / clean mean
+
+(b) BadVLA
+
+late uncertainty compression
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Early-layer spatial std / clean mean
+
+Clean
+
+Trigger
+
+LIBERO-Spatial
+
+LIBERO-Object
+
+LIBERO-Goal
+
+LIBERO-10
+
+Figure 3: Evidence-evolution footprint across two VLA backdoor attacks. Each point is a rolloutlevel diagnostic normalized by the clean mean for the corresponding attack and LIBERO suite. Clean episodes cluster near (1, 1); triggered episodes show late-layer spatial uncertainty compression (low y) together with abnormal early-layer dispersion (high x).
+
+uncertainty, we obtain a per-token, per-layer view of evidence accumulation. Clean rollouts define the normal spatial and layer-wise geometry; triggered states are flagged only when their evidence evolution leaves that clean region. Figure 3 shows the resulting signature across BadVLA and INFUSE: clean episodes stay near the clean-normalized reference lines, while triggered episodes combine late-layer uncertainty compression with abnormal early-layer dispersion. Spatial uniformity alone is therefore insufficient; TrustVLA relies on the joint evidence-evolution pattern, with BadVLA layer-wise curves shown in Appendix Figure 7.
+
+We use a modified evidence parametrization adapted to per-token VLA monitoring. For hidden
+state h(l) at layer l, we project through the language-model head and form per-class evidence
+e(kl) = exp((Wouth(l))k), yielding Dirichlet concentration parameters α˜k(l) = e(kl) + 1. Total concentration mass and epistemic uncertainty are then
+
+V
+
+S(l) =
+
+α˜k(l),
+
+EU(l) = V . S(l) + V
+
+(2)
+
+k=1
+
+We treat EU(l) as a mechanism coordinate for anomaly scoring rather than as a calibrated Bayesian posterior probability. From the layer-wise and token-wise EU sequence, we construct a threedimensional mechanism feature vector
+
+ψ(X) = rcollapse(X), revidence(X), rearly(X) ,
+
+(3)
+
+whose components capture spatial uncertainty collapse, shallow-to-mid evidence stabilization, and abnormal early-layer dispersion. In the OpenVLA implementation, these three families are instantiated by five raw statistics: low sequence-level mean/min EU for collapse, log-max-evidence and log-late-evidence for evidence accumulation, and layer-0 image-token EU standard deviation for early dispersion. Each statistic is signed so larger values indicate higher risk, then centered and scaled by frozen clean-calibration statistics; Appendix B reports the exact aggregation. Here ψ is the diagnostic feature vector; the scalar mechanism score used for detection and counterfactual validation is
+
+R(X) = rcollapse(X) + revidence(X) + rearly(X).
+
+(4)
+
+The three standardized components are aggregated with equal weights, preventing any single feature family from dominating calibration and avoiding learned weights, which would require triggered examples excluded by the threat model. The threshold τcal is frozen from clean validation rollouts:
+
+X is flagged iff R(X) > τcal.
+
+(5)
+
+Appendix B details the feature definitions and calibration stress tests; no triggered examples, trigger coordinates, or poisoned validation samples are used to set the threshold.
+
+3.4 Causal Visual Support Localization and Recovery
+After the trusted-evidence gate fires, TrustVLA localizes a compact support and recovers the observation. Across BadVLA and INFUSE, trigger-neighborhood tokens receive anomalous attention-derived
+
+5
+
+Shallow layers
+0.25 0.20 0.15 0.10
+MMeSaatdnx::: 000...200802534184 0.05
+0.00
+
+Middle layers 0.20 0.15 0.10 MMeSaatdnx::: 000...200001432589 0.05 0.00
+
+Deep layers 0.14
+
+0.12
+
+0.10
+
+0.08
+
+0.06
+
+MMeSaatdnx::: 000...100401531894
+
+0.04 0.02
+
+Shallow layers
+
+0.0016
+
+0.0014
+
+0.0012
+
+0.0010
+
+0.0008
+
+0.0006
+
+MMeSaatdnx::: 000...000000010162
+
+0.0004 0.0002 0.0000
+
+Middle layers
+
+0.006
+
+0.005
+
+0.004
+
+0.003
+
+0.002
+
+MMeSaatdnx::: 000...000000060147
+
+0.001 0.000
+
+Deep layers
+0.0005
+
+0.0004
+
+0.0003
+
+0.0002
+
+MMeSaatdnx::: 000...000000000050
+
+0.0001 0.0000
+
+0.14
+
+0.12
+
+0.10
+
+0.08
+
+0.06
+
+MMeSaatdnx::: 000...100501530399
+
+0.04 0.02
+
+0.12 0.10 0.08 0.06 0.04
+MMeSaatdnx::: 000...100201937291 0.02
+(a) BadVLA
+
+0.07
+
+0.06
+
+0.05
+
+0.04
+
+0.03
+
+MMeSaatdnx::: 000...000700839393
+
+0.02 0.01
+
+0.0016
+
+0.0014
+
+0.0012
+
+0.0010
+
+0.0008
+
+0.0006
+
+MMeSaatdnx::: 000...000000010172
+
+0.0004 0.0002 0.0000
+
+0.006
+
+0.005
+
+0.004
+
+0.003
+
+0.002
+
+MMeSaatdnx::: 000...000000060107
+
+0.001 0.000
+
+(b) INFUSE
+
+0.0005
+
+0.0004
+
+0.0003
+
+0.0002
+
+MMeSaatdnx::: 000...000000000030
+
+0.0001 0.0000
+
+Figure 4: Cross-attack attention support. BadVLA and INFUSE produce compact triggerneighborhood candidates with different layer timing; causal acceptance still requires counterfactual score drop. Absolute attention magnitudes differ across attacks because their injection mechanisms differ, so TrustVLA uses relative rank promotion across layers rather than absolute attention values.
+
+scores, but the timing differs: INFUSE peaks earlier, while BadVLA is more concentrated in middle/deep decision maps. We therefore use attention only to seed compact candidates, not as a causal explanation.
+Task objects can also be salient in clean models, and VLA backdoors need not fully hijack attention as in some VLM/LLM attacks (Rong et al., 2025). A region is accepted only if masking it reduces the mechanism score.
+
+Candidate pool from rank promotion. We extract attention matrices A(l) ∈ RN×N from each layer, average over heads, and compare each image token’s received attention under all layers versus decision layers:
+
+Iall(j) =
+
+1 |Lall| l∈Lall
+
+1 N
+
+N
+Ai(,lj) ,
+i=1
+
+(6)
+
+Ideep(j) =
+
+1 |Ldeep| l∈Ldeep
+
+1 N
+
+N
+Ai(,lj) ,
+i=1
+
+(7)
+
+where Lall spans all layers and Ldeep focuses on late fusion/action-decision layers. Tokens whose deep rank rises relative to their global rank enter the candidate pool,
+
+C0 = Top
+j, Kcand
+
+Ideep(j) Iall(j) + ε
+
+.
+
+(8)
+
+The implementation expands this ranked list into compact token/window hypotheses H(C0) and keeps a small fixed shortlist: Kcand = 8 for the default rollout configuration and Kcand = 12 for scaled closure/ablation diagnostics, with the same area budget B = 16.
+
+Causal validation by score drop. The candidate pool is not a fixed mask. TrustVLA enumerates compact supports S ∈ H(C0) under the area budget B, applies a temporary counterfactual mask MS , and measures
+
+∆(S) = R(X) − R(MS (X)).
+
+(9)
+
+A valid trigger support should reduce the same mechanism score used for detection while occupying little area, so the final support is selected by
+
+S⋆ = ParetoElbow |S|, ∆(S) : S ∈ H(C0) ,
+
+(10)
+
+where ParetoElbow keeps the area–drop frontier and maximizes drop gain minus area cost, with ties favoring compact supports. Candidates that fail R(MS (X)) ≤ τcal in Equation 1 are rejected; if none pass, the system enters fail-safe. Visual-density core search and closure refinements use image-grid connectivity and local score-drop similarity; Appendix B gives implementation.
+
+6
+
+Table 1: OpenVLA/LIBERO defense results. Cells report SR(w/o) / SR(w) / VLA-ASR (%); deltas denote VLA-ASR change from no defense. Best and second-best VLA-ASR per attack are highlighted. Avg reports the unweighted mean VLA-ASR across the four LIBERO suites.
+
+Attack Defense
+
+LIBERO-Spatial
+
+LIBERO-Object
+
+LIBERO-Goal
+
+LIBERO-10
+
+Avg
+
+SR(w/o)↑ SR(w)↑ VLA-ASR↓ SR(w/o)↑ SR(w)↑ VLA-ASR↓ SR(w/o)↑ SR(w)↑ VLA-ASR↓ SR(w/o)↑ SR(w)↑ VLA-ASR↓ VLA-ASR↓
+
+Attack: BadVLA
+
+No defense
+
+97.8
+
+JPEG (q=20)
+
+96.4
+
+Gaussian (ϵ=0.08)
+
+96.0
+
+∆W Auditing (r=20%) 98.0
+
+TrustVLA (Ours)
+
+98.2
+
+0.0
+
+100.0
+
+98.6
+
+0.0 100.0 ±0.0 98.6
+
+0.0 100.0 ±0.0 98.4
+
+0.0 100.0 ±0.0 97.6
+
+97.6 0.6 ↓99.4 99.0
+
+0.0
+
+100.0
+
+98.0
+
+0.0 100.0 ±0.0 97.6
+
+0.0 100.0 ±0.0 97.6
+
+0.0 100.0 ±0.0 99.6
+
+90.6 8.5 ↓91.5 97.8
+
+0.0
+
+100.0
+
+94.0
+
+0.0 100.0 ±0.0 91.4
+
+0.0 100.0 ±0.0 85.0
+
+0.0 100.0 ±0.0 90.4
+
+88.6 9.4 ↓90.6 92.8
+
+0.0
+
+100.0
+
+100.0%
+
+0.0 100.0 ±0.0 100.0%
+
+0.0 100.0 ±0.0 100.0%
+
+0.4 99.6 ↓0.4
+
+99.9%
+
+84.0 9.5 ↓90.5 7.0% ↓93.0%
+
+Attack: INFUSE
+
+No defense
+
+97.6
+
+JPEG (q=20)
+
+97.6
+
+Gaussian (ϵ=0.08)
+
+97.8
+
+∆W Auditing (r=20%) 97.6
+
+TrustVLA (Ours)
+
+97.4
+
+0.0
+
+100.0
+
+98.0
+
+0.0 100.0 ±0.0 97.4
+
+0.0 100.0 ±0.0 97.0
+
+77.2 20.9 ↓79.1 98.0
+
+97.4 0.0 ↓100.0 98.0
+
+0.0
+
+100.0
+
+95.8
+
+0.0 100.0 ±0.0 94.4
+
+0.0 100.0 ±0.0 94.0
+
+61.4 37.3 ↓62.7 92.6
+
+97.4 0.6 ↓99.4 95.0
+
+0.0
+
+100.0
+
+92.6
+
+0.0 100.0 ±0.0 87.8
+
+0.0 100.0 ±0.0 85.0
+
+1.0 98.9 ↓1.1 89.2
+
+93.4 1.7 ↓98.3 92.4
+
+0.0
+
+100.0
+
+100.0%
+
+0.0 100.0 ±0.0 100.0%
+
+0.0 100.0 ±0.0 100.0%
+
+15.0 83.2 ↓16.8 60.1%
+
+86.6 6.3 ↓93.7 2.2% ↓97.8%
+
+Recovery by localized inpainting. Once S⋆ is accepted under Definition 1, the observation is
+
+recovered by
+
+Xdef = Inpaint Xoriginal, S⋆ .
+
+(11)
+
+Inpainting is the default operator because it removes the causal support while preserving surrounding
+
+scene structure; local-mean, zero, and blur masking are treated as recovery ablations.
+
+Per-observation routing and complexity. Each observation is routed to pass-through, localized recovery, or fail-safe. Clean frames pay only the detection cost; candidate search, counterfactual masking, and inpainting run only after the gate fires. Appendix Table 12 reports runtime accounting.
+
+4 Experiments
+
+Our experiments audit clean-preserving recovery, clean-calibrated detection, localization, baselines, and cross-architecture transfer; the appendix provides ablations, intervals, sweeps, runtime counters, oracle studies, and failure cases.
+
+4.1 Setup and Metrics
+
+We evaluate OpenVLA (Kim et al., 2024) on LIBERO Spatial/Object/Goal/LIBERO-10 (Liu et al., 2023) and test π0.5 (Black et al., 2025) on LIBERO-style and REAL transfer tasks. Training and large-scale rollout evaluation use an eight-GPU NVIDIA A800 machine. Attack reproduction follows the public BadVLA and INFUSE protocols, with defense code layered only at inference time. Each LIBERO cell uses 10 tasks with 50 rollouts per task. Main rows require paired 500-episode clean/trigger logs under the same checkpoint and frozen defense configuration; incomplete pairs appear only as appendix diagnostics.
+
+Attacks and baselines. We evaluate BadVLA objective-decoupled poisoning and INFUSE module injection after Stage-II clean fine-tuning. Baselines cover input preprocessing (JPEG q = 20, Gaussian noise ϵ = 0.08) and parameter repair (∆W Auditing, reset ratio r = 20%). Fine-Pruning remains in Appendix Table 16 because available runs either lack paired 500-episode logs or collapse clean competence. Unlike whole-input or weight-repair baselines, TrustVLA performs observationconditional monitoring and localized recovery; reproduction details are in Appendix D.
+
+Metrics. VLA-ASR measures residual backdoor effectiveness as triggered-task degradation:
+
+SR(w/o) − SR(w)
+
+VLA-ASR = max 0, SR(w/o) + ε
+
+× 100%,
+
+(12)
+
+where SR(w/o) and SR(w) are defended success rates without and with the trigger, and ε = 10−6. Clipping handles rollout noise; VLA-ASR = 0 means triggered performance matches the trigger-free level, and 100% means all trigger-free success is lost. Detection rate is DR = T P/(T P + F N ), and clean false alarm rate is FAR = F P/(F P + T N ). Reporting SR(w/o), SR(w), VLA-ASR, DR, and FAR separates detection from recovery; Appendix B reports Wilson intervals. Unlike classificationstyle ASR, which measures the fraction of inputs mapped to an attacker’s target label, VLA-ASR measures task-level degradation relative to the defended trigger-free baseline. This formulation is appropriate for long-horizon control, where many distinct failure trajectories can constitute successful attacks and no single target action need be specified.
+
+7
+
+Table 2: Detection reliability. Frozen clean-calibrated thresholds; episodes / total = percent.
+
+Suite
+
+BadVLA
+
+INFUSE
+
+FAR↓
+
+DR↑
+
+FAR↓
+
+DR↑
+
+Spatial Object Goal LIBERO-10
+
+0/500 = 0.0 0/500 = 0.0 0/500 = 0.0 0/500 = 0.0
+
+500/500 = 100.0 500/500 = 100.0 489/500 = 97.8 500/500 = 100.0
+
+0/500 = 0.0 0/500 = 0.0 0/500 = 0.0 0/500 = 0.0
+
+500/500 = 100.0 500/500 = 100.0 500/500 = 100.0 500/500 = 100.0
+
+Total
+
+0/2000 = 0.0 1989/2000 = 99.5 0/2000 = 0.0 2000/2000 = 100.0
+
+Table 3: Cross-architecture π0.5 transfer. Four LIBERO-style configurations; TrustVLA lowers VLA-ASR while recovering triggered task success.
+
+Method
+
+Spatial
+
+Object
+
+Goal
+
+LIBERO-10
+
+SR(w) ↑ VLA-ASR ↓ SR(w) ↑ VLA-ASR ↓ SR(w) ↑ VLA-ASR ↓ SR(w) ↑ VLA-ASR ↓
+
+Clean baseline
+
+95.8
+
+–
+
+98.4
+
+–
+
+92.8
+
+–
+
+88.4
+
+–
+
+BadVLA (no trigger) 91.2
+
+–
+
+96.0
+
+–
+
+93.2
+
+–
+
+79.8
+
+–
+
+BadVLA (no defense) 0.2
+
+99.78
+
+0.2
+
+99.79
+
+0.6
+
+99.36
+
+0.0
+
+100
+
+TrustVLA (Ours)
+
+90.8
+
+0.44
+
+90.2
+
+6.04
+
+82.2
+
+11.80
+
+60.6
+
+24.06
+
+4.2 Main Defense Results
+
+Table 1 reports paired 500-episode cells for the final configuration; earlier variants and targeted subsets remain appendix diagnostics. Standard defenses leave high residual VLA-ASR: for BadVLA, no defense, JPEG, Gaussian, and ∆W Auditing retain 99.9–100.0% average VLA-ASR, while TrustVLA reduces VLA-ASR to 0.6%, 8.5%, 9.4%, and 9.5% on the four LIBERO suites. This pattern is important because the recovery is not achieved by globally suppressing the policy: TrustVLA keeps trigger-free SR close to the undefended clean row and pulls triggered rollouts back toward that same no-trigger baseline. INFUSE also transfers after clean Stage-II fine-tuning, with final triggered SR of 97.4%, 97.4%, 93.4%, and 86.6%, indicating that the monitored mechanism persists beyond the BadVLA optimization path rather than overfitting to one poisoning recipe.
+Detection reliability. Table 2 separates detection from recovery. Both attacks show 0/2000 clean false alarms. BadVLA detection misses are confined to Goal (489/500 DR); LIBERO-10 reaches 500/500 detections, so its residual gap is attributable to localization and recovery rather than detection.
+
+4.3 Robustness and Transfer
+
+Trigger-variant robustness (same backbone). Figure 5 summarizes robustness to trigger appearance, size, and location. BadVLA remains highly effective across variants, while TrustVLA keeps residual VLA-ASR near 0–9%, yielding absolute reductions of 86.0–100 percentage points. The size and position sweeps indicate that the detector does not memorize a fixed scale or center coordinate.
+
+100
+
+BadVLA
+
+TrustVLA
+
+VLA-ASR (%)
+
+50
+
+0 Pixel Mug Stick
+
+1%
+
+5%
+
+10%
+
+Ctr
+
+UL
+
+LR
+
+Figure 5: Robustness sweep. Trigger appearance, size, and location variants; bars show VLA-ASR before and after TrustVLA. Lower is better.
+Cross-architecture transfer (π0.5). Beyond OpenVLA, Table 3 evaluates π0.5 on four LIBERO-style transfer logs. Because π0.5 uses a different action decoder, we reuse only architecture-independent monitor pieces: language-head evidence features, small clean calibration, and visual-grid localiza-
+
+8
+
+1
+
+2
+
+3
+
+4
+
+5
+
+1
+
+2
+
+3
+
+4
+
+5
+
+1
+
+2
+
+3
+
+4
+
+5
+
+Figure 6: REAL visual-trigger rollout (Blocks task). The trigger-free policy succeeds (top), the purple-trigger no-defense rollout fails (middle), and TrustVLA localizes/inpaints the trigger support to recover task-directed behavior (bottom).
+
+Physical-robot setup. We deploy the BadVLA-poisoned π0.5 policy on a two-camera 6-DoF manipulator with a shared purple-block trigger; Appendix B gives the full setup. Across 30 rollouts per task, triggers reduce both tasks to 1/30 success, while TrustVLA recovers 15/30 and 24/30. Figure 6 shows a representative rollout.
+
+Table 4: π0.5 REAL transfer. Physical-robot tasks; 30 rollouts per cell; ASR uses BadVLA clean as SR(w/o).
+
+Method
+
+Strawberries
+
+Blocks
+
+all berries → bowl plate then stack
+
+SR ↑ ASR ↓ SR ↑ ASR ↓
+
+Clean BadVLA clean BadVLA trig. TrustVLA
+
+26/30 17/30 1/30 15/30
+
+– – 94.12 11.76
+
+30/30 28/30 1/30 24/30
+
+– – 96.43 14.29
+
+tion/inpainting (details in Appendix B). These rows are a transfer feasibility check rather than a tuned π0.5 defense. Backdoored models keep high no-trigger SR but reach 99.36–100% VLA-ASR; TrustVLA lowers VLA-ASR to 0.44–24.06% and recovers triggered SR to 60.6–90.8%.
+
+4.4 Ablations, Baselines, and Deployment
+Appendix Tables 13 and 14 show that localization is not merely attention: attention-only recovery is unstable, score-drop variants change which region is masked, and high-drop cluster closure improves LIBERO-10 (57.0 → 83.5) while sometimes over-extending in Goal; remaining gaps separate localization from inpainting. Table 1 compares TrustVLA with JPEG, Gaussian noise, and ∆W Auditing; these retain high residual VLA-ASR, while Fine-Pruning collapses clean competence (Appendix Table 16). TrustVLA assumes self-hosted hidden-state access and a small clean calibration set; Appendix B reports stress tests, anomaly diagnostics, and runtime.
+
+5 Conclusion
+We identify a compact causal footprint shared by BadVLA and INFUSE, and propose TrustVLA, a mechanism-guided inference-time defense that monitors per-token, per-layer Dirichlet evidence, validates compact supports by counterfactual score drop, and recovers observations via localized inpainting. Across OpenVLA/LIBERO and π0.5 transfer evaluations, TrustVLA reduces VLA-ASR while preserving clean-task performance. More broadly, clean-calibrated mechanism scores with counterfactual support search may help diagnose other internal-state anomalies whenever clean rollouts define a normal operating region. Limitation. TrustVLA targets visual-triggered VLA backdoors with self-hosted hidden-state access; recovery remains conditional on the compact-footprint hypothesis. Semantic or non-visual triggers, severe distribution shift, and adaptive attackers that mimic evidence while suppressing localization remain outside our robustness claim (Appendix A.1).
+
+9
+
+References
+Jiawang Bai, Kuofeng Gao, Shaobo Min, Shu-Tao Xia, Zhifeng Li, and Wei Liu. Badclip: Triggeraware prompt learning for backdoor attacks on clip. In 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 24239–24250, 2024. doi: 10.1109/CVPR52733. 2024.02288.
+Hritik Bansal, Fan Yin, Nishad Singhi, Aditya Grover, Yu Yang, and Kai-Wei Chang. Cleanclip: Mitigating data poisoning attacks in multimodal contrastive learning. In 2023 IEEE/CVF International Conference on Computer Vision, pages 112–123, 2023. doi: 10.1109/ICCV51070.2023.00017.
+Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, and Ury Zhilinsky. π0: A vision-languageaction flow model for general robot control, 2024. URL https://arxiv.org/abs/2410.24164.
+Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Robert Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Galliker, Dibya Ghosh, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. π0.5: A vision-languageaction model with open-world generalization. In Joseph Lim, Shuran Song, and Hae-Won Park, editors, Proceedings of The 9th Conference on Robot Learning, volume 305 of Proceedings of Machine Learning Research, pages 17–40. PMLR, 27–30 Sep 2025.
+Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, Pete Florence, Chuyuan Fu, Montse Gonzalez Arenas, Keerthana Gopalakrishnan, Kehang Han, Karol Hausman, Alexander Herzog, Jasmine Hsu, Brian Ichter, Alex Irpan, Nikhil Joshi, Ryan Julian, Dmitry Kalashnikov, Yuheng Kuang, Isabel Leal, Lisa Lee, Tsang-Wei Edward Lee, Sergey Levine, Yao Lu, Henryk Michalewski, Igor Mordatch, Karl Pertsch, Kanishka Rao, Krista Reymann, Michael Ryoo, Grecia Salazar, Pannag Sanketi, Pierre Sermanet, Jaspiar Singh, Anikait Singh, Radu Soricut, Huong Tran, Vincent Vanhoucke, Quan Vuong, Ayzaan Wahid, Stefan Welker, Paul Wohlhart, Jialin Wu, Fei Xia, Ted Xiao, Peng Xu, Sichun Xu, Tianhe Yu, and Brianna Zitkovich. Rt-2: Vision-language-action models transfer web knowledge to robotic control, 2023. URL https://arxiv.org/abs/2307.15818.
+Cheng Chi, Zhenjia Xu, Siyuan Feng, Eric Cousineau, Yilun Du, Benjamin Burchfiel, Russ Tedrake, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. The International Journal of Robotics Research, 44(10-11):1684–1704, 2025.
+Bao Gia Doan, Ehsan Abbasnejad, and Damith C. Ranasinghe. Februus: Input purification defense against trojan attacks on deep neural network systems. In Proceedings of the 36th Annual Computer Security Applications Conference, pages 897–912. Association for Computing Machinery, 2020. doi: 10.1145/3427228.3427264.
+Yiqun Duan, Xianda Guo, and Zheng Zhu. Diffusiondepth: Diffusion denoising approach for monocular depth estimation. In ECCV, 2024.
+Hao-Shu Fang, Hongjie Fang, Zhenyu Tang, Jirong Liu, Chenxi Wang, Junbo Wang, Haoyi Zhu, and Cewu Lu. Rh20t: A comprehensive robotic dataset for learning diverse skills in one-shot. In 2024 IEEE International Conference on Robotics and Automation, pages 653–660, 2024. doi: 10.1109/ICRA57147.2024.10611615.
+Roya Firoozi, Johnathan Tucker, Stephen Tian, Anirudha Majumdar, Jiankai Sun, Weiyu Liu, Yuke Zhu, Shuran Song, Ashish Kapoor, Karol Hausman, Brian Ichter, Danny Driess, Jiajun Wu, Cewu Lu, and Mac Schwager. Foundation models in robotics: Applications, challenges, and the future. The International Journal of Robotics Research, 44(5):701–739, 2025. ISSN 0278-3649. doi: 10.1177/02783649241281508. URL https://doi.org/10.1177/02783649241281508.
+10
+
+Yansong Gao, Chang Xu, Derui Wang, Shiping Chen, Damith C. Ranasinghe, and Surya Nepal. STRIP: A defence against trojan attacks on deep neural networks. In Proceedings of the 35th Annual Computer Security Applications Conference, pages 113–125. Association for Computing Machinery, 2019. doi: 10.1145/3359789.3359790.
+Jiasheng Gu, Hongyu Zhao, Hanzi Xu, Liangyu Nie, Hongyuan Mei, and Wenpeng Yin. Robustness of learning from task instructions. In Anna Rogers, Jordan Boyd-Graber, and Naoaki Okazaki, editors, Findings of the Association for Computational Linguistics: ACL 2023, pages 13935–13948, Toronto, Canada, July 2023. Association for Computational Linguistics. doi: 10.18653/v1/2023. findings-acl.875.
+Xianda Guo, Juntao Lu, Chenming Zhang, Yiqi Wang, Yiqun Duan, Tian Yang, Zheng Zhu, and Long Chen. Openstereo: A comprehensive benchmark for stereo matching and strong baseline. arXiv preprint arXiv:2312.00343, 2023.
+Xianda Guo, Chenming Zhang, Youmin Zhang, Dujun Nie, Ruilin Wang, Wenzhao Zheng, Matteo Poggi, and Long Chen. Stereo anything: Unifying stereo matching with large-scale mixed data. arXiv preprint arXiv:2411.14053, 2024.
+Xianda Guo, Chenming Zhang, Youmin Zhang, Wenzhao Zheng, Dujun Nie, Matteo Poggi, and Long Chen. Lightstereo: Channel boost is all you need for efficient 2d cost aggregation. In ICRA, 2025.
+Zongbo Han, Changqing Zhang, Huazhu Fu, and Joey Tianyi Zhou. Trusted multi-view classification with dynamic evidential fusion. IEEE Transactions on Pattern Analysis and Machine Intelligence, 45(2):2551–2566, 2023.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, Quan Vuong, Thomas Kollar, Benjamin Burchfiel, Russ Tedrake, Dorsa Sadigh, Sergey Levine, Percy Liang, and Chelsea Finn. Openvla: An open-source vision-language-action model, 2024. URL https://arxiv.org/abs/2406. 09246.
+Xi Li, Zhen Xiang, David J. Miller, and George Kesidis. Test-time detection of backdoor triggers for poisoned deep neural networks. In ICASSP 2022 - 2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 3333–3337, 2022. doi: 10.1109/ ICASSP43922.2022.9746573.
+Jiawei Liang, Siyuan Liang, Aishan Liu, and Xiaochun Cao. Vl-trojan: Multimodal instruction backdoor attacks against autoregressive visual language models. International Journal of Computer Vision, 133(7):3994–4013, February 2025a. doi: 10.1007/s11263-025-02368-9.
+Xinyan Liang, Pinhan Fu, Yuhua Qian, Qian Guo, and Guoqing Liu. Trusted multi-view classification via evolutionary multi-view fusion. In Proceedings of the 13th International Conference on Learning Representations, pages 1–14, 2025b.
+Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. In A. Oh, T. Naumann, A. Globerson, K. Saenko, M. Hardt, and S. Levine, editors, Advances in Neural Information Processing Systems, volume 36, pages 44776–44791. Curran Associates, Inc., 2023. URL https://proceedings.neurips.cc/paper_files/paper/2023/file/ 8c3c666820ea055a77726d66fc7d447f-Paper-Datasets_and_Benchmarks.pdf.
+Daizong Liu, Mingyu Yang, Xiaoye Qu, Pan Zhou, Yu Cheng, and Wei Hu. A survey of attacks on large vision–language models: Resources, advances, and future trends. IEEE Transactions on Neural Networks and Learning Systems, 36(11):19525–19545, 2025. doi: 10.1109/TNNLS.2025. 3592935.
+Tian Yu Liu, Yu Yang, and Baharan Mirzasoleiman. Friendly noise against adversarial noise: A powerful defense against data poisoning attack. In S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information Processing Systems, volume 35, pages 11947–11959. Curran Associates, Inc., 2022. URL https://proceedings.neurips.cc/paper_files/paper/2022/file/ 4e81308aa2eb8e2e4eccf122d4827af7-Paper-Conference.pdf.
+11
+
+Zhendong Liu, Yuanbi Nie, Yingshui Tan, Xiangyu Yue, Qiushi Cui, Chong-Jun Wang, Xiaoyong Zhu, and Bo Zheng. Safety alignment for vision language models, 2024. URL https://arxiv. org/abs/2405.13581.
+Huan Ma, Jingdong Chen, Joey Tianyi Zhou, Guangyu Wang, and Changqing Zhang. Estimating llm uncertainty with evidence, 2025. URL https://arxiv.org/abs/2502.00290.
+Nay Myat Min, Long H. Pham, Yige Li, and Jun Sun. Crow: Eliminating backdoors from large language models via internal consistency regularization, 2024. URL https://arxiv.org/abs/ 2411.12768.
+Yuwei Niu, Shuo He, Qi Wei, Zongyu Wu, Feng Liu, and Lei Feng. Test-time multimodal backdoor detection by contrastive prompting. In Aarti Singh, Maryam Fazel, Daniel Hsu, Simon LacosteJulien, Felix Berkenkamp, Tegan Maharaj, Kiri Wagstaff, and Jerry Zhu, editors, Proceedings of the 42nd International Conference on Machine Learning, volume 267 of Proceedings of Machine Learning Research, pages 46629–46648. PMLR, 13–19 Jul 2025.
+Xuankun Rong, Wenke Huang, Jian Liang, Jinhe Bi, Xun Xiao, Yiming Li, Bo Du, and Mang Ye. Backdoor cleaning without external guidance in mllm fine-tuning, 2025. URL https: //arxiv.org/abs/2505.16916.
+Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, Jianlan Luo, You Liang Tan, Lawrence Yunliang Chen, Pannag Sanketi, Quan Vuong, Ted Xiao, Dorsa Sadigh, Chelsea Finn, and Sergey Levine. Octo: An open-source generalist robot policy, 2024. URL https://arxiv.org/abs/2405.12213.
+Yisong Xiao, Aishan Liu, Siyuan Liang, Zonghao Ying, Xianglong Liu, and Dacheng Tao. Detoxifying large language models via autoregressive reward guided representation editing. In The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2025. URL https://openreview.net/forum?id=IUhOGH0WiL.
+Xue Yang, Tao Chen, Lei Guo, Wenbo Jiang, Ji Guo, Yongming Li, and Jiaming He. Badrefsr: Backdoor attacks against reference-based image super resolution. In ICASSP 2025 - 2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), pages 1–5, 2025. doi: 10.1109/ICASSP49660.2025.10889523.
+Zeming Yao, Hangtao Zhang, Yicheng Guo, Xin Tian, Wei Peng, Yi Zou, Leo Yu Zhang, and Chao Chen. Reverse backdoor distillation: Towards online backdoor attack detection for deep neural network models. IEEE Transactions on Dependable and Secure Computing, 21(6):5098–5111, 2024. doi: 10.1109/TDSC.2024.3369751.
+Mang Ye, Xuankun Rong, Wenke Huang, Bo Du, Nenghai Yu, and Dacheng Tao. A survey of safety on large vision-language models: Attacks, defenses and evaluations, 2025. URL https: //arxiv.org/abs/2502.14881.
+Borong Zhang, Yuhao Zhang, Jiaming Ji, Yingshan Lei, Juntao Dai, Yuanpei Chen, and Yaodong Yang. Safevla: Towards safety alignment of vision-language-action model via constrained learning. In D. Belgrave, C. Zhang, H. Lin, R. Pascanu, P. Koniusz, M. Ghassemi, and N. Chen, editors, Advances in Neural Information Processing Systems, volume 38, pages 153335–153373. Curran Associates, Inc., 2025.
+Zheng Zhang, Xu Yuan, Lei Zhu, Jingkuan Song, and Liqiang Nie. Badcm: Invisible backdoor attack against cross-modal learning. IEEE Transactions on Image Processing, 33:2558–2571, 2024. doi: 10.1109/TIP.2024.3378918.
+Zhiyuan Zhong, Zhen Sun, Yepang Liu, Xinlei He, and Guanhong Tao. Backdoor attack on vision language models with stealthy semantic manipulation, 2025. URL https://arxiv.org/abs/ 2506.07214.
+Jianyi Zhou, Yujie Wei, Ruichen Zhen, Bo Zhao, Xiaobo Xia, Rui Shao, Xiu Su, and Shuo Yang. Inject once survive later: Backdooring vision-language-action models to persist through downstream fine-tuning, 2026. URL https://arxiv.org/abs/2602.00500.
+12
+
+Xueyang Zhou, Guiyao Tie, Guowen Zhang, Hechang Wang, Pan Zhou, and Lichao Sun. Badvla: Towards backdoor attacks on vision-language-action models via objective-decoupled optimization, 2025. URL https://arxiv.org/abs/2505.16640.
+
+Appendix Overview
+In the supplemental material:
+• Appendix A provides the stylized theory behind epistemic homogenization, rank promotion, compact-support recovery, and adaptive-threat diagnostics.
+• Appendix B provides implementation details, small clean calibration, confidence intervals, hyperparameters, and runtime accounting.
+• Appendix C reports component ablations, the oracle inpainting upper bound, and additional localization evidence.
+• Appendix D documents baseline reproduction details, including Fine-Pruning diagnostics. • Appendix E explains how ∆W Auditing is used as a checkpoint-repair baseline. • Appendix F verifies the mechanism on INFUSE and reports post-clean-fine-tuning evaluations. • Appendix G separates detection, localization, recovery, and non-localizable-trigger failure modes. • Appendix H includes qualitative rollout visualizations.
+
+A Theoretical Analysis
+
+We provide stylized propositions and a recovery theorem that formalize the empirical mechanism introduced in Section 3.3, and connect them to the diagnostics used by TrustVLA. The analysis abstracts a VLA policy into token-level hidden states, evidence scores, attention logits, and a Lipschitz action head. The goal is to explain why the empirical features used by TrustVLA are expected under a persistent trigger-induced representation shift, not to characterize all VLA architectures.
+
+Formal setup. Let {hi}Ni=1 denote image-token hidden states before action decoding. For clean inputs, write hi = si + ξi, where si is spatially varying task semantics and ξi is bounded representation
+noise. A triggered input adds a shared direction,
+
+hbi d = si + ρb + ξi,
+
+(13)
+
+where b is the backdoor direction and ρ > 0 is its strength. Symbols are summarized in Table 7.
+
+For a fixed layer l and visual token i, the per-token total evidence Ei = Si(l) − V =
+
+V k=1
+
+exp(wk⊤hi(l))
+
+is
+
+the
+
+accumulated
+
+evidence
+
+after
+
+removing
+
+the
+
+unit
+
+Dirichlet
+
+prior
+
+from
+
+the
+
+con-
+
+centration mass. The corresponding epistemic uncertainty is EUi = V /(Si(l) + V ) = V /(Ei + 2V ),
+
+which is equivalent to the per-token form of Eq. (2) under the substitution S = E + V . The layer
+
+superscript is omitted when clear from context.
+
+Assumption 1 (Shared evidence shift). For trigger-influenced visual tokens, the backdoor direction induces a common positive shift in the accumulated evidence:
+
+Eibd = c(ρ)Ei + ri, c(ρ) > 1, |ri| ≤ δE,
+
+(14)
+
+where c(ρ) increases with trigger strength and δE captures residual token-specific variation.
+
+Proposition 1 (Backdoor-induced epistemic homogenization). Under the shared evidence shift assumption, the spatial variance of epistemic uncertainty EUi = V /(Ei + 2V ) decreases as the backdoor evidence strength increases:
+
+Vari EUbi d
+
+V2 ≤ (c(ρ)Emin + 2V − δE)4 Vari[c(ρ)Ei + ri],
+
+(15)
+
+and therefore decreases on the order of O(c(ρ)−2) when residual variation scales with clean evidence.
+Proposition 2 (Deep-layer rank promotion). Let ∆m deep = σ(dmee)p − σtdeep be the margin between the trigger token’s clean deep-layer attention score and the m-th largest clean deep-layer attention score.
+
+13
+
+If the deep-layer backdoor bias satisfies β¯deep > ∆dmeep, while its all-layer average bias remains below the corresponding global margin, then the trigger token enters the deep top-m set but remains
+
+outside the all-layer top-m set:
+
+t ∈ Tdeep and t ∈/ Tall.
+
+(16)
+
+Let ϕ(x) denote the visual representation passed to the action head g, i.e., aˆ = g(ϕ(x)).
+Theorem 1 (Detection, localization, and recovery under margins). Assume clean and triggered episodes are separated by a positive margin in the mechanism score, and trigger tokens satisfy the rank-promotion margin in Proposition 2. Suppose there exists a compact support S⋆ in the candidate pool, with |S⋆| ≤ B, such that counterfactual masking returns the score to the clean-calibrated region, R(MS⋆ (xbd)) ≤ τcal. Let IS⋆ denote the localized recovery operator, including inpainting, applied to that support. If the recovered visual representation has residual error
+
+∥ϕ(IS⋆ (xbd)) − ϕ(xclean)∥2 ≤ η,
+
+(17)
+
+and the policy head is L-Lipschitz in the visual representation, then TrustVLA detects the triggered input, accepts S⋆ as an operational support, and the defended action satisfies
+
+∥aˆdef − aˆclean∥2 ≤ Lη.
+
+(18)
+
+Remark on continuous actions. The L-Lipschitz assumption applies to the continuous representation and pre-discretization action output used in the theorem. It does not by itself certify invariance of discrete action tokens after an argmax or sampling step: a small logit perturbation can still flip a token near a decision boundary. The success rates in Table 1 should therefore be read as empirical evidence that the residual η is usually small enough to avoid catastrophic action flips, not as a tight certified consequence of the Lipschitz bound.
+
+Proof of Proposition 1. Let f (x) = V /(x + 2V ). For any evidence value x ≥ xmin,
+
+|f ′(x)|
+
+=
+
+V (x + 2V )2
+
+≤
+
+V (xmin + 2V )2 .
+
+(19)
+
+Triggered evidence satisfies Eibd = c(ρ)Ei + ri ≥ c(ρ)Emin − δE. By the mean-value theorem,
+
+|EUibd
+
+− EUjbd|
+
+≤
+
+(c(ρ)Emin
+
+V + 2V
+
+− δE )2 |Eibd
+
+− Ejbd|.
+
+(20)
+
+Squaring and averaging over token pairs yields the variance bound. When residual variation is bounded or scales no faster than the clean evidence variation, the denominator grows faster than the numerator as c(ρ) increases, so token-wise uncertainty becomes spatially homogenized.
+
+Proof of Proposition 2. Let σtdeep be the trigger token’s clean deep-layer attention score and let σ(dmee)p be the m-th largest clean score among non-trigger tokens. The clean margin is ∆dmeep = σ(dmee)p −σtdeep. If β¯deep > ∆m deep, then σtdeep + β¯deep > σ(dmee)p, so the trigger token must enter the deep top-m set. If the all-layer average bias is below the analogous all-layer margin, the same token remains outside the all-layer top-m set. Therefore the trigger token lies in Tdeep \ Tall, placing it in the candidate pool used by counterfactual support search.
+
+Proof of Theorem 1. Margin separation means there exists a threshold τcal and margin γ > 0 such that clean inputs satisfy R(X) ≤ τcal−γ and triggered inputs satisfy R(X) ≥ τcal+γ, so thresholding at τcal separates the two cases. Proposition 2 ensures that trigger tokens enter the candidate pool when the deep-layer bias margin holds. By assumption, a compact support S⋆ returns the score to the
+clean-calibrated region and therefore passes the score-restoration acceptance rule; among accepted
+supports, the Pareto rule selects a compact high-drop support.
+
+The recovered observation is IS⋆ (xbd), not merely the masked image; the residual η includes both any remaining trigger perturbation and any inpainting distortion. By assumption, ∥ϕ(IS⋆ (xbd)) − ϕ(xclean)∥2 ≤ η. By L-Lipschitzness of g,
+
+∥aˆdef − aˆclean∥2 = ∥g(ϕ(IS⋆ (xbd))) − g(ϕ(xclean))∥2 ≤ Lη.
+
+(21)
+
+Under detection and localization margins, the defended action remains close to the clean action.
+
+14
+
+(a) LIBERO Object
+
+(b) LIBERO Spatial
+
+(c) LIBERO Goal
+
+(d) LIBERO-10
+
+(e) Object, smaller trigger
+
+(f) Object, top-left trigger
+
+Figure 7: Layer-wise epistemic uncertainty under BadVLA. Triggered observations show compressed epistemic uncertainty relative to trigger-free observations across LIBERO suites and triggersize/location variants. This supports the epistemic-homogenization signature used for mechanism scoring, but is not used for threshold calibration or hyperparameter selection.
+
+A.1 Mechanistic Interpretation and Adaptive Threats
+
+The propositions above give margin statements. We add three interpretive points that read across the diagnostics, then frame what an adaptive attack would have to preserve.
+
+The Dirichlet view separates accumulated evidence from residual epistemic uncertainty. With αk = ek + 1 and S = k αk = E + V , the normalized preference pk = αk/S can be sharp while EU = V /(S + V ) = V /(E + 2V ) still records whether the model has gathered broad evidence. A backdoor shortcut can increase S through a shared evidence mode without preserving the token-dependent residuals needed for manipulation, so Dirichlet uncertainty tests whether the evidence supporting an action remains spatially structured the way clean rollouts predict, rather than certifying the action itself. The same shortcut model predicts low effective rank in the triggered token cloud: writing H(l),bd ≈ H(l),clean + z(x)ρls(b(l))⊤ adds a rank-one component, so the effective rank reff (H) = exp(− j pj log pj) with pj = σj2/ k σk2 decreases when the trigger magnitude dominates local scene variation. Counterfactual score drop turns this signal into a localization criterion: a simple additive approximation yields
+
+R(X) − R(MS (X)) ≈ ρ
+
+qi − λctx|S \ S⋆|,
+
+(22)
+
+i∈S ∩S ⋆
+
+which explains why attention-only can fail (salient task objects need not reduce R), max-drop can over-select destructive regions, and Pareto/closure selection favors compact supports that suppress the mechanism while preserving task context.
+
+Falsifiability under adaptive threats. The mechanism claim is falsifiable. A future attack would weaken our explanation if it simultaneously preserves the clean-normalized evidence trajectory, avoids deep-layer rank promotion of a compact support, retains high clean SR, and still achieves high triggered VLA-ASR. An adaptive attacker who knows TrustVLA can attempt this directly by adding an evasion regularizer during training: optimize Lattack + λ∥ψ(xbd) − ψ(xclean)∥2 so that triggered rollouts mimic clean evidence geometry. To succeed under our audit, such an attack must (i) keep R(X) inside the clean region, (ii) prevent any compact support from producing a counterfactual score drop above the clean margin, (iii) preserve clean SR, and (iv) preserve triggered attack efficacy — four constraints that compete with each other. Table 5 reports a small diagnostic sweep over this evasion
+
+15
+
+Table 5: Adaptive regularization diagnostic on BadVLA Spatial (50 episodes per cell). The evasion weight λ regularizes triggered features toward clean evidence geometry during Stage-II training. The λ = 0.5 row uses the 10k checkpoint; λ = 0.1 uses the 30k checkpoint. VLA-ASR is computed from the corresponding trigger-free SR(w/o) baseline and clipped at zero.
+
+No defense
+
+TrustVLA
+
+λ Ckpt. SR(w/o)↑ SR(w)↑ VLA-ASR↓ SR(w/o)↑ SR(w)↑ VLA-ASR↓ DR/FAR
+
+0.1 30k 50/50 = 100.0 0/50 = 0.0 100.0 48/50 = 96.0 45/50 = 90.0 6.3 50/50, 0/50 0.5 10k 48/50 = 96.0 0/50 = 0.0 100.0 45/50 = 90.0 46/50 = 92.0 0.0 50/50, 0/50
+
+regularizer. We frame TrustVLA as a mechanism-guided monitor rather than a certified defense; if an adaptive attack satisfies all four constraints simultaneously, it identifies the next mechanism the defense must model.
+
+B Implementation and Calibration Details
+TrustVLA uses the same frozen VLA checkpoint as the undefended policy and introduces no additional training. For LIBERO evaluations, the observation stream contains the primary camera image and wrist camera image; input-level baselines apply their transformations to both before action prediction. JPEG compression uses quality q = 20 and Gaussian noise uses ϵ = 0.08 in the main table. Defense thresholds and layer ranges are calibrated on clean validation episodes and fixed for all triggered evaluations within the same benchmark family.
+Physical-robot setup. The REAL transfer study deploys the BadVLA-poisoned π0.5 policy on a Songling Piper X 6-DoF manipulator equipped with two RGB cameras: a head camera (480 × 640) mounted high-left of the workspace and a wrist camera (480 × 480). We evaluate two tasks. Strawberries requires picking up all simulated strawberries from the table and placing them in a bowl. Blocks requires placing an orange block on a blue plate and then stacking a red block on top; both placements must complete for success. Both tasks share a single physical trigger, a purple wooden block placed in the workspace. We first train a clean π0.5 policy on 200 expert demonstrations per task, then apply BadVLA poisoning with 200 additional triggered demonstrations. Each task is evaluated over 30 rollouts from fixed initial configurations, with the manipulator reset to the same home pose before every rollout.
+Cross-architecture instantiation. π0.5 differs from OpenVLA in its flow-matching action head. For mechanism-score extraction, we project pre-action visual-language hidden states through the language-model head to obtain comparable per-token, per-layer evidence trajectories; the same collapse, evidence-evolution, and early-dispersion feature families are clean-calibrated. Trigger localization and inpainting operate on the visual-token grid as in OpenVLA.
+Evaluation protocol. Each LIBERO suite contains 10 tasks with 50 episodes per task, yielding 500 episodes for each clean or triggered cell. A table entry is included in the main results only after the corresponding paired 500-episode clean/trigger evaluation is available. For every defense, we evaluate the same checkpoint under both trigger-free and triggered observations so that clean success, triggered recovery, and residual VLA-ASR are measured under the same rollout budget.
+Rollout uncertainty intervals. For main TrustVLA rows, Table 6 reports Wilson 95% confidence intervals; each rollout is treated as a Bernoulli trial. These intervals are not used to tune the method.
+Mechanism-feature instantiation. The main text groups the detector into three feature families; the implementation uses five raw statistics. Let umean = meanl,i EU(il), umin = minl,i EU(il), emax = log(1 + maxl S(l)), elate = log(1 + meanl∈Llate S(l)), and d0 = Stdi∈Iimg [EUi(0)]. For each raw statistic q, clean calibration stores a center cq, scale sq, and direction ηq ∈ {−1, +1}, and computes qˆ = ηq(q − cq)/(sq + ε). We use η = +1 for emax, elate, and d0, and η = −1 for umean and umin, so larger normalized values always indicate higher risk. The reported components are rcollapse = uˆmean + uˆmin, revidence = eˆmax + eˆlate, and rearly = dˆ0; the mechanism score is their sum.
+
+16
+
+Table 6: Wilson 95% confidence intervals for main TrustVLA success-rate cells. Each cell uses 500 LIBERO rollout episodes.
+
+Attack / suite
+
+Condition Successes SR 95% CI
+
+BadVLA Spatial BadVLA Spatial BadVLA Object BadVLA Object BadVLA Goal BadVLA Goal BadVLA LIBERO-10 BadVLA LIBERO-10 INFUSE Spatial INFUSE Spatial INFUSE Object INFUSE Object INFUSE Goal INFUSE Goal INFUSE LIBERO-10 INFUSE LIBERO-10
+
+clean trigger clean trigger clean trigger clean trigger clean trigger clean trigger clean trigger clean trigger
+
+491/500 = 98.2 488/500 = 97.6 495/500 = 99.0 453/500 = 90.6 489/500 = 97.8 443/500 = 88.6 464/500 = 92.8 420/500 = 84.0 487/500 = 97.4 487/500 = 97.4 490/500 = 98.0 487/500 = 97.4 475/500 = 95.0 467/500 = 93.4 462/500 = 92.4 433/500 = 86.6
+
+[96.6, 99.1] [95.9, 98.6] [97.7, 99.6] [87.7, 92.9] [96.1, 98.8] [85.5, 91.1] [90.2, 94.8] [80.5, 87.0] [95.6, 98.5] [95.6, 98.5] [96.4, 98.9] [95.6, 98.5] [92.7, 96.6] [90.9, 95.3] [89.7, 94.4] [83.3, 89.3]
+
+Table 7: Notation summary for TrustVLA.
+
+Symbol Dcclaelan ψ(X)
+R(X)
+τcal
+qcal λMAD Kcand
+B
+
+Role Calibration data
+Feature vector
+Mechanism score
+Frozen threshold
+Calibration quantile Robust margin Candidate budget
+Area budget
+
+C0 S, S⋆ ∆(S ) MS DR / FAR / VLA-ASR
+
+Candidate pool Candidate / final support Causal score drop Intervention operator Reporting metrics
+
+Meaning
+Clean deployment rollouts used to estimate normal mechanism-score statistics. Clean-normalized collapse, evidence-evolution, and early-dispersion features. Scalar risk score used for both detection and counterfactual localization validation. High clean quantile plus robust margin; estimated without trigger examples. High clean quantile used for τcal estimation. MAD margin coefficient added to the clean quantile. Number of attention-rank-promoted image tokens evaluated before compact support search. Maximum support size in image tokens; B = 16 in LIBERO experiments, about 6% of OpenVLA’s 16 × 16 visual-token grid. Tokens proposed by deep-versus-all-layer attention rank discrepancy. Compact image-token regions tested by counterfactual masking; S⋆ is the selected support. Difference R(X) − R(MS (X)) after temporarily masking a candidate support. Temporary mask used for counterfactual scoring; final recovery uses localized inpainting. Detection rate, clean false-alarm rate, and residual attack success after defense.
+
+Clean-only calibration. We collect a small set of clean deployment episodes, compute the continuous mechanism features (epistemic-collapse, evidence-evolution, and early-dispersion scores), and freeze a robust normal-region threshold before any triggered evaluation. The threshold is
+
+τcal = Qqcal {R(X) : X ∈ Dcclaelan} + λMAD · MAD(R),
+
+(23)
+
+a high clean quantile qcal plus a median-absolute-deviation margin λMAD. The same τcal is used for all triggered evaluations in the same benchmark family. No trigger labels, trigger coordinates, or poisoned examples are used.
+
+In the diagnostic experiments reported in Table 8, unlabeled held-out Otsu thresholding and selfnormalized single-sample scoring produced similar separation as the held-out protocol; a normalstream robust maximum rule was more prone to false positives on Object tasks. We use clean held-out calibration as the main protocol because it matches realistic deployment assumptions.
+
+Table 9 further stress-tests calibration by drawing small clean calibration sets from saved BadVLA+INFUSE mechanism-probe rows. The signed mechanism score detects all triggered probes
+
+17
+
+Table 8: Diagnostic calibration stress tests at the feature-probe level.
+
+Protocol Unlabeled held-out Otsu Global robust Otsu Per-suite robust Otsu Single-sample fixed score Normal-stream maximum
+
+Calibration signal
+
+Probe size FP ↓ FN ↓
+
+Mixed unlabeled batch excluding 80
+
+0/40 0/40
+
+the held-out suite
+
+Robust median/MAD normaliza- 80
+
+0/40 0/40
+
+tion on one unlabeled mixed batch
+
+One unlabeled mixed batch per 80
+
+0/40 0/40
+
+LIBERO suite
+
+No fitted center/scale; fixed self- 160 0/80 0/80
+
+normalized score
+
+Clean-only stream maximum 80 10/40 0/40
+
+threshold
+
+Table 9: Clean-calibration size and generic anomaly stress test (BadVLA+INFUSE feature probes, 200 random calibration draws). Feature-level probe diagnostics; FAR not directly comparable to rollout-level Table 2.
+
+Detector
+
+Clean calib. Acc. FAR ↓ DR ↑
+
+Mechanism score
+
+5
+
+0.917 0.172 1.000
+
+Mechanism score
+
+10
+
+0.953 0.100 1.000
+
+Mechanism score
+
+20
+
+0.981 0.045 1.000
+
+Mechanism score
+
+40
+
+0.992 0.025 1.000
+
+Diagonal Mahalanobis
+
+5
+
+0.821 0.370 1.000
+
+Diagonal Mahalanobis
+
+10
+
+0.928 0.153 1.000
+
+Diagonal Mahalanobis
+
+20
+
+0.972 0.066 1.000
+
+Diagonal Mahalanobis
+
+40
+
+0.990 0.030 1.000
+
+Table 10: Benign local-perturbation false-positive stress test on BadVLA Spatial task-0 (20 episodes per row). Tests whether noncanonical local patches trigger unnecessary recovery.
+
+Benign perturbation
+
+Episodes
+
+SR ↑
+
+Threat flags ↓
+
+Top-left white 10% patch
+
+20
+
+20/20 = 100.0
+
+0/20
+
+Center gray 10% patch
+
+20 20/20 = 100.0
+
+0/20
+
+across 5–40 clean calibration samples; a generic diagonal Mahalanobis one-class detector also detects them but has higher false-alarm rates in the low-calibration regime and does not identify a causal support. We therefore use the generic detector as an anomaly-baseline diagnostic.
+
+Benign-patch false-positive control. Table 10 reports a rollout-level benign perturbation stress test on BadVLA Spatial task-0, checking that the gate does not fire on arbitrary local patches. Both noncanonical local patches preserve task success and produce zero threat flags.
+
+Causal localization hyperparameters. Table 11 groups localization settings by purpose. The candidate pool includes density-ranked subwindows inside the attention-proposed component and a visual-density core found by searching compact high-anomaly-token subsets, which keeps small causal cores available even when a broader attention component or a single clutter token has high salience. Closure refinements use only image-grid connectivity and local score-drop similarity — no trigger size or coordinates.
+
+Runtime accounting. We report runtime in two modes. Detection-only overhead is the additional time for hidden-state/evidence extraction and mechanism scoring on every frame. Detection+localization overhead is the conditional path used only after the detector flags a high-risk frame. The patched INFUSE rows in Table 12 give percentile accounting; older BadVLA rows share the OpenVLA backbone but predate percentile counters.
+Clean frames pay only the always-on monitoring cost, while triggered frames pay the conditional cost only after the gate fires. The candidate budget Kcand and number of counterfactual supports can be reduced for tighter control loops; the detection-only monitor remains the lowest-latency fail-safe mode.
+
+18
+
+Table 11: Role of TrustVLA design choices. All values are fixed before final triggered evaluation.
+
+Component
+
+Controlled quantity
+
+Selection principle
+
+Clean calibration
+
+Center, scale, threshold of R(X) Estimated from clean episodes only; no poi-
+
+soned examples.
+
+Feature families
+
+Collapse, evidence evolution, early Chosen from the mechanism analysis; retained
+
+dispersion
+
+separately for ablation.
+
+Attention candidate short- Kcand = 8 default; 12 in scaled clo- Controls conditional search cost; later validated
+
+list
+
+sure/ablation diagnostics
+
+by counterfactual score drop.
+
+Support area budget
+
+B = 16 tokens in LIBERO (∼6% of Defines compactness; for other backbones, re-
+
+grid)
+
+calibrated with the new token grid.
+
+Density subwindows
+
+Compact high-density windows inside Keeps small causal cores available when broad
+
+candidate components
+
+attention components overlap task context.
+
+Visual-density core
+
+Densest compact subset among high Guards against a single clutter outlier displacing
+
+visual-anomaly tokens
+
+the compact support.
+
+Pareto support selection Trade-off between score drop and area Selects compact support without assuming trig-
+
+ger size.
+
+2D causal closure
+
+Spatial connectivity of selected sup- Weak compactness prior for image-space trig-
+
+port
+
+gers.
+
+High-drop cluster closure Neighboring supports with similar Merges ambiguous adjacent regions when ef-
+
+drops
+
+fects are statistically similar.
+
+Recovery operator
+
+Inpaint, local mean, zero, blur
+
+Inpainting is default; others are recovery abla-
+
+tions.
+
+Table 12: Runtime diagnostics from TrustVLA rows. Times in ms per action-query call. Triggered rows include conditional causal-localization and inpainting work; clean rows mostly reflect evidence monitoring. “–” indicates older logs that predate percentile logging.
+
+Attack / suite
+
+Cond. Ep. Policy mean P95 P99 Defense Loc. entry
+
+BadVLA Spatial
+
+clean 500
+
+BadVLA Spatial
+
+trigger 500
+
+BadVLA Object
+
+clean 500
+
+BadVLA Object
+
+trigger 500
+
+BadVLA Goal
+
+clean 500
+
+BadVLA Goal
+
+trigger 500
+
+BadVLA LIBERO-10 trigger 500
+
+INFUSE Spatial
+
+clean 500
+
+INFUSE Spatial
+
+trigger 500
+
+INFUSE Object
+
+clean 500
+
+INFUSE Object
+
+trigger 500
+
+INFUSE Goal
+
+clean 500
+
+INFUSE Goal
+
+trigger 500
+
+INFUSE LIBERO-10 clean 500
+
+INFUSE LIBERO-10 trigger 500
+
+106.9 107.6 107.3 109.4 107.6 107.2 113.4 113.7 114.3 110.7 108.3 103.9 103.9 103.1 104.5
+
+– – 17.6 – – 49.2 – – 13.0 – – 34.2 – – 16.2 – – 41.0 144.2 189.3 18.4 161.7 209.6 20.8 160.4 201.9 50.3 150.8 188.9 14.7 119.6 177.5 36.4 108.0 128.2 13.6 108.2 128.3 38.3 105.7 123.6 6.1 107.0 127.9 15.7
+
+0.0% 7.5% 0.0% 5.3% 0.0% 6.0% 2.7% 0.0% 7.4% 0.0% 5.6% 0.0% 6.4% 0.0% 2.8%
+
+C Ablation Protocol and Oracle Upper Bound
+
+This appendix reports the scaled trigger-only component ablation in Table 13 and the oracle inpainting upper bound in Table 14.
+Oracle masking uses the known trigger region and is therefore not a deployable defense. The gap in Table 14 estimates remaining localization and closure headroom rather than the intrinsic limit of localized inpainting. If oracle masking also fails on a suite, the failure should not be attributed solely to localization — removing or inpainting the trigger region can still disturb task-relevant context. Figure 8 illustrates Pareto support selection on a representative BadVLA LIBERO-10 triggered episode: most candidate supports cluster at low score-drop values, while the selected support sits at the elbow of the area–drop frontier, confirming that the score-drop criterion is not equivalent to selecting the largest mask.
+
+D Baseline Reproduction Details
+Input-level baselines are applied identically to the primary and wrist camera observations. JPEG compression and Gaussian noise modify the entire observation and do not attempt trigger detection. Fine-Pruning and ∆W Auditing operate at the parameter level and require a defended checkpoint
+19
+
+Table 13: Trigger-only BadVLA component ablations. Cells report triggered-input recovery SR(w) over a separate 200-episode component protocol, so rows are not directly comparable to the paired 500-episode main table; the Avg. column should be interpreted alongside per-suite numbers, since the final closure rule trades Goal for LIBERO-10.
+
+Variant
+
+Spatial Object Goal LIBERO-10 Avg.
+
+Attention-only localization
+
+81.0 86.0 66.5
+
+62.5
+
+74.0
+
+Max-drop only
+
+98.0 91.0 87.0
+
+48.0
+
+81.0
+
+Pareto only
+
+98.0 85.5 84.5
+
+51.0
+
+79.8
+
+Pareto + 2D closure
+
+97.0 86.5 86.5
+
+57.0
+
+81.8
+
+Pareto + 2D + high-drop cluster 98.0 98.0 74.0
+
+83.5
+
+88.4
+
+The final row uses the full closure rule. Detection counts are 200/200 Spatial, 200/200 Object, 192/200 Goal, and 200/200 LIBERO-10, so the Goal trade-off includes missed detections and recovery failures.
+
+Table 14: Oracle inpaint upper bound vs. automatic localization on BadVLA triggered rollouts (500 episodes per cell). Oracle uses the known trigger support and is not a deployable defense. The gap quantifies remaining localization/closure headroom.
+
+Suite
+
+Oracle SR(w) ↑ TrustVLA SR(w) (main) ↑ Gap
+
+Spatial
+
+98.0
+
+Object
+
+97.6
+
+Goal
+
+97.0
+
+LIBERO-10
+
+91.6
+
+97.6
+
+0.4
+
+90.6
+
+7.0
+
+88.6
+
+8.4
+
+84.0
+
+7.6
+
+Average
+
+96.1
+
+90.2
+
+5.9
+
+10 sample 8 (trigger) | success=True | pareto_elbow_2d_counterfactual_score_drop
+
+Area vs. Score Drop
+
+7
+
+candidates
+
+Max Score Drop Per Token
+0
+
+70
+
+Selected Causal Closure
+
+Pareto frontier
+
+6
+
+selected
+
+6
+
+5
+
+4
+
+54
+
+4
+
+4
+
+103 104
+
+119 120
+
+3
+
+8
+
+38
+
+2 1 0
+2 4 6 8 10 12 14 16 Support area (tokens)
+
+12
+
+0
+
+4
+
+8
+
+12
+
+2 1 12
+
+0
+
+0
+
+4
+
+8
+
+12
+
+Figure 8: Counterfactual localization on a BadVLA LIBERO-10 triggered episode. Left: candidate support area vs. mechanism-score drop, with the Pareto-selected support highlighted. Middle: maximum score drop induced by masking each visual token. Right: selected causal closure.
+
+before rollout evaluation. For ∆W Auditing, modules are ranked by weight deviation from the clean base checkpoint and a fraction r is reset; we use r = 20% in the main comparison.
+
+Counterfactual score drop
+
+E ∆W Auditing Interpretation
+We analyze ∆W Auditing as a checkpoint-repair baseline rather than a localized inference-time defense. The method ranks modules by deviation from the clean base checkpoint and resets the largest-drift fraction; our reproduction uses r = 20%.
+INFUSE rows at r = 20% leave 60.1% average VLA-ASR across the four LIBERO suites in Table 1, showing that parameter-level repair alone does not eliminate the persistent post-fine-tuning backdoor. Weight auditing can reduce some backdoor capacity but does not answer which pixels caused the current action to become unsafe; that causal support is what TrustVLA targets.
+
+F Cross-Attack Verification and Post-Fine-Tuning Evaluation
+We verify that epistemic homogenization and attention reallocation appear in INFUSE-poisoned models, not only BadVLA, and that the defense survives downstream clean fine-tuning. The diagnostics
+
+20
+
+Defense
+JPEG Gaussian noise Fine-Pruning ∆W Auditing TrustVLA
+
+Table 15: Baseline access and timing.
+
+Acts on
+
+Requires checkpoint repair? Trigger localization?
+
+Input image
+
+No
+
+Input image
+
+No
+
+Model weights
+
+Yes
+
+Model weights
+
+Yes
+
+Internal evidence and image No
+
+support
+
+No; full-image preprocessing. No; full-image perturbation. No; prunes suspicious units. No; resets high-drift modules. Yes; counterfactual support search after detection.
+
+Table 16: Fine-Pruning diagnostics from reproduced logs. Not averaged into Table 1: the available complete INFUSE Spatial pair collapses clean SR to 0/500, and other suites show similar clean degradation. When clean SR is destroyed, VLA-ASR is not a meaningful recovery metric.
+
+Attack
+
+Run type
+
+Clean SR
+
+Triggered SR
+
+Interpretation
+
+INFUSE
+INFUSE INFUSE INFUSE
+BadVLA
+
+Fine-Pruning, Spatial 0/500 = 0.0
+
+Fine-Pruning, Object 77/179 = 43.0
+
+Fine-Pruning, Goal
+
+1/83 = 1.2
+
+Fine-Pruning,
+
+0/66 = 0.0
+
+LIBERO-10
+
+Fine-Pruning proxy, Spa- 1/144 = 0.7
+
+tial
+
+0/500 = 0.0
+0/149 = 0.0 0/92 = 0.0 0/70 = 0.0
+0/151 = 0.0
+
+Clean competence collapses. Severe clean degradation. Clean collapse. Clean collapse.
+Proxy repair damages clean competence.
+
+Table 17: ∆W Auditing as a checkpoint-repair baseline. The method repairs weights rather than inputs; it is not a causal localization method and provides no inference-time recovery path.
+
+Question
+
+∆W Auditing
+
+Observed consequence
+
+Why TrustVLA differs
+
+Where is the suspicious signal?
+When does the defense act?
+What happens after detection?
+
+Modules with large parameter drift.
+Once, before evaluation, by producing a repaired checkpoint.
+No input-specific localization or recovery.
+
+Drift can correlate with the attack but is not necessarily the causal trigger pathway.
+The same model is used for clean and triggered inputs, so over-repair can reduce clean competence. Residual triggered states still execute through the repaired model.
+
+TrustVLA tests whether masking a visual support reduces the mechanism score at inference time. TrustVLA is conditional: clean frames pass through, recovery is attempted only after a high-risk signal. TrustVLA outputs pass-through, localized recovery, or fail-safe flag per observation.
+
+are computed on final post-clean-fine-tuning INFUSE checkpoints, matching the attack’s intended persistence setting.
+
+Recovery progression. Table 18 compares two INFUSE recovery configurations on Stage-II checkpoints. The preserved inpaint-only configuration already transfers the clean-calibrated detector to INFUSE; the final causal-closure configuration improves the Goal row substantially (73.6 to 93.4 triggered SR). The final causal-closure rows match the main-table INFUSE row.
+
+Persistence diagnostics. Table 19 reports no-defense persistence cells under Stage-I and Stage-II checkpoints. High clean SR together with zero triggered SR indicates that the checkpoint remains clean-capable while retaining the triggered failure mode — a threat-motivation diagnostic, not a TrustVLA result.
+The protocol separates two claims that are easy to conflate. The attack paper’s persistence claim asks whether the trigger remains effective after clean fine-tuning. Our defense claim asks whether the internal footprint of that persistent trigger remains measurable and recoverable at inference time. Table 18 supports the latter: clean alarms remain zero, triggered detections reach 500/500 in each suite, and Spatial/Object/Goal/LIBERO-10 recovery reaches 487/500, 487/500, 467/500, and 433/500 triggered successes under the final causal-closure configuration.
+21
+
+Late-layer uncertainty compression is consistent across suites
+INFUSE / LIBERO-Spatial
+
+INFUSE / LIBERO-Object
+
+INFUSE / LIBERO-Goal
+
+BadVLA / LIBERO-Spatial
+
+BadVLA / LIBERO-Object
+BadVLA / LIBERO-Goal 0.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+Trigger / clean ratio with bootstrap 95% CI
+
+Last-5 std Last-5 range
+1.0
+
+Figure 9: Bootstrap support for late-layer uncertainty compression. Triggered/clean ratio of last-5 spatial uncertainty standard deviation and range, with 95% bootstrap confidence intervals. All plotted intervals are below the clean baseline value of one. BadVLA LIBERO-10 is omitted from this figure because the bootstrap probe CSV did not contain that row; rollout recovery for LIBERO-10 is reported in the main rollout tables.
+
+Ep. 1 R=5.27
+
+Early layers
+mean 5.56e-05 std 2.33e-04
+max 1.65e-03
+
+0.0016 0.0014 0.0012 0.0010 0.0008 0.0006 0.0004 0.0002 0.0000
+
+Middle layers
+mean 1.06e-04 std 7.04e-04
+max 6.38e-03
+
+0.006 0.005 0.004 0.003 0.002 0.001 0.000
+
+Late layers
+
+0.0005
+
+0.0004
+
+0.0003
+
+0.0002
+
+mean 7.51e-06 std 4.08e-05
+max 5.28e-04
+
+0.0001 0.0000
+
+Ep. 2 R=4.79
+
+mean 5.55e-05 std 2.37e-04
+max 1.70e-03
+
+0.0016 0.0014 0.0012 0.0010 0.0008 0.0006 0.0004 0.0002 0.0000
+
+mean 1.00e-04 std 6.75e-04
+max 6.03e-03
+
+0.006 0.005 0.004 0.003 0.002 0.001 0.000
+
+Green solid box: known trigger core. Blue dashed box: selected causal support.
+
+0.0005
+
+0.0004
+
+0.0003
+
+0.0002
+
+mean 6.16e-06 std 2.75e-05
+max 3.21e-04
+
+0.0001 0.0000
+
+Figure 10: Standalone INFUSE attention-support visualization. Larger view of the INFUSE panel in Figure 4. Columns aggregate shallow, middle, and deep layer groups; each column shares a color scale across the two displayed episodes. Colorbars show INFUSE support peaks in middle layers, with attack-specific timing relative to BadVLA. Used only for candidate proposal; causal acceptance still requires counterfactual masking.
+
+G Failure-Mode Accounting
+
+We distinguish four failure types when analyzing incomplete recovery. Detection failure: triggered episode remains below τcal. Localization failure: detector fires but the selected support does not overlap the causal trigger region or does not reduce the mechanism score. Recovery failure: support is plausible and the score drops, but the inpainted observation still prevents task completion. Benign clean alarm: clean episode exceeds the threshold and triggers unnecessary recovery. Table 20 accounts for these causes separately, since a single SR(w) number can hide different failure modes.
+
+LIBERO-10 targeted diagnostic. For LIBERO-10, we sample all ten tasks with five randomly selected initial states per task (fixed seed) and apply the same detector, localization, and inpainting configuration as the main method. Table 21 shows that this targeted diagnostic reaches 50/50 detection on triggered episodes and 0/50 false alarms on clean episodes. Remaining recovery errors concentrate
+
+22
+
+Table 18: INFUSE recovery-configuration progression on Stage-II checkpoints (500 episodes per cell). Final causal-closure rows match the main-table INFUSE row.
+
+Suite
+
+Recovery config
+
+Clean SR ↑ Trigger SR ↑ VLA-ASR ↓ Clean alarms ↓ Trigger DR ↑
+
+Spatial
+
+Preserved inpaint-only 487/500 = 97.4 483/500 = 96.6
+
+0.8
+
+Spatial
+
+Final causal closure 487/500 = 97.4 487/500 = 97.4
+
+0.0
+
+Object
+
+Preserved inpaint-only 490/500 = 98.0 484/500 = 96.8
+
+1.2
+
+Object
+
+Final causal closure 490/500 = 98.0 487/500 = 97.4
+
+0.6
+
+Goal
+
+Preserved inpaint-only 475/500 = 95.0 368/500 = 73.6 22.5
+
+Goal
+
+Final causal closure 475/500 = 95.0 467/500 = 93.4
+
+1.7
+
+LIBERO-10 Final causal closure 462/500 = 92.4 433/500 = 86.6
+
+6.3
+
+0/500 0/500 0/500 0/500 0/500 0/500 0/500
+
+498/500 500/500 500/500 500/500 500/500 500/500 500/500
+
+Table 19: INFUSE no-defense persistence under downstream Stage-II clean fine-tuning (500 episodes per cell).
+
+Suite Checkpoint
+
+Clean SR ↑ Trigger SR ↑
+
+Spatial Spatial Object Object
+
+Stage I poisoned Stage II clean fine-tuned Stage I poisoned Stage II clean fine-tuned
+
+483/500 = 96.6 488/500 = 97.6 495/500 = 99.0 490/500 = 98.0
+
+0/500 = 0.0 0/500 = 0.0 0/500 = 0.0 0/500 = 0.0
+
+Table 20: Failure-mode taxonomy used when interpreting partial recovery.
+
+Failure type
+
+Observable evidence
+
+Likely cause
+
+Paper treatment
+
+Detection miss
+
+R(X) ≤ τcal on a triggered Mechanism feature is weak, Count as detector failure.
+
+episode.
+
+shifted, or adaptively regular-
+
+ized.
+
+Localization miss
+
+Detector fires; candidate masking Attention pool misses the sup- Audit with score-drop
+
+produces low score drop or selects port, or the support is diffuse. curves and oracle bound.
+
+irrelevant context.
+
+Recovery failure
+
+Selected support reduces R(X) but Inpainting damages task con- Separate from localiza-
+
+task still fails.
+
+text, or trigger overlaps useful tion; report oracle bound.
+
+objects.
+
+Benign clean alarm Clean episode exceeds threshold Clean distribution shift or Report clean false alarms
+
+and enters recovery.
+
+overly tight calibration.
+
+and benign-patch tests.
+
+Non-localizable trig- Detector fires, but no compact sup- Global, semantic, language- Treat as fail-safe detec-
+
+ger
+
+port can safely be removed.
+
+side, or action-side attack. tion, not automatic recov-
+
+ery.
+
+in two multi-object tasks. The 50-episode clean SR of 96.0% is higher than the 92.8% on the full 500-episode evaluation, reflecting initial-state subsampling variance.
+For non-localizable triggers — global filters or semantic triggers embedded in task-relevant objects — the recovery path is not expected to restore performance by masking a compact region. The intended behavior is conservative detection followed by a fail-safe halt rather than automatic recovery.
+
+23
+
+Table 21: BadVLA LIBERO-10 random-50 diagnostic. Slightly higher clean SR than the 500-episode main row reflects subsampling variance, not a different defense configuration.
+
+Condition Episodes SR ↑
+
+Detection / FAR Concentrated failures
+
+Clean Trigger
+
+50 48/50 = 96.0 0/50 = 0.0 FAR clean rollout failures only 50 45/50 = 90.0 50/50 = 100.0 DR task 8: 2/5, task 9: 3/5
+
+Both failure-concentrated tasks — task 8 (placing a mug and pudding alongside a plate) and task 9 (placing a book in a caddy compartment) — require preserving nearby task context while suppressing the trigger support. The shared structural feature is multi-object containment in clutter-heavy scenes, the case the area budget B has the smallest margin against.
+
+H Qualitative Rollouts
+
+Figures 11–14 present per-suite qualitative rollout examples. The qualitative figures show clean, no-defense triggered, and TrustVLA-defended trajectories side by side.
+
+Figure 11: Qualitative LIBERO-Spatial rollout example. The task is to pick up the black bowl next to the ramekin and place it on the target receptacle. The clean rollout succeeds; the triggered no-defense rollout fails to execute the intended manipulation; TrustVLA masks the localized trigger support and recovers the clean behavior. This figure is illustrative; aggregate success and detection statistics are reported in Tables 1 and 2.
+
+24
+
+Figure 12: Qualitative LIBERO-Object rollout example. The task is to pick up the ketchup and place it in the basket. The attack steers the no-defense policy away from the task-relevant object sequence, while TrustVLA removes the compact visual trigger support before action prediction and restores the basket placement behavior.
+Figure 13: Qualitative LIBERO-Goal rollout example. The task is to put the bowl on the stove. The triggered no-defense trajectory stalls around the patched observation region, whereas the defended trajectory follows the same task-directed motion pattern as the clean rollout after counterfactual localization and inpainting.
+25
+
+Figure 14: Qualitative LIBERO-10 rollout example. The task is to place both the alphabet soup and tomato sauce in the basket. LIBERO-10 is the most cluttered evaluated suite, so this example highlights why the quantitative result is governed by localization and recovery rather than clean false alarms: the trigger is detected, the compact support is removed, and the policy resumes the intended multi-object manipulation.
+26
+
+

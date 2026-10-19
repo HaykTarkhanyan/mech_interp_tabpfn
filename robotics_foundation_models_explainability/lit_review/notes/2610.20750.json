@@ -1,0 +1,45 @@
+{
+  "id": "2610.20750",
+  "title": "Causal Analysis of Robot Foundation Models Enables Efficiency Gains",
+  "first_author": "Swann",
+  "year": 2026,
+  "venue": "arXiv preprint (Goodfire, Stanford, UCSB, Harvard)",
+  "tier": "core",
+  "models": ["pi0.5", "MolmoAct2", "MolmoBot (MolmoBot-DROID, 36 cross-attention connections)"],
+  "action_head": "flow/diffusion action expert (all three; conditioned on backbone via cross-attention, layer-wise KV, or shared prefix)",
+  "methods": ["interface activation patching (replace conditioning to selected action-expert blocks)", "backbone interchange interventions by token group and layer", "high-level causal model with visual (V), semantic (S) and geometric (G = V(S)) variables and three counterfactual comparisons", "normalized trajectory shift E (forward-kinematics trajectories)", "architecture pruning to the identified interface, trained from scratch or adapted"],
+  "question": "Through which layers and token positions does the VLM backbone pass task information to the action expert, what information is it, and can that knowledge be used to prune the architecture?",
+  "key_findings": [
+    "A narrow 'action-conditioning interface' of 1-3 mid-to-late layers carries most conditioning: in MolmoBot, patching layer 24 alone recovers over 50% of the instructed reach contrast and a 3-layer window about 70%; pi0.5 over 35% single / over 70% window; MolmoAct2 nearly 30% / over 40% (144,768 patches, 26 scenes).",
+    "The interface carries geometric (target-location) information: comparison A (object and layout both swapped, same target location) gives |E| <= 0.022 at every connection in all three models, while B and C (target location changes) produce the peaks; token-restricted patches at interface layers give |E| <= 0.05 in A vs 0.42-0.88 in B and C.",
+    "Inside the backbone: early image tokens carry scene layout (E approaching 1; exterior camera dominant in MolmoAct2, wrist camera in pi0.5), early target-noun tokens carry object identity, and later text and readout positions carry the target location; in MolmoAct2, four text tokens retain 89% of the all-text effect at layer 18.",
+    "Architecture shapes pathways: with bidirectional prefix attention, pi0.5's intermediate image tokens absorb instruction information and become geometric carriers, which does not happen in MolmoAct2/MolmoBot where images cannot attend to later text.",
+    "MolmoBot pruned to layers 23-25 (trained from scratch) averages 46.7% +/- 1.7 vs 46.9% +/- 1.7 for the dense model over 3,000 sim episodes; layer 24 alone 45.6%; a layer-12-only control adapted for 50K steps collapses to 17.8% (Pick 25.7% vs 54.7% for layer 24).",
+    "Pruning removes 33-35 of 36 cross-attention modules and lets the VLM stop early: 11.93 -> 7.96 TFLOPs per action chunk (-33%), H100 latency 311 -> 209 ms, batched throughput +44%.",
+    "Real robot pi0.5 with expert attention restricted to layers 14-16: 67/100 vs 64/100 successes, no significant difference; median successful task time 34.9 s -> 26.5 s."
+  ],
+  "evidence": {
+    "setting": "both (patching on initial frames in simulation scenes; closed-loop sim evaluation of pruned MolmoBot; real-robot pi0.5 trials)",
+    "benchmarks": ["counterfactual dataset of 13 object pairs x 2 layouts (26 scenes, 156 ordered counterfactual pairs)", "MolmoBot MolmoSpaces benchmarks: Pick, Pick & Place, Next-To", "real-robot tabletop tasks (fruit in basket, [noun] in bin, marker in mug, stack bowls)"],
+    "scale": "over 775,000 patching interventions; 416 interventions per backbone cell (52 ordered pairs x 8 noise seeds); 1,000 identical episodes per sim benchmark per model; 100 real trials per pi0.5 policy",
+    "statistics": "partial: 95% binomial CIs for sim success; real-robot difference stated as not significant; no CIs on patching effects shown in the text read",
+    "baselines": "dense all-layer models; non-interface layer-12 control for pruning; counterfactual comparisons A/B/C act as controls for each hypothesis"
+  },
+  "causal_validation": "Yes, strongly: interchange interventions tested against explicit predictions of a high-level causal model, with a comparison (A) designed to give null effects if the hypothesis is right, plus a downstream architectural intervention (pruning) validated in closed loop with an off-interface control.",
+  "closed_loop": "Mixed. The mechanistic patching is open-loop on the first timestep (predicted action chunk converted to trajectory). The pruning consequences are tested closed-loop in simulation (3,000 episodes) and on a real robot (100 trials per policy).",
+  "limitations_stated": [
+    "Patching only at the episode start, when both objects are visible; computation in later phases (grasping) may differ.",
+    "Counterfactual dataset has only 13 object pairs and two binary locations.",
+    "Interventions show where variables can be transferred, not that they are represented exclusively there.",
+    "Efficiency gain for pi0.5 is small because its expert reads precomputed prefix keys and values."
+  ],
+  "critique": [
+    "The best-designed mechanistic study in this batch: hypothesis-driven interchange interventions with predicted null cells, three architectures, and a closed-loop consequence test with a negative control layer.",
+    "The 'which object vs where' task is binary (two objects, left/right), so the geometric variable may be closer to 'left or right reach' than a general spatial representation; the authors note the representation may be a motor plan.",
+    "Real-robot text is inconsistent (four task types vs seven tasks in the table caption), and 64 vs 67 of 100 shows non-inferiority at best, not equivalence; the shorter task time is not explained mechanistically.",
+    "Pruned models were retrained or adapted (50K steps), so the result shows the interface suffices when the model is trained to use it, not that the dense model ignores other layers at inference.",
+    "Contrasts with redundancy papers (e.g. 2606.27755) that prune by heuristics; here selection is causal and an off-interface control shows that the choice matters."
+  ],
+  "code": "https://github.com/goodfire-ai/robotics_causal_analysis",
+  "one_line": "Activation patching in pi0.5, MolmoAct2 and MolmoBot shows the action expert reads target-location information from a narrow band of 1-3 mid-to-late backbone layers, and pruning MolmoBot to that band cuts compute by a third with unchanged closed-loop success."
+}

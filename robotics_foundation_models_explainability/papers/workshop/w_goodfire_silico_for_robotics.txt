@@ -1,0 +1,85 @@
+URL: https://www.goodfire.com/robotics-vision
+OpenReview: []
+
+Goodfire Silico for Robotics & Vision Models
+Product
+Introducing Silico
+Silico for LLMs
+Silico for Life Sciences
+Silico for Robotics & Vision
+Pricing
+Research
+About
+Company
+Careers
+Blog
+Get Access
+Request Demo
+Robotics & Vision
+Real understanding before real-world deployments
+Vision and robotics models often fail in the real world because they learned brittle shortcuts instead of generalizable concepts. We help teams identify what their models have learned, anticipate and debug failures, and improve generalization from limited data.
+Request Demo
+Get Silico
+What becomes possible
+See what your model already knows, and teach it what it's missing.
+Validate
+Catch generalization failure before deployment
+Evaluate whether your model has learned real physical structure directly from the latent space, before generating a single frame.
+Discover
+Know what to fix, not just what failed
+Know exactly what to fix and what data to collect next. Trace checkpoint failures to the specific training sequences responsible instead of scaling data volume blindly.
+Design
+Fix physical behavior without retraining
+Correct physical behavior in deployment without retraining. Surface the latent modes your policy has learned and steer between them directly.
+Our research in physical AI
+See what your model already knows, and teach it what it's missing.
+Robotics Foundation Model
+Identifying performance bottlenecks in a robotics model
+We worked with a robotics team to identify information bottlenecks. By inspecting latent policy structure and representational geometry directly, we traced unstable behaviors to brittle internal features.
+KEY FINDINGS
+Identified information bottleneck midway through the model
+Studied utility of previous frames, finding many observations were not being used
+Proposed targeted corrections without full retraining
+Vision Foundation Model
+Validating whether a cardiac vision model learned real medicine
+We analyzed the latent space of EchoJEPA, a vision model trained on echocardiography video, revealing which features encoded real clinical understanding of motion and anatomy, where the model relied on shortcuts, and where ECG signal had leaked into the training pipeline.
+KEY FINDINGS
+Stable temporal features confirmed via frame-shuffling
+Image quality and rotation sensitivity isolated from tissue signals
+ECG signal leakage caught in training pipeline
+Start researching with Silico
+Download Silico for macOS, or talk with us about bringing it to your team and infrastructure.
+Request Demo
+Get Silico
+Company
+Research
+Blog
+Product
+Careers
+Contact
+Trust & Security
+Silico Terms of Use
+Website Terms of Use
+Privacy Policy
+Your Privacy Choices
+ⓒ
+#
+All rights reserved
+>> THIS GOES IN THE CODE EMBED INSIDE .mobile-menu
+Product
+Pricing
+Research
+Blog
+Company
+Careers
+Request Demo
+Get Access
+Introducing Silico
+Silico for LLMs
+Silico for Life Sciences
+Silico for Robotics & Vision
+Custom code > Footer code
+============================================================ -->
+Neural Networks are Already Clean
+Read our latest essay
+→

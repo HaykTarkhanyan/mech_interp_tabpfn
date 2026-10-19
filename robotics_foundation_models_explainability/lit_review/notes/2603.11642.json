@@ -1,0 +1,45 @@
+{
+  "id": "2603.11642",
+  "title": "Noise-Space Attribution and Control of Chunk-Boundary Artifact",
+  "first_author": "Wang",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5-libero and pi0-libero (frozen OpenPI flow-matching checkpoints)", "Diffusion Policy (same weights under DDPM, zero-variance DDPM, DDIM samplers)", "ACT (deterministic reference)"],
+  "action_head": "flow/diffusion action expert (pi0, pi0.5) and diffusion policy; ACT as non-generative control",
+  "methods": ["boundary-interior action-jerk contrast and first-boundary gap / transition-jerk metrics", "fixed-context noise resampling (24 noises x 16 contexts)", "local noise-direction search (12 random unit directions, pick largest +/- separation) and alpha sweeps", "sampler comparison DDPM vs zero-variance DDPM vs DDIM on the same weights", "full-trajectory steering along low/high-artifact directions", "paired matched-continuation interventions at fixed key contexts with held-out validation", "context x noise variance decomposition (192 contexts x 16 noises)"],
+  "question": "What drives the discontinuities at action-chunk boundaries in generative policies, can they be controlled from the initial noise alone, and do they causally affect task success?",
+  "key_findings": [
+    "Failed pi0.5 LIBERO episodes have larger boundary-interior jerk contrast than successful ones, also after contact-free and matched-horizon controls (e.g. goal 3: 0.102 vs 0.341, p < 1e-4; contact-free first 50 steps 0.093 vs 0.138, p = 0.005; permutation tests) (Table 1).",
+    "Fixing the observation and resampling only the noise changes the boundary artifact (mean context-wise std 0.040 for gap, 0.038 for transition jerk; 384 samples) (Sec. 4.2).",
+    "Along a selected noise direction, steering strength alpha correlates with first-boundary gap at mean r = 0.968 and with transition jerk at r = 0.904 (pi0.5, 4 contexts); a real Aubo i5 sweep from one context gives r = 0.968.",
+    "Controllability depends on the noise-to-action path: Diffusion Policy under DDPM r = 0.114 / 0.052, unchanged with zero-variance DDPM, but DDIM on the same weights r = 0.961 / 0.927; ACT shows almost no response (Table 2).",
+    "Full-trajectory steering on LIBERO-10 task 8 (n = 43 per group): success 0.791 (low-artifact) > 0.674 (baseline) > 0.535 (high-artifact), matching gap ordering; 95% CIs overlap ([0.648, 0.886], [0.525, 0.795], [0.389, 0.675]).",
+    "At fixed key contexts with matched future continuations, the preferred direction reverses: one context gains with lower artifact (0.706 -> 0.817, n = 180 pairs, p = 0.0093), another with higher artifact (0.033 -> 0.717, n = 60, p = 4.55e-13) (Table 3).",
+    "Over 192 contexts x 16 noises, context x noise interaction explains 39.4% of raw gap variance; the globally best low-artifact noise is locally optimal in only 3.1% of contexts (Table 4).",
+    "An online adaptive controller does not yet work: success fell from 0.6 to 0.2 over a longer window in one diagnostic (Appendix Table A3)."
+  ],
+  "evidence": {
+    "setting": "simulation, with a single-context real-robot check",
+    "benchmarks": ["LIBERO goal 0, goal 3, LIBERO-10 task 8 (pi0.5-libero)", "real Aubo i5 (one context, artifact only, no success claim)"],
+    "scale": "16-192 fixed contexts depending on analysis; steering groups n = 21, 43, 158; key-context pairs n = 180 and 60; 223 candidate contexts screened for the high-favoring case",
+    "statistics": "yes: permutation tests, binomial CIs, p-values for paired key-context results",
+    "baselines": "reference noise, ACT, alternative samplers on fixed weights"
+  },
+  "causal_validation": "Yes, intervention on the initial noise (input to the generative head) with observation context held fixed and future continuations matched; changes in artifact are shown to change success. It is a causal chain noise -> artifact -> outcome, not an analysis of internal activations.",
+  "closed_loop": "Yes: steering effects on success are measured in closed-loop LIBERO rollouts; artifact controllability is measured on generated chunks at fixed contexts.",
+  "limitations_stated": [
+    "Mechanism evidence is local; no stable online controller (direction preference reverses across contexts).",
+    "Real-robot evidence is a single-context artifact sweep, no outcome claim.",
+    "Direction search is expensive online."
+  ],
+  "critique": [
+    "Headline 0.033 -> 0.717 comes from the strongest survivor of 223 screened candidates; even with held-out matched-continuation validation, it shows that such contexts exist, not how common they are, and other candidates gave null or marginal effects.",
+    "Task-level steering differences have overlapping CIs; the robust results are the controllability and the sampler comparison, not average success gains.",
+    "Useful methodological point for the review: in flow/diffusion VLAs the initial noise is an input that can be intervened on causally, and whether the noise-to-action path is intact (DDIM/flow vs DDPM) determines whether such interventions are interpretable at all.",
+    "Single-author preprint, small panels for some claims (4 contexts for the r = 0.968 result).",
+    "No link to internal representations of pi0.5; 'mechanism' is about a behavioral variable in noise space."
+  ],
+  "code": "not reported",
+  "one_line": "In pi0.5 on LIBERO, the jerk at action-chunk boundaries can be steered by moving only the initial flow noise (r about 0.97), this works for DDIM but not DDPM sampling of the same Diffusion Policy, and changing it can raise or lower success depending on context, with no single direction that is always better."
+}

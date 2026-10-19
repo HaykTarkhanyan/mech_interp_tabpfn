@@ -1,0 +1,43 @@
+{
+  "id": "2610.10178",
+  "title": "Do Vision-Language-Action Models Understand Instructions? A Mechanistic Interpretability Study on Language Grounding",
+  "first_author": "Wulff",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5 (lerobot LIBERO fine-tuned checkpoint)", "GR00T N1.7 (LIBERO-10 fine-tuned, Cosmos-Reason2-2B backbone)"],
+  "action_head": "flow/diffusion action expert (pi0.5 joint self-attention with backbone; GR00T DiT with masked cross-attention to language every 4th layer)",
+  "methods": ["attribution patching per action-expert layer and token (after self-attention o_proj)", "activation patching on selected layers as verification", "CKA between clean and corrupted residual streams", "five instruction perturbations: synonym, hypernym (semantic scaling), direction inversion, random absent object, empty string"],
+  "question": "Where and how strongly does the language instruction causally influence the action experts of pi0.5 and GR00T N1.7, and is attribution patching a reliable proxy there?",
+  "key_findings": [
+    "Both models are relatively insensitive to rephrasing (synonyms, hypernyms) and to naming objects that are absent from the scene, but react strongly to empty instructions and especially to inverted directions.",
+    "Localization differs by model: GR00T N1.7 effects concentrate in early layers (0-10, peaks at layers 3, 5, 7) with an alternating pattern matching its cross-attention placement; pi0.5 effects sit in the earliest layers (layer 1, around layer 6) and some late layers (past 12).",
+    "pi0.5 is more sensitive to verb perturbations, GR00T N1.7 more to noun perturbations; GR00T shows larger CKA shifts overall, pi0.5's geometry stays stable except for empty and directional prompts.",
+    "Dissociation in GR00T: directional perturbations give some of the largest attribution effects while CKA barely changes.",
+    "Attribution patching tracks activation patching for GR00T N1.7 (Pearson r = 0.946, Spearman rho = 0.972) but not for pi0.5 (r = 0.089, p = 0.49; rho = 0.097); for pi0.5 directional perturbations, attribution predicts the largest positive effect while activation patching gives a negative one (layers 2, 3, 5, 14).",
+    "Some late layers show negative attribution, which the authors tentatively attribute to self-repair."
+  ],
+  "evidence": {
+    "setting": "offline dataset only",
+    "benchmarks": ["LIBERO-10 offline demonstrations (lerobot libero_10_image): 10,000 sampled steps from 378 episodes"],
+    "scale": "10,000 samples; one checkpoint per model; activation patching only on a subset of layers",
+    "statistics": "partial: correlations between attribution and activation patching with p-values; no CIs or significance tests on layer effects",
+    "baselines": "clean vs corrupted runs; activation patching as ground truth for attribution patching; no random-perturbation control"
+  },
+  "causal_validation": "Yes in the patching sense (activation patching verifies selected layers), but the metric is the flow-matching loss against the original demonstration's target velocity, not behavior. The paper itself notes that results show whether language influences the predicted action, not whether it is used correctly.",
+  "closed_loop": "No. All effects are on open-loop single-step predictions from offline data; no rollouts.",
+  "limitations_stated": [
+    "Perturbations are synthetic and LIBERO instructions are short and templated; visual context may compensate for language, understating sensitivity.",
+    "Perturbed predictions are scored against the original demonstration; closed-loop rollouts or counterfactual targets would be needed to test appropriate use of the instruction.",
+    "The link between layer patterns and conditioning architecture is a hypothesis, since the models differ in more than conditioning."
+  ],
+  "critique": [
+    "Scoring a direction-inverted instruction against the original trajectory measures sensitivity, not grounding; a model that correctly follows 'left' instead of 'right' would be penalized, so 'reacts strongly' is not evidence of understanding.",
+    "The headline about directional sensitivity for pi0.5 rests on attribution patching, which the paper then shows is uncorrelated with activation patching for pi0.5 and even sign-flipped for directional prompts; the pi0.5 localization claims are therefore weak.",
+    "Which denoising step(s) are patched and how effects are aggregated over flow time is not described in the text read.",
+    "Useful methodological warning for the field: attribution patching cannot be assumed reliable on flow-matching action experts.",
+    "Consistent with the 'VLAs are largely vision-driven on LIBERO' picture cited from Grant et al., but adds no behavioral test of it."
+  ],
+  "code": "not reported",
+  "one_line": "Patching the action experts of pi0.5 and GR00T N1.7 under controlled instruction edits shows language matters most in early expert layers and for direction words and empty prompts, but attribution patching is unreliable for pi0.5 and nothing is tested in closed loop."
+}

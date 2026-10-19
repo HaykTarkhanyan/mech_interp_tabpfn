@@ -1,0 +1,2237 @@
+arXiv:2606.21386v2 [cs.LG] 9 Oct 2026
+
+VLA-FAIL: Efficient Task Failure Detection for Finetuned Vision-Language-Action Models
+Florian Seligmann1,† Emiliyan Gospodinov1 Enes Ulas Dincer1 Gerhard Neumann1,2
+1Autonomous Learning Robots Lab, Karlsruhe Institute of Technology 2FZI Forschungszentrum Informatik, Karlsruhe
+†Correspondence to: florian.seligmann@kit.edu
+Abstract: Vision-language-action models (VLAs) achieve state-of-the-art performance on many robotic manipulation tasks, yet they can still behave unpredictably in out-of-distribution scenarios. Runtime failure detection is therefore essential for the safe real-world deployment of VLAs. However, existing task failure detectors require computationally expensive action sampling, are based on architectural assumptions that limit their applicability to VLAs, or need access to failure rollouts. We propose VLA-FAIL, a lightweight and broadly applicable failure detection framework for VLAs that combines two novel failure detectors with minimal overhead, without requiring failure data. The first, last-layer Mahalanobis distance (LLMD), detects out-of-distribution states by measuring token-wise deviations in last-layer features relative to the training data. The second, action chunk consistency (ACC), exploits the temporal overlap induced by receding-horizon control and detects failures when consecutive action chunks become inconsistent. To capture the trade-off between detection accuracy and detection latency, we introduce AUCPDT, a threshold-independent metric that jointly evaluates precision, recall, and detection time. Through extensive real-world and simulation experiments, we demonstrate that LLMD and ACC capture complementary failure modes whose combination enables reliable and early failure detection across diverse tasks, frequently outperforming significantly more expensive baseline methods. Project page: https://vla-fail.github.io/vla-fail-2026
+Keywords: Failure Detection, Failure Prediction, Out-of-Distribution Detection, Vision-Language-Action Models
+1 Introduction
+Vision-language-action models (VLAs) have emerged as powerful generalist policies for robotic manipulation, combining pretrained vision-language representations with large-scale robotic datasets across tasks and embodiments [1, 2, 3, 4, 5, 6]. Despite their strong performance, VLAs exhibit a wide range of failure modes in out-of-distribution scenarios, even after finetuning on the downstream task [7]. For the safe real-world deployment of VLAs, it is therefore crucial to predict such failures as early as possible during runtime to enable human intervention [8, 9] or safe fallbacks [10].
+However, reliable runtime failure detection is challenging. A supervised formulation requires representative failure rollouts, but collecting failures is costly and potentially unsafe. Novelty-based detection is insufficient, as out-of-distribution states might not necessarily imply task failures, while some failures might arise from internally inconsistent action generation without an obvious visual anomaly. A practical failure detector should therefore require no failure data, accurately detect failures, be applicable to state-of-the-art VLA architectures, and incur minimal computational over-
+10th Conference on Robot Learning (CoRL 2026), Austin TX, USA.
+
+Last-Layer Mahalanobis Distance
+
+Training Data
+Extract
+Last-Layer Features
+Distribution Matches?
+
+Stack the...
+
+per Token
+
+Action Chunk Consistency
+Distance Large?
+
+Replan
+
+Replan
+
+OR
+
+Failure Detected?
+
+ACE 32 ACE 8 ACE 4 Diff 32 Ours
+Raw
+0
+
+In2f5e0rence5L0a0tency75[m0 s] 1000
+
+(a) VLA-FAIL
+
+(b) Inference Latency
+
+Figure 1: (a) Our task failure detection pipeline: We combine LLMD, which detects unlikely lastlayer features under the feature distribution of the training data, with ACC, which measures the consistency between overlapping parts of successive action chunks. (b) Action chunk sample time for various failure detectors (X-VLA [11], RTX 5090, constant 17 ms of VLM excluded). Baselines are not real-time capable due to their significant computational overhead. ACE [13] and Diff [9] use the indicated number of action samples, and "Raw" represents no failure detection.
+
+head. This last requirement is critical because real-time VLA inference is already expensive, and additional latency can itself perturb closed-loop execution and induce out-of-distribution states.
+We present VLA-FAIL, a lightweight failure detection framework for finetuned VLAs that requires no failure data or external models and incurs minimal computational overhead. It monitors two complementary indicators of unreliable execution: internal feature shift and action plan inconsistencies. The first detector, last-layer Mahalanobis distance (LLMD), measures token-wise deviations from the training data’s feature distribution. By directly monitoring internal representations computed from a fixed prior noise sample, LLMD removes feature variation introduced by stochastic action sampling and can detect out-of-distribution states even when actions appear smooth. Our second detector, action chunk consistency (ACC), targets erratic behavior. ACC measures the velocitynormalized disagreement between overlapping action chunks in receding-horizon control, where persistent inconsistency signals likely failure. VLA-FAIL triggers whenever either LLMD or ACC exceeds its calibrated threshold, enabling accurate, early detection of task failures in VLAs.
+We evaluate VLA-FAIL on two state-of-the-art VLAs, π0.5 [2] and X-VLA [11], across six diverse real-world manipulation tasks and the large-scale LIBERO-Plus simulation benchmark [12]. Our results show that LLMD and ACC perform well on separate tasks, with only their combination, VLAFAIL, being robust across tasks, frequently outperforming significantly more expensive baselines. To evaluate not only whether failures are detected but also when they are detected, we introduce AUCPDT, a threshold-independent metric that jointly captures precision, recall, and detection time.
+Our contributions are three-fold: 1) We propose VLA-FAIL, a lightweight runtime failure detection framework for VLAs that incurs minimal computational overhead and requires no failure data, combining LLMD, a token-wise last-layer feature Mahalanobis distance adapted to flow matching VLAs via fixed prior noise, and ACC, a velocity-normalized action chunk consistency score computed from already generated actions. 2) We introduce AUCPDT, a threshold-independent metric that evaluates the trade-off between accurate and early failure detection. 3) Across real-world and simulated manipulation tasks, we show that VLA-FAIL enables robust failure detection and frequently outperforms substantially more expensive baselines.
+
+2 Related Work
+Task Failure Detection for VLAs. SAFE [7] studies multitask failure detection for VLAs, where detector models are trained on last-layer feature representations from both successful and failure rollouts. RC-NF [14] avoids failure data by learning a conditional normalizing flow model on successful demonstration data, but relies on external object-centric perception. CycleVLA [15] and
+
+2
+
+FailSafe [16] use VLM reasoning to detect failing rollouts. In contrast, VLA-FAIL does not require failure data or external VLMs and perception pipelines. We see these approaches as complementary to our work, but unsuitable for the goal of fast detection of potentially unknown failure modes.
+Failure Signals for Generative Robot Policies. For the broader class of generative imitation learning policies, a body of work detects task failure by monitoring observational shifts, action uncertainty, temporal inconsistency, or semantic progress. FIPER [13] predicts failures without failure data by combining random network distillation on observation embeddings with action-chunk entropy from multiple sampled actions, while Sentinel [17] combines STAC, which compares the action distributions of overlapping consecutive action chunks, with vision-language model (VLM)based video question answering. FAIL-Detect [18] evaluates OOD-based, smoothness-based, and consistency-based strategies and finds that a learned flow-matching density estimation model in the observation embedding space performs best. FIDeL [19] detects visual anomalies via optimal transport to nominal demonstrations and filters them further with a VLM. Independent of the policy, forward dynamics model-based anomaly detectors [20, 21, 22] measure the discrepancy between predicted future observations from a learned dynamics model and real future observations. Such approaches, while superficially similar to our ACC detector, require an additional trained model and are expensive and noisy when applied to image observations. In concurrent work, Zheng et al. [23] develop Rewind-IL, which uses the discrepancy between overlapping action chunks as a failure signal. Another line of work learns VLM-based reward models [24, 25, 26], which can infer task failure from image observations. In the context of robot-gated DAgger [27], ensemble variance [8] and diffusion loss [9] have been proposed to detect task failure and trigger expert interventions. In contrast, our VLA-FAIL framework does not require multiple action samples or expensive diffusion loss evaluations per environment timestep, and does not rely on slow VLMs or video models.
+OOD Detection for Deep Neural Networks. The feature-based detector of VLA-FAIL builds on general out-of-distribution (OOD) detection methods for deep neural networks. Lee et al. [28] develop an OOD score using a Mahalanobis distance on the last-layer features of image classification models relative to the training data. Subsequent works improve this principle further [29, 30], but remain in the context of classification models. The last-layer Mahalanobis distance is closely related to the last-layer Laplace approximation [31], a principled and computationally efficient method from Bayesian deep learning. We extend Mahalanobis-based OOD detection to flow matching models with continuous actions and noisy features.
+3 Method
+VLA-FAIL detects task failures by combining two complementary signals. The last-layer Mahalanobis distance (LLMD, Section 3.1) measures deviations in the policy’s internal representations relative to the finetuning data, allowing us to capture failures even when actions appear consistent. We combine LLMD with action chunk consistency (ACC, Section 3.2), which detects inconsistencies between overlapping actions chunks. Their thresholded combination defines Failure Detection via Action Inconsistency and Last-Layer Features (VLA-FAIL, Section 3.3), a lightweight detector with minimal computational overhead that requires no failure data and no auxiliary model.
+Problem Formulation. We consider a vision-language-action model (VLA) that controls a robotics system. At environment timestep t, the VLA receives an observation o ∈ O and predicts a sequence of H actions a1:H ∈ AH , where A = RD is the D-dimensional action space. The observation o consists of the robot’s proprioceptive state, multiple camera images taken at t, and a language instruction. Using receding horizon control, the first R ≤ H predicted actions are applied to the environment before the VLA is re-queried. After T timesteps, the episode ends, and the policy receives a ground-truth success or failure signal. The goal of task failure detection is to predict failures before the episode horizon T is reached.
+3
+
+3.1 Last-Layer Token-Wise Mahalanobis Distance (LLMD)
+
+Feature-based out-of-distribution detection provides insights into model behavior that actions alone
+cannot capture, with the features directly before the last layer of a neural network being particularly
+indicative of out-of-distribution (OOD) inputs [28, 29, 30]. We assume the VLA decomposes into a feature extractor f : O → F , where F = RH×F , that maps observations to the high-dimensional last-layer feature space F and a final linear layer g : F → AH that individually projects each feature
+token to an action (Figure 1a). While we focus on flow-matching experts due to their prevalence in
+modern VLAs [1, 2, 32, 11, 3, 5], LLMD equally applies to diffusion [33] and discrete VLAs [6, 4].
+
+Fixed Prior Noise. To avoid mode-averaging of the expert’s action distribution while ensuring
+
+continuous actions, VLAs typically use flow matching. Instead of directly predicting the action
+
+a given an observation o, the policy iteratively predicts a time-dependent flow velocity vt(o, at).
+
+Integrating this velocity over t, starting from a simple prior a0 ∼ N (0, I), yields the final action
+
+a := a1 = a0 +
+
+1 0
+
+vt
+
+(o,
+
+at
+
+)
+
+dt.
+
+The action expert is therefore conditioned not only on the cur-
+
+rent observation o, but also on the flow matching timestep t and the current noisy action at. This
+
+introduces observation-independent noise in the last-layer features. To isolate the influence of the
+
+observation, we aim to fix at to a single value that is in-distribution for all o. Since pt(a | o) depends
+
+on o for all t > 0, fixing at>0 would introduce artificial covariate shift. However, at t = 0, the noisy
+
+action distribution equals the prior p0(a | o) = N (a; 0, I). We therefore sample a single, fixed noise vector a0∗ ∼ N (0, I) to compute training data statistics and evaluate rollouts on the reduced
+feature space defined by
+
+f ∗(o) := f (o, t = 0, a∗0), a0∗ ∼ N (0, I) random but fixed.
+
+(1)
+
+Computing f ∗(o) requires only a single model forward pass that can be executed in parallel with
+
+action sampling. Alternatively, if multi-modal behavior is not required, the action itself can be
+
+sampled starting from a0∗, eliminating any computational overhead.
+
+Token-Wise Mahalanobis Distance. To detect OOD states given an observation o during rollout, we measure the similarity between its noise-free last-layer features f ∗(o) and the distribution of
+features in the training data using a Mahalanobis distance. Empirically, it is beneficial to compute
+the Mahalanobis distance token-wise, i.e., separately for each token position. We speculate that
+this accounts for differences in feature distributions across token positions, and ablate this choice in Section 5. Let f ∗(o)s, s ∈ {1, . . . , H}, denote the s-th last-layer feature token. After VLA finetuning, we perform a single, gradient-free pre-processing step on the dataset D = {(oi, ai), i ∈ {1, ..., |D|}} to compute the token-wise mean µs and centered covariance matrix Σs:
+
+|D|
+
+1 µs = |D|
+
+f ∗(oi)s,
+
+i=1
+
+|D|
+
+1 Σs = |D|
+
+(f ∗(oi)s − µs)(f ∗(oi)s − µs)⊤.
+
+(2)
+
+i=1
+
+For numerical stability, we use the regularized covariance Σλs = Σs + λI, λ ≪ 1. During a rollout, the LLMD score is the maximum of the squared token-wise Mahalanobis distances:
+
+stLLMD(ot)
+
+=
+
+max
+s∈{1,...,H }
+
+(f ∗(ot)s − µs)⊤
+
+Σsλ −1 (f ∗(ot)s − µs)
+
+(3)
+
+where higher values indicate more likely failure. The maximum aggregation ensures that a single unlikely feature triggers a task failure. We find that stLLMD requires no temporal smoothing.
+
+3.2 Action Chunk Consistency (ACC)
+
+Inconsistent action sequences are a typical sign of out-of-distribution states. Under receding horizon control, only the first R < H actions are executed, causing an overlap between the unexecuted suffix aRt−+11:H of the previous action chunk with the prefix at1:H−R of the next inference step. Failing policies generally lack self-consistent planning, leading to divergent actions, as shown in Figure 2.
+We therefore propose action chunk consistency (ACC) as a failure detector, which measures the
+velocity-normalized discrepancy between overlapping action sequences. Requiring only a single
+action sample per timestep, ACC remains computationally feasible for real-time control with VLAs.
+
+4
+
+Predicted EEF x Pos Predicted EEF x Pos
+
+Overlap Executed Prefix
+
+0 100 200 300 400 500 Episode Time Step
+
+Overlap Executed Prefix 0 100 200 300 400 500 Episode Time Step
+
+(a) Successful episode
+
+(b) Failed episode
+
+Figure 2: Predicted end-effector (EEF) x position over episode time for a successful and a failed episode of π0.5 on Blocks. In successful episodes, the predicted but not executed actions of an action chunk typically overlap with the next action chunk. In contrast, the failed episode shows substantial misalignment between consecutive action chunks. ACC measures this inconsistency.
+
+We normalize ACC by the robot’s average velocity, since the same absolute action mismatch is more critical during slow, precise motions than during fast motions. Let
+
+vdt = max
+
+max
+s∈{1,...,H −R}
+
+ats,d
+
+−
+
+min
+s∈{1,...,H −R}
+
+ast ,d ,
+
+vmin
+
+(4)
+
+denote the average velocity in action dimension d at timestep t, clamped to a minimum velocity of vmin to avoid inflation of the ACC score for a near-stationary robot. The unsmoothed ACC score at timestep t is then the velocity-normalized mean absolute error across D action dimensions:
+
+sˆtACC
+
+=
+
+1 D
+
+H
+
+1 −R
+
+D d=1
+
+1 vdt
+
+H −R
+|atR−+1i,d − ati,d|
+i=1
+
+(5)
+
+In practice, we calculate the ACC score using only the D = 3 predicted absolute end-effector position, which can be obtained for any control method. Since replanning can naturally occur during successful execution, and only persistent replanning indicates likely failure, we apply an exponential moving average with smoothing parameter α ∈ [0, 1) on the ACC score:
+
+stACC = αsAt−C1C + (1 − α)sˆtACC.
+
+(6)
+
+Empirically, we find that strong smoothing (α = 0.9) performs well across all tasks and is required for good detection rates.
+
+3.3 VLA-FAIL
+
+ACC and LLMD have distinct advantages: ACC can reliably detect many task failures, including those in which the robot exhibits dangerous behavior, whereas LLMD can detect failures early, as it does not rely on erratic robot behavior and does not need temporal smoothing. We combine ACC and LLMD into a single failure detector, FAIL, that alerts if either method detects failure:
+
+FFAIL(t) := (stACC ≥ τACC) ∨ (sLt LMD ≥ τ LLMD)
+
+(7)
+
+for score thresholds τACC ∈ R and τLLMD ∈ R that are determined via a time-constant conformal prediction band on calibration data [13]. We do not use a time-dependent threshold [34, 13, 7] as it is not applicable to episodes that vary significantly in length, such as in our real-world Drawer task.
+
+4 Experiments
+
+To validate that our methods can reliably detect task failure early, we evaluate them across six diverse real-world tasks and the large-scale Libero-Plus simulation benchmark.
+Baselines and Models. We compare FAIL against three action- and loss-based methods. ACE [13] computes the entropy of the policy’s action distribution at each environment timestep. STAC [17]
+
+5
+
+evaluates the distributional divergence between the overlapping parts of consecutive action distributions. Diff [9] uses the policy’s predicted action chunk as a pseudo-label to evaluate the diffusion loss across multiple diffusion timesteps and prior noise samples. We use 32 samples for all baselines and evaluate them on replays of policy rollouts, as they are not real-time capable (Figure 1b). We benchmark FAIL and baselines on two state-of-the-art VLAs: π0.5 [2] is a large, 3.6B-parameter VLA based on the PaliGemma VLM [35] that fuses the action expert and VLM features at every layer via cross-attention. X-VLA [11] is a smaller 0.9B-parameter VLA that uses the Florence-2-Large encoder-decoder VLM [36] and conditions the action expert only on the final encoder features.
+Real-World Tasks. We evaluate the task failure detectors on six diverse, challenging real-world tasks, requiring high precision (Blocks, Stack T), with multi-modal demonstrations (Cups), long, multi-stage episodes (Kitchen, Drawer), and requiring language-conditioning (Mixer). We evaluate all policies on roughly 80 rollouts, and, for each rollout, evaluate the failure detectors across 3 seeds to capture the variance in baselines and LLMD’s prior noise sample. See Appendix G.2 for further details.
+
+Table 1: Threshold-independent detector performance on the real-world tasks. PR and PDT (see Section 4.1) refer to the areas under the respective curves, and the small numbers indicate 95% confidence intervals. FAIL achieves performance comparable to, and frequently better than, baseline methods, while incurring minimal computational overhead. While ACC and LLMD perform well on some tasks individually, only FAIL performs well on nearly all tasks. Colors mark the
+best , second-best , and third-best methods.
+
+ACE Diff STAC ACC LLMD FAIL
+
+Blocks
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+Drawer
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+Cups
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA Kitchen
+π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+Stack
+
+X-VLA T
+π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+Mixer
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+0.82 0.83 0.80
+0.32 0.33 0.31
+0.60 0.63 0.56
+0.45 0.47 0.42
+0.89 0.91 0.87
+0.23 0.24 0.23
+0.31 0.35 0.28
+0.68 0.69 0.66
+0.89 0.89 0.88
+0.28 0.29 0.28
+0.41 0.43 0.39
+0.61 0.62 0.60
+0.98 0.99 0.97
+0.24 0.24 0.24
+0.95 0.96 0.95
+0.20 0.21 0.19
+0.96 0.97 0.96
+0.09 0.09 0.09
+0.82 0.82 0.81
+0.24 0.24 0.24
+0.93 0.93 0.93
+0.16 0.16 0.15
+0.93 0.93 0.92
+0.24 0.25 0.24
+
+0.84 0.86 0.82
+0.28 0.30 0.27
+0.85 0.93 0.77
+0.31 0.36 0.26
+0.90 0.91 0.89
+0.25 0.25 0.25
+0.63 0.76 0.50
+0.49 0.57 0.42
+0.91 0.91 0.91
+0.27 0.27 0.27
+0.51 0.53 0.50
+0.57 0.58 0.55
+0.98 0.98 0.98
+0.21 0.21 0.20
+0.75 0.85 0.66
+0.30 0.34 0.27
+0.97 0.97 0.97
+0.08 0.08 0.08
+0.92 0.94 0.90
+0.13 0.14 0.12
+0.95 0.96 0.95
+0.14 0.14 0.14
+0.61 0.68 0.54
+0.45 0.49 0.40
+
+0.35 0.35 0.35
+0.46 0.46 0.46
+0.84 0.85 0.82
+0.36 0.37 0.35
+0.18 0.18 0.18
+0.71 0.71 0.71
+0.72 0.73 0.70
+0.50 0.50 0.50
+0.98 0.98 0.98
+0.42 0.42 0.42
+0.61 0.61 0.60
+0.52 0.52 0.51
+0.30 0.30 0.30
+0.55 0.55 0.55
+0.92 0.92 0.91
+0.26 0.26 0.25
+0.59 0.59 0.59
+0.21 0.21 0.21
+0.87 0.88 0.86
+0.17 0.17 0.17
+0.46 0.46 0.46
+0.34 0.34 0.34
+0.70 0.71 0.69
+0.43 0.45 0.42
+
+0.92 0.24 0.95 0.24
+0.83 0.33 0.62 0.53
+0.97 0.28 0.60 0.51
+1.00 0.25 0.99 0.17
+0.98 0.09 0.95 0.12
+0.97 0.14 0.85 0.28
+
+0.83 0.84 0.82
+0.26 0.26 0.25
+0.73 0.74 0.72
+0.31 0.32 0.31
+0.90 0.91 0.89
+0.19 0.19 0.19
+0.69 0.72 0.66
+0.45 0.46 0.44
+0.78 0.79 0.78
+0.33 0.34 0.33
+0.58 0.59 0.57
+0.52 0.53 0.52
+1.00 1.00 1.00
+0.20 0.20 0.20
+0.62 0.82 0.41
+0.33 0.46 0.20
+0.97 0.97 0.97
+0.08 0.08 0.08
+0.95 0.96 0.95
+0.10 0.10 0.10
+0.98 0.98 0.98
+0.11 0.11 0.11
+0.77 0.78 0.76
+0.28 0.28 0.27
+
+0.86 0.87 0.85
+0.25 0.25 0.24
+0.81 0.81 0.80
+0.27 0.27 0.27
+0.91 0.92 0.90
+0.22 0.22 0.22
+0.68 0.71 0.65
+0.47 0.48 0.45
+0.93 0.93 0.92
+0.28 0.29 0.28
+0.63 0.64 0.62
+0.49 0.50 0.49
+1.00 1.00 1.00
+0.21 0.21 0.21
+0.74 0.84 0.64
+0.28 0.39 0.16
+0.98 0.98 0.98
+0.08 0.08 0.08
+0.96 0.97 0.96
+0.10 0.10 0.09
+0.97 0.97 0.97
+0.11 0.11 0.11
+0.79 0.79 0.79
+0.27 0.27 0.27
+
+Simulated Tasks. We perform a large-scale evaluation on the Libero-Plus benchmark [12], which uses the tasks from Libero [37] and adds various perturbations to test model generalization. We use the official Libero checkpoints for X-VLA and π0.5 and evaluate all methods across 3 seeds. See Appendix G.3 for task details.
+6
+
+4.1 Evaluation Metrics
+
+A good task failure detector must reliably detect failures as early as possible within an episode. We treat failure detection as a binary classification problem and evaluate overall reliability using the area under the precision-recall (PR) curve (AUCPR), which eliminates threshold selection as a confounding variable (for threshold-dependent results see Appendix D.1). For FAIL, we use a simple fusion strategy to obtain a single classifier score: we apply individual rank transformations to bring the LLMD and ACC scores to a uniform scale, and then take their minimum, corresponding to the logical OR in Section 3.3. This strategy, while not strictly optimal, is task-agnostic and requires no prior knowledge of the relative performance of LLMD and ACC.
+
+Penalized Detection Time. AUCPR does not distinguish early from late detections. Naively measuring the average first step of detected failure is also insufficient, because a detector that always triggers at t = 0 achieves zero delay but unusable precision. We therefore introduce the area under the penalized detection time curve (AUCPDT), which evaluates the trade-off between precision and detection latency in a threshold-independent way. Assuming episode time is normalized to [0, 1], the penalized detection time (PDT) for a failed episode e evaluated at score threshold τ is
+
+PDTe(τ ) =
+
+t 1
+
+if t ∈ [0, 1) is the first timestep with st(e) ≥ τ if failure is not detected at threshold τ ,
+
+(8)
+
+where st(e) is the detector’s score at time t on episode e. We assign missed failures a maximal
+
+detection time, assuming that failure can be automatically detected at the episode horizon. The PDT
+
+measures the latency reduction relative to this automatic baseline. For an episode dataset D, let
+
+Df ⊂ D denote the subset of failed episodes. The expected detection time for a given threshold is
+
+then
+
+the
+
+average
+
+across
+
+all
+
+failures:
+
+PDTD(τ )
+
+=
+
+1 |Df |
+
+|Df | i=1
+
+PDTei
+
+(τ
+
+).
+
+To compute the AUCPDT, we compute precision and PDTD at each unique score threshold and retain only Pareto-optimal thresholds. This includes all thresholds that are Pareto-optimal in terms of precision and recall, but adds points at identical recall with different trade-offs between precision and PDT. The area under this function yields a single, bounded, threshold-independent metric, where lower values indicate more precise and earlier detectors. AUCPDT does not require a specific "point of failure" timestep, selection of which requires substantial annotation work and is fundamentally arbitrary when policies are allowed to retry a failed subtask, such as in our experiments. For further details, see Appendix A and the exemplary PR and PDT plots in Figure 3 and Figure 4.
+
+5 Results and Discussion
+Table 1 and Table 2 summarize the threshold-independent results for the real-world tasks and LiberoPlus, respectively. We refer to Appendix D for threshold-dependent results.
+FAIL Reliably Detects Failures Early. Overall, we find that FAIL achieves failure detection performance comparable to, and often better than, significantly more expensive baseline methods across simulated and real-world tasks. FAIL is the only method to place within the top-three best performing methods on nearly all real-world and simulated tasks. Crucially, FAIL achieves this with only marginal computational overhead, thereby enabling real-time deployment.
+LLMD and ACC Capture Distinct Failure Modes. While we find that LLMD and ACC perform well on individual tasks, only their combination, FAIL, is reliable across tasks. ACC alone already achieves a high detection accuracy, while LLMD detects failures early, but less accurately. FAIL frequently achieves the lowest overall AUCPDT, such as on the real-world Cups, Stack T, and Mixer tasks, particularly for π0.5, and for X-VLA on the Libero-Plus task suites. Qualitatively, ACC performs well on tasks where the robot exhibits rapid, jerky motions in OOD situations, such as the real-world Blocks and Kitchen tasks and all Libero-Plus task suites. LLMD tends to achieve higher detection rates than ACC on tasks where the policy repeatedly retries an action in an infinite loop or resorts to "default" actions that do not correspond to the current environment state. Qualitative examples are shown in Appendix E.
+
+7
+
+Table 2: Threshold-independent detector performance on Libero-Plus. PR and PDT (see Section 4.1) refer to the areas under the respective curves. The top three performing methods are highlighted. FAIL achieves performance comparable to baseline methods, while incurring no com-
+putational overhead. Colors mark the best , second-best , and third-best methods.
+
+ACE Diff STAC ACC LLMD FAIL
+
+Object Spatial Goal 10
+
+X-VLA π0.5 X-VLA π0.5 X-VLA π0.5 X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+
+0.89 0.90 0.89
+0.12 0.13 0.12
+0.60 0.61 0.59
+0.51 0.51 0.51
+0.84 0.84 0.83
+0.19 0.20 0.19
+0.74 0.77 0.72
+0.45 0.46 0.43
+0.81 0.81 0.81
+0.22 0.22 0.22
+0.84 0.86 0.82
+0.33 0.35 0.31
+0.75 0.76 0.74
+0.28 0.29 0.28
+0.75 0.79 0.72
+0.42 0.45 0.38
+
+0.92 0.92 0.91
+0.12 0.13 0.11
+0.46 0.49 0.43
+0.67 0.69 0.66
+0.82 0.83 0.81
+0.23 0.24 0.22
+0.64 0.68 0.59
+0.59 0.62 0.55
+0.65 0.65 0.64
+0.38 0.38 0.37
+0.74 0.76 0.73
+0.46 0.47 0.45
+0.77 0.77 0.76
+0.28 0.29 0.28
+0.70 0.72 0.68
+0.49 0.51 0.47
+
+1.00 1.00 0.99
+0.31 0.31 0.31
+0.40 0.41 0.39
+0.73 0.74 0.73
+0.99 0.99 0.99
+0.36 0.36 0.36
+0.45 0.51 0.39
+0.72 0.74 0.69
+1.00 1.00 0.99
+0.30 0.30 0.29
+0.50 0.52 0.48
+0.60 0.62 0.59
+1.00 1.00 1.00
+0.30 0.31 0.29
+0.46 0.48 0.45
+0.62 0.64 0.60
+
+0.97 0.98 0.97
+0.24 0.24 0.23
+0.66 0.67 0.64
+0.55 0.57 0.54
+0.94 0.94 0.94
+0.31 0.31 0.30
+0.78 0.79 0.77
+0.50 0.51 0.49
+0.96 0.96 0.96
+0.28 0.28 0.27
+0.77 0.79 0.76
+0.41 0.42 0.39
+0.96 0.96 0.96
+0.26 0.26 0.25
+0.80 0.82 0.79
+0.39 0.41 0.38
+
+0.90 0.90 0.89
+0.15 0.15 0.15
+0.43 0.44 0.42
+0.66 0.66 0.65
+0.85 0.85 0.85
+0.20 0.20 0.20
+0.67 0.68 0.65
+0.57 0.57 0.56
+0.87 0.88 0.87
+0.22 0.22 0.22
+0.78 0.80 0.75
+0.42 0.43 0.40
+0.86 0.88 0.85
+0.22 0.24 0.21
+0.70 0.73 0.68
+0.43 0.45 0.42
+
+0.94 0.95 0.94
+0.14 0.14 0.14
+0.54 0.55 0.53
+0.60 0.60 0.59
+0.92 0.93 0.92
+0.18 0.18 0.18
+0.76 0.79 0.73
+0.52 0.52 0.52
+0.94 0.95 0.93
+0.20 0.20 0.19
+0.79 0.81 0.78
+0.39 0.40 0.38
+0.94 0.95 0.93
+0.19 0.20 0.18
+0.79 0.81 0.77
+0.39 0.40 0.37
+
+Average
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.82 0.88 0.76
+0.20 0.27 0.14
+0.73 0.83 0.64
+0.43 0.50 0.35
+
+0.79 0.90 0.68
+0.25 0.36 0.15
+0.63 0.76 0.51
+0.55 0.65 0.46
+
+1.00 1.00 0.99
+0.31 0.34 0.29
+0.45 0.49 0.41
+0.67 0.73 0.60
+
+0.96 0.97 0.94
+0.27 0.30 0.24
+0.75 0.82 0.69
+0.46 0.54 0.39
+
+0.87 0.89 0.85
+0.20 0.23 0.17
+0.64 0.79 0.49
+0.52 0.63 0.41
+
+0.94 0.95 0.93
+0.18 0.20 0.15
+0.72 0.84 0.60
+0.47 0.57 0.37
+
+Token-Wise LLMD Is Necessary. Using a single global feature mean and covariance matrix across all token positions captures significantly less useful information for OOD detection than per-token statistics, for example, increasing AUCPDT from 0.19 to 0.24 for X-VLA on the Drawer task (see Table 4 for full results). We hypothesize that this is because the model’s internal behavior differs depending on how far it needs to predict into the future, where actions farther from the current timestep are, in general, harder to predict and therefore require distinct features.
+Mahalanobis Distance Achieves a Good Performance-Complexity Tradeoff In Table 7, we compare the token-wise Mahalanobis distance to the distance metrics from Römer et al. [13] (RND) and Xu et al. [34] (logpZO) using our deterministic prior-noise last-layer features. Neither baseline outperforms LLMD on average in terms of AUCPDT, while requiring additional training during preprocessing and increasing implementation complexity.
+Velocity Normalization Improves ACC. On the simulated Libero-Plus benchmark, we find that velocity normalization is crucial for achieving high failure detection rates, for example, reducing AUCPDT from 0.38 to 0.28 for X-VLA on the Spatial suite (see Table 6 for full results). On realworld tasks, the difference is smaller, but it remains consistent across tasks, as shown in Table 5.
+AUCPDT Highlights Differences in Detection Times. As expected, we find that AUCPDT correlates with AUCPR, as both penalize high false-negative and false-positive rates. However, AUCPDT reveals that failure detectors with similar detection rates detect failures at different timesteps. Typically, we find that LLMD detects failure earlier than baselines, including ACC, when comparing at similar AUCPR, such as with X-VLA on Kitchen or π0.5 on Stack T.
+ACC and STAC. While ACC can be viewed as a velocity-normalized single-sample estimator of STAC, we find that ACC outperforms STAC on nearly all real-world tasks. On Libero-Plus, STAC achieves better detection performance in terms of AUCPR, while ACC detects failures earlier, as the respective AUCPDT shows. We hypothesize that ACC reduces false detections during mode
+8
+
+Table 3: End-to-end runtime latency and memory overhead of VLA-FAIL on an NVIDIA RTX
+
+5090. The overhead of VLA-FAIL is small.
+
+no FAIL
+
+FAIL no FAIL
+
+FAIL
+
+X-VLA π0.5
+
+136 ms 139 ms (+2.2%) 3.717 MB 3.721 MB (+0.1%) 77 ms 78 ms (+1.3%) 7.136 MB 7.165 MB (+0.4%)
+
+selection, as ACC evaluates planning inconsistencies only with executed action chunks, not against counterfactual trajectories, which is beneficial when policies decide between action modes.
+VLA-FAIL is Fast As Table 3 demonstrates, the runtime time and memory overhead of VLA-FAIL during action sampling is small. These numbers were obtained with action sampling and feature extraction running in parallel on an NVIDIA RTX 5090 GPU. The one-off preprocessing step of LLMD is dominated by feature extraction at 60 min for π0.5 and 67 min for X-VLA on the Stack-T task. Subsequent statistics computation takes only 3 min.
+6 Limitations
+LLMD requires access to the finetuning data for a preprocessing pass, which may be expensive for large datasets or impossible when the data is unavailable. ACC requires receding-horizon control with sufficient action overlap (Figure 5, Figure 6) and does not directly apply to fully open-loop chunk execution. Due to its design, VLA-FAIL can miss failures that are consistent in features and actions, such as confidently stopping or ignoring a language instruction. Here, a combination with VLM-based approaches that can detect task failure at the semantic level [17, 24, 25, 26] could be beneficial. VLA-FAIL is empirically motivated and can, like all baseline methods, not provide any formal safety guarantees. Real-world deployment in safety-critical environments, especially around humans, can therefore not solely rely on its failure predictions for safety.
+7 Conclusion
+We presented VLA-FAIL, a lightweight runtime failure detector for finetuned VLAs that requires no failure data. FAIL combines LLMD, which measures token-wise deviations in last-layer features relative to the training data, with ACC, which measures velocity-normalized disagreement between overlapping action chunks. Across real-world and simulated manipulation tasks, FAIL detects complementary failure modes with only marginal computational overhead, making VLA-FAIL a practical step toward human intervention pipelines and the safe real-world deployment of VLAs. Future work could integrate VLA-FAIL into a closed-loop recovery system, where a human operator takes over when failure is detected, potentially as part of a larger DAgger [27] loop.
+
+9
+
+Acknowledgments
+The authors would like to thank Emtiyaz Khan and Thomas Möllenhoff for their helpful discussions on uncertainty quantification, Bayesian methods, and out-of-distribution detection, as well as the valuable time spent at the RIKEN Center for Advanced Intelligence Project. The authors would also like to thank Fabian Lübbe and Patrick Dormanns for their adaptations of π0.5 and X-VLA to the real-robot infrastructure at ALR.
+This work was supported by the European Research Council (ERC) under the European Union’s Horizon Europe programme through the project SMARTI3 (Grant Agreement No. 101171393). This work has been supported by the German Federal Ministry of Research, Technology, and Space (BMFTR) under the Robotics Institute Germany (RIG). The authors acknowledge support by the state of Baden-Württemberg through bwHPC, as well as the HoreKa supercomputer funded by the Ministry of Science, Research and the Arts Baden-Württemberg and by the German Federal Ministry of Education and Research. The authors gratefully acknowledge the Gauss Centre for Supercomputing e.V. (www.gauss-centre.eu) for funding this project by providing computing time on the GCS Supercomputer JUWELS [38] at Jülich Supercomputing Centre (JSC).
+References
+[1] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, L. X. Shi, J. Tanner, Q. Vuong, A. Walling, H. Wang, and U. Zhilinsky. π0: A vision-language-action flow model for general robot control, 2026. URL https://arxiv. org/abs/2410.24164.
+[2] Physical Intelligence, K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, M. Y. Galliker, D. Ghosh, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, D. LeBlanc, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, A. Z. Ren, L. X. Shi, L. Smith, J. T. Springenberg, K. Stachowicz, J. Tanner, Q. Vuong, H. Walke, A. Walling, H. Wang, L. Yu, and U. Zhilinsky. π0.5: a vision-languageaction model with open-world generalization, 2025. URL https://arxiv.org/abs/2504. 16054.
+[3] NVIDIA, J. Bjorck, N. C. Fernando Castañeda, X. Da, R. Ding, L. J. Fan, Y. Fang, D. Fox, F. Hu, S. Huang, J. Jang, Z. Jiang, J. Kautz, K. Kundalia, L. Lao, Z. Li, Z. Lin, K. Lin, G. Liu, E. Llontop, L. Magne, A. Mandlekar, A. Narayan, S. Nasiriany, S. Reed, Y. L. Tan, G. Wang, Z. Wang, J. Wang, Q. Wang, J. Xiang, Y. Xie, Y. Xu, Z. Xu, S. Ye, Z. Yu, A. Zhang, H. Zhang, Y. Zhao, R. Zheng, and Y. Zhu. GR00T N1: An open foundation model for generalist humanoid robots, March 2025.
+[4] J. Lee, J. Duan, H. Fang, Y. Deng, S. Liu, B. Li, B. Fang, J. Zhang, Y. R. Wang, S. Lee, W. Han, W. Pumacay, A. Wu, R. Hendrix, K. Farley, E. VanderBilt, A. Farhadi, D. Fox, and R. Krishna. Molmoact: Action reasoning models that can reason in space, 2025. URL https: //arxiv.org/abs/2508.07917.
+[5] H. Fang, J. Duan, D. Clay, S. Wang, S. Liu, W. Huang, X. Fan, W.-C. Tsai, S. Chen, Y. R. Wang, S. Xing, J. Cho, J. S. Park, A. Eftekhar, P. Sushko, K. Farley, A. Wadhwa, C. Harrison, W. Han, Y.-C. Lee, E. VanderBilt, R. Hendrix, S. Ellawela, L. Ngoo, J. Chai, Z. Ren, A. Farhadi, D. Fox, and R. Krishna. Molmoact2: Action reasoning models for real-world deployment, 2026. URL https://arxiv.org/abs/2605.02881.
+[6] M. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+10
+
+[7] Q. Gu, Y. Ju, S. Sun, I. Gilitschenski, H. Nishimura, M. Itkina, and F. Shkurti. SAFE: Multitask failure detection for vision-language-action models. In The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2025. URL https://openreview.net/forum? id=XPyAukgsFf.
+[8] K. Menda, K. Driggs-Campbell, and M. J. Kochenderfer. Ensembledagger: A bayesian approach to safe imitation learning. In 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), page 5041–5048. IEEE Press, 2019. doi:10.1109/IROS40897. 2019.8968287. URL https://doi.org/10.1109/IROS40897.2019.8968287.
+[9] S.-W. Lee, X. Kang, and Y.-L. Kuo. Diff-dagger: Uncertainty estimation with diffusion policy for robotic manipulation. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 4845–4852. IEEE, 2025.
+[10] L. Brunke, M. Greeff, A. W. Hall, Z. Yuan, S. Zhou, J. Panerati, and A. P. Schoellig. Safe learning in robotics: From learning-based control to safe reinforcement learning. Annual Review of Control, Robotics, and Autonomous Systems, 5(1):411–444, 2022.
+[11] J. Zheng, J. Li, Z. Wang, D. Liu, X. Kang, Y. Feng, Y. Zheng, J. Zou, Y. Chen, J. Zeng, T. Wang, Y.-Q. Zhang, J. Liu, and X. Zhan. X-VLA: Soft-prompted transformer as scalable cross-embodiment vision-language-action model. In The Fourteenth International Conference on Learning Representations, 2026. URL https://openreview.net/forum?id= kt51kZH4aG.
+[12] S. Fei, S. Wang, J. Shi, Z. Dai, J. Cai, P. Qian, L. Ji, X. He, S. Zhang, Z. Fei, J. Fu, J. Gong, and X. Qiu. Libero-plus: In-depth robustness analysis of vision-language-action models. arXiv preprint arXiv:2510.13626, 2025.
+[13] R. Römer, A. Kobras, L. Worbis, and A. P. Schoellig. Failure prediction at runtime for generative robot policies. In The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2025.
+[14] S. Zhou, B. Zhu, J. Yang, X. Zhao, J. Chen, and Y.-G. Jiang. Rc-nf: Robot-conditioned normalizing flow for real-time anomaly detection in robotic manipulation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 43050–43060, June 2026.
+[15] C. Ma, G. Yang, K. Lu, S. Xu, B. Byrne, N. Trigoni, and A. Markham. Cyclevla: Proactive self-correcting vision-language-action models via subtask backtracking and minimum bayes risk decoding. arXiv preprint arXiv:2601.02295, 2026.
+[16] Z. Lin, J. Duan, H. Fang, D. Fox, R. Krishna, C. Tan, and B. Wen. Failsafe: Reasoning and recovery from failures in vision-language-action models, 2025. URL https://arxiv.org/ abs/2510.01642.
+[17] C. Agia, R. Sinha, J. Yang, Z. Cao, R. Antonova, M. Pavone, and J. Bohg. Unpacking failure modes of generative policies: Runtime monitoring of consistency and progress. In Proceedings of The 8th Conference on Robot Learning, volume 270 of Proceedings of Machine Learning Research, pages 689–723. PMLR, 2025.
+[18] C. Xu, T. K. Nguyen, E. Dixon, C. Rodriguez, P. Miller, R. Lee, P. Shah, R. A. Ambrus, H. Nishimura, and M. Itkina. Can we detect failures without failure data? uncertainty-aware runtime failure detection for imitation learning policies. In Robot Evaluation for the Real World, 2025. URL https://openreview.net/forum?id=A2iUXYdWZD.
+[19] Q. Rolland, F. Mayran de Chamisso, and J.-B. Mouret. Failure identification in imitation learning via statistical and semantic filtering. In IEEE International Conference on Robotics and Automation (ICRA), 2026.
+11
+
+[20] P. Malhotra, L. Vig, G. M. Shroff, and P. Agarwal. Long short term memory networks for anomaly detection in time series. In The European Symposium on Artificial Neural Networks, 2015. URL https://api.semanticscholar.org/CorpusID:43680425.
+[21] D. Park, Z. Erickson, T. Bhattacharjee, and C. C. Kemp. Multimodal execution monitoring for anomaly detection during robot manipulation. In 2016 IEEE International Conference on Robotics and Automation (ICRA), pages 407–414, 2016. doi:10.1109/ICRA.2016.7487160.
+[22] W. Liu, D. L. W. Luo, and S. Gao. Future frame prediction for anomaly detection – a new baseline. In 2018 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2018.
+[23] G. Zheng, S. Seenivasan, M. Johnson-Roberson, and W. Zhi. Rewind-il: Online failure detection and state respawning for imitation learning, 2026. URL https://arxiv.org/abs/ 2604.16683.
+[24] H. Tan, S. Chen, Y. Xu, Z. Wang, Y. Ji, C. Chi, Y. Lyu, Z. Zhao, X. Chen, P. Co, et al. Robodopamine: General process reward modeling for high-precision robotic manipulation. arXiv preprint arXiv:2512.23703, 2025.
+[25] A. Liang, Y. Korkmaz, J. Zhang, M. Hwang, A. Anwar, S. Kaushik, A. Shah, A. S. Huang, L. Zettlemoyer, D. Fox, Y. Xiang, A. Li, A. Bobu, A. Gupta, S. Tu, E. Biyik, and J. Zhang. Robometer: Scaling general-purpose robotic reward models via trajectory comparisons. In Robotics: Science and Systems 2026, 2026.
+[26] T. Lee, A. Wagenmaker, K. Pertsch, P. Liang, S. Levine, and C. Finn. Roboreward: A dataset and benchmark for vision-language reward models in robotics, 2025. URL https: //openreview.net/forum?id=iDmt7Tzmke.
+[27] S. Ross, G. Gordon, and D. Bagnell. A reduction of imitation learning and structured prediction to no-regret online learning. In Proceedings of the fourteenth international conference on artificial intelligence and statistics, pages 627–635. JMLR Workshop and Conference Proceedings, 2011.
+[28] K. Lee, K. Lee, H. Lee, and J. Shin. A simple unified framework for detecting out-of-distribution samples and adversarial attacks. In S. Bengio, H. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, and R. Garnett, editors, Advances in Neural Information Processing Systems, volume 31. Curran Associates, Inc., 2018. URL https://proceedings.neurips.cc/paper_files/paper/2018/file/ abdeb6f575ac5c6676b747bca8d09cc2-Paper.pdf.
+[29] J. Ren, S. Fort, J. Liu, A. G. Roy, S. Padhy, and B. Lakshminarayanan. A simple fix to mahalanobis distance for improving near-ood detection, 2021. URL https://arxiv.org/ abs/2106.09022.
+[30] M. Müller and M. Hein. Mahalanobis++: Improving OOD detection via feature normalization. In Forty-second International Conference on Machine Learning, 2025. URL https: //openreview.net/forum?id=vutMcZl50l.
+[31] E. Daxberger, A. Kristiadi, A. Immer, R. Eschenhagen, M. Bauer, and P. Hennig. Laplace redux - effortless bayesian deep learning. In M. Ranzato, A. Beygelzimer, Y. Dauphin, P. Liang, and J. W. Vaughan, editors, Advances in Neural Information Processing Systems, volume 34, pages 20089–20103. Curran Associates, Inc., 2021. URL https://proceedings.neurips.cc/ paper_files/paper/2021/file/a7c9585703d275249f30a088cebba0ad-Paper.pdf.
+[32] M. Reuss, H. Zhou, M. Rühle, Ö. E. Yag˘murlu, F. Otto, and R. Lioutikov. FLOWER: Democratizing generalist robot policies with efficient vision-language-flow models. In 9th Annual Conference on Robot Learning, 2025. URL https://openreview.net/forum?id= JeppaebLRD.
+12
+
+[33] Q. Li, Y. Deng, Y. Liang, L. Luo, L. Zhou, C. Yao, L. Zeng, Z. Feng, H. Liang, S. Xu, Y. Zhang, X. Chen, H. Chen, L. Sun, D. Chen, J. Yang, and B. Guo. Scalable vision-language-action model pretraining for robotic manipulation with real-life human activity videos. arXiv preprint arXiv:2510.21571, 2025.
+[34] C. Xu, T. K. Nguyen, E. Dixon, C. Rodriguez, P. Miller, R. Lee, P. Shah, R. Ambrus, H. Nishimura, and M. Itkina. Can we detect failures without failure data? uncertainty-aware runtime failure detection for imitation learning policies. In Robotics: Science and Systems, 2025.
+[35] L. Beyer, A. Steiner, A. S. Pinto, A. Kolesnikov, X. Wang, D. Salz, M. Neumann, I. Alabdulmohsin, M. Tschannen, E. Bugliarello, T. Unterthiner, D. Keysers, S. Koppula, F. Liu, A. Grycner, A. Gritsenko, N. Houlsby, M. Kumar, K. Rong, J. Eisenschlos, R. Kabra, M. Bauer, M. Bošnjak, X. Chen, M. Minderer, P. Voigtlaender, I. Bica, I. Balazevic, J. Puigcerver, P. Papalampidi, O. Henaff, X. Xiong, R. Soricut, J. Harmsen, and X. Zhai. Paligemma: A versatile 3b vlm for transfer, 2024. URL https://arxiv.org/abs/2407.07726.
+[36] B. Xiao, H. Wu, W. Xu, X. Dai, H. Hu, Y. Lu, M. Zeng, C. Liu, and L. Yuan. Florence2: Advancing a unified representation for a variety of vision tasks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 4818–4829, 2024.
+[37] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. volume 36, pages 44776–44791, 2023.
+[38] Jülich Supercomputing Centre. JUWELS Cluster and Booster: Exascale Pathfinder with Modular Supercomputing Architecture at Juelich Supercomputing Centre. Journal of large-scale research facilities, 7(A183), 2021. doi:10.17815/jlsrf-7-183. URL http://dx.doi.org/ 10.17815/jlsrf-7-183.
+[39] Y. Burda, H. Edwards, A. Storkey, and O. Klimov. Exploration by random network distillation. In International Conference on Learning Representations, 2019. URL https: //openreview.net/forum?id=H1lJJnR5Ym.
+[40] H. Munn, B. Tidd, P. Böhm, M. Gallagher, and D. Howard. Rapt: Model-predictive outof-distribution detection and failure diagnosis for sim-to-real humanoid deployment. arXiv preprint arXiv:2602.01515, 2026.
+13
+
+A Penalized Detection Time
+
+Here, we provide further details on the AUCPDT metric introduced in Section 4.1.
+
+Pareto Front Computation Thresholds that are not Pareto-optimal are not relevant for score computation, as they do not represent values that an operator would choose. As is common with the AUCPR metric, we remove these points before computing the area to smooth the PDT curve. Note that there can be thresholds at the same recall but with different detection times and precisions, where lowering a score keeps the failure detection unchanged at the episode level but reduces the detection time within episodes, potentially introducing additional false positives. As these thresholds represent relevant tradeoffs between precision and PDT, we compute the Pareto front in terms of precision and PDT, not precision and recall.
+
+Area Computation Let τk. k = 1, ..., K denote the unique Pareto-optimal thresholds sorted in ascending order. We calculate the area under the penalized detection time curve over the precision interval from the failure rate to one using right-hand Riemann sums:
+
+K
+
+AUCPDT = (Pk − Pk−1)P DTk
+
+(9)
+
+k=2
+
+where Pk and P DTk denote the precision and penalized detection time at threshold τk, setting PK = 1, as no detection is made at that threshold. We only integrate from the failure rate, since lower-precision values are uninformative: They yield worse performance than a naive detector that always predicts failure at t = 0. Crucially, the integration domain is fixed independently of each detector’s performance, leaving the PDT at each precision value as the only variable influencing the AUCPDT. We use step-wise integration to avoid optimistically underestimating detection times between measured points, as achieving a higher precision strictly requires accepting the PDT of the next available threshold.
+
+Exemplary Plots Figure 3 and Figure 4 show examples of PR and PDT plots. In both cases, ACC outperforms all other methods in terms of PR. i.e., pure detection rate. However, it detects failures more slowly than LLMD and FAIL, particularly at low precision values, resulting in a higher AUCPDT.
+
+Relationship to Prior Work Compared to the balanced accuracy-detection time plots from Gu et al. [7], AUCPDT makes the trade-off between precision and detection time explicit by grouping recall and detection time, which are inversely correlated, on the same axis. Römer et al. [13] introduce the timestep-weighted accuracy as another metric that jointly measures detection performance and detection time. However, this is a threshold-dependent metric.
+
+14
+
+Precision
+
+1.0
+
+0.8
+
+0.6
+
+ACE
+
+0.4
+
+Diff STAC
+
+0.2
+
+ACC LLMD
+
+FAIL
+
+0.00.0
+
+0.2
+
+0.4 Recal0l.6
+
+0.8
+
+1.0
+
+Penalized Detection Time
+
+1.0 0.8 0.6 0.4 0.2 0.0
+0.6
+
+0.7 Precisi0o.n8
+
+ACE Diff STAC ACC LLMD FAIL 0.9 1.0
+
+(a) Precision-Recall
+
+(b) Penalized Detection Time vs. Precision
+
+Figure 3: X-VLA on Blocks. Here, STAC demonstrates no useful failure signal, leading to a recall that stays constant at the fail rate, and a PDT that is constant at 1.
+
+Precision
+
+1.0
+
+0.8
+
+0.6
+
+ACE
+
+0.4
+
+Diff STAC
+
+0.2
+
+ACC LLMD
+
+FAIL
+
+0.00.0
+
+0.2
+
+0.4 Recal0l.6
+
+0.8
+
+1.0
+
+Penalized Detection Time
+
+1.0 0.8 0.6 0.4 0.2 0.0
+0.5
+
+0.6 Pr0e.7cision 0.8
+
+ACE Diff STAC ACC LLMD FAIL 0.9 1.0
+
+(a) Precision-Recall
+
+(b) Penalized Detection Time vs. Precision
+
+Figure 4: π0.5 on Blocks. ACC performs substantially worse than other methods.
+
+B Ablation Studies
+Token-Wise LLMD As Table 4 demonstrates for the real-world tasks, computing feature statistics per token position improves failure detection rates significantly. While this result is somewhat counterintuitive, as the same final linear layer projects all features to action, independent of token position, last-layer features accumulate values across all layers of the network, which the final linear layer is trained to discard to produce a clean action. As such, there can be token-dependent differences in the features that do not translate to different actions.
+Velocity Normalization in ACC In Table 5, we ablate the velocity normalization in ACC on real-world tasks. While the improvement is small, it is consistent across tasks. On the simulated Libero-Plus benchmark, we see a clearer picture (Table 6), with ACC without velocity normalization performing significantly worse than velocity-normalized ACC.
+ACC Hyperparameters ACC requires overlapping actions between successive action chunks. As expected, we find that ACC’s performance degrades with a smaller overlap between chunks (Figure 5, Figure 6). However, ACC retains some failure detection capability even for a single
+15
+
+Table 4: Global vs. token-wise LLMD on the real-world tasks. Global feature statistics perform significantly worse than per-token statistics.
+
+Global Token-Wise
+
+Kitchen Drawer Blocks
+Cups Stack T
+Mixer
+
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+PR↑ PDT↓ PR↑ PDT↓
+
+0.67 0.67 0.67
+0.42 0.42 0.42
+0.57 0.65 0.48
+0.39 0.50 0.32
+0.86 0.86 0.85
+0.24 0.25 0.23
+0.43 0.43 0.43
+0.63 0.63 0.62
+0.67 0.68 0.66
+0.36 0.37 0.35
+0.70 0.72 0.68
+0.37 0.38 0.36
+0.67 0.67 0.66
+0.42 0.42 0.41
+0.67 0.68 0.66
+0.42 0.42 0.41
+0.84 0.84 0.83
+0.18 0.19 0.18
+0.92 0.92 0.92
+0.14 0.14 0.14
+0.74 0.75 0.72
+0.28 0.29 0.28
+0.54 0.56 0.52
+0.48 0.50 0.46
+
+1.00 1.00 1.00
+0.20 0.20 0.20
+0.62 0.82 0.41
+0.33 0.46 0.20
+0.90 0.91 0.89
+0.19 0.19 0.19
+0.69 0.72 0.66
+0.45 0.46 0.44
+0.83 0.84 0.82
+0.26 0.26 0.25
+0.73 0.74 0.72
+0.31 0.32 0.31
+0.78 0.79 0.78
+0.33 0.34 0.33
+0.78 0.79 0.78
+0.28 0.29 0.28
+0.97 0.97 0.97
+0.08 0.08 0.08
+0.95 0.96 0.95
+0.10 0.10 0.10
+0.98 0.98 0.98
+0.11 0.11 0.11
+0.77 0.78 0.76
+0.28 0.28 0.27
+
+overlapping action. Additionally, we find that ACC is more robust to shorter overlapping action sequences on π0.5 than on X-VLA.
+The performance of ACC also changes with the smoothing factor α, with lower values of α generally improving failure detection accuracy (AUCPR) but delaying failure detection (AUCPDT), as demonstrated in Figure 7. We use a fixed value of α = 0.1 across all experiments.
+ACC’s detection performance generally improves with smaller minimum velocities vmin (Figure 8). However, on the real-world tasks, values below 0.01 lead to a sharp drop in performance, as the velocity scaling starts amplifying noise for a stationary robot.
+
+16
+
+Table 5: ACC with and without velocity normalization on real-world tasks. Velocity normalization improves detection rates and detection time on most tasks.
+
+No Vel. Norm. Vel. Norm.
+
+Blocks
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.91 0.27 0.92 0.27
+
+0.92 0.24 0.95 0.24
+
+Drawer
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.90 0.33 0.61 0.54
+
+0.83 0.33 0.62 0.53
+
+Cups
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.96 0.29 0.54 0.55
+
+0.97 0.28 0.60 0.51
+
+Kitchen
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+1.00 0.24 0.99 0.17
+
+1.00 0.20 0.99 0.17
+
+Stack T
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.97 0.09 0.91 0.14
+
+0.98 0.09 0.95 0.12
+
+Mixer
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.96 0.15 0.82 0.29
+
+0.98 0.11 0.85 0.28
+
+Table 6: ACC with and without velocity normalization on Libero-Plus. Velocity normalization consistently improves detection rates and detection time across most task suites.
+
+No Vel. Norm. Vel. Norm.
+
+Object
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.96 0.23 0.68 0.52
+
+0.97 0.22 0.65 0.58
+
+Spatial
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.86 0.38 0.77 0.48
+
+0.95 0.28 0.80 0.49
+
+Goal
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.89 0.32 0.86 0.35
+
+0.95 0.26 0.91 0.33
+
+10
+
+X-VLA π0.5
+
+PR↑ PDT↓ PR↑ PDT↓
+
+0.75 0.39 0.77 0.42
+
+0.96 0.23 0.79 0.40
+
+17
+
+1.0
+
+1.0
+
+0.8
+
+0.8
+
+0.6
+
+0.6
+
+AUCPDT AUCPDT
+
+0.4
+
+0.4
+
+0.2
+
+0.2
+
+0.0 1 2 3 4 5 6 7 8 9 10
+
+0.0 1
+
+2
+
+3
+
+4
+
+5
+
+Chunk Overlap
+
+Chunk Overlap
+
+(a) X-VLA
+
+(b) π0.5
+
+Figure 5: Dependence of ACC on the number of overlapping actions on the Drawer real-world task. A lower AUCPDT is better. As expected, a smaller chunk overlap reduces ACC’s performance. However, even with a single overlapping action, ACC retains some failure detection capability.
+
+1.0
+
+1.0
+
+0.8
+
+0.8
+
+0.6
+
+0.6
+
+AUCPDT AUCPDT
+
+0.4
+
+0.4
+
+0.2
+
+0.2
+
+0.0 1 2 3 4 5 6 7 8 9 10
+
+0.0 1
+
+2
+
+3
+
+4
+
+5
+
+Chunk Overlap
+
+Chunk Overlap
+
+(a) X-VLA
+
+(b) π0.5
+
+Figure 6: Dependence of ACC on the number of overlapping actions on the Blocks real-world task. A lower AUCPDT is better. As expected, a smaller chunk overlap reduces ACC’s performance. However, even with a single overlapping action, ACC retains some failure detection capability.
+
+AUCPDT AUCPR AUCPDT AUCPR
+
+0.475
+
+0.95
+
+0.450
+
+0.90
+
+0.425 0.400
+
+0.85
+
+0.375
+
+0.80
+
+0.350 0.325
+
+0.75
+
+0.70 0.0250.100 0.200 0.300 0S.4m00o0o.5t0h0in0g.600 0.700 0.800 0.900 1.000
+
+0.675
+
+0.70
+
+0.650 0.625
+
+0.65
+
+0.600
+
+0.60
+
+0.575
+
+0.55
+
+0.550
+
+0.50
+
+0.525
+
+0.45
+
+0.0250.100 0.200 0.300 0S.4m00o0o.5t0h0in0g.600 0.700 0.800 0.900 1.000
+
+(a) X-VLA
+
+(b) π0.5
+
+Figure 7: Dependence of ACC on the smoothing factor α on the Drawer real-world task. A lower AUCPDT is better, while for AUCPR, higher values are better. A lower value of α, i.e., more smoothing, increases failure detection accuracy but tends to delay detection, leading to a favorable tradeoff at an intermediate value. We use α = 0.1 for all tasks.
+
+18
+
+AUCPDT AUCPR AUCPDT AUCPR
+
+0.30 0.29 0.28 0.27 0.26 0.25 0.24 0.23 0.0001.010 0.025 Mi0n.0i5m0um Velocity0.v10m0in
+
+0.94 0.93 0.92 0.91 0.90 0.89 0.88 0.150 0.87
+
+0.40 0.35 0.30 0.25 0.20 0.0001.010 0.025 Mi0n.0im50um Velocity0.1v0m0in
+
+0.95 0.90 0.85 0.80 0.75 0.150 0.70
+
+(a) X-VLA
+
+(b) π0.5
+
+Figure 8: Dependence of ACC on the minimum velocity vmin on the Blocks real-world task. A lower AUCPDT is better, while for AUCPR, higher values are better. Lower minimum velocities
+tend to work better, as they enable more accurate velocity scaling. However, there is a sharp drop at values smaller than 0.01, where the velocity scaling starts amplifying noise. We use vmin = 0.01 for all real-world tasks.
+
+C Additional Baselines
+C.1 Alternatives to Mahalanobis
+Here, we compare alternatives to the Mahalanobis distance for computing the typicality of last-layer features. We apply all alternatives to the last-layer features obtained via our deterministic prior noise feature extraction scheme (section 3.1). Random network distillation [39] was used by Römer et al. [13] on observation embeddings to detect task failure. LogpZO [34] trains a flow-matching model on observation embeddings. At runtime, it maps embeddings back to the corresponding prior noise and uses the norm of the noise vector to evaluate how likely the feature is under the prior. Both methods apply equally well to our last-layer features. We call them LL-RND and LL-logpZO.
+We use the hyperparameters published by Römer et al. [13] and Xu et al. [34], adapting only the neural network’s input size to our feature dimension. For LL-logpZO, we train the convolutional U-Net on the sequence of action tokens, thus learning the joint distribution over tokens. LL-RND is applied per token, using one predictor and one target network across all sequence positions. We use the mean MSE over all positions as the failure score.
+Table 7 shows the performance of LL-RND and LL-logpZO on the real-world tasks. For computational reasons, we evaluate only a single seed for these baselines, except on Kitchen, where we evaluate three seeds due to high variance in last-layer features visible in LLMD. While both baselines outperform LLMD on individual tasks, LLMD performs equally well on average in terms of AUCPDT. In particular, LL-logpZO shows inconsistent AUCPDT and AUCPR across tasks, while LL-RND performs similarly to LLMD on most tasks. However, both baselines require an additional training step, increasing preprocessing time on an NVIDIA RTX 5090 GPU from 70 min for LLMD to 153 min for LL-RND and 183 min for LL-logpZO. Overall, we recommend the token-wise Mahalanobis distance as a good default distance metric, as it requires no additional training and is substantially simpler to implement.
+Interestingly, the baselines benefit substantially from our novel feature choice: On π0.5, randomnoise features from all timesteps worsen LL-RND’s AUCPR from 0.73 to 0.49 and AUCPDT from 0.35 to 0.51. This highlights that our feature construction transfers to other methods that depend on stable last-layer features.
+19
+
+Table 7: Threshold-independent detector performance of additional baselines on the real-world tasks. PR and PDT (see Section 4.1) refer to the areas under the respective curves, and the small
+numbers indicate 95% confidence intervals. The best method is highlighted. While LL-RND and LL-lopZO outperform LLMD on some tasks, LLMD performs on average on par with both baselines in terms of PDT, while being significantly simpler to implement and requiring no additional training.
+
+LL-RND LL-logpZO LLMD
+
+Blocks Drawer Kitchen Stack T Mixer Cups
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+0.85 0.27 0.71 0.35
+0.84 0.21 0.78 0.41
+1.00 0.20 0.65 0.88
+0.41
+0.32 0.46 0.18
+0.97 0.09 0.97 0.09
+0.97 0.10 0.77 0.30
+0.86 0.32 0.48 0.61
+
+0.87 0.25 0.88 0.26
+0.88 0.21 0.77 0.40
+0.96 0.24 0.74 1.00
+0.32
+0.25 0.45 0.05
+0.78 0.20 0.97 0.11
+0.97 0.13 0.61 0.45
+0.95 0.24 0.61 0.51
+
+0.83 0.84 0.82
+0.26 0.26 0.25
+0.73 0.74 0.72
+0.31 0.32 0.31
+0.90 0.91 0.89
+0.19 0.19 0.19
+0.69 0.72 0.66
+0.45 0.46 0.44
+1.00 1.00 1.00
+0.20 0.20 0.20
+0.62 0.82 0.41
+0.33 0.46 0.20
+0.97 0.97 0.97
+0.08 0.08 0.08
+0.95 0.96 0.95
+0.10 0.10 0.10
+0.98 0.98 0.98
+0.11 0.11 0.11
+0.77 0.77 0.77
+0.28 0.28 0.27
+0.78 0.79 0.78
+0.33 0.34 0.33
+0.58 0.59 0.57
+0.52 0.52 0.52
+
+Average
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+0.92 0.20 0.73 0.35
+
+0.90
+
+0.91
+
+0.21
+
+0.20
+
+0.76
+
+0.72
+
+0.33
+
+0.33
+
+C.2 FAIL vs RAPT
+The Recurrent Anomaly Probabilistic Trajectory Model (RAPT) [40] detects task failure by predicting future proprioceptive observations from a history of proprioceptive states and actions using a recurrent model. While originally designed for humanoid locomotion tasks, in which policies only observe proprioception, one can also apply RAPT to robot proprioception in manipulation tasks. We train RAPT on current proprioception (EEF pose, gripper state) and previous absolute EEF actions as inputs, and evaluate RAPT once per VLA inference. As Table 8 demonstrates, FAIL outperforms RAPT on nearly all tasks and metrics, without requiring an additional training step.
+
+20
+
+Table 8: Threshold-independent detector performance of RAPT on the real-world tasks. PR and PDT (see Section 4.1) refer to the areas under the respective curves, and the small numbers indi-
+cate 95% confidence intervals. The best method is highlighted. FAIL performs on par with or outperforms RAPT on nearly all tasks and metrics.
+RAPT FAIL
+
+Drawer Kitchen Stack T Mixer
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+0.93 0.28 0.72 0.39
+0.52 0.53 0.78 0.30
+0.98 0.08 0.92 0.11
+0.97 0.16 0.63 0.46
+
+0.91 0.92 0.90
+0.22 0.22 0.22
+0.68 0.71 0.65
+0.47 0.48 0.45
+1.00 1.00 1.00
+0.21 0.21 0.21
+0.74 0.84 0.64
+0.28 0.39 0.16
+0.98 0.98 0.98
+0.08 0.08 0.08
+0.96 0.97 0.96
+0.10 0.10 0.09
+0.97 0.97 0.97
+0.11 0.11 0.11
+0.79 0.79 0.79
+0.27 0.27 0.27
+
+Average
+
+X-VLA
+
+PR↑ PDT↓
+
+π0.5
+
+PR↑ PDT↓
+
+0.85 0.28 0.71 0.38
+
+0.94 0.19 0.77 0.31
+
+D Threshold-Dependent Results
+This section contains threshold-dependent results for the real-world tasks and Libero-Plus. These results are less reliable for comparing methods than the threshold-independent results in the main paper, as threshold selection is a major confounding factor and there is no best threshold [34]. We select all thresholds using a constant conformal prediction (CP) band at significance level 0.05, following Römer et al. [13]. We do not use time-dependent conformal prediction bands, as they are not applicable to episodes of varying length, such as in the Drawer task.
+D.1 Real-World Tasks
+We summarize threshold-dependent results for the real-world tasks in Table 9 and Table 10. Note that we only use 20 rollouts for threshold calibration, which were randomly selected from the successful evaluation rollouts and excluded from subsequent threshold-dependent evaluation. Due to the small number of rollouts and the low significance level, a single outlier in the calibration set can significantly raise the score threshold, leading to low recall for some methods on some tasks.
+
+21
+
+Table 9: Threshold-dependent detector performance on real-world tasks, using a constant CP band at significance level 0.05. The top three performing methods are highlighted. Note that we are using only 20 calibration rollouts, making some methods underperform in terms of recall due to outliers in the calibration set.
+
+ACE Diff STAC ACC LLMD FAIL
+
+Blocks Drawer Cups
+
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+
+0.39 0.43 0.35
+1.00 1.00 1.00
+0.57 0.60 0.55
+0.70 0.72 0.68
+0.56 0.60 0.52
+1.00 1.00 1.00
+0.29 0.33 0.25
+0.78 0.82 0.75
+0.53 0.55 0.51
+0.59 0.60 0.57
+0.43 0.47 0.38
+0.88 0.91 0.85
+0.93 0.96 0.91
+0.95 1.01 0.89
+0.96 0.97 0.94
+0.95 0.96 0.94
+0.94 0.96 0.92
+0.97 1.01 0.93
+0.13 0.19 0.07
+0.54 0.69 0.39
+0.65 0.68 0.63
+0.53 0.55 0.51
+0.20 0.28 0.12
+0.93 0.98 0.88
+0.68 0.73 0.63
+0.96 0.98 0.95
+0.80 0.82 0.78
+0.82 0.84 0.80
+0.80 0.83 0.77
+0.96 0.98 0.94
+0.68 0.73 0.63
+0.96 0.98 0.95
+0.80 0.82 0.78
+0.82 0.84 0.80
+0.80 0.83 0.77
+0.96 0.98 0.94
+
+0.22 0.29 0.16
+1.00 1.00 1.00
+0.45 0.50 0.41
+0.61 0.64 0.58
+0.36 0.45 0.27
+1.00 1.00 1.00
+0.51 0.80 0.21
+0.93 1.00 0.86
+0.67 0.82 0.53
+0.71 0.82 0.61
+0.62 0.87 0.38
+0.92 1.00 0.85
+0.77 0.84 0.70
+1.00 1.00 1.00
+0.92 0.94 0.89
+0.89 0.92 0.85
+0.87 0.91 0.83
+1.00 1.00 1.00
+0.57 0.80 0.35
+0.64 0.72 0.56
+0.74 0.79 0.69
+0.70 0.79 0.62
+0.59 0.72 0.46
+0.83 0.91 0.75
+0.69 0.71 0.66
+0.97 1.00 0.94
+0.81 0.82 0.80
+0.83 0.84 0.82
+0.80 0.82 0.79
+0.97 1.00 0.94
+0.69 0.71 0.66
+0.97 1.00 0.94
+0.81 0.82 0.80
+0.83 0.84 0.82
+0.80 0.82 0.79
+0.97 1.00 0.94
+
+0.00 0.00 0.00
+0.00 0.00 0.00
+0.30 0.30 0.30
+0.50 0.50 0.50
+0.00 0.00 0.00
+1.00 1.00 1.00
+0.62 0.74 0.50
+0.94 0.96 0.92
+0.75 0.81 0.68
+0.78 0.82 0.73
+0.74 0.82 0.66
+0.94 0.97 0.91
+0.00 0.00 0.00
+0.00 0.00 0.00
+0.53 0.54 0.52
+0.42 0.43 0.41
+0.00 0.00 0.00
+0.84 0.86 0.83
+0.69 0.75 0.63
+0.69 0.74 0.63
+0.78 0.80 0.76
+0.76 0.78 0.74
+0.69 0.71 0.67
+0.83 0.89 0.77
+1.00 1.00 1.00
+0.98 0.98 0.98
+0.99 0.99 0.99
+0.99 0.99 0.99
+0.99 0.99 0.99
+0.97 0.97 0.97
+1.00 1.00 1.00
+0.98 0.98 0.98
+0.99 0.99 0.99
+0.99 0.99 0.99
+0.99 0.99 0.99
+0.97 0.97 0.97
+
+0.47 1.00 0.62 0.73 0.64 1.00 0.82 0.90 0.84 0.84 0.86 0.86
+0.40 1.00 0.78 0.70 0.57 1.00 0.50 0.52 0.67 0.63 0.51 0.75
+0.94 0.98 0.95 0.96 0.96 0.97 0.94 0.98 0.95 0.96 0.96 0.97
+
+0.07 0.13 0.02
+1.00 1.00 1.00
+0.35 0.39 0.31
+0.54 0.57 0.51
+0.14 0.23 0.04
+1.00 1.00 1.00
+0.03 0.03 0.03
+1.00 1.00 1.00
+0.42 0.42 0.42
+0.52 0.52 0.52
+0.06 0.06 0.06
+1.00 1.00 1.00
+0.96 0.96 0.96
+0.89 0.89 0.89
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.92 0.92 0.92
+0.93 0.93 0.93
+0.61 0.71 0.50
+0.73 0.77 0.68
+0.79 0.83 0.75
+0.74 0.80 0.69
+0.66 0.74 0.58
+0.88 0.89 0.87
+0.44 0.45 0.42
+0.88 0.88 0.87
+0.64 0.65 0.63
+0.68 0.68 0.67
+0.58 0.59 0.57
+0.92 0.92 0.92
+0.44 0.45 0.42
+0.88 0.88 0.87
+0.64 0.65 0.63
+0.68 0.68 0.67
+0.58 0.59 0.57
+0.92 0.92 0.92
+
+0.52 0.53 0.50
+1.00 1.00 1.00
+0.66 0.67 0.65
+0.76 0.77 0.75
+0.68 0.70 0.67
+1.00 1.00 1.00
+0.82 0.82 0.82
+0.90 0.90 0.90
+0.84 0.84 0.84
+0.84 0.84 0.84
+0.86 0.86 0.86
+0.86 0.86 0.86
+0.96 0.96 0.96
+0.89 0.89 0.89
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.92 0.92 0.92
+0.93 0.93 0.93
+0.69 0.78 0.60
+0.52 0.55 0.49
+0.67 0.70 0.65
+0.68 0.72 0.63
+0.59 0.65 0.54
+0.67 0.68 0.65
+0.96 0.96 0.96
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.95 0.95 0.95
+0.92 0.92 0.92
+0.96 0.96 0.96
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.94 0.94 0.94
+0.95 0.95 0.95
+0.92 0.92 0.92
+
+22
+
+Table 10: Threshold-dependent detector performance on real-world tasks, using a constant CP band at significance level 0.05. The top three performing methods are highlighted. Note that we are using only 20 calibration rollouts, making some methods underperform in terms of recall due to outliers in the calibration set.
+
+ACE Diff STAC ACC LLMD FAIL
+
+Kitchen Stack T Mixer
+
+X-VLA π0.5
+X-VLA π0.5
+X-VLA π0.5
+
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+Rec Prec Acc WACC F1 TNR Rec Prec Acc WACC F1 TNR
+
+0.96 0.96 0.96
+0.94 0.96 0.92
+0.94 0.95 0.92
+0.92 0.95 0.90
+0.95 0.96 0.94
+0.88 0.93 0.83
+0.82 0.84 0.81
+0.95 0.97 0.93
+0.84 0.85 0.83
+0.85 0.87 0.83
+0.88 0.89 0.87
+0.88 0.93 0.83
+0.85 0.85 0.85
+1.00 1.00 1.00
+0.86 0.86 0.86
+0.93 0.93 0.93
+0.92 0.92 0.92
+1.00 1.00 1.00
+0.30 0.37 0.24
+0.96 1.00 0.92
+0.40 0.44 0.35
+0.61 0.62 0.60
+0.46 0.53 0.39
+0.92 1.01 0.82
+0.83 0.84 0.81
+0.97 0.98 0.95
+0.82 0.84 0.80
+0.80 0.86 0.74
+0.89 0.90 0.88
+0.78 0.89 0.67
+0.77 0.79 0.75
+0.99 1.01 0.96
+0.88 0.90 0.86
+0.88 0.90 0.86
+0.86 0.89 0.84
+0.99 1.01 0.97
+
+0.95 0.98 0.93
+0.95 0.97 0.93
+0.94 0.95 0.92
+0.93 0.95 0.91
+0.95 0.96 0.94
+0.90 0.95 0.86
+0.14 0.39 0.00
+0.67 1.32 0.01
+0.37 0.55 0.19
+0.57 0.70 0.45
+0.21 0.56 0.00
+1.00 1.00 1.00
+0.87 0.87 0.87
+1.00 1.00 1.00
+0.87 0.87 0.87
+0.93 0.93 0.93
+0.93 0.93 0.93
+1.00 1.00 1.00
+0.35 0.64 0.06
+0.99 1.01 0.97
+0.44 0.68 0.20
+0.66 0.80 0.52
+0.47 0.83 0.11
+0.97 1.03 0.92
+0.85 0.87 0.84
+0.98 0.98 0.98
+0.85 0.86 0.84
+0.84 0.85 0.84
+0.91 0.92 0.90
+0.83 0.83 0.83
+0.30 0.47 0.12
+0.87 1.06 0.67
+0.64 0.74 0.55
+0.63 0.73 0.53
+0.44 0.65 0.22
+0.97 1.00 0.93
+
+0.00 0.00 0.00
+0.00 0.00 0.00
+0.31 0.31 0.31
+0.46 0.46 0.46
+0.00 0.00 0.00
+0.93 0.93 0.93
+0.74 0.79 0.69
+0.97 0.97 0.96
+0.79 0.83 0.75
+0.83 0.86 0.81
+0.84 0.87 0.80
+0.93 0.93 0.93
+0.00 0.00 0.00
+0.00 0.00 0.00
+0.02 0.02 0.02
+0.50 0.50 0.50
+0.00 0.00 0.00
+1.00 1.00 1.00
+0.14 0.16 0.11
+0.97 1.03 0.92
+0.26 0.27 0.25
+0.55 0.57 0.54
+0.24 0.27 0.20
+0.97 1.03 0.92
+0.00 0.00 0.00
+0.00 0.00 0.00
+0.11 0.11 0.11
+0.50 0.50 0.50
+0.00 0.00 0.00
+1.00 1.00 1.00
+0.07 0.07 0.07
+1.00 1.00 1.00
+0.55 0.55 0.55
+0.53 0.53 0.53
+0.13 0.13 0.13
+1.00 1.00 1.00
+
+1.00 0.93 0.95 0.93 0.97 0.86 0.89 0.97 0.90 0.91 0.93 0.93
+0.89 1.00 0.89 0.95 0.94 1.00 0.35 1.00 0.44 0.67 0.52 1.00
+0.90 0.98 0.89 0.87 0.94 0.83 0.17 1.00 0.60 0.59 0.29 1.00
+
+1.00 1.00 1.00
+0.97 0.97 0.97
+0.98 0.98 0.98
+0.96 0.96 0.96
+0.98 0.98 0.98
+0.93 0.93 0.93
+0.01 0.03 0.00
+0.17 0.49 0.00
+0.26 0.28 0.25
+0.48 0.50 0.46
+0.02 0.05 0.00
+0.95 1.00 0.91
+0.87 0.87 0.87
+1.00 1.00 1.00
+0.87 0.87 0.87
+0.93 0.93 0.93
+0.93 0.93 0.93
+1.00 1.00 1.00
+0.53 0.56 0.51
+1.00 1.00 1.00
+0.60 0.62 0.58
+0.77 0.78 0.75
+0.69 0.72 0.67
+1.00 1.00 1.00
+0.89 0.91 0.88
+0.98 0.98 0.98
+0.89 0.90 0.88
+0.86 0.87 0.86
+0.93 0.94 0.93
+0.83 0.83 0.83
+0.24 0.36 0.12
+1.00 1.00 1.00
+0.63 0.69 0.58
+0.62 0.68 0.56
+0.38 0.53 0.23
+1.00 1.00 1.00
+
+1.00 1.00 1.00
+0.93 0.93 0.93
+0.95 0.95 0.95
+0.93 0.93 0.93
+0.97 0.97 0.97
+0.86 0.86 0.86
+0.89 0.89 0.89
+0.95 0.97 0.94
+0.89 0.90 0.88
+0.89 0.91 0.86
+0.92 0.93 0.91
+0.88 0.93 0.83
+0.89 0.89 0.89
+1.00 1.00 1.00
+0.89 0.89 0.89
+0.95 0.95 0.95
+0.94 0.94 0.94
+1.00 1.00 1.00
+0.66 0.68 0.64
+1.00 1.00 1.00
+0.71 0.73 0.70
+0.83 0.84 0.82
+0.80 0.81 0.78
+1.00 1.00 1.00
+0.92 0.92 0.92
+0.98 0.98 0.98
+0.91 0.91 0.91
+0.88 0.88 0.88
+0.95 0.95 0.95
+0.83 0.83 0.83
+0.33 0.41 0.25
+1.00 1.00 1.00
+0.68 0.72 0.64
+0.67 0.71 0.63
+0.50 0.59 0.41
+1.00 1.00 1.00
+
+23
+
+D.2 Libero-Plus
+We summarize threshold-dependent results for the large-scale Libero-Plus simulation benchmark [12] in Table 11. Due to the large number of tasks and the resulting high computational requirements, we report only a single seed per method. However, given the large number of rollouts, we expect little variation across seeds.
+
+Table 11: Threshold-dependent detector performance on Libero-Plus, using a constant CP band at significance level 0.05. The top three performing methods are highlighted.
+
+ACE Diff STAC ACC LLMD FAIL
+
+Object
+
+X-VLA π0.5
+
+WACC F1 Prec Rec WACC F1 Prec Rec
+
+0.831 0.796 0.965 0.677 0.595 0.309 0.583 0.211
+
+0.763 0.693 0.898 0.564 0.751 0.524 0.472 0.589
+
+0.813 0.770 0.952 0.646 0.823 0.650 0.599 0.709
+
+0.918 0.901 0.922 0.880 0.771 0.625 0.679 0.579
+
+0.994 0.990 0.979 1.000 0.624 0.353 0.418 0.305
+
+0.910 0.885 0.878 0.893 0.832 0.594 0.481 0.775
+
+Spatial
+
+X-VLA π0.5
+
+WACC F1 Prec Rec WACC F1 Prec Rec
+
+0.795 0.728 0.769 0.691 0.738 0.577 0.674 0.504
+
+0.774 0.704 0.875 0.588 0.780 0.608 0.610 0.605
+
+0.807 0.751 0.858 0.668 0.910 0.705 0.582 0.895
+
+0.945 0.903 0.833 0.985 0.936 0.760 0.642 0.933
+
+0.964 0.931 0.872 1.000 0.695 0.470 0.502 0.441
+
+0.934 0.884 0.799 0.989 0.926 0.692 0.548 0.941
+
+Goal
+
+X-VLA π0.5
+
+WACC F1 Prec Rec WACC F1 Prec Rec
+
+0.656 0.507 0.716 0.392 0.701 0.561 0.820 0.426
+
+0.756 0.677 0.896 0.543 0.724 0.605 0.835 0.474
+
+0.800 0.741 0.838 0.665 0.811 0.736 0.835 0.658
+
+0.973 0.955 0.923 0.988 0.902 0.841 0.833 0.849
+
+0.969 0.943 0.893 1.000 0.579 0.293 0.575 0.197
+
+0.965 0.940 0.894 0.990 0.912 0.835 0.787 0.889
+
+WACC 0.672 0.799 0.656 0.699 0.990 0.821
+
+X-VLA
+
+F1 Prec
+
+0.536 0.755 0.502 0.583 0.986 0.786 0.845 0.863 0.846 0.897 0.973 0.841
+
+10
+
+Rec 0.392 0.671 0.357 0.431 1.000 0.737 WACC 0.748 0.739 0.781 0.864 0.609 0.873
+
+π0.5
+
+F1
+
+0.632 0.616 0.686 0.767 0.374 0.749
+
+Prec 0.731 0.703 0.777 0.717 0.594 0.648
+
+Rec 0.557 0.548 0.614 0.824 0.273 0.889
+
+E Qualitative Results
+We provide qualitative examples to illustrate ACC and LLMD detection behavior during deployment. Section E.1 provides examples for accurate detections across different tasks and models while Section E.2 illustrates failure modes we observe during deployment. Additional qualitative analysis with full video rollouts can be found in the project page https://vla-fail.github. io/vla-fail-2026/.
+24
+
+E.1 Real-World Successful Failure Detection
+Figure 9 shows representative deployment rollouts in which VLA-FAIL successfully detects task failures. The examples illustrate accurate triggers from both ACC and LLMD, with each detector capturing different failure modes.
+
+(a) π0.5 Blocks
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+LLMD ACC
+
+(b) X-VLA Stack T
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+ACC
+
+LLMD
+
+(c) π0.5 Cups
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+LLMD ACC
+
+Figure 9: Qualitative failure detection over time. Each task is shown with two detector rows: ACC on top and LLMD below. Columns correspond to consecutive timesteps. Red boxes mark timesteps at which the corresponding detector triggers.
+E.2 Real-World VLA-FAIL Failure Cases
+Figure 10 shows representative failure cases of VLA-FAIL. First, ACC can detect failures with a delay because its smoothed score requires persistent inconsistency between overlapping action chunks before crossing the threshold; in such cases, LLMD may provide an earlier alarm, as shown in Figure 10a. Second, LLMD can miss failures when the policy’s internal features remain close to the finetuning distribution, while ACC still detects the resulting inconsistent replanning, as shown in Figure 10b. Third, some failures remain both feature-consistent and action-consistent for too long, causing both detectors to miss or delay the alarm, as shown in Figure 10c.
+25
+
+LLMD ACC
+
+(a) π0.5 Blocks
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+(b) π0.5 Drawer
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+(c) X-VLA Stack T
+
+t1
+
+t2
+
+t3
+
+t4
+
+t5
+
+LLMD ACC
+
+ACC
+
+LLMD
+
+Figure 10: Qualitative failure detection over time. Each task is shown with two detector rows: ACC on top and LLMD below. Columns correspond to consecutive timesteps. Red boxes mark timesteps at which the corresponding detector triggers.
+F Hyperparameters
+We specify the chosen hyperparameters for VLA finetuning in Table 12, for failure detection on real-world tasks in Table 13, and for failure detection on Libero-Plus in Table 14. Failure detection hyperparameters were tuned per VLA and separately for simulated and real-world tasks, but not per task. We optimized ACC’s minimum velocity and smoothing factor through a small grid search (vmin ∈ [10−4, 0.1], α ∈ [0.1, 1.0]) on the Cups task and Object suite. Below, we summarize additional observations and recommended practices for hyperparameter tuning.
+VLA Finetuning. We leave most hyperparameters at their default values as recommended by Physical Intelligence et al. [2] and Zheng et al. [11]. For π0.5, there is a strong dependence between final model performance and batch size, where a smaller batch size improves success rates. For XVLA, we find that training for more steps than recommended by Zheng et al. [11] improves success rates. We train all policies on four NVIDIA A100 GPUs.
+26
+
+ACC. We tune the minimal velocity vmin for ACC separately for the real-world experiments and Libero-Plus, but not per task or per VLA. In general, lower minimum velocities work well in simulation, where sensor noise is low, and policies tend to act more smoothly. For the real-world results, we use a higher minimum velocity and find that lower values do not work well. We generally recommend to tune this value by visualizing the ACC score over time on calibration rollouts and increasing it until the score does not inflate excessively for a robot that is nearly stationary after completing a task.
+LLMD. The only hyperparameter of LLMD is the regularization penalty λ, which does not require tuning. A small regularization penalty λ = 10−6 is recommended, as it is only needed to ensure invertibility of the covariance matrix, not to regularize the Mahalanobis distance.
+Baselines. We find that ACE’s [13] cell size factor α needs to be tuned separately for simulation and real-world experiments, and for each VLA. X-VLA requires significantly smaller values of α than π0.5. We do not tune α per task to ensure a fair comparison with other methods. For each task, we use 20 successful rollouts as a calibration set to determine the cell sizes based on α, as described by Römer et al. [13]. For STAC [17], we use the maximum mean discrepancy metric with an RBF kernel and the median heuristic for the kernel’s bandwidth, as recommended in the appendix of Agia et al. [17]. We evaluate ACE and STAC with 32 action samples, which roughly corresponds to the smallest number of samples that Agia et al. [17] and Römer et al. [13] use in their experiments.
+We adapt the diffusion loss metric proposed by Lee et al. [9] for flow matching policies by replacing the diffusion loss with the flow matching loss, yielding our Diff baseline. Lee et al. [9] always use a large batch size of 512 samples for loss calculation, which we find to be intractably large for VLAs. We therefore use only 32 samples, which aligns Diff with ACE and STAC.
+
+Table 12: Model-specific finetuning parameters shared across tasks.
+
+Hyperparameter
+
+π0.5
+
+Batch size # Gradient Steps Action representation Action chunk length H
+
+16 30k Delta Pos + Quat 20
+
+X-VLA
+32 100k Delta EE6D
+30
+
+Table 13: Model-specific hyperparameters used for VLA-FAIL and baselines in the real world, shared across tasks.
+
+Hyperparameter
+
+π0.5
+
+X-VLA
+
+LLMD feature dimension dim(f ) LLMD flow timestep LLMD prior noise LLMD token aggregation ACC smoothing factor α ACC minimum velocity vmin ACE α Threshold type Calibration method
+
+1024 t=0 fixed max
+0.9 0.01 0.025 constant conformal
+
+1024 t=0 fixed max
+0.9 0.01 5 · 10−4 constant conformal
+
+27
+
+Table 14: Model-specific hyperparameters used for VLA-FAIL on Libero-Plus.
+
+Hyperparameter
+
+π0.5
+
+X-VLA
+
+LLMD feature dimension dim(f ) LLMD flow timestep LLMD prior noise LLMD token aggregation ACC smoothing factor α ACC minimum velocity vmin ACE α Threshold type Calibration method
+
+1024 t=0 fixed max
+0.9 10−3
+0.1 constant conformal
+
+1024 t=0
+fixed max 0.9 10−3 10−4
+constant conformal
+
+G Additional Experiment Details
+Here, we provide additional details on the experiments. Note that calibration rollouts are only used for the threshold-dependent results, taken and removed from the set of successful test rollouts. There are no calibration sets for the threshold-independent results, maximizing the amount of available data. ACC’s action grid bounds require per-task tuning on a separate split, for which we reuse 20 of the successful test rollouts. This evaluation protocol is therefore slightly advantageous for ACC, as the grid bounds are optimized on rollouts that the method is tested on.
+G.1 Failure Prediction Details
+Table 15 and Table 16 summarize experiment details for π0.5 and X-VLA for the real-world tasks. We use all available rollouts for the experiments, leading to a varying number of in-distribution (ID) and out-of-distribution (OOD) rollouts per task and model. Note that the low success rates are largely due to OOD setups, where most policies fail. On ID data, policies achieve significantly higher success rates. For the threshold-independent experiments, we do not use a separate calibration set; instead, we evaluate on a single, large rollout dataset spanning calibration, ID, and OOD rollouts.
+
+Table 15: Real-world failure prediction details for π0.5. The VLA receives only the gripper and right overhead camera views as observations, since the public version of π0.5 supports only two camera images.
+
+Task
+
+Blocks
+
+Drawer
+
+Cups
+
+Kitchen Stack T
+
+Mixer
+
+Observation dim Proprio dim Action dim Executed Actions R ACC Overlap # Finetuning demos # Calibration rollouts # ID test rollouts # OOD test rollouts Success rate
+
+[2, 480, 640] 8 8 10 10 100 20 40 35
+0.56
+
+[2, 480, 640] 8 8 10 10 100 20 80 41
+0.72
+
+[2, 480, 640] 8 8 5 15 100 20 181 54
+0.69
+
+[2, 480, 640] 8 8 10 10 100 20 41 31
+0.47
+
+[2, 480, 640] 8 8 10 10 100 20 50 51
+0.32
+
+[2, 480, 640] 8 8 10 10 100 20 50 30
+0.64
+
+28
+
+Table 16: Real-world failure prediction details for X-VLA.
+
+Task
+
+Blocks
+
+Drawer
+
+Cups
+
+Kitchen Stack T
+
+Mixer
+
+Observation dim Proprio dim Action dim Executed Actions R ACC Overlap # Finetuning demos # Calibration rollouts # ID test rollouts # OOD test rollouts Success rate
+
+[3, 480, 640] 8 8 10 10 100 20 50 34
+0.46
+
+[3, 480, 640] 8 8 10 10 100 20 49 38
+0.71
+
+[3, 480, 640] 8 8 10 20 100 20 65 40
+0.53
+
+[3, 480, 640] 8 8 10 10 100 20 41 21
+0.55
+
+[3, 480, 640] 8 8 10 10 100 20 53 51
+0.21
+
+[3, 480, 640] 8 8 10 10 100 20 51 30
+0.34
+
+Table 17: Libero-Plus failure prediction details. Chunk length and success rate are in format π0.5/XVLA.
+
+Suite
+
+Object
+
+Spatial
+
+Goal
+
+10
+
+Observation dim Proprio dim Action dim Chunk Length # Calibration rollouts # Rollouts Success rate
+
+[1, 256, 256] 8 7
+5 / 20 100 2413 0.88 / 0.63
+
+[1, 256, 256] 8 7
+5 / 20 100 2301 0.90 / 0.67
+
+[1, 256, 256] 8 7
+5 / 20 100 2463 0.79 / 0.66
+
+[1, 256, 256] 8 7
+5 / 20 100 2431 0.77 / 0.59
+
+G.2 Real-World Environments
+Our real-world benchmark contains six diverse manipulation tasks requiring high precision (Blocks, Stack T), multi-modal behavior (Cups), long-horizon execution (Kitchen, Drawer), and language conditioning (Mixer). We evaluate roughly 80 rollouts per task and report confidence intervals over three seeds, capturing randomness from baseline action sampling and the fixed noise sample used by LLMD. We introduce out-of-distribution (OOD) setups by varying the initial task setup. Crucially, the task is always possible to complete in all OOD setups, meaning that not moving is never a valid action for the policy.
+Blocks The robot needs to stack a small Jenga block on top of another Jenga block. We vary the location and rotation of the blocks. This task requires high precision, as the blocks can easily fall. OOD situations are introduced by varying the block’s positions and colors, and by placing three blocks instead of two in the robot’s workspace.
+Drawer The robot needs to open the top shelf, place all red cubes in it, and close it again. For the training data, we vary the number of cubes from 1 to 3 and place more and differently colored cubes in OOD setups.
+Cups The robot is tasked with placing any cup into any other smaller cups, out of 5 differently sized cups. We vary the location of each cup and record all possible stacking combinations for each initial layout. This introduces significant multi-modality in the training data. OOD setups consist of cups placed outside the typical boundaries, fewer than 5 cups, and cups of different sizes.
+Kitchen This is a long-horizon task in a toy kitchen: the robot first needs to remove the lid from the pot, pick up a carrot from the pan, place it in the pot, put the lid back on, and place the pan in the sink. We introduce OOD situations by placing distractor objects, varying the toy kitchen’s position, and using objects other than the carrot.
+29
+
+Stack T The robot is presented with two T-shaped objects lying flat on the table. It needs to pick one up, place it vertically on the table, and then place the other object vertically on top. This task requires high precision and significant end-effector rotation. OOD situations are introduced by varying the initial positions of the T-shaped objects by a larger amount than in the training data.
+Mixer In this language-conditioned task, the robot first needs to open a toy mixer, then place one of two differently colored cups in it, as specified by a language command, and close the mixer again. The task requires significant rotation of the end effector during interaction with the mixer. OOD situations are introduced by varying the mixer’s and cups’ positions more than in the training data.
+
+Figure 11: Left: Real-world setup. Right: RGB views from left, right, and gripper cameras.
+
+(a) Blocks
+
+(b) Drawer
+
+(c) Cups
+
+(d) Kitchen
+
+(e) Stack T
+
+(f) Mixer
+
+Figure 12: Initial and final states for the real-world tasks. For each task, the left image shows the initial state and the right image shows the final target state.
+
+30
+
+Task Blocks Drawer Cups Kitchen
+Stack T Mixer
+
+Table 18: Task descriptions for the real-world manipulation tasks.
+Description Stack the green block on the blue block. Put all red blocks in the top drawer. Pick up one cup and stack it into another. Remove the pot lid, move the carrot from the pan to the pot, replace the lid, and place the pan in the sink. Stack both T-shaped objects on top of each other. Put yellow cup in the mixer Put lila cup in the mixer
+
+Evaluation Protocol We train π0.5 and X-VLA on all tasks and evaluate them on a mixture of indistribution and out-of-distribution initial object layouts. All the policies are trained to return to the home position after completing a task and then remain stationary. During evaluation, we terminate all episodes only after the episode horizon is reached, even when the task was successfully completed before. This is crucial, as otherwise task failures could be detected with high probability based on the episode length. Since we expect policies to operate in a setting where a ground-truth success signal is not available, this baseline is not valid. We evaluate all policies on all tasks across approximately 50 ID and 30 OOD setups per task As the high computational overhead of ACE, DIFF, and STAC does not allow us to run them in real-time, we store all observations from each rollout and evaluate these methods on episode replays. To capture the variance induced by the action samples for ACE, Diff, and STAC, and by the random noise vector in LLMD, we evaluate all methods across three seeds, where we use the same rollouts across seeds. This keeps the observations fixed and only varies the action samples and random noise vector. ACC is deterministic and therefore has confidence intervals of zero width.
+G.3 Simulation Environments
+
+Figure 13: LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models. Reproduced from Fei et al. [12].
+We evaluate simulation failure detection on Libero-Plus [12], which extends the original LIBERO benchmark [37] with additional perturbations to evaluate generalization under distribution shift. We use four task suites: Object, Spatial, Goal, and 10. The suites test complementary forms of generalization, including changes in object identities, spatial layouts, goal specifications, and diverse long-horizon manipulation behaviors.
+31
+
+For each suite, we finetune the VLA on the corresponding LIBERO-Plus training data and evaluate failure detection on perturbed rollout settings.
+
+Table 19: Summary of the Libero-Plus simulation task suites used in our experiments.
+
+Suite
+
+Summary
+
+Object Spatial Goal 10
+
+Object-centric manipulation tasks that evaluate generalization across manipulated object identities. Spatial-reasoning tasks that evaluate robustness to changes in object positions and scene layouts. Goal-conditioned manipulation tasks that evaluate generalization across different target goals. A diverse long-horizon task suite that evaluates generalization across multiple manipulation skills and task structures.
+
+32
+
+

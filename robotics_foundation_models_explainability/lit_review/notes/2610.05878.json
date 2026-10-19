@@ -1,0 +1,42 @@
+{
+  "id": "2610.05878",
+  "title": "OGAM: Connecting Systematic Testing to Runtime Assurance through Object-Grounded Attention Monitoring for VLA Policies",
+  "first_author": "Darwish",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["OpenVLA-7B", "OpenVLA-OFT", "UniVLA", "pi0.5"],
+  "action_head": "mixed: discrete action tokens (OpenVLA), regression head with 8-step chunks (OpenVLA-OFT), UniVLA (head not described in text read), flow/diffusion action expert (pi0.5, 50-step chunks, 10 executed)",
+  "methods": ["pairwise combinatorial instruction generation from scene objects and action templates, LLM feasibility labels with blind human review", "LIBERO-Para paraphrase suite", "gradient-weighted visual attention per action query, projected onto object masks", "instruction-role channels (named targets, strongest competitor, remainder, gripper)", "open-end DTW against one successful reference per task (on-track and completion readouts)", "success-only leave-one-out conformal calibration of a sustained-deviation stop rule (nominal alpha = 0.05)"],
+  "question": "Can systematic instruction testing expose VLA failures beyond benchmarks, and can object-grounded attention trajectories compared to successful references stop failing episodes early without failure labels?",
+  "key_findings": [
+    "None of the four policies completes any of the 24 feasible pairwise-generated instructions in the LIBERO-Goal task-0 scene (87 generated instructions: 24 feasible, 62 infeasible, 1 hazardous; LLM-human agreement 85%).",
+    "Behavior substitution: OpenVLA executed or visibly attempted a trained task in 43 of 87 episodes, and 13 episodes produced unrequested hazards (bottle tipping, bowl dropped, stove left on).",
+    "Paraphrases alone (130 per policy, same scene and goal) cut success to 48% (OpenVLA), 81% (UniVLA), 88% (OFT), 92% (pi0.5), versus 10/10 on canonical instructions.",
+    "OGAM stops 87-100% of failed paraphrase episodes with 3-5% observed false stops, median stop at 5-12 s of a 20 s budget, saving 39-72% of failing-episode time; calibrated thresholds q = 1.99, 1.79, 2.83, 2.04 for OpenVLA, OFT, UniVLA, pi0.5.",
+    "Ablations: each readout alone loses up to 24 points of detection; simpler signals under the same rule do worse (role-vector distance about 44%, target attention share about 40%, per the partly garbled ablation text); replacing simulator masks with Grounding DINO + SAM 2 costs 5 points on OpenVLA with no extra false stops.",
+    "In generated-instruction episodes, early attention share on an unnamed but engaged object is 0.26 vs 0.06 for non-engaging episodes (AUC 0.79)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Goal (10 tasks, fixed initial states, deterministic execution)", "LIBERO-Para paraphrase types (130 instructions per policy)", "87 pairwise-generated instructions in one scene"],
+    "scale": "one deterministic rollout per instruction; failures available for detection: about 67 (OpenVLA), 25 (UniVLA), 15 (OFT), 11 (pi0.5) paraphrase failures out of 130",
+    "statistics": "partial: conformal calibration with a nominal 5% target (authors state no finite-sample guarantee for their jackknife variant); no CIs on detection rates",
+    "baselines": "single-readout variants, role-vector distance to successes, target attention share, action-chunk consistency (named in ablation text)"
+  },
+  "causal_validation": "No. Attention is used purely as a monitored signal; the paper explicitly sidesteps whether attention explains behavior and validates only its usefulness for early stopping.",
+  "closed_loop": "Monitoring is evaluated on closed-loop rollouts, but stop times are reconstructed offline from recorded episodes rather than by stopping the robot online.",
+  "limitations_stated": [
+    "Split-conformal finite-sample guarantee does not strictly apply to the jackknife reuse of successes; observed false-stop rates are empirical.",
+    "Hardware evaluation is future work.",
+    "Object poses held fixed to isolate linguistic variation; pose factors left as an extension."
+  ],
+  "critique": [
+    "Detection rates for the stronger policies rest on very few failures (about 11-15 for pi0.5 and OFT), so 87-100% has wide uncertainty that is not reported.",
+    "Deterministic simulation with fixed initial states and one reference per task makes DTW-to-reference unusually clean; robustness to scene and pose variation is untested.",
+    "The 'no feasible generated instruction succeeds' result is striking but comes from one scene and one rollout per instruction; it is behavioral evidence that LIBERO-trained VLAs map scenes to trained trajectories regardless of the request, consistent with 2603.06001 and 2604.18000.",
+    "Gradient-weighted attention is a mix of attention and gradient, so the monitor is not evidence about attention heads per se; still, the role-channel design makes it comparable across four architectures, which is rare in this literature."
+  ],
+  "code": "not reported",
+  "one_line": "Combinatorial instruction tests show four LIBERO-trained VLAs fail every new feasible request and often substitute trained behaviors, and a monitor that compares object-grounded attention courses to successful references via DTW stops most failing episodes early with few false stops."
+}

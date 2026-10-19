@@ -1,0 +1,44 @@
+{
+  "id": "2603.05487",
+  "title": "Observing and Controlling Features in Vision-Language-Action Models",
+  "first_author": "Buurmeijer",
+  "year": 2026,
+  "venue": "arXiv preprint (v2 Sep 2026)",
+  "tier": "core",
+  "models": ["OpenVLA", "pi0", "pi0-FAST", "pi0.5"],
+  "action_head": "mixed: discrete action tokens (OpenVLA, pi0-FAST) and flow/diffusion action expert (pi0, pi0.5); closed-loop steering only on pi0.5",
+  "methods": ["linear observers (probes) on mean-pooled transformer representations per layer", "additive steering along observer directions (alpha sweep)", "minimal-norm closed-form controller that projects observer predictions into a target interval, broadcast to all tokens", "baselines: prompting, value-vector steering (Haon et al.), rejection sampling, action clipping"],
+  "question": "Are robot state and action features linearly observable in VLA representations, and can a minimal linear intervention on those representations steer closed-loop behavior to satisfy user constraints without hurting task success?",
+  "key_findings": [
+    "All model-dataset pairs (LIBERO, DROID, BridgeData V2) contain linearly decodable state and action information: Cartesian state R2 0.81-1.00, orientation 0.53-0.99, action probes 'well below'; gripper state near-perfect, gripper command more variable (Fig. 3).",
+    "Action decodability drops by roughly a third from LIBERO to real DROID while state decodability is unchanged; the sim-real gap is larger than the gap between architectures.",
+    "Pushing along observer directions gives graded, ordered changes in continuous actions in both pi0 (flow) and pi0-FAST (tokens) across 50 LIBERO episodes; gripper response is less regular; later layers are less sensitive.",
+    "Transport-lift constraints (LIBERO-Spatial, 100 rollouts per method): the controller raises constraint satisfaction while keeping task success; rejection sampling stays below 10% satisfaction even at K=100 (with +583% inference time); value vectors ~74% for the upper bound and 0% for the lower bound; action clipping also works (Fig. 6).",
+    "Grasp preference: wine bottle base grasp 28% base policy, 40% best prompt, 3% value vectors, 73% controller (100 initial conditions); real mug handle grasp 14% / 46% / 38% / 74% (50 rollouts) (Table I).",
+    "Real-robot safe-object choice: banana over fork 52% base, 40% prompt, 64% value vectors, 100% controller; glass over plastic bowl 48% / 62% / 94% / 100% (50 rollouts each) (Table II).",
+    "Controller overhead is ~1% inference time."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["LIBERO (Spatial, Goal)", "DROID dataset and DROID Franka hardware", "BridgeData V2 (probing)"],
+    "scale": "probing: held-out 10% split; output sensitivity: 50 LIBERO episodes; closed-loop: 100 rollouts per method per sim experiment (10 tasks x 10 for lift), 50 rollouts per method per hardware task",
+    "statistics": "partial: std across tasks for the lift experiment; otherwise percentages without CIs or tests",
+    "baselines": "unmodified policy, prompting, value-vector steering (Haon et al. 2509.00328), rejection sampling, action clipping"
+  },
+  "causal_validation": "Yes: interventions along observer directions change generated actions in a graded way, and the closed-form controller changes executed behavior (grasp choice, object choice, lift) in closed loop.",
+  "closed_loop": "Yes: LIBERO simulation and real DROID hardware with pi0.5.",
+  "limitations_stated": [
+    "Observers need labeled data, which may be unavailable at scale.",
+    "Interventions target the transformer/VLM part, not the flow-matching head.",
+    "No safety guarantees or bounds on intervention effects; complementary to output-level filters."
+  ],
+  "critique": [
+    "Placed in the SAE section, but no dictionary learning is used: this is supervised probe-and-steer. It is the probe-based counterpart to 2603.19183 (same group), with stronger closed-loop baselines.",
+    "Categorical observers (grasp modality, object choice) are fit on the 50 base-policy rollouts of the same scene and task, so each controller is task-specific; '100% safe object' shows controllability in a fixed scene, not a general safety feature.",
+    "The strongest result is the comparison against prompting and value vectors on hardware; prompting failing to change grasp modality matches the language-insensitivity findings in 2603.19233 and 2610.06235.",
+    "This paper reports graded steering along observer directions, while 2608.13474 found a progress probe direction non-steerable. The difference likely lies in what is probed (action-adjacent quantities like lift and grasp here vs a visual progress cue at layer 0 there), which is consistent with the belief-vs-action distinction in 2610.20840.",
+    "No CIs on 50-rollout percentages; differences such as 64% vs 100% are large, but 46% vs 74% has substantial uncertainty at n=50."
+  ],
+  "code": "not reported",
+  "one_line": "Linear probes read robot state and action from four VLAs, and a closed-form linear intervention that keeps the probe's prediction inside a target range steers pi0.5's grasp and object choices on a real robot far better than prompting or value-vector steering, at ~1% compute overhead."
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2605.17144",
+  "title": "Contrastive Conceptor Activation Steering (COAST): Unlocking Vision-Language-Action Models through Hidden States",
+  "first_author": "Miao",
+  "year": 2026,
+  "venue": "arXiv preprint (included.json lists ICML 2026 Workshop on Mechanistic Interpretability)",
+  "tier": "core",
+  "models": ["pi0.5 (MetaWorld, LIBERO, RoboCasa; pi0.5-DROID on real robot)", "pi0-FAST (MetaWorld, LIBERO)", "GR00T N1.5 (RoboCasa)", "Diffusion Policy (RoboCasa)"],
+  "action_head": "mixed: flow/diffusion action expert (pi0.5, GR00T N1.5), discrete action tokens (pi0-FAST), diffusion policy (DP)",
+  "methods": ["conceptors (regularized covariance soft projectors)", "Boolean conceptor algebra C+ AND NOT C-", "multiplicative residual-stream gating M = (1-beta)I + beta*C_steer", "eigenvalue / subspace-overlap analysis", "cross-task conceptor transfer"],
+  "question": "Can a closed-form subspace gate fit from a handful of success and failure rollouts, applied to the action expert's residual stream, raise task success of frozen robot policies?",
+  "key_findings": [
+    "LIBERO-10: pi0.5 mean success 0.43 -> 0.80 with per-step COAST (+0.37, p<.001); pi0-FAST 0.62 -> 0.84 (+0.23); CAA gives +0.04 and SFT on the same 15 rollouts -0.03 for pi0.5 (Table 1).",
+    "MetaWorld ML45 (10 tasks shown in Table 1): pi0.5 0.69 -> 0.94 (+0.25); pi0-FAST 0.71 -> 0.82 (+0.11). The main text gives different numbers for the same comparison (0.57 -> 0.82 and 0.57 -> 0.69).",
+    "RoboCasa (7 tasks): pi0.5 0.40 -> 0.55-0.56 (+0.15 to +0.16); GR00T N1.5 0.59 -> 0.75 (+0.16, pz=.006); Diffusion Policy 0.32 -> 0.46 (+0.14, per-step); for DP the pooled z-test gives p = .058 for global and .289 for positive-only, so the text's 'all strategies remain significant' does not hold for DP (as parsed from Table 1).",
+    "Real robot (DROID Franka, pi0.5-DROID, 3 tasks x 15 trials): reported 40% average improvement; figure values read as Open Drawer 0.33 -> 0.86, Close Microwave 0.06 -> 0.46, Put Duck 0.13 -> 0.40 (pi0-FAST and GR00T lower; numbers reconstructed from garbled figure text).",
+    "Contrastive (global / per-step) beats positive-only steering, and per-step helps more on long-horizon tasks; gains are larger when baseline success is low.",
+    "Contrastive subspace is low-rank but not rank-one (about 1% of the 1024-dim pi0.5 expert); per-task gain correlates with success/failure conceptor overlap (Spearman rho = 0.59, p = 0.002, MetaWorld).",
+    "Failure geometry is shared across tasks while success geometry is task-specific: failure-subspace containment predicts cross-task transfer gain (r = 0.30, p = 4.5e-3 LIBERO; r = 0.49, p = 1.1e-3 RoboCasa), success containment does not (|r| < 0.13).",
+    "Best layer clusters at 11 of 18 for the pi0.5 expert and 10 of 16 for the GR00T DiT; beta in {0.1, 0.3} best in over 90% of cells; geometric hyperparameter selection recovers about 93% of oracle success using 3-8% of the grid."
+  ],
+  "evidence": {
+    "setting": "both (three simulation benchmarks plus 3 real DROID tasks)",
+    "benchmarks": ["MetaWorld ML45", "LIBERO-10", "RoboCasa (7 atomic-seen tasks)", "real DROID: Open Drawer, Close Microwave, Put Duck in Cabinet"],
+    "scale": "15 fitting rollouts per task (conceptor fit + hyperparameter selection) and 30 held-out test rollouts per task per condition with disjoint seeds; real robot 15 trials per task. No training-seed replication.",
+    "statistics": "yes for simulation: paired t-test across tasks and pooled two-proportion z-test per model-benchmark; no CIs; real-robot results without tests",
+    "baselines": "unsteered policy, CAA (single-direction mean-difference addition), TopK SAE feature steering (Khan et al. 2025), LoRA SFT on the same 15 rollouts; CAA/SAE strengths picked post hoc on the evaluation set (favouring those baselines)"
+  },
+  "causal_validation": "Yes, the intervention itself is causal: gating the action-expert residual stream changes closed-loop success, and positive-only vs contrastive variants act as an ablation of the failure-subtraction term. The geometric claims (low rank, overlap, shared failure structure) are correlational analyses of the fitted conceptors, not separately intervened on.",
+  "closed_loop": "Yes, all success rates are closed-loop rollouts in simulation and on the real robot.",
+  "limitations_stated": [
+    "Requires both success and failure rollouts; uniformly successful tasks fall back to positive-only steering.",
+    "Tasks with nearly disjoint success/failure subspaces show smaller gains.",
+    "Unclear whether geometric hyperparameter selection generalizes beyond tested architectures.",
+    "Steering is hard to detect from action traces and could be misused to steer toward failure; recommend logging conceptors."
+  ],
+  "critique": [
+    "Simulation baselines are deliberately weak 'early fine-tuning checkpoints' on MetaWorld and LIBERO, chosen to produce failures; large gains over undertrained policies say little about steering a fully trained model.",
+    "Main text and Table 1 disagree on MetaWorld means (0.57 -> 0.82 vs 0.69 -> 0.94), which lowers confidence in the reporting.",
+    "Success-labelled rollouts in the target task are needed, so COAST is closer to few-shot test-time adaptation using outcome labels than to interpretability; the 'action expert is the bottleneck' hypothesis is not directly tested (no comparison with steering the VLM backbone at matched budget, and pi0-FAST has no separate expert).",
+    "Real-robot claim rests on 15 trials per task, one checkpoint, no statistical test, and an unclear number of fitting rollouts ('a single successful rollout' for Close Microwave).",
+    "30 test rollouts per task make per-task differences noisy; the paper reports the best of three strategies per row, which adds a mild selection effect.",
+    "One of the few steering papers to cover flow-matching, token and diffusion heads in one protocol, and the comparison with CAA, SAE steering and SFT at equal data is useful."
+  ],
+  "code": "not reported",
+  "one_line": "Fitting conceptor subspaces from 15 success/failure rollouts and softly projecting the action expert's hidden states onto the success-not-failure subspace raises closed-loop success for pi0.5, pi0-FAST, GR00T and Diffusion Policy in simulation and on a real DROID arm."
+}

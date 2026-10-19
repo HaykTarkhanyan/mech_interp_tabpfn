@@ -1,0 +1,40 @@
+{
+  "id": "2607.06328",
+  "title": "Driving the Wrong Way: Leveraging Interpretability in End2End Autonomous Driving Models",
+  "first_author": "Motzkus",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "adjacent",
+  "models": ["GTRS (trajectory-scoring end-to-end driving model with per-subscore heads, builds on Hydra-MDP with diffusion trajectory generation)", "iPad (proposal-centric end-to-end driving model)"],
+  "action_head": "n/a (trajectory vocabulary scoring / generation, not a VLA)",
+  "methods": ["SAEs (TopK, Matryoshka, Archetypal) inserted into the latent space, compared on reconstruction, dead neurons, ego-status correlation/probing and downstream EPDMS", "neuron maximization and neuron clustering for concept labeling", "concept-conditioned relevance propagation (CRP) to camera inputs", "input perturbation (removing cameras / ego state)", "circuit analysis from SAE neurons to scoring heads", "zero-ablation of selected SAE neurons"],
+  "question": "Can SAE concepts inside end-to-end driving models explain how candidate trajectories are scored, reveal spurious logic, and be edited to improve driving metrics?",
+  "key_findings": [
+    "TopK SAEs beat Matryoshka and Archetypal SAEs on ego-status disentanglement; archetypal SAEs appear to memorize correlated NAVSIM scenes; mid-sized dictionaries reconstruct best (Table I, qualitative summary).",
+    "SAE neuron clusters correspond to concepts such as intersections/lane markings, following a lead vehicle, straight roads; activation and attribution rankings differ, so highly active concepts are not necessarily used for the chosen trajectory.",
+    "Circuit analysis shows 'car ahead' neurons influence all GTRS scoring heads, including traffic-light compliance, which the authors read as a spurious correlation (lead vehicles co-occur with intersections).",
+    "Removing iPad's backward-facing camera does not change SAE activations and there is no measurable gradient to it, suggesting the camera is unused.",
+    "Zero-ablating three SAE neurons {177, 59, 71} raises EPDMS from 0.4963 (with SAE) to 0.5926, above the original model without SAE (0.524); drivable-area compliance +0.130, at-fault collisions +0.054, but ego progress -0.100 (Table II)."
+  ],
+  "evidence": {
+    "setting": "offline dataset only (NAVSIM non-reactive evaluation of predicted trajectories)",
+    "benchmarks": ["NAVSIM"],
+    "scale": "NAVSIM evaluation split (size not stated in the parts read); single ablation configuration",
+    "statistics": "no",
+    "baselines": "model with unmodified SAE; original model without SAE"
+  },
+  "causal_validation": "Yes: zero-ablation of selected SAE neurons changes predicted trajectories and improves scored driving metrics; circuit attributions to heads are gradient-based.",
+  "closed_loop": "No in the strict sense: NAVSIM scores planned trajectories against logged scenes without a reactive closed loop, although the paper speaks of 'improved closed-loop behavior'.",
+  "limitations_stated": [
+    "Relevance maps can be misleading (distributed features, non-local concepts like weather, convolutional stride artifacts).",
+    "Penalty heads predict absence of violations, which makes activation-based interpretation harder."
+  ],
+  "critique": [
+    "Shows the full SAE pipeline (selection, labeling, circuit to heads, targeted ablation) giving a measurable metric gain, which few VLA SAE papers achieve.",
+    "The ablated neurons appear to be chosen with knowledge of downstream scores and evaluated on NAVSIM; it is not stated that selection and evaluation use disjoint data, so the gain may be optimistic.",
+    "The gain partly trades progress for conservatism (ego progress -0.10), so 'removing erroneous behavior' may be a shift along a safety-progress trade-off rather than a fix.",
+    "Driving models with trajectory scoring heads, not VLAs; the per-subscore head design is highlighted as an interpretability advantage worth noting for VLA architecture design."
+  ],
+  "code": "not reported",
+  "one_line": "Inserting a TopK SAE into the GTRS driving model exposes concepts like 'car ahead' and spurious links such as car-ahead to traffic-light compliance, and zero-ablating three SAE neurons raises the NAVSIM EPDMS from 0.50 to 0.59 at some cost in progress."
+}

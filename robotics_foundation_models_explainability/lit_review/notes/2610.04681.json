@@ -1,0 +1,46 @@
+{
+  "id": "2610.04681",
+  "title": "RoboIRS: Inference-Time Internal Representation Steering for Generalist Robot Policies",
+  "first_author": "Lei",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5 (LIBERO fine-tuned, frozen; also real-robot fine-tune)", "Cosmos Policy (video-diffusion world-action model)"],
+  "action_head": "flow/diffusion action expert (pi0.5, steered in the expert); Cosmos Policy generates actions inside a video DiT latent frame (no separate expert)",
+  "methods": ["linear failure classifiers (probes) per layer and action-token position on action-expert residual streams", "AUC-based selection of intervention token per layer", "steering along classifier weight with norm-scaled strength and empirically chosen sign", "CAA, sample-and-re-rank and classifier gradient guidance baselines", "random-direction control", "t-SNE of residuals"],
+  "question": "Can steering vectors derived from success/failure probes on internal representations recover performance of fully trained frozen robot policies under distribution shift?",
+  "key_findings": [
+    "LIBERO-PRO (15 tasks with 10-85% baseline success, env and swap perturbations), pi0.5: average success 44.4 +/- 4.0% -> 66.2 +/- 3.4%; 12 of 15 tasks improve by more than one SD (e.g. L2 32.7 -> 96.7, L10 39.3 -> 90.0, L9 19.3 -> 72.7); L5 and L12 drop slightly, L8 unchanged (Table I).",
+    "Real robot (pi0.5, visual distribution shift): Disassemble RAM 12/50 -> 22/50, Pull USB 6/50 -> 16/50 (avg 18% -> 38%).",
+    "Cosmos Policy (8 LIBERO-PRO tasks): 35.4% -> 55.4%, 6 of 8 tasks improve; requires architecture-specific choices (all 196 action-frame tokens in the final block, choice between w/sigma and w*sigma differs by task).",
+    "Ablation (Table II): random direction 44.0% (= unsteered 44.4%), worst-AUC token 52.7%, highest-AUC single layer 54.3%, CAA 56.5%, random token per layer 57.3-59.3%, highest-AUC token per layer at the final denoising step 66.2%.",
+    "Baselines: CAA at the same sites is competitive on some tasks (e.g. L4 94.0 vs 68.0); sample-and-re-rank (K=16) wins 7/15 tasks but costs about 8x inference time (1074.86 ms); classifier gradient guidance barely helps (action-only classifier 43.5%).",
+    "Probe validation AUC averages 0.88 over all classifiers (0.90 at chosen sites); tasks where steering fails have lower AUC (0.701, 0.827, 0.820).",
+    "The useful steering sign varies by task: in 6 of 15 tasks the best sign pushes along the failure-classifier direction; the authors interpret the vector as a task-relevant latent factor, not a failure-to-success direction.",
+    "Transfer of steering vectors between perturbations works only when failures share a cause (L2 -> L5: 62% -> 86%) and can hurt otherwise (L10 -> L6: down to 46%)."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-PRO simulation; 2 real-robot tasks)",
+    "benchmarks": ["LIBERO-PRO (15 selected tasks)", "2 real-robot tasks under background shift"],
+    "scale": "up to 10 success + 10 failure rollouts per task for probes; strength sweep 20 rollouts on 1 seed; evaluation 150 rollouts over 3 seeds per task (pi0.5), 90 rollouts over 3 seeds (Cosmos); real robot 50 trials per condition",
+    "statistics": "partial: mean +/- SD over 3 seeds; 'improvement > 1 SD' criterion; no formal tests",
+    "baselines": "unsteered, CAA at matched sites, sample-and-re-rank with probe scorer, classifier gradient guidance on flow velocity, random direction"
+  },
+  "causal_validation": "Yes, via closed-loop steering with a random-direction control that does nothing (44.0%) and site ablations. The paper itself notes that a linearly discriminative direction need not be a causal direction, and the task-dependent sign supports that caution.",
+  "closed_loop": "Yes, all success rates are closed-loop rollouts in simulation and on the real robot.",
+  "limitations_stated": [
+    "Less effective where success and failure rollouts do not differ clearly in actions, making labels hard.",
+    "Only a small number of VLA/WAM architectures; others may need different sites or vectors.",
+    "Steering strength (and sign) must be selected empirically, adding pre-deployment cost."
+  ],
+  "critique": [
+    "Strength and sign are tuned per task with rollouts in the target task; whether the 20-rollout sweep seed is disjoint from the 3 evaluation seeds is not stated, so some selection bias is possible.",
+    "Tasks were filtered to 10-85% baseline success, which favours steering; perturbation types where pi0.5 fails almost completely were excluded.",
+    "That the best sign is 'toward failure' in 6 of 15 tasks means the probe direction is not semantically a success direction; the method works as a tuned perturbation axis, which weakens the interpretability reading.",
+    "Strong controls for this literature (random direction, CAA at matched sites, re-ranking, gradient guidance), and the evaluation is on fully trained policies under shift rather than undertrained checkpoints (contrast with COAST 2605.17144).",
+    "Real-robot evidence is two tasks with 50 trials each, no test; Cosmos results need per-task choices of vector normalization.",
+    "Cross-paper check: 2609.39971 reports that LIBERO-PRO's Environment-cell assets are not in the public release and that its released code mis-delivers instructions for Semantic/Task cells. RoboIRS uses only 'env' and 'swap' cells (Swap is unaffected by the instruction bug), but how its 'env' scenes were obtained should be verified."
+  ],
+  "code": "project page https://rollingoat.github.io/roboirs/ (code status not stated)",
+  "one_line": "Training success/failure probes on pi0.5 action-expert residuals and adding the probe direction at the best-AUC token per layer raises LIBERO-PRO success from 44% to 66%, helps on a real robot and on Cosmos Policy, though the helpful sign varies by task."
+}

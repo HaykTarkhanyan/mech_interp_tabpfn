@@ -1,0 +1,39 @@
+{
+  "id": "2604.23775",
+  "title": "Vision-Language-Action Safety: Threats, Challenges, Evaluations, and Mechanisms",
+  "first_author": "Li",
+  "year": 2026,
+  "venue": "arXiv (survey)",
+  "tier": "adjacent",
+  "models": ["survey; covers VLAs broadly (OpenVLA, pi0, GR00T and others) and driving / navigation VLAs"],
+  "action_head": "n/a (survey)",
+  "methods": ["literature survey organized by attack timing (training vs inference) and defense timing", "taxonomy of backdoors (physical triggers, temporal/action-chunking, proprioceptive state-space poisoning), inference-time attacks (semantic jailbreaks, visual perturbations, physical interventions), defenses (training-time alignment, decision-layer guardrails, runtime monitoring, physical fail-safes), benchmarks and six deployment domains"],
+  "question": "What threats, defenses, evaluations and open problems define safety for VLA models?",
+  "key_findings": [
+    "Organizes VLA safety along two timing axes, pairing each attack class with the stage at which it can be mitigated.",
+    "Runtime monitoring is split into fast heuristic monitors (e.g. masking distractors, stall rollback, RC-NF OOD likelihoods under 100 ms) and slow VLM supervisors (REFLECT, FailSafe) limited to about 1 Hz; argues for a decoupled architecture with high-frequency physical fail-safes (e.g. ATACOM projection at about 60 Hz).",
+    "Cites VLATest finding average success of 12.4%, 6.0%, 1.2% and 0.5% across four manipulation tasks of increasing difficulty for seven VLAs under fuzzed scenes.",
+    "Open problems: certified robustness over trajectories, physically realizable defenses, safety-aware training, unified runtime safety architectures combining control-theoretic tools with learned uncertainty from the VLA itself (citing SAFE), standardized evaluation with adversarial splits, sim-to-real links for safety metrics, lifecycle and fleet safety, auditable architectures for regulation.",
+    "Interpretability and model internals receive little dedicated treatment; mechanistic defenses (internal-feature monitoring, SAE or attention-based backdoor analysis) are not a distinct category in the taxonomy."
+  ],
+  "evidence": {
+    "setting": "n/a (survey)",
+    "benchmarks": ["surveys VLA-Arena, VLA-Risk, VLATest, ASIMOV, HazardArena, SafeAgentBench, AgentSafe, SAFE-SMART, ICR-Drive among others"],
+    "scale": "n/a",
+    "statistics": "n/a",
+    "baselines": "n/a"
+  },
+  "causal_validation": "n/a",
+  "closed_loop": "n/a",
+  "limitations_stated": [
+    "Fast-moving literature; taxonomy may need extension.",
+    "Breadth over depth where research is nascent; certified robustness, runtime monitoring and regulation may need dedicated surveys."
+  ],
+  "critique": [
+    "Useful as a map of the security/safety literature for the review's security section, but it treats internals-based defenses only in passing; the batch's mechanistic defenses (2610.03498, 2602.03153, 2607.12571) fill exactly that gap.",
+    "Mostly descriptive; it does not assess evidence quality (simulation vs real, rollout counts) of the defenses it lists.",
+    "Its call for 'auditable VLA architectures that expose decision traces' connects to interpretable-by-design work like LM-X (2608.25757), but without discussing faithfulness of such traces."
+  ],
+  "code": "https://github.com/LiQiiiii/Awesome-VLA-Safety (paper list)",
+  "one_line": "A broad survey of VLA safety that maps attacks, defenses, benchmarks and deployment risks by when they occur and can be mitigated, with little attention to interpretability-based defenses."
+}

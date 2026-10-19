@@ -1,0 +1,44 @@
+{
+  "id": "2606.21386",
+  "title": "VLA-FAIL: Efficient Task Failure Detection for Finetuned Vision-Language-Action Models",
+  "first_author": "Seligmann",
+  "year": 2026,
+  "venue": "CoRL 2026 (per the paper's footer)",
+  "tier": "core",
+  "models": ["pi0.5 (3.6B, PaliGemma backbone)", "X-VLA (0.9B, Florence-2-Large backbone)"],
+  "action_head": "flow/diffusion action expert (features taken at the expert's last layer, evaluated at flow time t=0 with one fixed prior-noise sample)",
+  "methods": ["token-wise last-layer Mahalanobis distance (LLMD) to fine-tuning-data feature statistics, max over action-token positions", "action chunk consistency (ACC): velocity-normalized disagreement between overlapping parts of consecutive action chunks, EMA-smoothed", "OR-fusion with constant conformal thresholds", "new threshold-free metric AUCPDT (precision vs penalized detection time)", "ablations: global vs token-wise statistics, RND/logpZO on the same features, velocity normalization"],
+  "question": "Can failures of flow-matching VLAs be detected early and cheaply without any failure data, using out-of-distribution distance in last-layer action-expert features plus self-consistency of successive action chunks?",
+  "key_findings": [
+    "Neither signal alone is reliable across tasks; their OR-combination (FAIL) is the only method in the top three on nearly all real and simulated tasks, matching or beating baselines that need 32 action samples (ACE, STAC, Diff).",
+    "LLMD detects failures earlier (looping retries, 'default' actions inconsistent with the scene); ACC catches jerky, erratic OOD motion (real Blocks and Kitchen, all LIBERO-Plus suites).",
+    "Token-wise feature statistics beat a single global mean/covariance, e.g. AUCPDT 0.19 vs 0.24 for X-VLA on Drawer (Table 4); authors suggest features differ by how far ahead the token predicts.",
+    "Simple Mahalanobis on the fixed-noise features performs on average on par with RND and logpZO density models on the same features (Table 7).",
+    "Velocity normalization matters for ACC in simulation, e.g. AUCPDT 0.38 to 0.28 for X-VLA on LIBERO-Plus Spatial.",
+    "LIBERO-Plus averages as extracted from a garbled table (column order inferred): FAIL AUCPR 0.94 / AUCPDT 0.18 for X-VLA and 0.72 / 0.47 for pi0.5, vs ACE (32 samples) 0.82 / 0.20 and 0.73 / 0.43, so on pi0.5 FAIL is roughly tied with the sampling baseline.",
+    "Overhead: +2.2% latency for X-VLA (136 to 139 ms) and +1.3% for pi0.5 (77 to 78 ms); one-off feature extraction over fine-tuning data takes about 60-67 min."
+  ],
+  "evidence": {
+    "setting": "both (6 real-world tasks; LIBERO-Plus simulation)",
+    "benchmarks": ["real: Blocks, Stack T, Cups, Kitchen, Drawer, Mixer", "LIBERO-Plus Object, Spatial, Goal, 10 suites"],
+    "scale": "about 80 real rollouts per policy per task, detectors evaluated over 3 seeds per rollout; LIBERO-Plus over 3 seeds (threshold-dependent appendix results single seed); 20 calibration rollouts for real-world thresholds",
+    "statistics": "yes, partial: 95% confidence intervals on threshold-free metrics; no hypothesis tests",
+    "baselines": "ACE (action entropy), STAC, Diff (diffusion loss), each with 32 samples and run on replays because they are not real-time; RND and logpZO on the same features; RAPT in the appendix"
+  },
+  "causal_validation": "None. Pure monitoring; no intervention on features.",
+  "closed_loop": "Rollouts are real closed-loop executions, but detectors are evaluated passively (sampling baselines on replays). No stopping or recovery experiment.",
+  "limitations_stated": [
+    "LLMD needs access to the fine-tuning data for a preprocessing pass.",
+    "ACC requires receding-horizon control with sufficient chunk overlap; does not apply to fully open-loop chunk execution.",
+    "Misses failures that are consistent in features and actions (confident stopping, ignoring the instruction); combining with VLM-based semantic detectors could help.",
+    "No formal safety guarantees."
+  ],
+  "critique": [
+    "Most mechanistically relevant detail for the review: on flow-matching experts, last-layer features are only usable as a monitoring signal after removing sampling noise (fixed prior noise at t=0) and computing statistics per action-token position; this is a practical recipe other probing papers on pi0-family models should note.",
+    "The detector is a novelty score, not a failure model; it explicitly cannot catch semantically wrong but confident behavior, which is the failure class interpretability work most cares about.",
+    "Only about 80 real rollouts per task; CIs are across detector seeds on the same rollouts, not across independent rollout sets.",
+    "Good evaluation practice: a threshold-free metric that penalizes late detection and avoids arbitrary failure-onset annotation; contrasts with SAFE-style metrics that need time-normalized thresholds."
+  ],
+  "code": "https://vla-fail.github.io/vla-fail-2026 (project page)",
+  "one_line": "A Mahalanobis distance on noise-fixed, per-token last-layer features of the flow-matching action expert, OR-ed with a check that consecutive action chunks agree, detects pi0.5 and X-VLA failures without failure data and at about 2% extra latency, roughly matching 32-sample baselines."
+}

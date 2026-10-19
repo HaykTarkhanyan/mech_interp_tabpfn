@@ -1,0 +1,45 @@
+{
+  "id": "2606.19998",
+  "title": "Tri-Info: Generalizable, Interpretable Failure Prediction for VLA Models via Information Theory",
+  "first_author": "Yang",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0 (LIBERO-10)", "pi0.5 (LIBERO-10, ALOHA real)", "FLOWER, UniVLA, GR-1 (CALVIN)", "ACT (ALOHA sim and real; non-VLA)"],
+  "action_head": "mixed: flow/diffusion action expert (pi0, pi0.5, FLOWER), latent-action/regression heads (UniVLA, GR-1), ACT transformer-CVAE; action embedding taken from the layer before the action decoder, or the final-step velocity field for flow models",
+  "methods": ["sliding-window k-NN entropy and mutual-information estimates (Kraskov, Kozachenko-Leonenko) on VAE-compressed state and action embeddings", "eight metrics reduced to three: H(A_t), I(A_t; A_t+1), I(S_t, S_t+1; A_t)", "one GRU per metric with late mean fusion", "functional conformal thresholds", "manual annotation of failure modes (freeze, drift, phantom grasp)"],
+  "question": "Do information-theoretic statistics of the perception-action loop (action entropy, action-action and state-transition-action mutual information) predict VLA failures in an interpretable way that transfers across models, environments and sim-to-real?",
+  "key_findings": [
+    "Each of eight single metrics with a memoryless logistic regression reaches average in-domain mean balanced accuracy (mBA) 0.65-0.75; a GRU lifts them to 0.72-0.77 (Table 1, 3 seeds).",
+    "The four state-action coupling metrics are near-duplicates (pairwise Pearson r >= 0.95, Fig. 4); exhaustive search over 255 subsets recovers the chosen triplet as the top size-3 set.",
+    "In-domain, Tri-Info averages 0.83 balanced accuracy vs SAFE 0.82 and GRU-STAC 0.81; all methods except raw STAC (0.61) are within 0.07 of each other.",
+    "Under transfer, pi0-LIBERO to pi0.5-LIBERO: Tri-Info 0.90, GRU-STAC 0.80, SAFE/Fail-Detect/FIPER 0.50; to pi0.5-ALOHA-real-block: Tri-Info 0.70, SAFE 0.60; to ACT-ALOHA-real-cup: Tri-Info 0.82, GRU-STAC 0.76, STAC 0.33.",
+    "Input ablation (Table 3): replacing internal embeddings with executed actions and raw proprioception (fully black-box) gives in-domain 0.880 vs 0.881 with embeddings; internals only help under shift (OOD 0.865 vs 0.794).",
+    "Using all eight metrics keeps ID at 0.87 but drops OOD to 0.74, vs 0.87 for the triplet (Table 2).",
+    "Annotated failures (n=20 per mode) show I(A_t; A_t+1) falling in all modes; H(A_t) collapses in freeze and surges in drift; I(S_t, S_t+1; A_t) drops in phantom grasp (Fig. 6)."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-10, CALVIN, ALOHA sim; real ALOHA cup, cube and drawer tasks)",
+    "benchmarks": ["LIBERO-10", "CALVIN", "ALOHA transfer and insertion (sim)", "ALOHA real (cup placement, pick cube, drawer-open block placement)", "Layman V1.0 noisy-demonstration Can split"],
+    "scale": "Real: 120 cup-placement, 60 pick-cube, 75 drawer trajectories; sim rollout counts in appendix; results mean +/- std over 3 seeds",
+    "statistics": "partial: mean +/- std over 3 seeds; no significance tests",
+    "baselines": "SAFE, Fail-Detect, FIPER (embedding-based), STAC and GRU-STAC (score-based), four alternative action-continuity measures inside the GRU pipeline, black-box input variants"
+  },
+  "causal_validation": "None for interpretation. Failure-mode signatures are matched to annotated videos (correlational). An appendix experiment uses the detector to select among sampled actions and reports higher success, but the main paper does not quantify it.",
+  "closed_loop": "Detection evaluated offline on recorded closed-loop rollouts; the closed-loop action-selection use is only mentioned in the appendix limitations.",
+  "limitations_stated": [
+    "Scope is alarms, not recovery; closing the loop needs more systematic study.",
+    "Tested mainly on VLAs; one non-VLA behavior-cloning policy only.",
+    "Requires training a VAE per model-dataset domain to compress embeddings for k-NN estimators."
+  ],
+  "critique": [
+    "Important result for the review: in-domain, the white-box internal embeddings add nothing over executed actions and proprioception (0.880 vs 0.881), which undercuts the general premise that VLA internals are needed for failure prediction (SAFE 2506.09937, SAFECAST 2608.04246).",
+    "'Interpretable' here means interpretable statistics of behavior, not mechanistic insight into the network; the three signals mostly describe motion patterns (stalling, jitter, repeating grasps) visible from outside.",
+    "The 70% real-world headline is a balanced accuracy on a transfer setting; it is a modest number and is reported over 3 seeds without tests.",
+    "Cross-model transfer of embedding-based baselines collapsing to 0.50 is partly by construction (classifiers fitted to one latent geometry), so it is not a fair test of those methods' idea.",
+    "Trajectories are truncated to the shortest successful rollout before pooling, a reasonable guard against time-counting shortcuts.",
+    "The VAE is fit per domain, so the 'no retraining' transfer still needs unlabeled target-domain data for the VAE and normalization statistics are from the source split."
+  ],
+  "code": "not reported",
+  "one_line": "Three information-theoretic statistics of a VLA's action stream (entropy, action-to-action and transition-to-action mutual information) predict failures about as well as SAFE in-domain and transfer much better across models and to real robots, but in-domain they work just as well without any model internals."
+}

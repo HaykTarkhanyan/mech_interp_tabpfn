@@ -1,0 +1,44 @@
+{
+  "id": "2609.02634",
+  "title": "Latent Cluster Analysis for Vision-Language-Action Models",
+  "first_author": "Wulff",
+  "year": 2026,
+  "venue": "arXiv preprint (Sep 2026)",
+  "tier": "core",
+  "models": ["GR00T N1.5"],
+  "action_head": "flow/diffusion action expert (DiT with cross-attention to Eagle VLM tokens, 4 denoising steps)",
+  "methods": ["agglomerative clustering of mean-pooled embeddings (last VLM layer and every DiT cross-attention layer per denoising step)", "cross-attention-based token reweighting of VLM embeddings", "PCA", "Silhouette / Davies-Bouldin / Calinski-Harabasz", "Jaccard and overlap coefficient across layers", "VLM-generated cluster concepts (LLaVA-72B) scored with CLIPSIM"],
+  "question": "Does clustering GR00T N1.5's backbone and action-decoder embeddings, with tokens reweighted by cross-attention, reveal interpretable structure in how actions are denoised?",
+  "key_findings": [
+    "Cross-attention weighting raises mean Silhouette from 0.084 to 0.136 without PCA (+62.1%) and from 0.132 to 0.164 with PCA (+24.0%); Davies-Bouldin improves ~8% (Table 1).",
+    "Without PCA or weighting, clustering degenerates: 15,704 +/- 10,282 clusters from 24,000 samples; weighted+PCA gives ~7 clusters (Table 1).",
+    "Cluster counts fall at later denoising steps and deeper decoder layers, read as the latent space becoming more structured.",
+    "Cluster assignments are consistent across denoising steps within a layer (diagonal patterns in overlap matrices).",
+    "DiT-layer clusters separate episode timestep and arm displacement more than backbone clusters (~20% higher mean Wasserstein distance for arm joints).",
+    "Concept labels score CLIPSIM 0.206-0.233 across layers and configurations, with small differences; concepts are mostly variants of 'pick object and place in container' (Table 2)."
+  ],
+  "evidence": {
+    "setting": "offline dataset only",
+    "benchmarks": ["GR00T X-Embodiment Sim subset of Open X-Embodiment (24 tasks)"],
+    "scale": "1,000 embeddings per task x 24 tasks = 24,000 samples, consecutive samples 10 frames apart; concepts from top-5 samples for the 10 largest clusters per layer",
+    "statistics": "partial: mean +/- std of cluster metrics across layers; no significance tests, no seeds",
+    "baselines": "unweighted clustering, with/without PCA"
+  },
+  "causal_validation": "No. No ablation, steering or patching; clusters and concepts are descriptive.",
+  "closed_loop": "No. Embeddings come from forward passes on recorded dataset clips.",
+  "limitations_stated": [
+    "Single dataset and single model.",
+    "Concept generation lacks ground truth; concepts from static frames miss dynamics.",
+    "Short input horizon; findings may not extend to long-horizon behavior.",
+    "Agglomerative clustering assumptions may not fit non-spherical manifolds."
+  ],
+  "critique": [
+    "The 'weighted' representation is the VLM backbone tokens rescaled by cross-attention weights, not the action-decoder hidden states. Comparing its cluster metrics with unweighted decoder embeddings compares different objects, so the 62% Silhouette gain is not evidence about the decoder.",
+    "Silhouette scores of 0.08-0.16 indicate weak cluster structure overall; clustering quality metrics also do not measure interpretability.",
+    "CLIPSIM differences of ~0.01-0.02 between configurations are within the reported std and carry no clear meaning; the generated concepts are near-duplicates.",
+    "Claims of 'spatiotemporal awareness' rest on clusters correlating with episode timestep, which is trivially expected when consecutive frames of the same episode are clustered.",
+    "Methodologically the weakest paper in the probing set; useful mainly as an example of descriptive clustering without validation."
+  ],
+  "code": "not reported",
+  "one_line": "Clustering GR00T N1.5's backbone and diffusion-decoder embeddings, with backbone tokens reweighted by cross-attention, gives somewhat tidier clusters that track timestep and arm motion, but the analysis is descriptive and its metrics say little about interpretability."
+}

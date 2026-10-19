@@ -1,0 +1,44 @@
+{
+  "id": "2608.08904",
+  "title": "From Recovery to Drop-off: How Action Post-training Reduces a VLM's Late-Layer Depth Decodability",
+  "first_author": "Hackett",
+  "year": 2026,
+  "venue": "arXiv preprint (v2 Aug 2026)",
+  "tier": "core",
+  "models": ["Molmo2-ER (base VLM)", "MolmoAct2-LIBERO (VLA)"],
+  "action_head": "flow/diffusion action expert (cross-attends to backbone KV); backbone was earlier trained on DCT-BPE discrete action tokens, then fully fine-tuned on LIBERO with insulation released",
+  "methods": ["layer-wise DPT depth probes (capacity-matched)", "ridge probes (R2/(1-R2) SNR)", "windowed zero-ablation of MLP vs attention writes", "probing accumulated MLP writes vs residual stream"],
+  "question": "How much of a VLM's depth (spatiogeometric) information stays decodable after action post-training into a VLA, where in the stack is it lost, and which module causes the loss?",
+  "key_findings": [
+    "Floor: the VLA decodes depth worse than its weight-matched VLM at all 36 layers; band means d1 early 0.705 vs 0.617, mid 0.701 vs 0.606, late 0.744 vs 0.578 (Table 2); narrowest gap ~0.04 at L20.",
+    "Cliff: from L28 to L35 the VLM rises +0.040 d1 while the VLA falls -0.123; final layer 0.752 (VLM) vs 0.506 (VLA), a 0.246 gap (Table 2).",
+    "Zeroing the VLA's MLP writes in L33-35 raises final-layer d1 from 0.506 to 0.584 (+0.078, 'majority of the 0.123 cliff'); attention ablation in the same window gives +0.031; the same MLP ablation in the base VLM gives +0.015 (Table 3).",
+    "Accumulated MLP writes are more depth-decodable than the residual stream in the base VLM (d1 ~0.80-0.84 vs 0.66-0.75); in the VLA these deposits collapse from ~0.68 to 0.38 over the final blocks, and ridge SNR falls to ~0.03 by the last layer.",
+    "Residual-stream norm is 100-1000x a single MLP write in the first two-thirds of the stack and ~10x late, offered as the reason late writes can reshape the stream."
+  ],
+  "evidence": {
+    "setting": "offline dataset only (LIBERO frames; no rollouts)",
+    "benchmarks": ["LIBERO frames (primary + wrist views), Depth-Anything-3 pseudo-labels"],
+    "scale": "n = 400 rollout-strided LIBERO frames (Table 4), 25% held out by rollout; one 41.8M-parameter DPT probe per model-layer cell; 2 x 2 x 12 ablation design; single seed",
+    "statistics": "no: single-seed probes and ablations, no CIs or tests; authors explicitly rely on the structure of the dissociation rather than per-cell significance",
+    "baselines": "weight-matched base VLM as reference; attention ablation and base-VLM ablation as controls"
+  },
+  "causal_validation": "Yes at representation level: zeroing late MLP writes increases final-layer depth decodability (+0.078 d1) with attention and base-VLM controls. The outcome is probe decodability with a freshly trained probe per condition, not model behavior.",
+  "closed_loop": "No. Authors state they make no claim that the ablations improve closed-loop policy behavior; nothing is measured on actions.",
+  "limitations_stated": [
+    "One VLM-VLA pair on one dataset (LIBERO).",
+    "One DPT probe class, corroborated only by ridge regression.",
+    "Targets are Depth-Anything-3 pseudo-ground-truth, affine-aligned, not metric depth.",
+    "Depth is necessary but not sufficient for spatial understanding.",
+    "Causal claims are representation-level and single-seed; no closed-loop claim.",
+    "The whole post-training pipeline (data and three stages) is a bundled treatment."
+  ],
+  "critique": [
+    "Ablating MLP writes in L33-35 yields d1 0.584, close to the VLA's own L32 value (0.576 in Table 5). The 'recovery' may just restore the pre-cliff state, not reveal 'interference'. Late layers re-formatting for action output would show the same pattern; the interference framing is stronger than the evidence.",
+    "Only 400 frames to train a 41.8M-parameter probe per layer, single seed: layer-to-layer differences of a few hundredths of d1 (e.g. +0.015 vs +0.031) may be within probe noise, and no variance estimate is given.",
+    "Lower depth decodability in the last layers of a policy is not obviously a defect: no behavioral link (e.g. depth-sensitive task failures) is shown, so the result says nothing yet about whether the policy uses depth.",
+    "Nice design point: the weight-matched pair is a cleaner contrast than most retention papers. But since LIBERO fine-tuning releases the insulation, the result may not transfer to insulated pi0.5-style models."
+  ],
+  "code": "not reported",
+  "one_line": "In a weight-matched Molmo2-ER / MolmoAct2 pair, action post-training makes depth less decodable at every layer and sharply so in the last 8 layers, and zeroing the last MLP writes undoes most of that terminal drop."
+}

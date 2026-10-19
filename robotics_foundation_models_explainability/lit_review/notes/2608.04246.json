@@ -1,0 +1,44 @@
+{
+  "id": "2608.04246",
+  "title": "SAFECAST: Robust Failure Detection for VLA Policies with Contrast-Set Training and Calibration",
+  "first_author": "Rajaprakash",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["pi0 (LIBERO; DROID checkpoint LoRA-finetuned on 20 real demos)", "pi0-FAST (DROID checkpoint, no finetuning)", "OpenVLA (LIBERO)"],
+  "action_head": "mixed: flow/diffusion action expert (pi0) and discrete action tokens (OpenVLA, pi0-FAST); probe reads the pre-final-layer hidden state",
+  "methods": ["SAFE-style MLP probe on hidden states", "functional conformal prediction thresholds", "contrast-set augmentation (visual distractors, lighting, textures, LLM paraphrases) for probe training and/or calibration", "DTW-based rejection of near-duplicate rollouts", "seed-paired t-tests with Bonferroni correction"],
+  "question": "Does adding visually and linguistically perturbed rollouts (contrast sets) to probe training and conformal calibration make SAFE-style hidden-state failure detectors more reliable under deployment shift?",
+  "key_findings": [
+    "Alpha-marginal 'cumulative ROC-AUC' (area under the TPR-FPR points from the conformal alpha sweep, 30 seeds; Table 1): SAFE vs full SAFECAST is 0.3267 vs 0.4469 (Sim-pi0), 0.5937 vs 0.8014 (Sim-OpenVLA), 0.2626 vs 0.3807 (Real-pi0), 0.5501 vs 0.6664 (Real-pi0-FAST).",
+    "Seed-paired t-tests (Table 6, Bonferroni over 12): full SAFECAST is significant for Sim-pi0 (+0.12), Real-pi0 (+0.118) and Real-pi0-FAST (+0.116), but NOT for Sim-OpenVLA (+0.2023, p = 0.0256), and train-only augmentation is not significant for Sim-OpenVLA or Real-pi0.",
+    "Alpha-marginal F1 (Table 1): 'always guess failure' scores 0.5266 / 0.8314 / 0.7322 / 0.7654 on the four settings; SAFE scores 0.7132 / 0.8589 / 0.4085 / 0.7475 and SAFECAST 0.7528 / 0.8728 / 0.5412 / 0.8053, so on Real-pi0 both detectors are below the trivial baseline.",
+    "Joint visual+language contrast sets beat single-modality ones (Fig. 4): peak F1 for OpenVLA 0.871 / 0.872 / 0.873 (visual / language / joint) and for pi0 0.649 / 0.664 / 0.753; text also reports OpenVLA F1 0.922 to 0.959 visual-only vs joint.",
+    "A probe trained in LIBERO and calibrated on real contrast-set rollouts beats a probe trained and calibrated only on the small real set (Fig. 5; numbers in App. Table 12).",
+    "Which augmentation helps depends on the policy: train-time augmentation helps pi0 most on the real robot, calibration augmentation helps pi0-FAST most."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-Spatial source, LIBERO-Plus shifted evaluation; real Franka/DROID)",
+    "benchmarks": ["LIBERO-Spatial", "LIBERO-Plus", "real Franka DROID spatial pick-and-place"],
+    "scale": "LIBERO-Plus test: 2,406 rollouts per policy (pi0 64.3% success, OpenVLA 28.8%); language paraphrases evaluated on 3 episodes per task; real-world rollout counts per split are in an appendix table not fully recoverable from the text; all metrics averaged over 30 seeds and alpha in {0.1,...,0.9}",
+    "statistics": "yes, partial: seed-paired t-tests with Bonferroni correction on cumulative ROC-AUC; p10-p90 bands in appendix figures; seeds resample splits, not new rollouts",
+    "baselines": "SAFE (source-only training and calibration), always-guess-failure; no non-probe baselines"
+  },
+  "causal_validation": "None. Purely a data-augmentation change to a correlational probe; no intervention on the VLA.",
+  "closed_loop": "Offline: rollouts are collected closed-loop, then probes and thresholds are evaluated on recorded data. No run where the detector stops or recovers the robot.",
+  "limitations_stated": [
+    "Depends on collecting contrast-set trajectories representative of the deployment shifts; unseen perturbation types may still break it.",
+    "Contrast-set collection adds rollout cost; perturbation families cover only a subset of possible shifts.",
+    "Improves calibration alignment empirically but does not restore conformal exchangeability guarantees."
+  ],
+  "critique": [
+    "The headline ROC-AUC is non-standard: it is the area under TPR-FPR points from the conformal alpha sweep, which explains values far below 0.5 (SAFE 0.26 on Real-pi0). These numbers cannot be compared with the threshold-free ROC-AUC in SAFE (2506.09937) or other batch papers.",
+    "On Real-pi0 the F1 of both SAFE (0.41) and SAFECAST (0.54) is below the 'always guess failure' F1 (0.73), so the real-robot 'improvement' is from a level that is worse than trivial; the abstract does not say this.",
+    "The abstract claims statistically significant gains 'in both' settings, but the largest gain (Sim-OpenVLA, +0.20) fails Bonferroni correction.",
+    "Seeds resample probe training and calibration splits from a fixed rollout pool, so 30 seeds overstate independent evidence; the t-tests treat these as independent.",
+    "Useful negative signal for the review: SAFE-style probes calibrated on source data degrade badly under shift, confirming the calibration caveat SAFE itself noted (TNR below 1 - alpha).",
+    "No interpretability content beyond 'hidden states carry failure information'; layer choice is not studied."
+  ],
+  "code": "not reported",
+  "one_line": "Adding perturbed (distractor, lighting, paraphrase) rollouts to the training and calibration data of a SAFE-style hidden-state failure probe improves detection under deployment shift, but the reported ROC-AUC is non-standard and on the real pi0 robot both detectors trail a trivial always-fail baseline in F1."
+}

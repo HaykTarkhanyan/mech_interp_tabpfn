@@ -1,0 +1,42 @@
+{
+  "id": "2608.07361",
+  "title": "Depth-Wise Probing and Pruning of the Planning Token in a Driving Vision-Language-Action Model",
+  "first_author": "Babu",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "adjacent",
+  "models": ["ORION driving VLA: vision backbone + QT-Former perception heads, 32-layer LLaMA-style decoder, single planning token decoded by a frozen VAE + recurrent generative planner"],
+  "action_head": "planning token decoded by a separate generative (CVAE + recurrent) trajectory planner; not a diffusion expert",
+  "methods": ["trajectory-space logit lens: decode the planning token from each of 33 hidden states with the frozen native planner", "linear probe for the 6-way navigation command (never given as input)", "learned layer-1 readouts", "layer pruning by identity-patching, ranked by planning-token input-output cosine vs decode-marginal, contiguous and random orders", "per-ability-category breakdown on Bench2Drive"],
+  "question": "When along the decoder does a driving VLA's planning token become usable by its planner, and how much decoder depth does the action actually need?",
+  "key_findings": [
+    "The navigation command is linearly decodable at 97.7% after the first decoder layer (chance 16.7%) and stays high, although the command is never an input.",
+    "Compatibility with the frozen native planner improves gradually with depth; open-loop Avg-L2 reaches its minimum of 2.11 m only at the final layer.",
+    "Learned readouts from layer 1 recover much of the gap, so early layers already contain planning information in a format the deployed planner cannot use.",
+    "Ranking layers by how little they rotate the planning token allows removing 8 of 32 layers within about 5% relative open-loop error and gives a measured 1.33x decoder speedup (about 1.13x projected end-to-end).",
+    "Removing layers that decode worst in isolation (late layers 29-31) raises error by 27% at the first removal: bad isolated readout does not mean a layer is unimportant."
+  ],
+  "evidence": {
+    "setting": "simulation-derived offline data (Bench2Drive / CARLA frames, open-loop)",
+    "benchmarks": ["Bench2Drive (five ability categories)"],
+    "scale": "probing set 2,000 frames; pruning set 800; reshaping set 500; streaming set 5,291 route-ordered frames",
+    "statistics": "yes: 95% CIs over sampled frames for L2 metrics; per-family pruning intervals reported as underpowered",
+    "baselines": "random, contiguous late-block and decode-marginal pruning orders; chance for the probe"
+  },
+  "causal_validation": "Partly: layer removal by identity patching measures the effect of each layer on the planning token's trajectory; the probe and lens are readouts.",
+  "closed_loop": "No; all results are open-loop and authors state they do not establish closed-loop safety.",
+  "limitations_stated": [
+    "One ORION checkpoint and Bench2Drive setup only.",
+    "Command probe uses frame-level folds (route correlation, normalization leakage possible).",
+    "Frozen planner trained on final-layer representations, so intermediate decoding measures compatibility, not all recoverable information.",
+    "No recalibration after pruning; end-to-end gain limited because perception dominates latency."
+  ],
+  "critique": [
+    "Clean example of an action-space logit lens, directly transferable to VLAs with a single conditioning interface (e.g. pi0-style experts reading final-layer KV).",
+    "Probe-vs-native-readout gap is a key methodological point for the review: linear decodability early in the network does not mean the downstream action head can use it there.",
+    "The command probe likely benefits from route-level correlation (frames not grouped by route), so 97.7% may overstate generalizable decodability.",
+    "Driving with a separate planner, not manipulation; findings are explicitly checkpoint-specific."
+  ],
+  "code": "not reported",
+  "one_line": "In the ORION driving VLA, the navigation intent is linearly readable from the planning token after layer 1, but the frozen planner only produces its best trajectory from the final layer, and 8 of 32 decoder layers can be pruned with about 5% more open-loop error."
+}

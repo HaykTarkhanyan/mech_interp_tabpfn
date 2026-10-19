@@ -1,0 +1,41 @@
+{
+  "id": "2406.00877",
+  "title": "Evidence of Learned Look-Ahead in a Chess-Playing Neural Network",
+  "first_author": "Jenner",
+  "year": 2024,
+  "venue": "NeurIPS 2024",
+  "tier": "adjacent",
+  "models": ["Leela Chess Zero policy network (15-layer, 109M-parameter transformer with one token per board square), used without MCTS"],
+  "action_head": "n/a (policy over chess moves; move logits from final source and target square embeddings)",
+  "methods": ["activation patching with corruptions chosen to change Leela's move but not a weaker model's", "attention-head patching and targeted zero-ablation of single attention entries", "identification of piece-movement heads and ablation of information flow out of future-move squares", "bilinear probe for the move two turns ahead, with random-model control"],
+  "question": "Does a strong chess policy network internally represent and use future moves (look-ahead), or only state-based heuristics?",
+  "key_findings": [
+    "On 22.5k filtered puzzles that Leela solves, patching activations on the target square of the 3rd move (two turns ahead) has an outsized effect on the best-move log odds in middle layers, while the 1st-move target dominates late layers.",
+    "Head L12H12 moves information from the 3rd-move target square to the 1st-move target square; zero-ablating that single attention entry (of about 1.5 million) strongly reduces performance on a substantial fraction of puzzles, while ablating all 4095 other entries of the head matters less.",
+    "Ablating information flow out of the 3rd-move target square in piece-movement heads for the relevant piece type reduces top-move log odds by at least 1.5 in 60% of puzzles; ablating other piece heads or a random square has little effect.",
+    "A bilinear probe motivated by L12H12 predicts the 3rd move with 92% accuracy, far above a probe on a randomly initialized model.",
+    "Results are stronger on puzzles where the 1st and 2nd move share a target square (83% of the filtered set, often sacrifices)."
+  ],
+  "evidence": {
+    "setting": "offline dataset only (chess puzzles)",
+    "benchmarks": ["Lichess puzzles filtered from 900k to 22.5k"],
+    "scale": "22.5k puzzles; 5 probe training runs; error bars as 2x SEM or 95% CIs",
+    "statistics": "yes: standard errors and 95% CIs on patching, ablation and probe results",
+    "baselines": "other squares, random squares, other piece-movement heads, probes on a random model"
+  },
+  "causal_validation": "Yes: activation patching, single-entry attention ablations and head-specific ablations with matched controls show future-move squares are causally important for the output.",
+  "closed_loop": "n/a (single-position policy evaluation, no sequential control)",
+  "limitations_stated": [
+    "No precise description of how look-ahead is implemented.",
+    "Only a single line of play; no test of comparing multiple lines (search).",
+    "Focus on complex puzzle states; role across the full input distribution unclear.",
+    "Chess may favor look-ahead unusually strongly."
+  ],
+  "critique": [
+    "Strong exemplar of convergent causal evidence (patching, ablation, probing with controls) that robotics interpretability papers rarely reach.",
+    "The token-per-square architecture makes 'where' a future move is represented directly interpretable; VLAs have no such alignment between tokens and action-relevant locations, which is a central obstacle the review should note.",
+    "Dataset filtering toward puzzles a weaker model fails and Leela solves selects for states where look-ahead is most likely, so prevalence of the mechanism is not established."
+  ],
+  "code": "https://leela-interp.github.io/ (code on GitHub per the paper)",
+  "one_line": "Activation patching, single-attention-entry ablations and a 92%-accurate probe show that Leela's chess policy network represents the optimal move two turns ahead on the relevant squares and uses it to choose its current move in hard puzzles."
+}

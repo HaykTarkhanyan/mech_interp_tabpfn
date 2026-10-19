@@ -1,0 +1,40 @@
+{
+  "id": "2502.04558",
+  "title": "Probing a Vision-Language-Action Model for Symbolic States and Integration into a Cognitive Architecture",
+  "first_author": "Lu",
+  "year": 2025,
+  "venue": "arXiv preprint (Feb 2025)",
+  "tier": "core",
+  "models": ["OpenVLA-7B (LIBERO-spatial fine-tuned checkpoint)"],
+  "action_head": "discrete action tokens",
+  "methods": ["multi-label linear probes (sigmoid) on all 33 hidden states", "integration of probe outputs into the DIARC cognitive architecture for runtime monitoring"],
+  "question": "Can symbolic object relations and action states be linearly decoded from OpenVLA's hidden layers, and do object states appear earlier in depth than action states?",
+  "key_findings": [
+    "Probe accuracy is above 0.90 for most layers for both object-state predicates (on, left-of, inside, open, ...) and action-state predicates (grasped, should-move-towards) (Fig. 4, heatmap; per-layer numbers not tabulated in text).",
+    "Layer 0 probes are significantly worse across all categories.",
+    "Hypotheses H1 (object states early) and H2 (action states late) were not supported: no layer-wise separation was observed. The authors attribute this to low data diversity.",
+    "on-table and turned-on were dropped because they almost never change in the data.",
+    "A working DIARC-OpenVLA demo streams probe-predicted predicates into a symbolic belief store in real time (no quantitative evaluation of the monitoring)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Spatial (10 tasks)"],
+    "scale": "5 successful episodes per task (50 episodes) collected by re-querying OpenVLA until success; episode-level train/test split; split sizes not reported",
+    "statistics": "no: no CIs, no seeds, no control tasks; accuracy averaged per predicate type",
+    "baselines": "none (no random-feature, majority-class or control-probe baseline)"
+  },
+  "causal_validation": "No. Probes are only read out; nothing is intervened on.",
+  "closed_loop": "Probes run alongside closed-loop rollouts in the demo, but their accuracy is evaluated offline on recorded activations; the probes do not feed back into control.",
+  "limitations_stated": [
+    "Training data not diverse: objects have fixed placements across LIBERO-Spatial tasks except the two bowls; the robot always picks a black bowl and places it on the plate.",
+    "This low variation makes the probing task easy, inflating accuracy and possibly washing out layer differences; more and better data needed."
+  ],
+  "critique": [
+    "Accuracy without class balancing and without a majority-class baseline is close to meaningless for sparse binary predicates: after dropping only labels below 1% or above 99% positive, a constant predictor can still score ~0.9 or more on many atoms.",
+    "Only successful episodes are used, so the probes never see failure states. That weakens the monitoring use case the paper motivates.",
+    "Tiny dataset (50 episodes) with 4096-d inputs and no regularization or held-out task split; probes may memorize task identity, which determines most predicates in LIBERO-Spatial.",
+    "Useful mainly as an early workshop-style proof of concept; later papers in this batch show that high natural probe accuracy can coexist with weak responsiveness to controlled state changes (2609.34684) or with no behavioral use of the decoded information (2610.06235), neither of which this paper can test."
+  ],
+  "code": "not reported",
+  "one_line": "Linear probes on OpenVLA's hidden states decode LIBERO-Spatial object relations and grasp/subgoal states with >0.90 accuracy at almost every layer, but the data is too uniform to say much, and the probes are wired into a symbolic monitor as a demo."
+}

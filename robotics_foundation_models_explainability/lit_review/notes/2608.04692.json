@@ -1,0 +1,48 @@
+{
+  "id": "2608.04692",
+  "title": "Suppression Sticks, Locality Is Fragile: A Closed-Loop Target-and-Control Audit of Task-Vector Negation in VLA Policies",
+  "first_author": "Wang",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["MergeVLA-LIBERO (Qwen2.5-0.5B + dinosiglip + 0.16B action expert, continuous regression head)", "OpenVLA-7B (discrete tokens)", "pi0.5 (flow matching, 3B)"],
+  "action_head": "mixed: regression head (MergeVLA), discrete action tokens (OpenVLA), flow/diffusion action expert (pi0.5)",
+  "methods": ["task-vector negation theta_goal - alpha * tau_i (weight-space edit, not activation steering)", "closed-loop target-and-control matrices (every skill evaluated after each edit)", "norm-matched random-direction control", "component and depth-band ablations", "NegGrad, NegGrad+, Gradient-Difference and leave-one-out retraining baselines", "relearning probe", "layerwise CKA", "task-vector cosine geometry"],
+  "question": "When a per-skill task vector is subtracted from a multitask VLA, is the target skill removed and are the other skills left intact in closed-loop execution?",
+  "key_findings": [
+    "Full LIBERO-Goal 10x10 matrix (MergeVLA, alpha = 1, 20 rollouts/cell): 5 skills separate (target <= 15%, controls >= 40%, baseline-normalized retention 57.8%), 3 resist suppression, 2 collapse every control.",
+    "Held-out initial states at selected alpha*: all 5 suppressible targets stay at 0/20, but mean normalized control retention is 52% (range 78% to 4%) and 4 of 5 edits drive at least one unrelated control to 0%.",
+    "Direction-specific: a norm-matched random direction removes only about 25% of the target; equal-norm re-addition leaves the target at 50%.",
+    "Locus: VLM-only negation matches full negation, action-head-only leaves the target at 80%; restricting the edit to any single depth band leaves the target largely intact (mean 91% retained).",
+    "Cross-suite: no clean separation on LIBERO-Spatial; Object and Long10 suppress targets but keep only 5.8% and 11.7% off-diagonal control SR.",
+    "Cross-architecture: OpenVLA-7B suppresses all 3 diagnostic targets to 0% with mean off-diagonal control 50.8%; pi0.5 shows positive target-control gaps (30.0-68.3 pp) on a 4-skill Goal panel, one row non-selective.",
+    "Multi-skill negation collapses the policy: controls fall to 10% at k = 2 and everything to 0% for k >= 3, even with norm-matched scaling.",
+    "Weight-space cosine does not predict collateral damage (VLM task vectors near-orthogonal, cos about 0.011-0.014; Spearman rho = -0.03 vs collateral drop over 56 cells); action-head vectors more aligned (cos about 0.26).",
+    "Gradient baselines on a matched panel: NegGrad zeroes all controls, Gradient-Difference keeps 88.3% control SR vs 73.9% for negation, retraining oracle 95.6%.",
+    "Relearning: the negated model recovers t0 to 85% (17/20) after 250 steps while a task-naive base is still 0/20; CKA between intact and negated hidden states stays 0.84-0.93, consistent with behavioral masking, not unlearning."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Goal (primary)", "LIBERO-Spatial", "LIBERO-Object", "LIBERO-Long10"],
+    "scale": "20 rollouts per cell (OpenVLA off-diagonals 10, some pi0.5 cells 10); selection on initial states 0-19, held-out validation on 20-39; one training seed for full matrices, 3-seed probe for t0",
+    "statistics": "yes: raw counts with 95% Wilson intervals, paired designs, row-bootstrap CI (53.3 pp gap, CI [45.7, 61.0]), Fisher test for pi0.5 dose-response; explicit caveats that post-hoc subgroup tests are descriptive",
+    "baselines": "no-edit model, norm-matched random direction, NegGrad (500-2000 steps), NegGrad+, Gradient-Difference, leave-one-task-out retraining oracle"
+  },
+  "causal_validation": "Yes, every claim is from closed-loop rollouts after a weight intervention, with random-direction, sign, anchor, component and depth controls. The paper explicitly says its geometric and loss-landscape diagnostics characterize but do not explain the effect.",
+  "closed_loop": "Yes, all target and control success rates are closed-loop LIBERO rollouts.",
+  "limitations_stated": [
+    "Single training seed for the full matrices; a three-seed probe only for one target.",
+    "Simulation only (LIBERO MuJoCo); no real robot.",
+    "Clean selectivity requires per-skill expert task vectors; negating an off-the-shelf multitask vector is broadly destructive.",
+    "Selectivity fails on Object and Long-horizon suites.",
+    "Gradient-baseline comparison covers one target, one seed, one budget per method."
+  ],
+  "critique": [
+    "Methodologically the most careful paper in this batch: held-out initial states for the selected operating point, Wilson intervals, matched controls, and explicit separation of descriptive vs confirmatory claims.",
+    "It is weight-space editing, not activation steering; it belongs in the steering section as the main evidence that 'suppression works' does not imply 'edit is local', a lesson that applies to activation steering too (most steering papers report only the target behavior).",
+    "20 rollouts per cell gives wide intervals (0/20 -> [0, 16]%), so per-cell control damage claims are noisy; the regime taxonomy depends on fixed thresholds (shown stable across 30-40%).",
+    "The relearning result and high CKA support the view that edits mask behavior rather than remove knowledge, which matters for safety-oriented unlearning claims elsewhere."
+  ],
+  "code": "not reported",
+  "one_line": "Subtracting a per-skill task vector from a multitask VLA reliably switches the target skill off in closed loop, but often breaks unrelated skills, fails on suites with shared motions, and is easily re-learned, so it masks rather than removes."
+}

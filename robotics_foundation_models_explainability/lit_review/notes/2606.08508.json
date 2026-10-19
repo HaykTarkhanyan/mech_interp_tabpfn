@@ -1,0 +1,34 @@
+{
+  "id": "2606.08508",
+  "title": "ActProbe: Action-Space Probe for Early Failure Detection of Generative Robot Policies",
+  "first_author": "Huang",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "adjacent",
+  "models": ["OpenVLA", "pi0", "pi0.5", "GR00T"],
+  "action_head": "mixed: discrete action tokens (OpenVLA) and flow/diffusion action experts (pi0, pi0.5, GR00T)",
+  "methods": ["action-only failure probe on two signals from a single forward pass: temporal consistency error between consecutive action chunks and action chunk magnitude"],
+  "question": "Are emitted action chunks alone enough for early failure detection, without white-box access to policy internals?",
+  "key_findings": [
+    "Early-detection ROC-AUC at 25% of the episode averages 75.8% across nine splits, 4.6 points above the strongest white-box baseline SAFE-MLP and 9.0 points above it on unseen tasks.",
+    "On seen tasks, hidden-state probes stay competitive in this limited-data regime; the action-only probe matches them.",
+    "Internal-feature probes overfit seen tasks; the action-space probe generalizes better to unseen tasks.",
+    "A probe trained on GR00T in RoboCasa simulation transfers zero-shot to the same policy on a Unitree G1 humanoid for two pick tasks."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["LIBERO", "RoboCasa", "two real pick tasks on a Unitree G1"],
+    "scale": "50 training episodes per task; ablations averaged over 3 seeds",
+    "statistics": "partial: seed averages for ablations",
+    "baselines": "SAFE-LSTM, SAFE-MLP and TDQC variants, cosine k-NN on hidden states, STAC and other resampling or observation detectors"
+  },
+  "causal_validation": "No: detection only.",
+  "closed_loop": "Online detection during closed-loop rollouts; no intervention on the policy.",
+  "limitations_stated": ["not extracted"],
+  "critique": [
+    "Important counterpoint for the internals-based monitoring literature: if output-only signals match or beat hidden-state probes, especially on unseen tasks, then a monitor's success is not evidence that the internals carry special failure information.",
+    "Same 50-episode training budget for all detectors favors low-dimensional inputs; hidden-state probes might close the gap with more data."
+  ],
+  "code": "https://github.com/air-embodied-brain/actprobe",
+  "one_line": "Two scalar signals from the emitted action chunks predict failure as well as or better than hidden-state probes like SAFE, especially on unseen tasks, which questions how much internal access buys for failure monitoring."
+}

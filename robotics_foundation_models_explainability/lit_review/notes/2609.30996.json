@@ -1,0 +1,42 @@
+{
+  "id": "2609.30996",
+  "title": "The Linear Representation Hypothesis for Vision-Language-Action Models",
+  "first_author": "Jeong",
+  "year": 2026,
+  "venue": "arXiv preprint (v2 Oct 2026)",
+  "tier": "core",
+  "models": ["OpenVLA-OFT", "oracle Chen-Fliess construction on a planar unicycle-like system"],
+  "action_head": "regression head (OpenVLA-OFT MLP head mapping last-layer action-token states to an 8-step chunk)",
+  "methods": ["control-theoretic formalization of probing and steering (action-conditioned probes via path signatures)", "signature exponential-family / GLM policy model, information-geometric steering derivation", "PCA + action-conditioned bilinear linear probes", "steering along the head-Jacobian-mapped probe direction vs probe-only, static, random and simulator-gradient directions", "closed-loop steering at each re-plan"],
+  "question": "Can the linear representation hypothesis be extended to VLAs so that action-conditioned future physical quantities are linearly probeable and linearly steerable, and does a pretrained VLA show this structure?",
+  "key_findings": [
+    "Theory: for control-affine systems under Chen-Fliess conditions, a shared representation exists from which any finite set of propagated quantities is linearly probeable via signature features of the candidate action (Theorem 4.2); under a signature-GLM policy, moving along the probe-derived direction monotonically changes the expected quantity (Theorem 5.3).",
+    "Oracle: steering raises the expected lateral position from 0.000 to 0.134 to 0.255 for alpha = 0, 4, 8, at KL cost 0, 0.27, 0.98 nats; slope matches the predicted variance to 1e-11; saturates at 0.688.",
+    "OpenVLA-OFT probing (one LIBERO-10 task, held-out episodes): static probes read current mug positions (R2 0.58-0.97), but action-conditioned bilinear probes predict how a chunk moves them much better (increment R2 0.90-0.98 vs additive 0.80-0.95); for mug heights, propagated R2 0.95 / 0.96 with the increment vs 0.64 / 0.62 static only (Table 1).",
+    "Steering along the head-Jacobian direction increases the target quantity monotonically at 138 of 140 held-out states and matches the simulator-gradient oracle (cosine 0.98-1.00) (Table 2).",
+    "The probe direction without the head recovers at most ~75% of the effect, and the static probe direction often moves the quantity the wrong way (e.g. -11.3 mm for -d(mug1, plate)); random directions ~0 (Table 2).",
+    "Effects are small: median Jpsi(8) - Jpsi(-8) of 9-13 mm. Closed loop over 6 re-plans (2.4 s), EE-to-white-mug distance is 20 / 11.8 / 9 cm for alpha = -16 / 0 / 16, but the policy keeps heading for its original subgoal."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10 (single task: two mugs on two plates)", "synthetic planar control system (oracle)"],
+    "scale": "788 states from 50 layouts; 32 candidate chunks executed at 404 states; 20 held-out states per QoI for steering (140 total); closed-loop demo from one held-out episode",
+    "statistics": "partial: held-out-episode R2, medians, percentage monotone; no CIs or tests",
+    "baselines": "static probe, additive probe, nonlinear readouts, probe direction without head, random directions, simulator-gradient oracle"
+  },
+  "causal_validation": "Yes: activation steering along derived directions changes the propagated physical quantity monotonically, compared with random, static and oracle directions.",
+  "closed_loop": "Mostly measured on single-chunk outcomes with simulator execution; one closed-loop demonstration over 6 re-plans shows a cumulative few-centimetre path bias without changing the task subgoal.",
+  "limitations_stated": [
+    "Experiments are a proof of concept for existence and realizability; finding a representation naturally suited to both probing and steering remains open.",
+    "Quantitative steering guarantees under finite probing error are left for future work.",
+    "Exact-probe assumption is an idealized limit."
+  ],
+  "critique": [
+    "The steering intervention is on the last-layer action-token states right before a small MLP head, and the direction is the gradient of the probe-predicted quantity through that head. This is close to gradient-based action editing; agreement with the simulator gradient is expected, and it says little about higher-layer concept representations.",
+    "One LIBERO-10 task and one model (OpenVLA-OFT with a deterministic regression head); the theory targets stochastic diffusion/flow policies, but these are not tested.",
+    "The useful empirical point: static probe directions often fail or reverse the effect, while action-conditioned directions work. This matches 2608.13474 (progress not steerable) and 2610.20840 (geometry-matched edits can land on beliefs).",
+    "The theory (Chen-Fliess existence plus exponential-family steering) is largely existential and assumes a GLM policy form real VLAs do not have, so it explains rather than predicts the OpenVLA-OFT results."
+  ],
+  "code": "not reported",
+  "one_line": "A control-theoretic version of the linear representation hypothesis says future physical quantities should be linear in the representation given the planned action, and on OpenVLA-OFT action-conditioned probes predict object motion well and steering through the action head nudges the robot by about a centimetre, while naive static probe directions fail."
+}

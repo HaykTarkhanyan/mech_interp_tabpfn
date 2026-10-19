@@ -1,0 +1,40 @@
+{
+  "id": "2606.09740",
+  "title": "ProbeAct: Probe-Guided Training-Free Failure Recovery in Vision-Language-Action Models",
+  "first_author": "Zhang",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["OpenVLA-OFT (LIBERO)", "OpenVLA-OFT-mixdata (fine-tuned on LIBERO-plus perturbations)"],
+  "action_head": "regression head (OpenVLA-OFT parallel-decoding L1 regression head)",
+  "methods": ["multi-target MLP probe regressing 3D object positions from layer-8 image-token activations (4x4 pooled grid, PCA to 1024 dims), trained with Hungarian matching on simulator ground truth", "online Hungarian identity tracking", "hand-designed kinematic state machine for grasp/drop/placement failure", "hierarchical Control Barrier Function filter on translational actions", "layer x pooling probe sweep (R2)"],
+  "question": "Can object positions decoded from a frozen VLA's hidden states drive a runtime failure detector and minimal action correction that rescues OpenVLA-OFT from 'memorized trajectory' failures under perturbation?",
+  "key_findings": [
+    "On LIBERO-plus, success rises from 69.6% (OpenVLA-OFT) to 74.1% with ProbeAct; largest gains on Robot initial state (31.9 to 40.3) and Camera (56.4 to 63.8), smallest on Background (93.3 to 93.5) (Table 1).",
+    "On the mixdata-finetuned checkpoint, Robot-initial-state success rises from 28.0% to 32.2% averaged over four LIBERO suites (+2.0 to +6.8 per suite) (Table 2).",
+    "Probe 3D position R2 peaks at layer 8 with image-spatial pooling (0.968) and declines with depth to 0.934 at layer 28; spatial pooling beats image-mean, last-token and language-mean at every layer (Table 4).",
+    "On 300 Objects-Layout episodes, the probe's object-position error is 3.4 cm on successes and 10.4 cm on failures, while the gripper-closing endpoint error is 7.8 cm and 34.9 cm; authors read this as intact spatial representation with a drifting action head (Table 3; text says 12.4 cm for the failure probe error, inconsistent with the table).",
+    "ProbeAct rescues 151 tasks, adds about 6 steps on tasks both succeed (1,643 tasks), and lowers average steps from 275 to 255 overall (Table 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-plus (7 perturbation categories)", "LIBERO-plus Robot-initial-state subset across Spatial/Object/Goal/10 suites"],
+    "scale": "2,591 tasks in the step analysis (liberoplus goal); 300 episodes for the probe-vs-endpoint analysis; probe trained on 50,000 hidden-state/object-position pairs; seeds not reported",
+    "statistics": "no: single success rates, no seeds, CIs or tests",
+    "baselines": "unmodified OpenVLA-OFT and OpenVLA-OFT-mixdata; success rates of other VLAs (OpenVLA, NORA, WorldVLA, UniVLA, pi0, pi0-FAST, RIPT-VLA) copied as reference; no ablation against external detectors or ground-truth object positions"
+  },
+  "causal_validation": "No intervention on internals. The probe is read-only; the intervention is on the action output (CBF projection). The 'intact perception, broken action head' claim rests on a correlational comparison of probe error and action endpoint error.",
+  "closed_loop": "Yes: the probe-driven state machine and CBF filter run online and success rates are measured in closed-loop LIBERO-plus rollouts.",
+  "limitations_stated": [
+    "Only simulation with idealized rigid-body dynamics; sim-to-real of the kinematic state machine untested (friction, deformables, encoder noise)."
+  ],
+  "critique": [
+    "Most of the failure detection is a hand-built kinematic state machine on gripper width and end-effector pose; the probe only supplies object positions. There is no ablation showing that probe-derived positions matter versus ground-truth or an off-the-shelf detector, so the interpretability contribution to the 4.5-point gain is unmeasured.",
+    "'Training-free' refers only to VLA weights; the probe is trained with simulator ground-truth object positions, which a real robot would not have.",
+    "The 'failure lies exclusively in the action head' claim is overstated: probe error triples on failed episodes (3.4 to 10.4 cm), so perception degrades too; and gripper-closing endpoint error is a behavioral outcome, not a like-for-like comparison with a probe readout.",
+    "No seeds or confidence intervals for a 4.5-point gain on one benchmark; other VLAs' numbers are a reference table, not a controlled comparison.",
+    "Probe depth result (spatial info best at layer 8, decays with depth) is a useful data point for probing papers on OpenVLA-family models."
+  ],
+  "code": "not reported",
+  "one_line": "Reading object positions from OpenVLA-OFT layer-8 activations with a probe, feeding them to a kinematic failure state machine and a control-barrier filter lifts LIBERO-plus success from 69.6% to 74.1%, but the probe's share of that gain is never isolated."
+}

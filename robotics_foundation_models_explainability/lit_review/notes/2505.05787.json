@@ -1,0 +1,43 @@
+{
+  "id": "2505.05787",
+  "title": "Demystifying Diffusion Policies: Action Memorization and Simple Lookup Table Alternatives",
+  "first_author": "He",
+  "year": 2025,
+  "venue": "ICLR 2026 poster (per metadata); arXiv v1 2025",
+  "tier": "core",
+  "models": ["Diffusion Policy (standard codebase of Chi et al.), single-task, wrist + third-person cameras", "toy MLP diffusion models on 2D manifolds", "ALT: ResNet-18 + pose fusion encoder trained with NT-Xent contrastive loss, nearest-neighbor lookup"],
+  "action_head": "diffusion policy",
+  "methods": ["toy capacity x data-size experiments on 2D star-shaped manifolds", "behavioral probing with in-distribution, interpolation, extrapolation and distractor inputs (including cat and dog images)", "similarity score: distance to nearest vs second-nearest training trajectory", "Action Lookup Table policy with latent-distance OOD threshold", "KD-tree pixel nearest-neighbor baseline"],
+  "question": "Do small-data diffusion policies generalize over actions, or do they effectively retrieve the nearest memorized training action sequence?",
+  "key_findings": [
+    "Toy 2D experiments: a high-capacity denoiser (~9.5M parameters) trained on 20 points reproduces the training points (lookup table), while the same model on 100k points generalizes to the manifold (Fig. 2).",
+    "On a real cup-grasping policy trained on 30 single demos (one per position, held-out central square), the policy output almost exactly matches one training trajectory in every tested case: similarity score near 1 for the nearest training trajectory and near 0 for the second (Fig. 4).",
+    "Interpolated cup positions do not produce interpolated actions; the output matches one of the neighboring training trajectories.",
+    "With OOD distractors, even images of a cat or dog, the policy still outputs a training action sequence, often collapsing to one or two 'fallback' trajectories.",
+    "ALT matches Diffusion Policy on this setup: 100% trajectory recall in-distribution and 100% real-robot task success for the gamma = 0.75 variant, KD-tree 63.3% task success (Table 1).",
+    "ALT inference ~0.009 s vs ~2.65 s for Diffusion Policy (0.34% of the time) and 45.5 MB vs 5.3 GB (0.85% of the memory); the latent-distance threshold flags OOD inputs."
+  ],
+  "evidence": {
+    "setting": "real robot (single cup-grasping task) plus toy 2D simulations",
+    "benchmarks": ["custom cup grasping with 30 demonstrations; InD, interpolation, OOD interpolation/extrapolation and 7 OOD distractor scenarios"],
+    "scale": "30 training positions; number of rollouts per test scenario not reported (results shown as per-scenario check marks)",
+    "statistics": "no",
+    "baselines": "Diffusion Policy, KD-tree pixel nearest neighbor, ALT variants with and without pose input and different thresholds"
+  },
+  "causal_validation": "No internal analysis. The 'lookup table' claim is behavioral: outputs are compared to training trajectories. The ALT policy is a constructive test (an explicit lookup table performs similarly), not an intervention on the diffusion model.",
+  "closed_loop": "Partly: real-robot task success is measured in closed-loop rollouts; the trajectory-similarity analysis compares generated action sequences to training ones.",
+  "limitations_stated": [
+    "Only small datasets; unclear whether conclusions or ALT performance hold for larger datasets.",
+    "ALT scalability depends on dataset size (memory and search grow with data), unlike a fixed-size diffusion model.",
+    "Sensitive to hyperparameters (epochs, contrastive temperature, OOD threshold)."
+  ],
+  "critique": [
+    "The setup is maximally favorable to memorization: one task, 30 demos, one demo per position, so 'no interpolation' is expected; the claim that diffusion policies in general are lookup tables is much broader than this evidence.",
+    "Similarity is measured in action space only; no analysis of the denoiser's internal representations or of which observation features drive retrieval.",
+    "No rollout counts or variance per scenario; results are check marks.",
+    "For the review: a key generative-policy result to contrast with VLA-scale models (large multi-task data, the 'large data' regime of Fig. 2d), where retrieval may no longer describe behavior; 2604.13645 examines related representation questions in sim-real co-training.",
+    "The memorization lens gives a simple, testable null model that interpretability claims about diffusion/flow action heads should beat."
+  ],
+  "code": "https://stanfordmsl.github.io/alt/ (project page)",
+  "one_line": "A small-data diffusion policy for cup grasping almost always replays one of its 30 training trajectories, even for interpolated positions or cat and dog images, and an explicit contrastive lookup table matches it at 0.34% of the inference time."
+}

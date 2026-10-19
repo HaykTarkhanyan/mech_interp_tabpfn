@@ -1,0 +1,45 @@
+{
+  "id": "2607.14280",
+  "title": "DiMaS: Distribution Matching for Steering Vision-Language-Action Models",
+  "first_author": "Khayatan",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["SmolVLA (lerobot/smolvla_libero, 256M SmolVLM backbone)", "pi0.5 (lerobot/pi05-libero, PaliGemma-3B + 300M expert)"],
+  "action_head": "flow/diffusion action expert (both models, 10 flow-matching steps)",
+  "methods": ["optimal-transport map (low-rank Sinkhorn) between low- and high-feature tails of action-expert residual representations", "nearest-neighbour projection + interpolation knob alpha", "linear-probe gate (steer only when feature absent)", "linear SVM separability by layer and flow step", "PCA visualization of linear shifts", "baselines: mean-difference, regression steering (Buurmeijer et al.) in VLM and expert, prompt injection"],
+  "question": "Can behavioral features such as speed and vertical displacement of flow-matching VLAs be controlled by intervening on hidden representations, and why does classical linear steering fail there?",
+  "key_findings": [
+    "Linear steering (mean-difference, regression in VLM or action expert) and prompt injection move speed or z-displacement inconsistently; increasing and decreasing versions often shift the feature in the same direction (Figs. 2-3).",
+    "DiMaS shifts speed in both directions on both models and z-displacement on pi0.5, with paired t-tests across episodes; speed steering largely preserves success, z-displacement steering costs success (e.g. too low to lift into basket on LIBERO-Object).",
+    "Decreasing directions (slower, lower) are more reliably significant than increasing ones; for increasing speed on pi0.5 under cross-suite transfer, p = 0.494 (Spatial) and 0.567 (Goal).",
+    "Generalization: steering learned across many tasks (Setting 2) is more consistent than per-task (Setting 1); decreasing speed stays significant on held-out tasks (Setting 3) for pi0.5, and keeps the intended sign but loses significance in cross-suite transfer to LIBERO-Goal (Setting 4).",
+    "LIBERO-10 with pi0.5: decreasing speed gives delta mean = -0.024 (p < 0.01, alpha = 0.5) with success 96% -> 90%.",
+    "Representation analysis on SmolVLA (LIBERO-Object, speed): action-expert representations are almost 100% linearly separable at later flow steps and > 93% in deeper expert layers even at step 0, versus max 87% in VLM layers; yet shifting along the separating direction does not match the two distributions in PCA ('linearly decodable but not linearly steerable').",
+    "Layer matters: on pi0.5, steering at late expert layers (L15-L17) slows the robot as intended, while early and middle layers (L3-L9) push speed the opposite way (App. Fig. A6); alpha above 0.5 trades success for stronger effect."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Object", "LIBERO-Spatial", "LIBERO-Goal", "LIBERO-10"],
+    "scale": "OT map fit on about 50 training episodes per suite (~3,500 samples per distribution); held-out initial states / tasks for evaluation; exact number of evaluation episodes per condition not clearly reported in the text read",
+    "statistics": "partial: paired t-tests across episodes for feature shifts (threshold p < 0.01), no correction for many comparisons, no CIs or tests on success-rate changes",
+    "baselines": "unsteered policy, mean-difference steering, regression steering (VLM and action expert), prompt injection ('go faster/slower')"
+  },
+  "causal_validation": "Yes: interventions on action-expert representations change executed speed and height in closed loop, and a layer sweep shows where the effect lives. The 'not linearly steerable' claim is supported by the failed linear baselines plus a qualitative PCA picture, not by a formal test.",
+  "closed_loop": "Yes, all steering results are closed-loop LIBERO rollouts.",
+  "limitations_stated": [
+    "Intervention treats all timesteps alike; deciding when to intervene is future work.",
+    "For action chunks, pairing each representation with its own action's feature is only an approximation.",
+    "Layer choice is model-dependent and not systematically studied.",
+    "OT fitting costs about 85 minutes per suite offline."
+  ],
+  "critique": [
+    "The features are defined on the policy's own predicted actions, so the method learns to map 'slow-action' representations to 'fast-action' ones; this is effective control but says little about what concept the model represents.",
+    "Results are presented mostly as figures with significance shading; success-rate effects lack tests, and the number of evaluation episodes per cell is hard to find.",
+    "The finding that early expert layers steer in the opposite direction is important for the field but is shown only for pi0.5 speed.",
+    "Simulation only, LIBERO only; no real robot. The 'linear steering fails' claim is shown for flow-matching experts and does not contradict FFN-neuron steering on discrete-token models (Haon et al. 2509.00328), which works through a different mechanism.",
+    "Asymmetry (slow/low easier than fast/high) matches the real-robot asymmetry in 2509.00328, suggesting steering can amplify default tendencies more easily than push against them."
+  ],
+  "code": "https://github.com/pegah-kh/dimas",
+  "one_line": "On flow-matching VLAs (SmolVLA, pi0.5), additive steering vectors fail to control speed or height reliably, while an optimal-transport map between low- and high-feature activation distributions in late action-expert layers does, mostly in the slow/low direction."
+}

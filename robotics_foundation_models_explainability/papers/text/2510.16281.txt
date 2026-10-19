@@ -1,0 +1,1670 @@
+Do What You Say: Steering Vision-Language-Action Models via Runtime Reasoning-Action Alignment Verification
+
+arXiv:2510.16281v2 [cs.RO] 14 Jan 2026
+
+Yilin Wu2‚àó, Anqi Li1, Tucker Hermans1,3, Fabio Ramos1,4, Andrea Bajcsy2¬ß, Claudia Pe¬¥rez-D‚ÄôArpino1¬ß
+
+Plans: 1. Pick the alphabet soup
+
+2. Place it in the basket
+
+‚ÑìÌ†µÌ†µÌ±°Ì±ü
+
+3. Pick the butter 4. Place it in the basket
+
+What I have done: Nothing
+
+‚àÜÌ†µÌ±ùÌ†µÌ±úÌ†µÌ±†Ì†µÌ±í ‚Ä¶ ‚àÜÌ†µÌ±ùÌ†µÌ±úÌ†µÌ±†Ì†µÌ±í
+
+Sample Action Sequences in a Batch
+
+Now I need to do: Pick the alphabet soup
+
+‚àÜÌ†µÌ±îÌ†µÌ±üÌ†µÌ±ñÌ†µÌ±ù
+
+‚àÜÌ†µÌ±îÌ†µÌ±üÌ†µÌ±ñÌ†µÌ±ù
+
+Text De-Tokenizer <think>
+
+Action Head <act>
+
+Ì†µÌ≤Ç1Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª1
+
+<think>
+
+‚Ä¶
+
+Ì†µÌ≤Ç2Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª2 Ì†µÌ≤ÇÌ†µ3Ì±°:Ì†µÌ±°+Ì†µÌ∞ª3
+
+‚Ä¶
+
+Reasoning Vision Language Action Model
+
+parallel
+
+Ì†µÌ≤ê1Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª1 Ì†µÌ≤ê3Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª3
+
+‚Ä¶. Pick the alphabet soup
+
+grasps the cream cheese
+
+VLMVerifier
+
+grasp the soup
+
+Tokenizer
+
+Sim
+‚Ä¶
+
+Ì†µÌ≤Ç1Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª1 finished then Ì†µÌ≤ÇÌ†µ3Ì±°:Ì†µÌ±°+Ì†µÌ∞ª3
+
+Runtime Reasoning-Action Alignment
+
+Sim finished
+
+Put both the alphabet soup and the butter in the basket
+
+States Ì†µÌ±ùÌ†µÌ±°
+
+Images ŒôÌ†µÌ±°
+
+Environment
+
+Select action sample Ì†µÌ≤Ç3Ì†µÌ±°:Ì†µÌ±°+Ì†µÌ∞ª
+
+Fig. 1: Method Overview. Reasoning Vision Language Action (VLA) models interleave textual planning and action generation. After generating a text plan which describes intermediate goals, we sample a batch of action sequences, forward simulate their outcomes until the model switches to think again. We then use a Vision Language model (VLM) verifier to score alignment between the action‚Äôs outcomes and the text plan. This improves the embodied CoT faithfulness at runtime by executing only action samples that achieve the outcome of the text plan.
+
+Abstract‚Äî Reasoning Vision Language Action (VLA) models improve robotic instruction-following by generating step-bystep textual plans before low-level actions, an approach inspired by Chain-of-Thought (CoT) reasoning in language models. Yet even with a correct textual plan, the generated actions can still miss the intended outcomes in the plan, especially in out-ofdistribution (OOD) scenarios. We formalize this phenomenon as a lack of embodied CoT faithfulness, and introduce a trainingfree, runtime policy steering method for reasoning-action alignment. Given a reasoning VLA‚Äôs intermediate textual plan, our framework samples multiple candidate action sequences from the same model, predicts their outcomes via simulation, and uses a pre-trained Vision-Language Model (VLM) to select the sequence whose outcome best aligns with the VLA‚Äôs own textual plan. Only executing action sequences that align with the textual reasoning turns our base VLA‚Äôs natural action diversity from a source of error into a strength, boosting robustness to semantic and visual OOD perturbations and enabling novel behavior composition without costly re-training. We also contribute a reasoning-annotated extension of LIBERO-100, environment variations tailored for OOD evaluation, and demonstrate up to 15% performance gain over prior work on behavior composition tasks and scales with compute and data diversity. Project Website at: https://yilin-wu98.github.io/steering-reasoning-vla/
+I. INTRODUCTION
+Vision Language Action (VLA) models [1][2], which combine pre-trained vision-language backbones with actiongeneration heads fine-tuned on robot data [3], promise significant advances in generalizable robotic control. However, in practice, these models are not yet true generalists: their
+1 NVIDIA. 2 Carnegie Mellon University. 3 University of Utah. 4 University of Sydney. ¬ß Equal advising. ‚àó Work done during an internship at NVIDIA.
+
+performance often degrades in novel scenes and over long horizons, and their ability to follow complex language instructions can be brittle [4][5][6].
+To tackle these challenges and better exploit the visionlanguage backbone of the VLA, a growing body of work has introduced ‚Äúreasoning VLAs‚Äù [7][8]. This approach is inspired by the success of Chain-of-Thought (CoT) in large language models (LLMs): by producing intermediate step-by-step textual reasoning before generating a textual response, LLMs can significantly increase the complexity and reliability of language generation [9]. Similarly, reasoning VLA‚Äôs implement a form of ‚Äúembodied CoT‚Äù [7]: instead of generating actions directly, the model first generates intermediate textual reasoning, often grounded by visual observations, before producing reasoning-conditioned actions. For example, given the task description of ‚ÄúPut both the alphabet soup and the butter in the basket‚Äù in Fig. 1, the model generates the textual reasoning ‚ÄúFirst I pick up the soup, then place it in the basket..., Now I need to pick up the soup‚Äù and then generates a low-level action sequence (e.g., a sequence of relative end-effector poses).
+However, even with the perfect textual reasoning, the VLA-sampled action sequence may lead to different outcomes than the generated plan (e.g., grasping the cream cheese instead of the soup, as shown in Fig. 1). This misalignment‚Äîwhere the outcomes of the generated actions fail to match the textual plan‚Äîis particularly prevalent in out-of-distribution (OOD) scenarios (novel instructions, objects, backgrounds, etc.), where enforcing alignment shows up to a 20% performance gain in Sec. V-C. This also
+
+mirrors observations from prior work on training reasoning VLAs [10], where the reasoning capabilities of the models are stronger than language-conditioned action generation capabilities. Analogous to Chain-of-Thought (CoT) faithfulness in LLMs, which questions whether a model‚Äôs generated reasoning accurately reflects the process used to derive an output [11], we formalize this reasoning-action misalignment as a robotics version of lack of embodied CoT faithfulness: the expectation that outcomes described by a VLA‚Äôs textual reasoning will be reliably realized by its subsequent low-level actions.
+To address this gap, we introduce a runtime reasoningaction alignment method. This approach enforces embodied CoT faithfulness by actively steering a reasoning VLA‚Äôs actions to match its own textual reasoning during execution. Specifically, right before the reasoning is updated, we autoregressively generate multiple action sequences from the base model, conditioned on the current textual plan and the observation from the preceding step (center, Fig. 1). We predict the outcomes of action samples via parallel simulation, and leverage an off-the-shelf Vision Language Model (VLM) verifier to score the alignment between the outcome and the preceding text plan. Only the action sequence that induces the correct outcome is executed on the robot.
+Our contributions are summarized as follows:
+‚Ä¢ Runtime Policy Steering for Reasoning-Action Alignment: we propose a new runtime framework for ensuring that a VLA‚Äôs generated actions induce the outcomes described by its own textual reasoning. Even in indistribution (ID) scenarios, we find that reasoning-action alignment improves task success by 8% and preserves long-horizon semantic coherence without needing any additional fine-tuning data. More benefits are shown in OOD scenarios below.
+‚Ä¢ Extensive Generalization Experiments and Scaling Analysis: Through a controlled series of experiments on OOD shifts and behavior composition tasks in our extended version of LIBERO benchmark [12], we find that our method outperforms relevant baselines by up to 15%. This performance gap widens as the fine-tuning dataset grows, since a stronger policy generates a better set of candidate actions for our verifier to select from.
+‚Ä¢ A Reasoning-Annotated VLA Dataset and an Extended Benchmark for Generalization Tests: We contribute an open-sourced reasoning-annotated LIBERO100 dataset for reasoning VLA training. We also contribute an extension of the LIBERO benchmark with new task descriptions, visual variations, and new behavior compositions. We use these for our evaluations but also plan to release it for the community to continue to study generalization capabilities of reasoning VLAs.
+II. RELATED WORK
+Vision Language Action Models & Reasoning. Large robotics datasets [3] have enabled the creation of generalist Vision Language Action (VLA) models [1][2]. Despite their
+
+success, these VLA models often struggle with long-horizon tasks and out-of-distribution (OOD) generalization due to compounding errors and a limited ability to follow complex or abstract language instructions. To improve robustness, many approaches augment VLAs with Chain-of-Thought reasoning, either through hierarchical planner-controller dual systems [5] or an unified model that interleave intermediate reasoning and action generation [7][8][13][14]. We build on the unified approach but identify a critical failure mode: a reasoning-action mismatch, where motor actions do not faithfully execute the model‚Äôs self-generated textual plan.
+Runtime Optimization and Steering of Large Models. Runtime optimization improves model‚Äôs performance without costly retraining. In robotics, runtime steering has improved the alignment between human intent and robot actions in diffusion policies [15], and in VLA policies by sampling multiple action chunks and verifying them against learned critic. These critics are typically either offline Qfunctions [16] (which can struggle in novel scenarios), or specially fine-tuned VLMs from synthetic preference labels which may not correlate with true task success [6]. Critically, these methods verify actions in isolation and do not address the reasoning-action faithfulness gap‚Äîthe challenge of ensuring that a sequence of low-level actions are semantically coherent with a model‚Äôs self-generated textual plan. Inspired by faithfulness verification research in LLMs [11], our work explores a new direction: using runtime steering to explicitly enforce the alignment between a VLA‚Äôs high-level reasoning and its low-level motor control.
+OOD Robustness & Generalization. A central motivation for improving reasoning-action alignment is to enhance out-of-distribution (OOD) robustness and generalization. To systematically evaluate such scenarios, the community has developed challenging benchmarks and OOD-related taxonomies [4][12]. However, existing OOD studies often focus on robustness to visual or semantic shifts (e.g., novel instructions, objects and backgrounds), with less attention paid to compositional generalization: the ability to recombine learned skills to solve new tasks. We adopt the LIBERO benchmark [12] for its focus on long-horizon, compositional tasks. However, as it lacks the clear separation of different OOD factors, we extend it to systematically study OOD robustness and generalization. Furthermore, while recent work has studied OOD failure detection [17] and mitigation via observation interventions [18], our method focuses on improving compositional generalization via runtime verification, enabling the policy to solve unseen tasks by executing actions that achieve its own plan.
+III. PROBLEM FORMULATION
+We contextualize our problem setting by first contrasting ‚Äúvanilla‚Äù VLAs with reasoning VLAs. We then formally define the embodied CoT faithfulness gap between a reasoning VLA‚Äôs plans and the outcome of its actions that we address in Sec. IV.
+
+Setup and Notation. We consider general robotic manipulation settings. Let ‚Ñìg denote the high-level natural language
+instruction for a task (e.g., clean the table). At each real
+timestep t, the robot‚Äôs observation is ot = (It, pt), where It is the visual observation including, e.g., wrist and agentview RGB images, and pt ‚àà Rd is the proprioceptive state of the robot. The robot‚Äôs policy maps the current observation ot and language instruction ‚Ñìg to action at.
+
+Vanilla VLA Formulation. Traditional vision-language-
+action (VLA) models [2] learn policies end-to-end via a demonstration dataset of N trajectories, D = {(œÑ, ‚Ñìg)i}Ni=1, where each trajectory œÑ consists of T observation-action pairs, œÑ = {(ot, at)}Tt=1. The VLA policy œÄŒ∏vla maps the observation and instruction (ot, ‚Ñìg) to a distribution over actions at. The training objective is to maximize the log-
+likelihood of the policy under the expert data distribution:
+
+Lvla(Œ∏; D) =
+
+‚àí log œÄŒ∏vla(at | ot, ‚Ñìg). (1)
+
+(ot,at,‚Ñìg )‚ààD
+During inference, at any timestep t, the policy samples an
+
+action to execute given the current observation and language instruction: aÀÜt ‚àº œÄŒ∏vla(¬∑ | ot, ‚Ñìg). However, vanilla VLA models often degrade on long-horizon tasks [5], as errors
+
+compound over extended trajectories and complex language
+
+instructions are difficult to decompose and ground in actions.
+
+Reasoning VLA Formulation. To mitigate the challenges
+of long-horizon planning, reasoning VLAs [7][8][13] factor
+the problem by adding the generation of Chain-of-Thought
+(CoT) in the form of intermediate reasoning. To learn this
+‚Äúembodied‚Äù version of CoT, reasoning VLAs are trained
+on a reasoning-annotated demonstration dataset with finegrained textual plans. Let this dataset be denoted by Dreason = {(œÑ reason, ‚Ñìg)i}iN=1, where each trajectory œÑireason is divided into Li segments: œÑireason = {(oj , aj , ‚Ñìrj )}Lj=i 1.Here, ‚Ñìrj is the text plan for the j-th segment, with corresponding observation and action sequences oj = otj:tj+Hj and aj = atj:tj+Hj of varied lengths. For notational simplicity, we drop the subscript j from the start time t and use oj = ot:t+H and aj = at:t+H hereafter.
+Given the reasoning dataset Dreason, a reasoning VLA œÄŒ∏r-VLA is trained via supervised fine-tuning (SFT) to generate both (i) a textual plan as intermediate reasoning and (ii)
+the subsequent plan-conditioned action sequence [8][13]. Specifically, œÄŒ∏r-VLA takes as input the tokenized observations, language instruction and intermediate text plans, and gener-
+ates tokens that are decoded either as text or actions. The
+training objective is a weighted sum of the text loss and
+action loss:
+
+Lr-vla(Œ∏; Dreason) = Œªreason Lreason + Œªact Lact
+
+(ot:t+H ,at:t+H ,‚Ñìjr ,‚Ñìjr‚àí1,‚Ñìg )‚ààDreason
+
+Lreason = ‚àí log œÄŒ∏r-vla(‚Ñìjr | ot, ‚Ñìjr‚àí1, ‚Ñìg)
+
+(2)
+
+t+H
+
+Lact = ‚àí
+
+log œÄŒ∏r-vla(at‚Ä≤ | ot‚Ä≤ , ‚Ñìrj , ‚Ñìg)
+
+t‚Ä≤ =t
+
+where 0 < Œªreason < 1 and 0 < Œªact < 1 and Œªreason+Œªact = 1.
+
+During inference, at real timestep t, given the text plan ‚ÑìÀÜlrast from last reasoning step, the policy can either update the current textual plan (e.g, ‚Äúpick up the soup can‚Äù) via ‚ÑìÀÜr ‚àº œÄŒ∏r-vla(¬∑ | ot, ‚ÑìÀÜrlast, ‚Ñìg) or generate the action conditioned on the last textual reasoning: aÀÜt ‚àº œÄŒ∏r-vla(¬∑ | ot, ‚ÑìÀÜrlast, ‚Ñìg). This decomposition aims to leverage the strong reasoning and language understanding capabilities of the pre-trained VLM backbone. In Sec. IV-A, we discuss the specific reasoning VLA [8] we build our method on.
+Embodied Chain-of-Thought (CoT) Faithfulness Gap. In factorized formulations of reasoning VLAs, textual reasoning and action generation are optimized together. Prior work [10] has shown that while the pre-trained VLM backbone of a VLA can be efficiently finetuned for textual planning with sparse data, the same is not necessarily true for lowlevel control. Our experiments confirm that acquiring robust control policies conditioned on the text plan is a far more challenging problem: for example, the text generation is largely reliable (100% accuracy for in-distribution tasks trained with LIBERO-10-R dataset in Sec. V-B), while most task failures stem from the action generation module failing to execute that plan.
+Given that the textual plan is often correct or can be easily corrected by an external agent [7], the critical bottleneck is the policy‚Äôs ability to reliably follow its own reasoning. We define this core challenge as the Embodied Chain-of-Thought Faithfulness Gap: the misalignment between a generated textual plan and the physical outcome of the associated lowlevel actions.
+Goal. In this work, our goal is to minimize this gap at each timestep t, which can be formalized as minimizing the misalignment loss for candidate action sequence aÀÜt:t+H sampled from œÄŒ∏r-vla:
+Lalign(Œ∏; ot, ‚ÑìÀÜr, ‚Ñìg) = ‚àíEP,œÄŒ∏r-vla Ralign(ot:t+H , ‚ÑìÀÜr) , (3)
+where the expectation is taken over the stochastic outcomes of the environment‚Äôs true dynamics P and the reasoning VLA model, i.e., ot‚Ä≤+1 ‚àº P(¬∑|ot‚Ä≤ , aÀÜt‚Ä≤ ), aÀÜt‚Ä≤ ‚àº œÄŒ∏r-vla(¬∑|ot‚Ä≤ , ‚ÑìÀÜr, ‚Ñìg), for all t‚Ä≤ ‚àà [t, t + H] and Here, Ralign(ot:t+H , ‚ÑìÀÜr) is a reward function that measures whether the future observation ot:t+H satisfies the subgoal described by the textual plan ‚ÑìÀÜr.
+Crucially, this alignment objective is distinct from the standard behavior cloning loss (e.g., Eq. 2) used to train the reasoning VLA. Since the model is not explicitly optimized to maximize this alignment, the actions it generates can be imprecise at best or pursue an entirely different subgoal than the one articulated in the textual plan at worst.
+IV. APPROACH: STEERING FOR EMBODIED REASONING-ACTION ALIGNMENT (SEAL)
+Our key idea is to enforce Embodied CoT Faithfulness at runtime, thereby ensuring that actions produced by a reasoning VLA model semantically realize the model‚Äôs own intermediate textual plans. To achieve this, we first train a
+
+reasoning VLA model from prior open-source work [8] and then propose a runtime policy steering procedure to select the actions that maximize reasoning-action alignment. We call our overall steering approach SEAL: Steering for Embodied reasoning-action ALignment.
+A. Training a Reasoning VLA Model
+Throughout our experiments, we train reasoning VLAs in a controlled way to study the capabilities conditioned on a specific fine-tuning dataset. To enable this controlled finetuning, we first propose a pipeline to automatically annotate any given demonstration dataset with intermediate textual reasoning. Using this annotated dataset, we then fine-tune the œÄ0 base model [2], following the training recipe from [8], resulting in a VLA capable of interleaving text reasoning with action generation.
+Reasoning Data Annotation Pipeline. Most robot demonstration datasets contain only a single high-level language text instruction ‚Ñìg per episode. To obtain intermediate reasoning labels, we introduce an automated annotation pipeline that decomposes long-horizon demonstrations into intermediate text plans. As shown in Fig. 1, we modify the reasoning format from prior work [8] and define an intermediate reasoning step ‚Ñìr to abide by the following format:
+‚Ä¢ Plans: <all text plans in the task> ‚Ä¢ What has been done: <completed plans> ‚Ä¢ Now I need to do: <the next text plan to execute>
+To avoid the expensive manual annotation of sub-task boundaries required by prior work [8], we use Gemini [19] to automatically generate annotations given the input of demonstration videos and their high-level task instructions (‚Ñìg). In a single pass, Gemini jointly generates a one-sentence textual plan (‚ÑìÀÜjr) and its corresponding end-timestep tj‚Ä≤ for each sub-task. Since one sub-task‚Äôs end marks the next one‚Äôs start, this process directly yields a sequence of annotations: (‚ÑìÀÜ1r, 1), (‚ÑìÀÜ2r, t1‚Ä≤ ), . . . , (‚ÑìÀÜLr , tL‚Ä≤ ‚àí1). The number of sub-tasks L varies per episode based on Gemini‚Äôs decomposition, and we manually verify all generated annotations for quality (details in Appendix A.1 on our website).
+Reasoning VLA Training. While our proposed runtime steering method is model-agnostic, we instantiate our system using a reasoning VLA based on recent work [8]. This architecture features an adaptive switching capability between text and action generation. The core of this mechanism lies in two special tokens, <think> and <act>, which function as switching signals. When the model generates <think>, subsequent tokens are decoded as textual reasoning until an end-of-sentence token is reached. When the model generates <act>, the following tokens are passed to an action head, which produces a continuous action sequence through a diffusion process in Fig. 1. This adaptive switching allows the VLA model to generate variable-length action sequences tailored to the complexity of the its own textual plan, effectively segmenting tasks into a series of text-plan-conditioned action sequences.
+
+For training, we follow the recipe from [8], fine-tuning the pre-trained œÄ0 VLA on our reasoning-annotated dataset. The training data is formatted by prepending the <think> token to each textual reasoning label ‚Ñìr and prepending the <act> token to its corresponding action sequence. The model is then fine-tuned end-to-end with the combined loss function in Eq. 2, which uses a cross-entropy loss for text generation and a flow-matching loss for action generation.
+
+B. Runtime Policy Steering via Semantic Verification
+As formalized in Sec. III, ensuring that the action sequence will cause outcomes that match with the text plan requires solving the alignment objective in Eq. 3. This presents two fundamental challenges.
+‚Ä¢ Direct Optimization: The loss Lalign is hard to optimize directly via backpropagation due to the nondifferentiable dynamics P and action sampling from œÄŒ∏r-vla.
+‚Ä¢ Reward Modeling: The true alignment reward Ralign is hard to model analytically or via heuristics, as it requires complex and contextual semantic judgment.
+To overcome these obstacles, we introduce a novel runtime policy steering method that provides a tractable, approximation of the reasoning-action alignment problem. Our approach circumvents the direct optimization challenge using a best-of-N sampling strategy, an effective technique in LLMs [20]. We address the challenge of reward modeling by using the strong commonsense and physical reasoning capabilities of pre-trained VLMs as our open-world verifier [17][21][22]. Our framework is a three-stage process, which we detail next.
+
+Runtime Policy Steering: Hypothesize, Predict, and Ver-
+ify. Our runtime steering approach unfolds in a three-stage process at each reasoning step, after a new textual plan ‚ÑìÀÜtr is generated.
+
+1. Hypothesize. In this stage, the policy generates multiple plausible sequences of actions. We sample a set of K candidate action sequences in parallel from the policy œÄŒ∏r-vla, conditioned on (ot, ‚ÑìÀÜr, ‚Ñìg). The generation of each sequence is autoregressive, meaning that each action is sampled one step at a time. The process terminates when the model outputs a <think> token, resulting in variable-length action sequences (shown in center, Fig. 1). This process yields a set of hypotheses:
+
+At = {ÀÜa(tk) ‚àº œÄŒ∏r-vla(¬∑ | ot, ‚ÑìÀÜr, ‚Ñìg)}Kk=1
+
+(4)
+
+where each ÀÜa(tk) = a(t:kt)+Hk has a different horizon Hk1.
+
+2. Predict. The Predict and Hypothesize stages are tightly coupled in an interleaved loop. This is necessary because the policy is autoregressive: generating the action aÀÜt‚Ä≤ requires the predicted observation oÀÜt‚Ä≤ . We use a dynamics model, PÀÜ, that approximates the ground-truth dynamics P to generate the
+
+1The sequence ÀÜat(k) is generated autoregressively from the model, rather than in a single forward pass.
+
+observation sequence oÀÜt(k) given ÀÜa(tk). In simulation, we use parallel environment instances for high-fidelity predictions [12]; in the real world, a learned world model [23] or digital twin [24] would serve this role. This Hypothesize-Predict loop continues until the next think token is generated.
+3. Verify. In the final stage, we select the most aligned action sequence by leveraging a pre-trained VLM (e.g., GPT-4o) as a proxy Rœà for the ground-truth alignment reward, Ralign. The VLM verifier assigns a score to each candidate sequence by evaluating its predicted outcome against the textual plan.
+The action sequence that receives the highest alignment score from the VLM is chosen for execution. The VLM is prompted to return a binary score Rœà ‚àà {0, 1} indicating whether the predicted outcome successfully fulfills the plan. For a practical speedup, we only input the initial image of the episode I1, the predicted final image from the candidate sequence IÀÜt(+k)Hk , and the textual plan (‚ÑìÀÜr) to the VLM. More details are in Appendix A.3 on our website.
+Runtime Considerations. Our framework is optimized for low latency using parallel and asynchronous execution. The K action sequences are generated in parallel via a tightly coupled Hypothesize-Predict loop. Crucially, the Verify stage runs asynchronously, immediately evaluating each candidate as it completes generation. Since the sequences have variable lengths and finish at different times, this enables an earlyexit strategy: we execute the first sequence that the VLM successfully verifies, rather than waiting to evaluate all K candidates. This significantly reduces decision-making latency (see Appendix A.4 on our website).
+V. EXPERIMENTS
+We conduct a series of experiments in a simulation benchmark V-A to carefully study: (1) the benefit of enforcing reasoning-action alignment at runtime (Sec. V-B), (2) robustness to out-of-distribution (OOD) shifts and generalization to new behavior compositions (Sec. V-C), and (3) performance and runtime scaling as a function of the number of samples to be verified (Sec. V-D). Videos can be found on our website.
+A. Benchmark & Implementation Details
+Training Dataset. We use the LIBERO benchmark [12] due to its diverse, long-horizon manipulation tasks. To investigate how performance scales with the size and diversity of the VLA fine-tuning data, we use three datasets of increasing scale. Each dataset is processed with the reasoning annotation pipeline described in Section IV-A. Libero-10-R: Our smallest reasoning dataset, consisting of demonstration data for the LIBERO-10 evaluation tasks. Libero-100-Basket-R: A medium-sized dataset we create to test skill composition, supplementing Libero-10 with a curated subset of tasks from Libero-90 that involve ‚Äúpick and place into basket‚Äù skills. Libero-100-R: Our largest dataset, generated from annotating all demonstrations from the full LIBERO-100 suite.
+Evaluation. We evaluated our method in three suites of tasks, each of which involved running 50 trials. (1) InDistribution (ID) Performance (Sec. V-B) uses the test set
+
+from the LIBERO-10 benchmark which has 10 long-horizon manipulation tasks. (2) Robustness to OOD Shifts (Sec. VC) varies the visual and language instruction based on the taxonomy proposed by [4]. We construct four OOD variants of the LIBERO-10 suite, each of which contains 10 tasks from the base suite. Among them, two variants are modified with semantic OOD changes where instructions are rephrased but the object descriptions are the same (LIBERO-10-LangRephrase), or object descriptions are changed using alternate properties (LIBERO-10-Lang-Object-Property). We also have visual OOD changes, where objects are added or non-target objects are replaced (LIBERO-10-Visual-Scene), or the background and camera viewpoints are changed (LIBERO-10-Visual-Viewpoint).
+Finally, (3) Generalization to Behavior Composition (Sec. V-B) is tested in a suite of new long-horizon tasks that recombine learned skills, while sharing the same initial states as the original training demonstrations. For example, a model trained on tasks like ‚Äúput A and B in the basket‚Äù and ‚Äúput C in the basket‚Äù is then evaluated on the unseen instruction ‚Äúput A and C in the basket.‚Äù LIBERO-10-Compose has two new compositional basket-related pick-and-place tasks, LIBERO100-Basket-Compose has nine novel compositional basketrelated tasks, and LIBERO-100-Compose has thirteen novel compositional tasks across a wider range of objects and tasks. The full list of these tasks and their videos are on our website.
+Baselines. We compare our approach, SEAL, to three baselines all based on the same œÄ0 [2] architecture. œÄ0 is a vanilla VLA [2] that directly maps visual-language inputs to actions without any intermediate textual reasoning. œÄ0-reason is the base reasoning VLA model [8] trained with our reasoningannotated data without runtime verification and steering. It is a direct ablation of our primary contribution. œÄ0-V-GPS [16] is a state-of-the-art runtime steering method2. It trains a critic Q-function using offline reinforcement learning [25] and, at runtime, executes the action chunk with the highest Q-value from a set of policy samples. In contrast, SEAL verifies an entire action sequence against a textual plan using a pretrained VLM as the critic. For œÄ0-V-GPS and SEAL, we use K = 10 candidate samples per reasoning step unless otherwise specified. We choose the temperature of 1 for œÄ0V-GPS as it has the best average performance.
+Training. Our baseline reasoning VLA model, œÄ0-reason, is created by fully fine-tuning the œÄ0 [2] backbone on our reasoning-annotated dataset with Œªreason = 0.5, Œªact = 0.5 as loss coefficients. Training œÄ0-reason takes approximately 20 hours on 8 A100 GPUs, whereas finetuning œÄ0 takes about 6 hours. More details are in Appendix. A.2
+B. On The Value of Verifying Reasoning-Action Alignment
+We first study the value of verifying reasoning-action alignment by comparing SEAL against the three baselines from above on both in-distribution tasks and the challenge of novel behavior composition tasks.
+2Another recent runtime steering method is [6], but its pre-trained action verifier for LIBERO has not been released, precluding a fair comparison.
+
+Success Rate (%) Number of episodes (log scale)
+Number of tasks
+
+Benchmarking ID & Behavior Composition Performance on Different Training Datasets
+
+œÄ0
+
+œÄ0-V-GPS
+
+œÄ0-reason
+
+SEAL (ours)
+
+85 90 92 96
+
+Behavior Composition
+
+85 89 86 94
+
+Behavior Composition
+
+97 85 87 89
+
+Behavior Composition
+
+dataset size
+
+dataset diversity
+
+82 4338
+
+14 16 18 17 ID (LIBERO-10) LIBERO-10-Compose LIBERO-10 Training Dataset
+
+23 26 11 13
+ID (LIBERO-10) LIBERO-100-Basket -Compose
+LIBERO-100-Basket Training Dataset
+
+53 38
+16 16 ID (LIBERO-10) LIBERO-100-Compose LIBERO-100 Training Dataset
+
+379
+10 LIBERO-10
+
+761 16
+LIBERO-100-Basket Training Dataset
+
+LIBERO-100
+
+(a) In-distribution & Compositional Generalization Success Rates. Each model is evaluated by averaging the performance of all tasks in its corresponding suite in Sec V-A, with 50 trials per task.
+
+(b) Dataset Statistics. Comparison of diversity (number of tasks) and sizes (number of episodes) of our three datasets.
+
+Fig. 2: Dataset Scaling Results. Our method, SEAL, consistently outperforms all baselines by enforcing reasoning-action alignment with increased performance as the training data scales, especially on challenging behavior composition tasks.
+
+In-Distribution Task
+
+Behavior Composition Task
+
+V-GPS Verifier
+Identify Success
+Put the white mug on the plate and put the chocolate pudding to the right of the plate
+
+VGPS Verifier
+Miss Failure!
+Put the red mug on the plate and put the chocolate pudding to the right of the plate
+
+Overestimated Q value! fails to identify the wrong white mug!
+
+Our VLM Verifier
+Identify Success
+
+Textual Plan: Pick up the white the mug
+The target object is the white mug. In both views, the mug is being held by gripper.
+
+Put the white mug on the plate and put the chocolate pudding to the right of the plate
+
+Textual Plan: Place the white mug on the plate
+The target object is the white mug. The mug is visible on the plate with upright pose
+
+Textual Plan: Pick up the chocolate pudding
+The target object is brown rectangular box and it seems to be held securely by the gripper
+
+Textual Plan: Place it to the right of the plate
+The target object is brown rectangular box. The chocolate is being held and placed near the right.
+
+Our VLM Verifier
+Identify Success
+
+Textual Plan: Pick up the red the mug
+The target object is the red mug. In both views, the mug is being held by gripper.
+
+Put the red mug on the plate and put the chocolate pudding to the right of the plate
+
+Textual Plan: Place the red mug on the plate
+The target object is the red mug. The mug is visible on the plate with upright pose
+
+Textual Plan: Pick up the chocolate pudding
+The target object is brown rectangular box and it seems to be held securely by the gripper
+
+Textual Plan: Place it to the right of the plate
+The target object is brown rectangular box. The chocolate is being held and placed near the right.
+
+Fig. 3: Comparison Between Verification Methods. (left) For ID tasks, both the Q-value based verifier in œÄ0-V-GPS and our VLM verifier can accurately predict task progress. (right) For behavior composition tasks requiring stronger generalization capabilities, the Q-value overestimates task progress, failing to provide useful signal to guide œÄ0. However, our VLM verifier preserves the commonsense reasoning and correctly guides the base œÄ0-reason policy towards the task goal.
+
+Results: In-Distribution (ID) Tasks. On ID tasks from LIBERO-10, Fig. 2a (left panel for each dataset), our method SEAL achieves the highest success rates of 94-97%, and both the base reasoning VLA œÄ0-reason and œÄ0-V-GPS outperform the no-reasoning œÄ0 policy.
+Since these task instructions match the training distribution of œÄ0-V-GPS, this method can provide reliable guidance, with the steady increase in Q-values shown in Fig. 3 (left). The place where SEAL shines is addressing the inherent limitations of chunk-based steering. Since the Q-function evaluates short fixed-length action chunks, it can oscillate between choices between timesteps. In contrast, our method verifies at the plan-level‚Äîwhere the variable-length action sequences correspond to the model‚Äôs textual plan‚Äîfiltering out executions that are imprecise or correspond to the wrong subgoal, thus achieving a higher success rate.
+
+(MUSE encoder [26]) fails to generalize to novel instructions and gives misleading value signals, shown in Fig. 3 (right).
+In contrast, the reasoning in œÄ0-reason exhibits stronger generalization. We hypothesize this is due to the strong VLM backbone that can generate correct plans that decompose novel long-horizon problems into familiar subtasks. However, its performance is ultimately capped by a new challenge: as the training data and skill diversity grow, the policy‚Äôs action generation becomes more varied, increasing the likelihood of misalignment with its own correct plan.
+Our method, SEAL, is designed specifically to resolve this tension. By verifying and selecting the action sequence that faithfully executes the generated plan, it leverages this action diversity as a strength rather than a source of errors. Overall, SEAL exhibits a positive scaling trend, especially on large and diverse training datasets like LIBERO-100-R.
+
+Results: Novel Behavior Composition. To test the ability to reuse learned low-level behaviors for novel instructions, we evaluate on behavior composition tasks from Sec. V-A.
+In Fig. 2a (right panel for each dataset), we see that as the VLA training dataset grows, the reasoning-enabled models (œÄ0-reason base and SEAL verified) show substantial performance gains while œÄ0 and œÄ0-V-GPS stagnate at a low success rate (‚àº15%). We hypothesize that this is because the weak language understanding of œÄ0-V-GPS
+
+C. On the Value of Verification for Robustness to OOD shifts
+We further evaluate the OOD robustness of each method on four challenging distribution shifts, from Sec. V-A: two semantic shifts (Lang-Rephrase, Lang-Object-Property) and two visual shifts (Visual-Scene, Visual-Viewpoint).
+Results: Semantic OOD Robustness. We find that reasoning-based models are most robust (Fig. 4), while nonreasoning baselines like œÄ0 and œÄ0-V-GPS prove brittle.
+
+For instance, the base œÄ0 policy‚Äôs performance drops by 12% on rephrased instructions alone, while œÄ0-V-GPS‚Äôs success rate falls as low as 71%. In contrast, generating intermediate textual plans makes œÄ0-reason highly robust to paraphrasing. However, we found that spurious word-object correlations can still lead to action errors for œÄ0-reason. Our method, SEAL, inherits this linguistic robustness but further improves upon it by using the verification stage to filter out the resulting action errors, consistently maintaining a success rate above 91%.
+Results: Visual OOD Robustness. We find that replacing distractor objects (Visual-Scene) minimally influences most methods, but causes a notable performance drop (4%) for œÄ0-V-GPS. We hypothesize that its Q-function has overfit to the specific visual context of the training demonstrations.
+In contrast, changing the viewpoint and background (Visual-Viewpoint) is the most challenging test, causing performance to drop significantly across all methods. We hypothesize that this is influenced by the lack of viewpoint and background diversity in the training data for the same task. However, here we see the most pronounced benefit of our method: by filtering out noisy actions caused by the severe visual shift, SEAL maintains a 45% success rate, outperforming the next-best baseline by over 17%.
+Summary. Across four stress-tests, SEAL is consistently the most robust method, maintaining a strong quantitative and qualitative performance improvement (shown in Fig. 5). Our results also suggest that current VLA models are far more vulnerable to major visual shifts (like viewpoint and background changes) than to semantic or minor scene changes.
+
+In-Distribution t=0
+Put the white mug on the plate and put the chocolate bar to the right of the plate
+Semantic-OOD (Lang-Rephrase) t=0
+Set the white mug on the plate with chocolate pudding to be placed to the right
+Semantic-OOD (Lang-Object-Property) Put the pure white mug on t=0 the middle plate and put the brown chocolate to the right of the plate
+Visual-OOD (Visual-Scene) t=0
+Put the white mug on the plate and put the chocolate bar to the right of the plate
+Visual-OOD (Visual-Viewpoint) t=0
+Put the white mug on the plate and put the chocolate bar to the right of the plate
+Behavior Composition t=0
+Put the red mug on the plate and put the chocolate bar to the right of the plate
+
+Ours
+
+t=223
+
+t=0
+
+Ours
+
+t=211
+
+t=0
+
+t=212
+
+t=0
+
+Ours
+
+t=244
+
+t=0
+
+t=267
+
+t=0
+
+Ours
+
+t=251
+
+t=0
+
+Ì†µÌΩÖÌ†µÌøé-reason
+t=520
+Ì†µÌΩÖÌ†µÌøé-reason
+t=520
+t=520
+Ì†µÌΩÖÌ†µÌøé-reason
+t=520
+t=520
+Ì†µÌΩÖÌ†µÌøé-reason
+t=520
+
+Fig. 5: OOD Shifts & Behavior Composition Examples. We visualize SEAL and œÄ0-reason. We mark a successful rollout with a green box and a failure with red. SEAL (on the left) can reliably generate successful rollouts to complete the tasks. œÄ0-reason policy (on the right) fails due to imprecision or by completing a totally different textual plan.
+
+However, the performance gains exhibit diminishing returns as the performance is ultimately bounded by two factors: the occasional inaccuracy of the VLM verifier, and more fundamentally, the quality of the base model‚Äôs proposals. Our steering method can only select the best option from the provided candidates; if the underlying œÄ0-reason policy fails to generate any viable action sequences within the batch, verification cannot succeed.
+
+Success Rate (%)
+
+œÄ0 97 85 87 89
+Libero-10 (ID)
+ID
+
+œÄ0-V-GPS
+
+œÄ0-reason
+
+95 86 73 71
+
+91 81 81 72
+
+Lang-Rephrase Lang-Object-Property
+Semantic OOD
+
+SEAL (ours) 84 83 91 98
+
+45 28 23 25
+
+Visual-Scene
+
+Visual-Viewpoint
+
+Visual OOD
+
+Fig. 4: Robustness to Semantic and Visual OOD Shifts. We evaluate four different OOD variations for each task in Libero-10. The performance is averaged across 10 tasks in the task suite with 50 trials per task. SEAL maintains the best performance across all OOD shifts, even in the most challenging Visual-Viewpoint OOD scenario.
+
+D. Runtime Scaling Law
+We find that increasing the number of candidate action sequences (K) at runtime directly boosts performance. As K increases from one to ten, SEAL enjoys higher success rates‚Äìwith a notable 15% gain on challenging compositional tasks‚Äîand shorter episode lengths (Fig. 6). Moreover, our method‚Äôs inference time scales linearly with the number of samples and grows more slowly than that of [6]. The main bottleneck is the VLM verifier query time. This linear trend indicates that we can obtain a practical performance boost at runtime simply by increasing the number of candidates for verification.
+
+VI. LIMITATIONS
+While our method substantially improves robustness, execution consistency, and generalization by verifying reasoning‚Äìaction alignment at runtime, it is not without limitations.
+Dependence on Base VLA Quality. Our runtime steering method selects among candidate actions sampled from the reasoning VLA model. As a result, overall performance is ultimately bounded by the quality and diversity of the base model‚Äôs proposals.
+Verifier Reliability. Our method utilizes the GPT-4o as a VLM verifier for measuring reasoning‚Äìaction alignment. While we find it as effective or more than specialized Q-value based verifiers, VLMs can produce incorrect judgments, particularly for fine-grained gripper-object interactions in wrist-view images or scenes with severe occlusion.
+Latency and Compute Overhead. Although we employ asynchronous verification to mitigate the time of rollout and obtain lower latency than prior work [6], our method still introduces additional inference-time latency and cost due to sampling and evaluating multiple candidate sequences. Future work should investigate optimizing the inference infrastructure or use quantization to push the real-time nature of this approach.
+
+Success rate (%) Average Episode Length Average Inference Time Per Step (ms)
+
+Runtime Scaling: Success Rate (%)
+
+100 89
+
+92
+
+96
+
+97
+
+80
+
+60 44
+40 38
+
+20
+
+01
+
+2
+
+48
+
+53
+
+LIBERO-10 (ID) LIBERO-100-Compose
+
+5
+
+10
+
+Number of samples
+
+Runtime Scaling: Episode Length (# steps)
+
+432
+
+425
+
+419
+
+400
+
+408
+
+400
+
+375
+
+350 325 300 288
+276 275 250
+12
+
+LIBERO-10 (ID) LIBERO-100-Compose
+
+262
+
+257
+
+5
+
+10
+
+Number of samples
+
+Runtime Scaling: Inference Time (ms) 400
+
+VLM Verification
+
+350
+
+Batch Action Sampling
+
+347
+
+300 246
+250
+
+200 147 167 150
+
+184
+
+100 50
+
+86 103
+
+132
+
+0
+
+1
+
+2
+
+5
+
+10
+
+Number of Samples
+
+Fig. 6: Runtime Scaling Law. Increasing the number of candidate sequences (K) boosts success rates (Left) on in-distribution (ID) and behavior composition tasks, while reducing steps for task completion. (Middle). The inference time (Right) scales favorably, with our latency at K = 10 (347ms) lower than the ‚àº520ms in [6]. Results are averaged over 50 trials per task.
+
+VII. CONCLUSION
+This work addresses what we term the embodied CoT faithfulness gap, where the outcomes described by a VLA‚Äôs textual reasoning mismatch its subsequent low-level actions. We introduce a training-free, runtime steering method that enforces this faithfulness by using a VLM to verify multiple candidate action sequences. By selecting the best execution of a plan out of many sampled action sequences, our method converts the policy‚Äôs natural action diversity from a source of error into a strength to achieve the reasoning-action alignment. Our approach yields performance gains of up to 15% over strong baselines on challenging OOD and behavior composition tasks, demonstrating that verifying what a robot does against what it says is a critical step towards building more robust and trustworthy agents.
+REFERENCES
+[1] J. Bjorck, F. CastanÀúeda, N. Cherniadev, X. Da, R. Ding, L. Fan, Y. Fang, D. Fox, F. Hu, S. Huang, et al., ‚ÄúGr00t n1: An open foundation model for generalist humanoid robots,‚Äù arXiv preprint, 2025.
+[2] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, et al., ‚Äúpi 0 : A vision-languageaction flow model for general robot control,‚Äù arXiv preprint, 2024.
+[3] O. X.-E. Team, ‚ÄúOpen X-Embodiment: Robotic learning datasets and RT-X models,‚Äù in IEEE International Conference on Robotics and Automation (ICRA), 2024.
+[4] J. Gao, S. Belkhale, S. Dasari, A. Balakrishna, D. Shah, and D. Sadigh, ‚ÄúA taxonomy for evaluating generalist robot policies,‚Äù arXiv preprint, 2025.
+[5] C.-P. Huang, Y.-H. Wu, M.-H. Chen, Y.-C. F. Wang, and F.-E. Yang, ‚ÄúThinkact: Vision-language-action reasoning via reinforced visual latent planning,‚Äù arXiv preprint, 2025.
+[6] J. Kwok, C. Agia, R. Sinha, M. Foutter, S. Li, I. Stoica, A. Mirhoseini, and M. Pavone, ‚ÄúRobomonkey: Scaling test-time sampling and verification for vision-language-action models,‚Äù in Conference on Robot Learning (CoRL), 2025.
+[7] M. Zawalski, W. Chen, K. Pertsch, O. Mees, C. Finn, and S. Levine, ‚ÄúRobotic control via embodied chain-of-thought reasoning,‚Äù Conference on Robot Learning (CoRL), 2024.
+[8] F. Lin, R. Nai, Y. Hu, J. You, J. Zhao, and Y. Gao, ‚ÄúOnetwovla: A unified vision-language-action model with adaptive reasoning,‚Äù arXiv preprint, 2025.
+[9] J. Wei, X. Wang, D. Schuurmans, M. Bosma, F. Xia, E. Chi, Q. V. Le, D. Zhou, et al., ‚ÄúChain-of-thought prompting elicits reasoning in large language models,‚Äù Advances in neural information processing systems, 2022.
+[10] Z. Zhou, Y. Zhu, M. Zhu, J. Wen, N. Liu, Z. Xu, W. Meng, R. Cheng, Y. Peng, C. Shen, et al., ‚ÄúChatvla: Unified multimodal understanding and robot control with vision-language-action model,‚Äù arXiv preprint, 2025.
+
+[11] M. Turpin, J. Michael, E. Perez, and S. Bowman, ‚ÄúLanguage models don‚Äôt always say what they think: Unfaithful explanations in chainof-thought prompting,‚Äù Advances in Neural Information Processing Systems, 2023.
+[12] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone, ‚ÄúLibero: Benchmarking knowledge transfer for lifelong robot learning,‚Äù Advances in Neural Information Processing Systems, 2023.
+[13] P. Intelligence, K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, et al., ‚Äúpi 0.5: a vision-language-action model with open-world generalization,‚Äù arXiv preprint, 2025.
+[14] W. Chen, S. Belkhale, S. Mirchandani, O. Mees, D. Driess, K. Pertsch, and S. Levine, ‚ÄúTraining strategies for efficient embodied reasoning,‚Äù Conference on Robot Learning (CoRL), 2025.
+[15] Y. Wang, L. Wang, Y. Du, B. Sundaralingam, X. Yang, Y.-W. Chao, C. Perez-D‚ÄôArpino, D. Fox, and J. Shah, ‚ÄúInference-time policy steering through human interactions,‚Äù IEEE International Conference on Robotics and Automation (ICRA), 2025.
+[16] M. Nakamoto, O. Mees, A. Kumar, and S. Levine, ‚ÄúSteering your generalists: Improving robotic foundation models via value guidance,‚Äù in Conference on Robot Learning (CoRL), 2024.
+[17] C. Agia, R. Sinha, J. Yang, Z. Cao, R. Antonova, M. Pavone, and J. Bohg, ‚ÄúUnpacking failure modes of generative policies: Runtime monitoring of consistency and progress,‚Äù in Conference on Robot Learning (CoRL), 2024.
+[18] P. Gupta, H. Admoni, and A. Bajcsy, ‚ÄúAdapting by analogy: Ood generalization of visuomotor policies via functional correspondence,‚Äù Conference on Robot Learning (CoRL), 2025.
+[19] G. Comanici, E. Bieber, M. Schaekermann, I. Pasupat, N. Sachdeva, I. Dhillon, M. Blistein, O. Ram, D. Zhang, E. Rosen, et al., ‚ÄúGemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities,‚Äù arXiv preprint, 2025.
+[20] C. Snell, J. Lee, K. Xu, and A. Kumar, ‚ÄúScaling llm test-time compute optimally can be more effective than scaling model parameters,‚Äù arXiv e-prints, 2024.
+[21] Y. Wu, R. Tian, G. Swamy, and A. Bajcsy, ‚ÄúFrom foresight to forethought: Vlm-in-the-loop policy steering via latent alignment,‚Äù in Robotics: Science and System, 2025.
+[22] J. Gao, B. Sarkar, F. Xia, T. Xiao, J. Wu, B. Ichter, A. Majumdar, and D. Sadigh, ‚ÄúPhysically grounded vision-language models for robotic manipulation,‚Äù in 2024 IEEE International Conference on Robotics and Automation (ICRA), 2024.
+[23] H. A. Alhaija, J. Alvarez, M. Bala, T. Cai, T. Cao, L. Cha, J. Chen, M. Chen, F. Ferroni, S. Fidler, et al., ‚ÄúCosmos-transfer1: Conditional world generation with adaptive multimodal control,‚Äù arXiv preprint, 2025.
+[24] Y. Mu, T. Chen, Z. Chen, S. Peng, Z. Lan, Z. Gao, Z. Liang, Q. Yu, Y. Zou, M. Xu, et al., ‚ÄúRobotwin: Dual-arm robot benchmark with generative digital twins,‚Äù in Proceedings of the Computer Vision and Pattern Recognition Conference, 2025.
+[25] I. Kostrikov, A. Nair, and S. Levine, ‚ÄúOffline reinforcement learning with implicit q-learning,‚Äù in International Conference on Learning Representations, 2021.
+[26] Y. Yang, D. Cer, A. Ahmad, M. Guo, J. Law, N. Constant, G. H. Abrego, S. Yuan, C. Tar, Y.-h. Sung, et al., ‚ÄúMultilingual universal sentence encoder for semantic retrieval,‚Äù in Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics: System Demonstrations, 2020.
+
+APPENDIX
+A. Method Details
+1) Annotation: To generate structured reasoning annotations, we employ the video understanding capabilities of Gemini-2.5-Pro [19]. Our process begins with the LeRobotformatted LIBERO-103 and LIBERO-904 demonstration datasets. These have been pre-filtered to exclude unsuccessful trajectories and contain agentview image observations corrected via the script provided by the OpenVLA authors.
+For each demonstration episode, we compile the agentview images into a 10 fps video. We then prompt Gemini-2.5-Pro with the task instruction, the corresponding video, and the prompt template shown in Figure 7. The model‚Äôs task is to generate a sequence of textual sub-plans and identify the concluding timestep for each one.
+This output is then structured into the following format to serve as the intermediate reasoning signal for our model:
+‚Ä¢ Plans: <all text plans in the task> ‚Ä¢ What has been done: <completed plans> ‚Ä¢ Now I need to do: <the next text plan to execute>
+Since the end of one sub-plan marks the beginning of the next, we use the generated timesteps to align and supervise the model‚Äôs reasoning generation at the start of each new action sequence.
+Task: You will be presented with a short video clip of a robot performing certain manipulation tasks on the table. Your task is to reason about the task to give the plans and monitor the task progress along the way.
+The task goal is to {task_instruction}.
+The plans should be a list of action steps to complete the task goal where each step is a brief action description (e.g, pick up sth, place it somewhere, close sth, open sth, move sth to somewhere else, etc.) based only on task goal without examining the video.
+The critical moments should be a list of time (precise to millisecond) and the frame number (10 fps) in the video for completing each plan step. The keys are "time" and "frame" in critical moments. Please identify the exact moment the step finishes and make sure the list of critical moments is the same length as plans. The time should be aa.b format and be precise about b as milliseconds.
+The output should be a JSON object with the following fields: plans: ... critical moment: [‚Ä¶]
+Note: Please follow the JSON output format strictly and do not include any other text in your response. Also keep the plans precise and brief.
+Now, please look at the following video carefully.
+Fig. 7: Prompt Template for Reasoning Annotations
+2) Training: We follow the recipe in [8] to train our base reasoning VLA model œÄ0-reason. The hyperparameters used for training are listed in Table I. The training of œÄ0-reason takes around 20 hours on 8 A100 GPU or 10 hours on 8 H100 GPU. For our baseline œÄ0, we use the same hyperparameters used for LIBERO finetuning from openpi repository5. For learning the Q function in œÄ0-V-GPS, we use the original code from the paper [16] and select Implicit Q Learning (IQL) [25] algorithm to learn the Q function from offline demonstration dataset LIBERO-100.
+3https://huggingface.co/datasets/ physical-intelligence/libero
+4https://huggingface.co/datasets/jesbu1/libero_ 90_lerobot/tree/main
+5https://github.com/Physical-Intelligence/openpi
+
+TABLE I: Hyperparameters. The Hyperparameters we use to train and evaluate œÄ0-reason.
+
+Hyperparameter
+Training Batch Size Validation Batch Size
+Training Steps Max Token Length Text Loss Coefficient Action Loss Coefficient
+Image Size Prediction Horizon
+Action Horizon Image View
+
+Value
+128 64 30000 415 0.5 0.5 (224, 224, 3) 16 5 Wrist-view and Agent-view
+
+3) Policy Steering:
+Hypothesize. In this stage, SEAL generates multiple action sequences in parallel conditioned on the current text plan. The base reasoning model, œÄ0-reason, uses special tokens (<act> and <think>) to switch between planning and acting. We leverage this by using the <think> token to signal the completion of an action sequence. Specifically, we generate a batch of K = 10 action sequences concurrently, using KV cache to accelerate inference. As soon as any sequence in the batch generates a <think> token, it is asynchronously passed to the VLM verifier. While verification runs as a background process, œÄ0-reason continues to generate subsequent action tokens for the remaining sequences in the batch. This parallel process terminates as soon as the VLM confirms any one of the proposed sequences as successful.
+Predict. We maintain K = 10 vectorized environments to simulate the physical outcomes of the hypothesized actions. Each of the K action sequences generated during the Hypothesize stage is executed in its own dedicated simulation environment. Following the selection of a successful sequence by the Verify stage, we synchronize all parallel environments by setting their states to match the final state of the successful simulation. This ensures that the system proceeds from a single, validated world state before planning the next subtask.
+Verify. We use GPT-4o as a Vision-Language Model (VLM) verifier to approximate a ground-truth reward function. To provide the necessary context, we supply the verifier with the initial agentview image of the task (to establish initial object locations) along with the final agentview and wristview images from the completed action sequence. These images are combined with the corresponding textual subplan using the prompt template shown in Figure 8.
+We structure the prompt to elicit step-by-step reasoning, guiding the VLM to analyze whether the final state shown in the images matches the objective of the sub-plan. Empirically, we find this structured prompting significantly improves verification accuracy compared to direct queries. However, we note two primary failure modes: the VLM
+
+TABLE II: In-Distribution Performance on LIBERO-10. Success rates (%) are averaged over 50 trials for each method, conditioned on the training dataset. Our method, SEAL, generally outperforms baselines across all training data configurations. For each training dataset and each task, the highest success rate is marked as bold.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9
+Average
+
+Training Dataset (LIBERO-10)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+96
+
+92
+
+100
+
+98
+
+88
+
+94
+
+100
+
+100
+
+76
+
+74
+
+92
+
+100
+
+74
+
+80
+
+96
+
+100
+
+66
+
+64
+
+96
+
+94
+
+90
+
+96
+
+98
+
+100
+
+98
+
+100
+
+100
+
+100
+
+96
+
+98
+
+98
+
+100
+
+84
+
+98
+
+90
+
+98
+
+66
+
+88
+
+98
+
+100
+
+85
+
+90
+
+92
+
+96
+
+Success Rate (%)
+
+Training Dataset (LIBERO-100-Basket)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+88
+
+96
+
+100
+
+100
+
+94
+
+92
+
+96
+
+98
+
+72
+
+78
+
+96
+
+98
+
+78
+
+80
+
+88
+
+92
+
+44
+
+60
+
+90
+
+94
+
+90
+
+96
+
+100
+
+100
+
+80
+
+98
+
+96
+
+98
+
+84
+
+88
+
+98
+
+100
+
+80
+
+96
+
+92
+
+92
+
+50
+
+70
+
+92
+
+100
+
+85
+
+89
+
+86
+
+94
+
+Training Dataset (LIBERO-100)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+92
+
+88
+
+94
+
+92
+
+90
+
+88
+
+86
+
+96
+
+80
+
+98
+
+92
+
+98
+
+82
+
+94
+
+90
+
+90
+
+54
+
+56
+
+86
+
+88
+
+90
+
+100
+
+96
+
+100
+
+62
+
+84
+
+98
+
+100
+
+98
+
+98
+
+98
+
+98
+
+96
+
+98
+
+98
+
+100
+
+80
+
+90
+
+96
+
+100
+
+85
+
+87
+
+89
+
+97
+
+Given the observation images of a sampled action plan (the first image is the initial state, the second image is the final state from the agentview and the last image is the final state from wrist view, The gripper is at the bottom of the wrist view image), you are an external verifier. Help the robot agent describe the action and determine if it achieves the specified subtask.
+Subtask: {TASK_INSTRUCTION}.
+Your verification must follow this logical process: Identify the target object in the first image. The target object is present in the first image. If you don't see it, look aga in for the target object because it is occluded behind other items. Pay attention to the shape (e.g. can or box). Try your best to find the most relevant object in the first image if you think there is no exact match as the target object. Describe where it is located.
+If the subtask is about picking, analyze both the wrist view and the agent view of the final state to check: a) For objects not a pot or a bowl, Is the robot's gripper holding the target object with right shape (box vs can) ? Is the obje ct
+staying secure between the gripper? For a pot or a bowl, is the gripper holding any part of the pot or the bowl (check if any part is between the gripper in the wrist view, not considering security as long as it is in contact )?
+If the subtask is about placing, analyze the wrist view and the agent view of the final state to check: b) Is the object in/on the target place? If object is not visible, compare the first and second image to see whether target object disappears from the table. If the object is a mug, the final pose should not be tilted in the agentview. If the object is a pot, it should be in contact with the red region in the agentview.
+If the subtask is about closing, analyze the wrist view and the agent view of the final state to check: c) Is the object fully closed?
+Determine the outcome based on this intermediate thinking. Finally, provide your verification in the format "Verification: Success" or "Verification: Failure".
+Fig. 8: Prompt Template for VLM Verification
+sometimes struggles to correctly assess gripper-object contact, likely because the robot‚Äôs wrist-view images are out-of-distribution for GPT-4o‚Äôs training data, and its accuracy decreases in scenes with significant object occlusion.
+4) Runtime Analysis: To analyze the computational cost and scalability of our method, we measure the average inference time per step while varying the number of parallel samples (K). Fig. 6 presents this runtime scaling, breaking down the total time into its two primary components: Batch Action Sampling and VLM Verification
+As shown in the figure, the total inference time increases with the number of samples. The runtime grows from 147 ms for a single sample to 347 ms for K = 10 samples.
+‚Ä¢ Batch Action Sampling: The cost of Batch Action Sampling scales efficiently and sub-linearly. Its duration increases from 86 ms at K = 1 to 184 ms at K = 10. This demonstrates the effectiveness of our batching implementation, where a tenfold increase in samples results in only a Àú2.1x increase in sampling time.
+‚Ä¢ VLM Verification: In contrast, the time spent on VLM Verification scales more sharply, especially at higher sample counts. This component‚Äôs average cost per step grows from 61 ms for one sample to 163 ms for ten
+
+TABLE III: Task Instructions for LIBERO-10. The ten long-horizon tasks and their corresponding language instructions.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9
+
+Task Instruction
+put both the alphabet soup and the tomato sauce in the basket. put both the cream cheese box and the butter in the basket. turn on the stove and put the moka pot on it. put the black bowl in the bottom drawer of the cabinet and close it. put the white mug on the left plate and put the yellow and white mug on the right plate. pick up the book and place it in the back compartment of the caddy. put the white mug on the plate and put the chocolate pudding to the right of the plate. put both the alphabet soup and the cream cheese box in the basket. put both moka pots on the stove. put the yellow and white mug in the microwave and close it.
+
+samples. Although the VLM verification runs in the background, each query still takes 7-10 seconds for GPT-4o to generate the answer because of the thinking mode.
+The results indicate a trade-off between potential performance gains from more samples and the resulting inference latency. While our system supports parallel sampling efficiently, the VLM verification step becomes a more significant bottleneck as the number of samples increases.
+B. Benchmark Details
+1) In-distribution Tasks: We evaluate on ten long-horizon manipulation tasks from the LIBERO-10 benchmark [12] as our in-distribution test set. These tasks are well-suited for Vision Language Action Models (VLAs) with intermediate reasoning capabilities due to their long-horizon nature. The instructions for each task are listed in Table III.
+We evaluate all methods on these tasks after training them on three different datasets. The per-task success rates are detailed in Table II, and the average performance is reported in Figure 2a of the main paper.
+2) Out-of-Distribution (OOD) Tasks: Following [22], we extend the LIBERO-10 benchmark with four out-ofdistribution (OOD) variations, categorized as semantic or
+
+Semantic-Rephrase (paraphrase the instruction w/o change object description) Semantic-Object-Property (change the object description) Visual-Scene (add or change distractor object) Visual-Viewpoint (change background and viewpoint)
+
+Fig. 9: Visualizations of Initial States for OOD Tasks. The top row shows the semantic OOD shift of Lang-Rephrase from LIBERO-10. The second row corresponds to semantic shifts with Lang-Object-Property. These two rows are the same as LIBERO-10 since they have no visual changes. The third row shows the Visual-Scene shift with object substitutions or additions. The bottom row shows the Visual-Viewpoint shift with a new background and camera angle.
+
+visual shifts. ‚Ä¢ Semantic OOD: The task instruction is altered while the scene remains the same.
+‚Äì Lang-Rephrase: The instruction is paraphrased using different verbs and sentence structures, but the object descriptions remain the same. The new instructions are in Table IV.
+‚Äì Lang-Object-Property: The object descriptions are replaced with different but equivalent references (e.g., ‚Äùyellow and white mug‚Äù becomes ‚Äùmiddle mug‚Äù). The new instructions are in Table V.
+‚Ä¢ Visual OOD: The visual properties of the scene are changed while the instruction remains the same.
+‚Äì Visual-Scene: A non-target object is replaced, or a distractor object is added to the scene (e.g., a wine bottle is replaced with a ketchup bottle). See the third row of Figure 9 for visualizations.
+‚Äì Visual-Viewpoint: The background and camera pose are changed. We randomly select one of two alternate backgrounds available in LIBERO (Kitchen, Living Room, Study Room) that was not used in the original task. The camera pose is adjusted to keep all objects in view. See the fourth row of Figure 9 for visualizations.
+We evaluate all methods trained on the LIBERO-100 dataset against these four OOD settings, as models trained on larger, more diverse data are expected to be more robust and LIBERO-100 is our largest dataset. Per-task results are presented in Table VI, with average performance summarized in Figure 4.
+
+TABLE IV: Task Instructions for Semantic OOD (LangRephrase). The original instructions are paraphrased, altering sentence structure and verbs while keeping object descriptions intact.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9
+
+Task Instruction
+place the alphabet soup in the basket and the tomato sauce as well. pick up both the cream cheese box and the butter and place them in the basket. switch the stove on and set the moka pot on the stove. move the black bowl to the bottom drawer and close the drawer of the cabinet. place two mugs on the plates, left one is the white mug and the right one is the yellow and white mug. grab the standing book and transfer it to the back compartment of the caddy. set the white mug on the plate with chocolate pudding to be placed to the right. put both the can of soup and the box of cheese in the basket. transfer both moka pots from the table to the stove. place the yellow and white mug inside the microwave, then shut the door.
+
+TABLE V: Task Instructions for Semantic OOD (LangObject-Property). The way objects are described is changed, while the core task and sentence structure remain similar.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9
+
+Task Instruction
+put both the can of soup and can of sauce in the basket. put both the box of cheese and the box of butter in the basket. turn on the cooktop and place the moka machine on it. put the middle bowl to the lowest drawer and close it. put the pure white cup on the left plate and put the other one with the yellow handle on the right plate. pick up the right book and put it in the rear part of the caddy. put the pure white cup on the middle plate and put the brown chocolate to the right of the plate. move the two objects, alphabet soup and cream cheese box, to the basket. put both the moka coffee makers on the cooktop. put the middle mug inside the microwave and close the door.
+
+3) Behavior Composition Tasks: To further test generalization, we introduce a suite of novel behavior composition tasks. These tasks require reusing skills learned from training demonstrations in combinations not seen during training. For instance, if a model has seen demonstrations for ‚Äùput both
+
+TABLE VI: OOD Performance on LIBERO-10 Variants. Success rates (%) are averaged over 50 trials for each method trained on the LIBERO-100 dataset. Our method, SEAL, demonstrates stronger robustness to both semantic and visual OOD shifts. For each OOD shift and each task, the highest success rate is marked as bold.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9
+Average
+
+Semantic OOD (Lang-Rephrase)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+86
+
+92
+
+92
+
+96
+
+32
+
+32
+
+86
+
+88
+
+32
+
+14
+
+96
+
+94
+
+86
+
+88
+
+86
+
+92
+
+62
+
+44
+
+74
+
+74
+
+92
+
+98
+
+98
+
+100
+
+82
+
+96
+
+96
+
+98
+
+78
+
+84
+
+100
+
+100
+
+76
+
+96
+
+74
+
+82
+
+78
+
+98
+
+88
+
+98
+
+73
+
+71
+
+86
+
+95
+
+Success Rate (%)
+
+Semantic OOD (Lang-Object-Property)
+
+Visual OOD (Visual-Scene)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+72
+
+80
+
+96
+
+96
+
+66
+
+70
+
+90
+
+88
+
+70
+
+74
+
+18
+
+100
+
+86
+
+88
+
+90
+
+90
+
+58
+
+54
+
+78
+
+70
+
+90
+
+98 96
+
+88
+
+98
+
+100 100
+
+98
+
+54
+
+72 94
+
+92
+
+94
+
+98 94
+
+96
+
+84
+
+90 90
+
+70
+
+76
+
+96 92
+
+96
+
+76
+
+84 88
+
+98
+
+94
+
+98 88
+
+94
+
+68
+
+84
+
+4
+
+4
+
+80
+
+92 92
+
+92
+
+96
+
+96
+
+100
+
+100
+
+64
+
+90
+
+100
+
+100
+
+96
+
+98
+
+98
+
+100
+
+96
+
+96
+
+94
+
+100
+
+68
+
+98
+
+96
+
+100
+
+72
+
+81
+
+81
+
+91 84
+
+83
+
+91
+
+98
+
+Visual OOD (Visual-Viewpoint)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+52
+
+30
+
+34
+
+36
+
+4
+
+0
+
+72
+
+66
+
+0
+
+8
+
+30
+
+26
+
+34
+
+32
+
+20
+
+14
+
+10
+
+6
+
+27
+
+12
+
+12
+
+68
+
+72
+
+84
+
+8
+
+10
+
+2
+
+32
+
+24
+
+40
+
+58
+
+94
+
+30
+
+44
+
+24
+
+48
+
+12
+
+20
+
+8
+
+22
+
+28
+
+23
+
+25
+
+45
+
+TABLE VII: Compositional Generalization Performance. Success rates (%) are averaged over 50 trials. As the training dataset size and diversity increase from LIBERO-10 to LIBERO-100, our method‚Äôs performance advantage over baselines becomes more pronounced. Entries marked with ‚Äò‚Äî‚Äò are not applicable for that training dataset. For each training dataset and each task, the highest success rate is marked as bold.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9 10 11 12
+Average
+
+Training Dataset (LIBERO-10)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+28
+
+32
+
+0
+
+2
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+34
+
+32
+
+2
+
+0
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+14
+
+17
+
+18
+
+16
+
+Success Rate (%)
+
+Training Dataset (LIBERO-100-Basket)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+4
+
+8
+
+0
+
+0
+
+22
+
+28
+
+2
+
+2
+
+0
+
+2
+
+0
+
+0
+
+2
+
+2
+
+0
+
+2
+
+68
+
+70
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+6
+
+10
+
+0
+
+4
+
+74
+
+70
+
+18
+
+28
+
+6
+
+12
+
+6
+
+4
+
+14
+
+10
+
+4
+
+6
+
+82
+
+90
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+‚Äî
+
+11
+
+13
+
+23
+
+26
+
+Training Dataset (LIBERO-100)
+
+œÄ0 œÄ0-V-GPS œÄ0-reason SEAL
+
+26
+
+46
+
+20
+
+6
+
+22
+
+18
+
+14
+
+18
+
+0
+
+2
+
+6
+
+2
+
+24
+
+34
+
+30
+
+24
+
+54
+
+34
+
+10
+
+12
+
+2
+
+2
+
+2
+
+0
+
+0
+
+4
+
+30
+
+82
+
+42
+
+60
+
+76
+
+88
+
+2
+
+4
+
+46
+
+60
+
+48
+
+72
+
+0
+
+4
+
+50
+
+74
+
+94
+
+96
+
+14
+
+20
+
+14
+
+38
+
+4
+
+14
+
+80
+
+78
+
+16
+
+16
+
+38
+
+53
+
+the alphabet soup and the tomato sauce in the basket‚Äù and ‚Äùput the orange juice in the basket,‚Äù a compositional task might be ‚Äùput both the orange juice and the tomato sauce in the basket.‚Äù
+The set of compositional tasks depends on the training dataset. For models trained on LIBERO-10 dataset, we create two new tasks by recombining objects to put in the basket (Tasks 0-1 in Table VIII). For LIBERO-100-Basket, which includes more pick-and-place examples for basket , we use a larger set of nine tasks (Tasks 0-8). For the most diverse LIBERO-100 dataset, we create the full suite of 13 tasks including more objects like mugs and wine bottle. The complete list of tasks is provided in Table VIII.
+We evaluate all methods on their corresponding compositional task suite. Per-task results are in Table VII, and average performance is reported in Figure 2a of the main paper.
+
+TABLE VIII: Task Instructions for Behavior Composition Tasks. These new tasks require combinations of skills that were not observed during training.
+
+Task ID
+0 1 2 3 4 5 6 7 8 9 10 11 12
+
+Task Instruction
+put both the cream cheese and the tomato sauce in the basket. put both the alphabet soup and the butter in the basket. put both the orange juice and the tomato sauce in the basket. put both the milk and the tomato sauce in the basket. put both the orange juice and the butter in the basket. put both the tomato sauce and the butter in the basket. put both the milk and the butter in the basket. put both the ketchup and the cream cheese in the basket. put both the tomato sauce and the cream cheese box in the basket. put the wine bottle in the bottom drawer of the cabinet and close it. put the red mug on the plate and put the chocolate pudding to the right of the plate. put the red mug on the plate and put the chocolate pudding to the left of the plate. put the red mug on the left plate and put the yellow and white mug on the right plate.
+
+

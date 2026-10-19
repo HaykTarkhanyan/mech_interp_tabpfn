@@ -1,0 +1,45 @@
+{
+  "id": "2606.19297",
+  "title": "Does VLA Even Know the Basics? Measuring Commonsense and World Knowledge Retention in Vision-Language-Action Models",
+  "first_author": "Kachaev",
+  "year": 2026,
+  "venue": "arXiv (v1 Jun 2026)",
+  "tier": "core",
+  "models": ["OpenVLA (+ SFT and RL fine-tunes)", "SpatialVLA", "pi0", "Magma", "Xiaomi-Robotics-R0", "InternVLA-M1", "SmolVLA (probing only)", "VLM baselines: InternVL3.5-8B/38B, Ovis2.5-9B, Qwen2.5-VL-7B/32B, Qwen3-8B/32B, Prismatic-7B, PaliGemma-3B"],
+  "action_head": "mixed: discrete action tokens (OpenVLA, SpatialVLA, Magma) and flow/diffusion action expert (pi0, SmolVLA, Xiaomi-R0, InternVLA-M1)",
+  "methods": ["Act2Answer behavioral protocol (answer a binary VQA item by placing a cube on one of two images)", "layer-wise linear 'intent' probes for the correct answer", "chance-normalized retention metric (max action-expert probe vs max backbone probe)"],
+  "question": "How much commonsense and world knowledge do VLAs retain from their VLMs, measured by whether they can act on it, and where in the network does answer-relevant information get lost?",
+  "key_findings": [
+    "1,720 binary items in 12 categories adapted from MLLM-CompBench, IconQA, MMBench, OK-VQA and VL-Think; 3,440 episodes with left/right swaps.",
+    "Primitive categories are retained: Color 82-91% for all VLAs; Shape varies (pi0 49%, OpenVLA 64%, SpatialVLA 83%, Xiaomi-R0 82%) (Table 2).",
+    "Richer categories are near chance for most VLAs: e.g. OpenVLA Emotion 48%, Counting 48%, Celebrity 50%; no VLA beats chance on Symmetry or Counting.",
+    "Magma (VQA co-trained) is the clear exception: Emotion 72%, Time 77%, PublicInfo 88%, Traffic 80%, Celebrity 94%, LivingWorld 77%. The authors read this as 'VQA co-training is associated with better retention' (RQ5).",
+    "VLMs answering by text exceed VLAs by roughly 20-40 points in most categories (RQ3); e.g. Prismatic-7B Emotion 82% vs OpenVLA 48%.",
+    "Further OpenVLA SFT on a small pick-and-place set lowers several categories (Color 89->82%, Shape 64->53%, State 49->44%) (Table 2, RQ6).",
+    "Probing: answer-relevant info is above chance in middle backbone layers and decays toward the final/action layers. Max probe accuracy prefix vs action: Magma 75.2/72.6 (retention 0.87), OpenVLA 68.7/64.6 (0.77), SmolVLA 63.2/57.7 (0.58), pi0 65.0/55.4 (0.36) (Table 3).",
+    "Appendix: pi0 fine-tuned with paraphrases or with a latent-distillation loss to a vision teacher improves Color/Shape but leaves Emotion/Attribute near chance."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["Act2Answer (new, built on Simpler)", "LIBERO numbers quoted from original papers for comparison only"],
+    "scale": "N = 300 episodes per category (150 items x 2 layouts), Celebrity N = 140; released checkpoints, no task-specific fine-tuning except OpenVLA SFT/RL ablations",
+    "statistics": "partial: binomial Wald chance band (Delta ~0.057 at N=300, ~0.083 for Celebrity) used to classify scores as above/at/below chance; no CIs on model-to-model differences; probe accuracies reported without variance; probe train/test protocol not reported",
+    "baselines": "9 VLMs evaluated with an action-free text prompt; random chance (0.5)"
+  },
+  "causal_validation": "No. Probing is correlational; nothing is ablated or steered to show the decodable answer signal is used or blocked. The 'bottleneck between representation and action' is inferred from the probe-accuracy drop.",
+  "closed_loop": "Yes for the behavioral benchmark (closed-loop simulated episodes, short horizon). Probing is on activations recorded from these episodes.",
+  "limitations_stated": [
+    "The protocol reduces but does not fully isolate knowledge from perception and control.",
+    "Left/right swaps reveal strong side preferences on hard categories (e.g. InternVLA-M1 Traffic 87% vs 20%); swapped views are not fully independent, so the chance band is mildly anticonservative (Delta ~0.08 with N=150).",
+    "Lightweight fixes (paraphrase augmentation, latent distillation) are useful but limited."
+  ],
+  "critique": [
+    "The 'VLM-VLA gap' compares text answers with cube placement, two different readout channels. Part of the gap may be readout difficulty, not lost knowledge (the same problem as VL-Think in 2510.25616).",
+    "The headline gap does not hold for pi0's own base: PaliGemma-3B is at ~47-53% on every category including Color (47%), while pi0 gets 86% on Color. For pi0 the VLA beats its source VLM, which undercuts the 'forgetting' framing for flow-head models.",
+    "Model comparisons (Magma vs others) are confounded by architecture, data, resolution and embodiment, so 'VQA co-training helps' is an association across ~7 checkpoints, not a controlled result.",
+    "Intent probes target the correct answer's side (left/right), which may be decodable from layout and image content without any 'knowledge'. Probe details (pooling over 'all tokens', split, regularization) are missing, so the 63-75% accuracies are hard to interpret.",
+    "The retention metric (max action-expert probe / max backbone probe) is undefined for OpenVLA-style models with no separate action expert, yet OpenVLA gets a value; how is not explained in the text read."
+  ],
+  "code": "tttonyalpha.github.io/act2answer",
+  "one_line": "A benchmark that makes VLAs answer VQA questions by placing a cube shows they keep color and shape but sit near chance on richer concepts, with VQA co-trained Magma the main exception and probes suggesting the info fades toward the action layers."
+}

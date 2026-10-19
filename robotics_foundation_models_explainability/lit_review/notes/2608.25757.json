@@ -1,0 +1,43 @@
+{
+  "id": "2608.25757",
+  "title": "LM-X: Explainable Vision-Language-Action Modeling via Progress, Event, and Uncertainty Prediction",
+  "first_author": "Lou",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["LM-X (~6B): Cosmos-Reason2-2B VLM backbone (layer-16 tokens), 2-layer Transformer RTG expert, 32-layer flow-matching DiT event expert and action expert with heteroscedastic variance head", "baselines GR00T N1.7 and pi0.5"],
+  "action_head": "flow/diffusion action expert (DiT with flow matching), conditioned on predicted progress (RTG) and event-expert hidden state",
+  "methods": ["interpretable-by-design heads: return-to-go progress (128 ordered bins), event-to-go action chunk to the next annotated semantic event (60 steps), heteroscedastic action-flow variance", "pretraining on >20,000 h of real-robot data including >1,000 h of failed rollouts", "five-task RoboTwin2.0 component-attribution gate (action-only, single-head, post-hoc heads, full)", "signal-level evaluation: within-trajectory Spearman for RTG, ETG MSE, action-error AUPRC, uncertainty-gradient warning lead time at 10% false alarms"],
+  "question": "Can a generalist VLA expose progress, next-event intention and action reliability as native, pretrained outputs that also condition its control, and does this improve performance?",
+  "key_findings": [
+    "Attribution gate (5 RoboTwin tasks): action-only backbone 63.6%, RTG/event/uncertainty-only +5.2 / +0.4 / +1.6 points, heads added only post hoc 72.8%, full joint pretraining 79.6%; event-only training collapsed open-microwave success from 54% to 16%.",
+    "RoboTwin2.0 50 randomized-hard tasks (100 trials per task, 50 demos per task): LM-X 74.1% vs GR00T N1.7 55.4%; LM-X trails GR00T by 15 points on beat_block_hammer.",
+    "Real world, 7 tasks on 4 embodiments, 20 trials each: LM-X 73.5% vs GR00T N1.7 50.7% and pi0.5 36.4%; tableware organization alone contributes 14 of 28 extra successes (+70 pp); without it +11.7 pp; regression on tape-roll pick-and-place (-10).",
+    "Pretraining vs post-training-only on the same architecture: RTG within-trajectory Spearman 0.71 -> 0.91 and MSE 0.100 -> 0.050; next-event ETG MSE 0.884 -> 0.520; action-error AUPRC 0.49 -> 0.59; failure-warning lead time 0.93 s -> 1.54 s at 10% false-alarm rate (Tables 4-6).",
+    "Qualitative traces: RTG drops on target switches and ambiguous grasps; variance rises during hesitation and its gradient marks onset of unreliable motion."
+  ],
+  "evidence": {
+    "setting": "both (RoboTwin2.0 simulation; real AgileX-Aloha, Astribot S1, Tianji-Marvin, Loong S1)",
+    "benchmarks": ["RoboTwin2.0 (50 randomized-hard tasks, Aloha-AgileX)", "7 real-world tasks"],
+    "scale": "RoboTwin: 100 trials per task; real: 20 trials per task; gate: 5 tasks; single training run (authors call for repeated seeds)",
+    "statistics": "no: no CIs or seeds; authors note repeated seeds and per-task CIs are needed",
+    "baselines": "GR00T N1.7, pi0.5 (same downstream data budget), action-only backbone, single-head and post-hoc-head variants"
+  },
+  "causal_validation": "Limited. Heads condition the action expert by construction and the gate ablates them during training, but there is no inference-time intervention on RTG or ETG to test whether the exposed signals actually drive the sampled action; the authors explicitly state that explicitness does not guarantee causal faithfulness.",
+  "closed_loop": "Yes for task success (closed-loop sim and real rollouts); signal quality is evaluated offline on recorded trajectories; warnings are not used to stop or recover.",
+  "limitations_stated": [
+    "Explicit signals are not shown to be causally faithful; the model may exploit correlates such as hand visibility, camera motion or episode timing.",
+    "ETG is bounded by the event annotation vocabulary.",
+    "Low variance does not certify correctness; RTG may drop due to occlusion.",
+    "Signal metrics do not establish transfer to unseen tasks; counterfactual tests and closed-loop recovery remain future work."
+  ],
+  "critique": [
+    "Interpretable-by-design in the weak sense: the 'explanations' are supervised predictions of progress, next event and variance, not insight into what the network computes; they could be accurate yet not causally used, exactly the gap the faithfulness papers (2607.04681, 2603.12717, 2609.30833) show can occur.",
+    "A simple test the paper does not run: intervene on predicted RTG or ETG at inference and measure action change (as 2609.30833 does for waypoints).",
+    "Large-scale comparisons confound the explanation heads with a different backbone, 20k hours of proprietary data and failure data; only the 5-task gate isolates the heads, and it is a single run.",
+    "Real-world gains are dominated by one task, with 20 trials per task and no intervals.",
+    "Including failed rollouts in pretraining is a notable data choice that may itself explain gains in progress and failure prediction."
+  ],
+  "code": "https://github.com/loongOpen/LoongWu-LM-X-VLA",
+  "one_line": "LM-X is a 6B VLA pretrained on 20,000 hours of real robot data to also output task progress, the action sequence to the next semantic event, and per-action uncertainty, which improves success over GR00T N1.7 and gives usable progress and failure-warning signals, but whether these signals faithfully drive the actions is untested."
+}

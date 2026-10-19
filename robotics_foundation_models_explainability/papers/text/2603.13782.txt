@@ -1,0 +1,1495 @@
+arXiv:2603.13782v1 [cs.RO] 14 Mar 2026
+
+Your Vision-Language-Action Model Already Has Attention Heads For Path Deviation Detection
+Jaehwan Jeong1,2 , Evelyn Zhu2, Jinying Lin2, Emmanuel Jaimes2, Tuan-Anh Vu2 , Jungseock Joo2,3, Sangpil Kim1,‚Ä† , and M. Khalid Jawed2,‚Ä†
+1Korea University 2University of California, Los Angeles 3NVIDIA
+Abstract. Vision-Language-Action (VLA) models have demonstrated strong potential for predicting semantic actions in navigation tasks, demonstrating the ability to reason over complex linguistic instructions and visual contexts. However, they are fundamentally hindered by visualreasoning hallucinations that lead to trajectory deviations. Addressing this issue has conventionally required training external critic modules or relying on complex uncertainty heuristics. In this work, we discover that monitoring a few attention heads within a frozen VLA model can accurately detect path deviations without incurring additional computational overhead. We refer to these heads, which inherently capture the spatiotemporal causality between historical visual sequences and linguistic instructions, as Navigation Heads. Using these heads, we propose an intuitive, training-free anomaly-detection framework that monitors their signals to detect hallucinations in real time. Surprisingly, among over a thousand attention heads, a combination of just three is sufficient to achieve a 44.6 % deviation detection rate with a low false-positive rate of 11.7 %. Furthermore, upon detecting a deviation, we bypass the heavy VLA model and trigger a lightweight Reinforcement Learning (RL) policy to safely execute a shortest-path rollback. By integrating this entire detection-to-recovery pipeline onto a physical robot, we demonstrate its practical robustness. All source code will be publicly available.
+Keywords: Vision-Language Action (VLA) ¬∑ Reinforcement Learning (RL) ¬∑ Navigation Path Recovery ¬∑ Robot Operating System (ROS)
+1 Introduction
+Driven by recent advances in Large Vision-Language Models (LVLMs), visionlanguage navigation has progressed from discrete graph-based agents to Transformer based policies that can reason over long instructions and rich visual observations [3, 7, 8, 15, 17, 51]. More recently, Vision-Language-Action (VLA) models have extended this paradigm to continuous environments by directly mapping sequential visual observations and language instructions to executable navigation actions [28]. This formulation is attractive because it removes the need for predefined topological constraints and enables agents to operate in open-world settings using unified multimodal reasoning [10, 38, 55, 58].
+‚Ä† Co-corresponding authors.
+
+2
+
+J. Jeong et al.
+
+1. The Problem: VLA Model Hallucinations
+
+2. The Discovery:
+
+3. Our Solution:
+
+Navigation Heads Already Know! Anomaly Detection & Rollback
+
+Instruction: ‚ÄúMove forward ...‚Äù
+
+Planned Path
+
+Door
+
+Hallucinated Path!
+
+VLA Models Attention Heads
+
+RL Policy
+
+Rollback!
+
+Rollback
+
+‚ãØ
+
+‚ãØ
+
+‚ãØ
+Navigation Heads
+
+Path Deviation Detected? [Yes / No]
+
+Rollback Command ‚Ä¢ Bypass heavy VLA ‚Ä¢ Trigger a safe
+shortest-path rollback
+Robot Localization (RGB + LiDAR + IMU) Robot Operating System
+
+Fig. 1: Conceptual teaser of our approach to mitigating hallucinations in VLA-based navigation. 1. The Problem: VLA models are highly vulnerable to vision-language reasoning hallucinations, which cause severe deviations from planned trajectories. 2. The Discovery: We reveal that a specific subset of internal attention heads, termed Navigation Heads (Hnav), is highly sensitive to the robot‚Äôs navigation states. This allows them to serve as a built-in anomaly detector with near-zero computational overhead. 3. Our Solution: Building on this insight, we enable real-time, training-free path deviation detection. Upon detecting a failure, the system immediately bypasses the computationally heavy VLA model and triggers a low-level Reinforcement Learning (RL) policy to execute a safe, collision-free rollback.
+
+Although VLA models have demonstrated significant potential for predicting semantic actions, they are fundamentally limited by inheriting the chronic hallucination issues of their Large Language Model (LLM) backbones. As the agent accumulates longer visual histories while following multi-step natural-language instructions, failures in visual reasoning and language grounding can lead to trajectory drift, incorrect sub-goal selection, and ultimately catastrophic path deviations [9, 52]. Prior work has highlighted the importance of detecting uncertainty and initiating backtracking when an agent loses its path [1, 5, 35, 54].
+However, current path deviation detection logic primarily relies on simple heuristics like post-facto deadlocks (e.g., physical collisions or position stagnation) [1,18,56], requires expensive dedicated fine-tuning of auxiliary networks [22, 34, 50], or invokes computationally heavy external LLMs via APIs [19, 45]. Consequently, these methods fail to provide efficient, high-frequency monitoring and are inherently prohibitive for real-time deployment.
+In this work, we ask a different question: Does a frozen VLA model already contain internal mechanisms that reveal whether navigation remains properly grounded? We show that the answer is yes. Specifically, we find that a small subset of attention heads consistently aligns spatiotemporal visual observations with the relevant segments of the navigation instruction. We refer to these heads as Navigation Heads (Hnav). During successful navigation, these heads exhibit a structured attention progression that tracks the agent‚Äôs movement through the instruction over time. As the agent deviates, this structure degrades in characteristic ways. This observation provides an interpretable view into the model‚Äôs
+
+VLA Models Already Detect Path Deviation
+
+3
+
+internal navigation process and suggests that grounding failures can be detected directly from the VLA model itself, without training an auxiliary detector.
+Building on this insight, we propose a training-free spatiotemporal grounding evaluation framework that formalizes both the normal evolution and the structural breakdown of Hnav. As illustrated in Fig. 1, by monitoring the attention dynamics of these heads in real time, our method produces a continuous signal of the agent‚Äôs perceptual grounding state without introducing any additional trainable parameters. This enables the system to identify anomalous trajectories as they emerge and seamlessly roll back to the last verified safe state. In contrast to existing methods, our approach is directly linked to an interpretable subset of the model‚Äôs internal computations, enabling effective real-time anomaly detection without incurring additional computational overhead.
+Furthermore, to overcome the slow inference speeds inherent to massive VLAs [6,12,13,27,33,49], we develop a custom low-level controller based on Reinforcement Learning (RL) trained specifically for obstacle avoidance. By integrating this lightweight RL controller with the high-level VLA model, our framework ensures stable navigation under normal conditions and guarantees safe, shortestpath recovery maneuvers upon anomalous behavior detection. This hierarchical integration effectively bridges the gap between computationally heavy visual reasoning and reactive physical execution, thereby securing real-world applicability in dynamic environments. Finally, by implementing this integrated system directly on the device, we validate the practicality and robustness of our proposed architecture through extensive evaluations in both the VLN-CE virtual environment and real physical robot deployments. To the best of our knowledge, we are the first to identify navigation-specific attention heads and successfully leverage them for real-world robotic applications.
+To summarize, our main contributions are as follows:
+‚Äì We identify a small subset of attention heads in a frozen LVLM that consistently aligns spatiotemporal visual observations with linguistic navigation intent. We term these heads Navigation Heads (Hnav) and show that they expose an interpretable mechanism underlying language-guided navigation.
+‚Äì We propose a training-free anomaly detection framework that formalizes the structural evolution and breakdown of Hnav during navigation. By monitoring attention dynamics online using only three heads, our method estimates the agent‚Äôs navigation state in real time without introducing any additional trainable parameters, achieving a 44 % deviation detection rate with a low false-positive rate of 10 %.
+‚Äì We integrate the anomaly-detection signal into a lightweight RL controller capable of reactive obstacle avoidance, thereby establishing a robust navigationand-recovery pipeline. This integration ensures stable navigation under normal conditions and supports a shortest-path rollback behavior when an anomalous trajectory is detected.
+‚Äì We validate the proposed system in real-world robotic environments, demonstrating that our framework is highly practical beyond simulation and performs reliable embodied navigation under real deployment conditions.
+
+4
+
+J. Jeong et al.
+
+2 Related Work
+
+Motion-based heuristics detection. As a fundamental approach, this method relies on rule-based mechanisms to detect a post-facto deadlock, such as physical collisions or position stagnation. Beginning with the DWA [14], which detects entrapment in local minima, subsequent robotic systems have utilized various hardware inputs, including wheel odometry [39], simple sensor thresholds [18], and multi-modal sensor fusion [56], to reactively identify physical entrapments and execute recovery behaviors like map initialization or in-place rotations. This same logic has been recently applied to VLN. For example, ETPNav [1] registers a deadlock if the agent‚Äôs coordinates remain unchanged after a forward action, subsequently proposing an in-place rotation heuristic.
+Learning-based auxiliary adapters. To proactively detect trajectory deviations, recent paradigms rely on learning-based auxiliary adapters that necessitate training additional detection modules alongside the main navigation backbone. For instance, the Self-Monitoring Navigation Agent (SMNA) [34] introduces a progress monitor module trained with an explicit loss function to estimate goal proximity. Similarly, Speaker-Follower models [15] train a separate speaker network to score the alignment between candidate trajectories and instructions, while IEDL [50] trains a cross-modal transformer specifically to detect and localize instruction-execution errors. In physical robotics, models like PAAD [22] learn deep neural networks to predict future failure probabilities by combining planned motions and perception data. Other approaches, such as BADGR [23] and LaND [24], leverage self-supervised learning or human disengagement data to train predictive models for upcoming collisions. Furthermore, methods like SCoA [61] train a separate reinforcement learning policy to request external assistance when path uncertainty increases. Additionally, architectures such as LSTM-VAE [44] and LSTM encoder-decoders [37] are trained to detect anomalies by measuring reconstruction errors on multi-modal sensor streams. Consequently, these methods fundamentally require not only expensive fine-tuning of auxiliary networks, but also additional computational overhead during inference.
+Training-free detection via external models. While avoiding additional fine-tuning, another line of research relies on invoking computationally heavy external Large Language Models (LLMs) or Vision-Language Models (VLMs) to reason about current states and handle path deviations in a zero-shot manner. For instance, hierarchical dual-system frameworks [19] leverage a massive VLM (System 2) to decompose instructions and guide a low-level control policy (System 1), but often suffer from latency and a lack of mutual awareness during execution errors [31]. More explicitly targeting navigation failures, frameworks such as SayNav [45] dynamically convert the agent‚Äôs accumulated scene graphs into textual prompts, querying an external LLM to determine whether the current trajectory has deviated and to refine the plan in case of execution failures. However, despite being training-free, utilizing these massive external models as high-level error detectors necessitates auto-regressive text generation via APIs, which inherently introduces severe inference latency.
+
+3 Method
+
+VLA Models Already Detect Path Deviation
+
+5
+
+Instruction:
+‚ÄúMove forward and turn right. Enter the door and stop.‚Äù
+
+Jetson AGX Orin
+
+ROS 2
+
+Robot Localization ( Pose )
+
+RGB LiDAR IMU
+
+VLA (0.3 Hz)
+
+Mid-level output
+‚Ä¢ Action: ‚ÄúMove Forward 75 cm‚Äù ‚Ä¢ Rollback: (Ì†µÌ±•, Ì†µÌ±¶, Ì†µÌºÉ)
+
+costmap
+
+Ì†µÌΩÖ
+(10 Hz)
+
+Action [Ì†µÌΩÇ, Ì†µÌΩé]
+
+Looks like I went the wrong way. Let‚Äôs turn back safely using the quickest route!
+
+Anomaly ( )
+
+Obstacle Avoidance
+
+Normal ( )
+
+Ground Truth
+
+Rollback
+
+Fig. 2: Overview of the path recovery navigation framework. Deployed via ROS 2, our hierarchical system integrates a high-level VLA model (0.3 Hz) and a low-level RL policy (10 Hz). Using RGB, instructions, and pose data, the VLA detects realtime path deviations (N ‚Üí A) and triggers a rollback to the last verified checkpoint (x, y, Œ∏). Concurrently, the RL policy (œÄ) utilizes LiDAR costmaps to output collisionfree velocity commands [v, œâ]. This design enables the robot to dynamically avoid obstacles and safely return to the normal path via the quickest route during recovery.
+
+3.1 Preliminaries
+
+NaVILA Backbone. NaVILA [10] is a navigation-specific Vision-LanguageAction (VLA) model built upon the VILA-8B architecture [32], trained via Supervised Fine-Tuning (SFT) on large-scale navigation datasets. To incorporate historical context, the model uniformly samples N frames with a resolution of 384 √ó 384 between the initial and current frames, encoding them into 27 √ó 27 vision tokens for the LLM [16]. These inputs are processed through 32 layers, each with 32 self-attention heads, allowing the model to simultaneously attend to all past frames and instruction tokens. Based on this unified context, the model autoregressively generates mid-level action instructions (e.g., ‚ÄúTurn left 30 degrees‚Äù), which are executed by a low-level controller.
+Distinct Characteristics of Attention Heads. The Transformer architecture, serving as the backbone of Large Language Models (LLMs), relies heavily on Multi-Head Self-Attention (MHSA) mechanisms. Although theoretically designed to perform parallel computations upon initialization, attention heads have been shown to spontaneously diverge during training and acquire distinct functional roles. Starting with the observation that specific heads attend to unique linguistic features such as syntactic relationships [11], subsequent research has demonstrated that only a small subset of these specialized heads contribute to the heavy lifting [53], allowing the majority to be pruned without significant performance degradation [40]. This specialization is now recognized as a fundamental property of LLMs [60] and has been shown to extend to LVLMs, where specific heads capture the semantic alignment between visual tokens and text [25]. Building on these insights, we analyze attention distributions to identify and leverage heads optimized for navigation tasks.
+
+6
+
+J. Jeong et al.
+
+Trajectory Phase Labeling
+
+Reference path (
+
+)
+
+Case
+
+Case
+
+‚ãØ
+
+‚ãØ
+
+Ground-Truth :
+
+Navigation Heads (Ì†µÌ∞ª678 ) Selection
+
+System Prompt
+
+LVLM
+
+Imagine you are a robot programmed for navigation tasks. You have been given a video
+of historical observation <image> ‚Ä¶ <image>, and current observation <image>. Your assigned task is : ‚Äú [instruction] ‚Äù Analyze this series of images to decide your next action, which could be turning left of right
+by a specific degree, moving forward a certain distance, or stop if the task is completed.
+
+Attention Heads ‚Ñé
+Ì†µÌ∞ºÌ†µÌ±õÌ†µÌ±†Ì†µÌ±°Ì†µÌ±üÌ†µÌ±¢Ì†µÌ±êÌ†µÌ±°Ì†µÌ±ñÌ†µÌ±úÌ†µÌ±õ Ì†µÌ±áÌ†µÌ±úÌ†µÌ±òÌ†µÌ±íÌ†µÌ±õÌ†µÌ±†
+Ì†µÌ∞ª678
+
+Ì†µÌ∞ªÌ†µÌ±ñÌ†µÌ±†Ì†µÌ±°Ì†µÌ±úÌ†µÌ±üÌ†µÌ±¶ Ì†µÌ∞πÌ†µÌ±üÌ†µÌ±éÌ†µÌ±öÌ†µÌ±íÌ†µÌ±†
+Entropy Score ( )
+
+Path Deviation Detection Real-time monitoring Anomaly ( )
+Threshold Ì†µÌºè
+
+Action Policy Safe Driving
+
+Normal ( )
+Navigation Time Step Ì†µÌ±°
+
+Rollback
+
+Fig. 3: Our core approach consists of four consecutive stages: (i) Phase Labeling: Formulating ground-truth labels based on path deviation. (ii) Head Selection: Identifying a subset of Navigation heads Hnav sensitive to these state transitions. (iii) Anomaly Detection: Monitoring the entropy (Rt) of Hnav to detect real-time failures and preserve safe checkpoints (Csafe). (iv) Action Policy: Deploying an RL policy for collision-free navigation and rollbacks triggered by the detected anomalies.
+
+3.2 Trajectory Phase Categorization
+
+To rigorously evaluate attention heads and establish a baseline for anomaly detection, we first construct a dataset by categorizing the agent‚Äôs trajectories into Normal (N ) and Anomaly (A) phases. Given a reference path W = [w0, . . . , wn] representing a sequence of navigable waypoints for each VLN-CE episode, the navigation state evaluation is conducted through a three-step process:
+(i) Target Tracking: At each step t, we update the target waypoint wt‚àó to the closest forward waypoint along the reference path. To prevent the target from regressing, we strictly enforce a non-decreasing index constraint (jt ‚â• jt‚àí1).
+(ii) Progress Evaluation: We evaluate the agent‚Äôs progress by calculating the distance delta ‚àÜdt. If the agent reaches a new waypoint, we set ‚àÜdt = 0. If the target remains unchanged, ‚àÜdt is the change in distance to the current target (dt ‚àí dt‚àí1, where dt is the Euclidean distance to wt‚àó). Consequently, a positive ‚àÜdt intuitively indicates a path deviation.
+(iii) Phase Classification: We employ a one-way state machine with patience p. Starting in the N phase, if p consecutive translational steps yield ‚àÜdt > 0, the state irreversibly transitions to A, applying labels retroactively from the first deviation step. Rotational actions are excluded in N but included in A as continued disorientation. Crucially, if p consecutive on-track steps occur during A, the episode is truncated to exclude noisy corrections.
+Consequently, episodes are categorized into only normal (N ), only anomaly (A), and normal to anomaly (N ‚Üí A), as shown in Fig. 3.
+
+3.3 Navigation Heads Selection
+Leveraging the distinct functional roles of LVLM attention heads, we identify a navigation-critical subset (Hnav). This subset is defined by two core criteria: (i) explicit spatio-temporal alignment, and (ii) high sensitivity to the cognitive anomalies defined in Sec. 3.2.
+Spatio-Temporal Alignment. We hypothesize that specific attention heads h capture the temporal causality between the visual sequence of T history frames V = {Fk}Tk=‚àí01 (F0 is the oldest observation, FT ‚àí1 the current frame) and the sequential navigation instruction. To isolate these heads, we extract
+
+Ì†µÌ∞ªÌ†µÌ±ñÌ†µÌ±†Ì†µÌ±°Ì†µÌ±úÌ†µÌ±üÌ†µÌ±¶ Ì†µÌ∞πÌ†µÌ±üÌ†µÌ±éÌ†µÌ±öÌ†µÌ±íÌ†µÌ±† Ì†µÌ∞πÌ†µÌ±üÌ†µÌ±éÌ†µÌ±öÌ†µÌ±í Ì†µÌ∞∏Ì†µÌ±õÌ†µÌ±íÌ†µÌ±üÌ†µÌ±îÌ†µÌ±¶
+
+LVLM
+
+Attention Heads ‚Ñé
+Ì†µÌ∞ºÌ†µÌ±õÌ†µÌ±†Ì†µÌ±°Ì†µÌ±üÌ†µÌ±¢Ì†µÌ±êÌ†µÌ±°Ì†µÌ±ñÌ†µÌ±úÌ†µÌ±õ Ì†µÌ±áÌ†µÌ±úÌ†µÌ±òÌ†µÌ±íÌ†µÌ±õÌ†µÌ±†
+
+VLA Models Already Detect Path Deviation
+
+7
+
+Spatio-Temporal Alignment (Ì†µÌ±ÜÌ†µÌ±ÉÌ†µÌ∞ø = 1))
+
+Ì†µÌ∞π! Ì†µÌ∞π$
+
+Ì†µÌ∞π"#$
+
+Anomaly Sensitivity
+
+Navigation Heads Ì†µÌ∞ª#$%
+
+L21 H12
+
+Ì†µÌ±Ü)*"'+,-
+
+Ì†µÌ±Ü!"#$
+
+Normal ( )
+
+L16 H1
+
+‚Äú‚Ä¶ walk through the kitchen ‚Ä¶‚Äù
+
+Ì†µÌ±Ü./#0
+
+Ì†µÌ±Ü%&"'(
+
+Anomaly ( )
+
+‚ãÆ
+
+Fig. 4: Training-free spatiotemporal grounding framework for navigation. To select robust navigation heads, candidates are first evaluated using the alignment score Idiag(h), which comprises even frame energy (Suniform), focused instruction attention (Speak), diagonal alignment (Sdiag), and smooth transition (Sshift), and subsequently assessed for their sensitivity to attention changes between normal and anomalous navigation.
+
+the Instruction-to-Frame attention weights to form a 2D alignment matrix A ‚àà
+
+RT √óN for N instruction tokens. We score these heads using a novel Spatio-
+
+Temporal alignment score Idiag(h) that evaluates observation-level grounding and dynamic spatiotemporal shifts based on base attention dynamics.
+
+First, observation-level cross-modal grounding is validated via frame energy
+
+uniformity (Suniform) and focus sharpness (Speak). To ensure that the head continuously grounds visual observations without ignoring any frame in the temporal
+
+sequence, Suniform penalizes vanishing attention mass by measuring the ratio of each frame‚Äôs energy to the peak episode energy. Concurrently, to verify that
+
+the agent precisely targets a specific instruction segment rather than dispers-
+
+ing its focus, Speak ensures a sharp, unimodal peak. Given the attention weight
+
+Ak,j from frame k to token j, we formulate the frame energy Ek =
+
+N ‚àí1 j=0
+
+Ak,j
+
+,
+
+the normalized distribution Pk,j = Ak,j/Ek, and the temporal center of mass
+
+ck =
+
+N ‚àí1 j=0
+
+j
+
+¬∑ Pk,j .
+
+Defining
+
+œÉk
+
+and
+
+mk
+
+as
+
+the
+
+standard
+
+deviation
+
+and
+
+local
+
+window mass of Pk around ck, respectively, we compute:
+
+ \label {method_eq:1} S_\texttt {uniform} = \frac {1}{T} \sum _{k=0}^{T-1} \frac {E_k}{\max _{k'} E_{k'}}, \quad S_\texttt {peak} = \frac {1}{T} \sum _{k=0}^{T-1} \frac {1}{2} \left ( \left ( 1 - \frac {\sigma _k}{\sigma _\text {max}} \right ) + m_k \right ), (1)
+
+where k‚Ä≤ ‚àà {0, . . . , T ‚àí1} indexes the frames for maximum energy, and œÉmax represents the standard deviation of a uniform distribution over instruction length.
+Second, to evaluate the dynamic spatiotemporal shifting trajectory, we define the ideal attention peak ik‚àó for each frame, which forms a diagonal across the 2D matrix A. Accordingly, we compute the spatial proximity to this ideal diagonal
+(Sdiag) and penalize erratic jumps to enforce a smooth shift towards the latter part of the instruction sequence as the navigation progresses (Sshift):
+
+ \label {method_eq:2} & S_\text t {diag} = 1 - \frac {1}{T} \sum _{k=0}^{T-1} \frac {|c_k - i^{*}_k|}{N-1}, \quad \text {where } i^{*}_k = \left ( \frac {k}{T-1} \right ) \cdot (N-1), \nonumber \  & S_\text t {shift} = \frac {1}{2(T-1)} \sum _{k=1}^{T-1} \left ( \mathb  {I}(\Delta c_k > 0) + \exp \left ( -\frac {1}{2} \left ( \frac {\Delta c_k}{\Delta i^{*}_k} - 1 \right )^2 \right ) \right ),
+
+(2)
+
+8
+
+J. Jeong et al.
+
+where ‚àÜck = ck ‚àí ck‚àí1 and ‚àÜi‚àók = ik‚àó ‚àí i‚àók‚àí1, with I(¬∑) as the indicator function. Ultimately, to establish a robust baseline, the alignment score Idiag(h) is
+calculated as the expectation over Eideal, a set of optimal episodes achieving a
+perfect Success weighted by Path Length (SPL) [2] of 1.0:
+
+ \label {method_eq:3} I_{\texttt {diag}}(h) = \mathbb {E}_{\tau \sim \mathcal {E}_\text {ideal}} \left [ S_\texttt {uniform}^{(h)} \cdot S_\texttt {peak}^{(h)} \cdot \left ( \lambda S_{\texttt {diag}}^{(h)} + (1 - \lambda ) S_{\texttt {shift}}^{(h)} \right ) \right ], (3)
+where Œª balances spatial precision with temporal smoothness. Heads consistently yielding high Idiag(h) are selected as initial candidates for Hnav. Cognitive Anomaly Sensitivity. While the alignment score Idiag identifies heads optimized for instruction following, a robust navigation head must also exhibit distinct attentional shifts during failure modes. Therefore, we evaluate the sensitivity of candidate heads by analyzing the divergence in their focus sharpness (Speak) distributions between the normal (N ) and anomalous (A) phases. This degree of separation for each head h is quantified using Cohen‚Äôs d [30]:
+
+ \label {method_eq:cohen} d(h) = \frac {|\mu _{\mathcal {N}  - \mu _{\mathcal {A} |}{\sigma _{\text {po led} }, \quad \text {where } \sigma _{\text {po led}  = \sqrt {\frac {(n_{\mathcal {N} -1)\sigma _{\mathcal {N} ^2 + (n_{\mathcal {A} -1)\sigma _{\mathcal {A} ^2}{n_{\mathcal {N} +n_{\mathcal {A} -2}
+
+(4)
+
+Here, ¬µ and œÉ represent the mean and standard deviation of the focus sharpness within each partition, with n denoting the sample count. A higher d(h) signifies a substantial shift or collapse in attention focus when the agent becomes stuck. Consequently, we rank the candidate heads by d(h) to form Hnav.
+
+3.4 Attention-Based Path Deviation Detection
+To detect path deviations, we compute the mean attention entropy Et at each time step t using the top-K heads from Hnav. We then monitor the relative entropy score Rt, as the ratio of Et to its rolling window average of size W :
+
+ \label {method_eq:reldiff} \mathcal {R}_t = \frac {E_t}{\frac {1}{W} \sum _{i=1}^{W} E_{t-i} + \epsilon }, \quad \text {where } E_t = \frac {1}{|H_\texttt {nav}|} \sum _{h \in H_\texttt {nav}} \mathcal {H}(A_t^{(h)}). 
+
+(5)
+
+Here, H(¬∑) denotes the normalized Shannon entropy averaged over visual frames, ensuring scale invariance. A high Rt indicates a sudden dispersion of attention relative to the agent‚Äôs recent history, serving as a strong precursor to navigation failure. Mirroring the patience mechanism of the ground-truth labeling, an anomaly state (A) is registered only if Rt exceeds a natural threshold œÑ for P consecutive steps. Throughout the normal phase (N ), we continuously update a safe checkpoint Csafe = {st, Vt, Mt, At}, preserving the agent‚Äôs pose st = (x, y, z, Œ∏), visual history Vt, the entropy buffer Mt = {Et‚àíW , . . . , Et‚àí1}, and the attention state At required for future recovery. The hyperparameters (K, W, œÑ, P ) are jointly optimized via a grid sweep on the training split, as detailed in Sec. 4.
+
+VLA Models Already Detect Path Deviation
+
+9
+
+3.5 Collision-Free Low Level Action Policy
+
+Visual Observation
+[Ì†µÌ±Å, 128, 128] ‚Üí CNN
+‚ã∞
+State Observation
+[Ì†µÌ±Å, 2] ‚Üí MLP
+0.29 0.61 0.25 0.77
+‚ãÆ‚ãÆ 9.25 5.77
+
+Conv (1,32,(8x8),4) ReLU
+Conv (32,64,(4x4),2) ReLU
+Conv (64,64,(3x3),1) ReLU
+Flatten (9216) Linear (2,64)
+ReLU Linear (64,64)
+ReLU (64) Linear (9280,512)
+ReLU Linear (512,128)
+ReLU Linear (128,1)
+
+Conv (1,32,(8x8),4) ReLU
+Conv (32,64,(4x4),2) ReLU
+Conv (64,64,(3x3),1) ReLU
+Flatten (9216) Linear (2,64)
+ReLU Linear (64,64)
+ReLU (64) Linear (9280,512)
+ReLU Linear (512,128)
+ReLU Linear (128,2)
+Tanh
+
+CNN Visual Encoder CNN Visual Encoder
+
+Low-level Action Policy
+
+MLP State Encoder
+
+Actor Head (Policy MLP)
+
+/cmd_vel [ Ì†µÌºà, Ì†µÌºî]
+
+Action Mean (Ì†µÌºá)
+Log Std Parameter
+
+Gaussian Action
+Distribution
+
+MLP State Encoder
+
+Advantage (Ì†µÌ∞¥)
+
+Critic Head (Value MLP)
+
+Value Estimate
+(Ì†µÌ±â(Ì†µÌ±†))
+
+Advantage Calculation (Ì†µÌ∞¥ = Ì†µÌ±Ö ‚àí Ì†µÌ±â(Ì†µÌ±†))
+
+Environment Reward & Return (Ì†µÌ±Ö)
+
+Fig. 5: The network processes 128 √ó 128 visual costmaps through a CNN encoder to extract spatial obstacle features, and relative local subgoal states (x, y) via an MLP encoder for directional guidance. These features are fused to feed two specialized heads: the Actor head, which outputs Gaussian distributions for velocity control commands (œÖ, œâ), and the Critic head, which estimates the state-value V (s). This hierarchical design enables the agent to learn reactive obstacle avoidance and robust subgoal navigation through advantage-based reinforcement learning.
+
+To achieve safe collision avoidance and low-level control, we mirror a customized real-world robotic platform and its sensor suite within the physics-based simulator IsaacLab [42]. The agent is trained using Proximal Policy Optimization (PPO) [47] with relative goal coordinates and LiDAR data. To ensure the policy remains agnostic to specific LiDAR hardware configurations, we employ a 2D occupancy grid costmap as an intermediate observation space rather than using raw point clouds. Specifically, we apply ego-motion compensation to spatially align the map with the robot‚Äôs motion, and we couple it with a temporal decay mechanism that gradually fades historical obstacle data. This formulation enables the system to robustly handle dynamic obstacles and mitigate the impact of temporary sensor blind spots. To process these inputs, we design a lightweight and efficient actor-critic architecture (as shown in Fig. 5) that decouples the observation streams. A CNN extracts spatial features from the costmap for obstacle avoidance, while an MLP encodes the relative direction and distance to the goal for path tracking. These feature representations are subsequently fused to predict control actions. Furthermore, to promote generalization, the policy is trained in a large-scale 250 m √ó 200 m virtual environment populated with 2,000 procedural obstacles (cylinders and boxes), with a minimum traversable clearance of 3.0 m strictly enforced. We formulate a 14-term dense reward to jointly optimize goal-reaching, safety, and smoothness. A curriculum learning strategy progressively extends the goal distance from 5 m to 20 m, ensuring reliable long-horizon evasive maneuvers by consistently accumulating goal-reaching rewards. Finally, training is heavily accelerated via CUDA batching. Detailed hyperparameters are provided in the Supplementary Material.
+
+10
+
+J. Jeong et al.
+
+3.6 Sim-to-Real Transfer Environment.
+To bridge the sim-to-real gap, we designed an optimized on-device architecture within the Robot Operating System (ROS) [36] that supports both the VLA model and the RL policy. Both strictly require real-time state estimation: the VLA relies on localization for failure recovery, while the RL policy requires precise odometry for costmap ego-motion compensation. To mitigate computational bottlenecks, we adopted Fast-LIVO2 [59], a lightweight, CPU-based multi-sensor odometry framework. To establish a fixed global coordinate system, we fused this odometry with AprilTag [43] detections via an Extended Kalman Filter (EKF). This approach enables reliable data comparison and ensures that limited GPU resources are reserved exclusively for the computationally intensive AI models, thereby maximizing real-time inference efficiency. Comparative experiments are detailed in the Supplementary Material. Regarding robot locomotion, the raw velocity commands (v, w) generated by the RL policy often exhibit high-frequency oscillations that compromise physical stability. To ensure safe deployment, we implemented a kinematic action smoother utilizing a low-pass filter, acceleration clipping, and deadzone masking. By enforcing a strictly bounded acceleration profile, the smoother preserves the agent‚Äôs reactive obstacle avoidance capabilities while mitigating mechanical strain and preventing motor overload. Detailed implementation specifics are provided in the Supplementary Material.
+
+4 Experiments
+4.1 Experimental Setup
+Simulation and Training. Experiments and RL training were conducted on a single NVIDIA RTX 6000 Ada GPU. We adopt the default NaVILA [10] configuration (384 √ó 384 resolution), excluding the detection-specific hyperparameters and ablation studies detailed in Sec. 4.2. Further details regarding the Isaac Lab environment are provided in the Supplementary Material. Real-world Deployment. The framework was deployed on an AgileX Scout 2.0 mobile robot equipped with an NVIDIA Jetson AGX Orin (64 GB), a ZED 2i camera, and an RS-LiDAR. Remote control is managed via a host PC over 5G, following the setup in [20]. Detailed communication protocols and calibration parameters are available in the Supplementary Material.
+
+4.2 Evaluating Navigation Heads for Anomaly Detection
+Validation of Ground Truth Labels. As summarized in Table 1, we rigorously validate our behavioral Ground Truth (GT) labels to ensure the reliability of the anomaly detection framework. For this validation, we utilize the NaVILA [10] backbone to extract trajectories from 1,000 random episodes in the Train split, as well as all episodes in the Val-Seen and Val-Unseen splits of the VLN-CE R2R dataset [3]. Each episode is categorized into mutually exclusive
+
+VLA Models Already Detect Path Deviation
+
+11
+
+Table 1: Ground Truth (GT) analysis of trajectory phases (Sec. 3.2). On NaVILA [10] trajectories in VLN-CE R2R [3], high Cohen‚Äôs d (> 1.2) confirms strong statistical separation in waypoint distances between N and A steps. Notably, the Val-Unseen ‚ÄòOnly N ‚Äô ratio (56.0 %) matches the baseline Success Rate, verifying GT reliability.
+
+Episode Category
+
+Path Distance & Effect Size
+
+Split
+
+Total Only N
+
+Only A N ‚Üí A N Median A Median Cohen‚Äôs d
+
+Train 1,000 617 (61.7 %) 79 (7.9 %) 304 (30.4 %) 0.13 m
+
+2.38 m
+
+1.54
+
+Val-Seen 778 435 (55.9 %) 91 (11.7 %) 252 (32.4 %) 0.14 m
+
+2.97 m
+
+1.60
+
+Val-Unseen 1,839 1,029 (56.0 %) 263 (14.3 %) 547 (29.7 %) 0.16 m
+
+2.53 m
+
+1.27
+
+classes. Step-level path-distance analysis reveals that, even without explicit spatial thresholds, our state-machine-based labeling successfully captures distinct navigational behaviors. Specifically, N steps tightly adhere to the optimal path with median deviations of 0.13‚Äì0.16 m, while A steps diverge significantly to 2.38‚Äì2.97 m. The resulting large effect size (Cohen‚Äôs d > 1.2) statistically confirms that our behavior-driven criteria robustly isolate severe deviations from minor steering noise. Furthermore, the only N ratio in the Val-Unseen split (56.0 %) matches the baseline‚Äôs terminal Success Rate, justifying the macroscopic validity of our GT. Finally, analyzing the temporal structure of N ‚Üí A transitions reveals a median N phase of 6‚Äì7 steps followed by an A phase of 9‚Äì10 steps. This balanced phase distribution confirms that the anomaly-onset positions are assigned, providing sufficient baseline history to characterize the normal navigational context and an adequate temporal window for detection.
+Path Deviation Detection Performance. To verify the generalization of our methodology, we first derive the optimal configuration for our anomaly detector strictly from the R2R train split. As shown in Fig. 6a, we extract a subset of attention heads (Hnav) and conduct an extensive grid search over 9,000 combinations, comprising the ensemble size (K ‚àà {1, . . . , 10}), patience (P ‚àà {1, . . . , 10}), sliding window (W ‚àà {1, . . . , 10}), and 9 values for the activation threshold (œÑ ). As illustrated in Fig. 6b, by strictly constraining the False Episode Rate (FER)‚Äîthe rate at which normal navigation is misclassified as
+
+Anomaly Sensitivity (Cohen‚Äôs d) L21 H12 L16 H1 L14 H1
+L16 H26 L24 H18 L21 H14 L14 H20 L16 H27 L16 H24 L16 H8 Rate (%) Rate (%)
+
+0.5
+0.4
+0.3
+0.2
+0.1
+0.0 1 2 3 4 5 6 7 8 9 10 Navigation Heads Rank (Top-10)
+(a) Hnav Discriminability
+
+50
+
+EDR
+
+FER
+
+40
+
+Gap
+
+30
+
+20
+
+10
+
+0 1 2 3 4 5 6 7 8 9 10 Ensemble Size (K)
+(b) Episode-level K ablation
+
+100
+
+90
+
+Precision
+
+80
+
+Recall F1
+
+70
+
+60
+
+50
+
+40 1 2 3 4 5 6 7 8 9 10 Ensemble Size (K)
+(c) Step-level K ablation
+
+Fig. 6: Ablation study of navigation heads (Hnav) and ensemble size (K) on the R2R train split. (a) Discriminability of attention heads measured by Cohen‚Äôs d; higher values indicate greater sensitivity to anomalous behaviors. (b) Episode-level detection performance across K. Thresholds are optimized via grid search to maximize Episode Detection Rate (EDR) while constraining False Episode Rate (FER) within 5‚Äì10 % (Gap = EDR ‚àí FER). (c) Step-level classification performance on N ‚Üí A episodes. Notably, an ensemble of just K = 3 heads achieves 43.9 % EDR and 9.6 % FER at the episode level, alongside 92.9 % Precision, 61.6 % Recall, and 74.1 % F1 at the step level.
+
+12
+
+J. Jeong et al.
+
+Table 2: Performance comparison of training-free anomaly detection on R2R validation splits. Evaluating Hnav and hyperparameters derived solely from the train split, we baseline against rule-based heuristics [1, 39] to ensure a fair comparison with nearzero inference overhead. Our approach significantly outperforms these baselines in both episode-level net advantage (Gap) and step-level F1. Notably, while heuristics suffer from severe recall bottlenecks (missing >60 % of anomalies), our method robustly captures navigation failures without requiring additional trainable modules.
+
+R2R Val-Seen
+
+R2R Val-Unseen
+
+Method
+
+All Episodes
+
+N ‚Üí A Step-level
+
+All Episodes
+
+N ‚Üí A Step-level
+
+EDR ‚Üë FER ‚Üì Gap ‚Üë Prec. ‚Üë Rec. ‚Üë F1 ‚Üë EDR ‚Üë FER ‚Üì Gap ‚Üë Prec. ‚Üë Rec. ‚Üë F1 ‚Üë
+
+Stagnation [39] 24.5 % 4.8 % 19.7 % 99.7 % 31.3 % 47.7 % 29.6 % 5.9 % 23.7 % 95.6 % 38.7 % 55.1 %
+
+Act.Failure [1] 0.3 % 6.0 % ‚àí5.7 % 70.6 % 2.8 % 5.5 % 1.5 % 6.3 % ‚àí4.8 % 77.9 % 5.6 % 10.4 %
+
+Ours
+
+44.6 % 11.7 % 32.9 % 91.3 % 68.6 % 78.3 % 41.9 % 9.6 % 32.2 % 92.5 % 65.1 % 76.4 %
+
+anomalous‚Äîbelow 10 %, the ensemble combination of K = 3 achieves the highest Episode Detection Rate (EDR), defined as the rate of correctly identifying anomalous episodes. At the step level, evaluated across 304 N ‚Üí A transition scenarios (consisting of 2,277 normal and 4,271 anomalous steps), this configuration records 92.9 % Precision, 61.6 % Recall, and a 74.1 % F1 score. The individual performance trends concerning P , W , and œÑ are detailed in Fig. 7. Table 2 compares our approach against established zero-inference-overhead heuristics [1, 39] on the validation splits, strictly utilizing the heads and hyperparameters derived from the train data. Our method significantly outperforms these rigid baselines across both episode- and step-level metrics. Position Stagnation [39], which flags anomalies via fixed (x, y) displacement thresholds, maintains a low FER (4.8 % on Val-Seen) but suffers from severe recall bottlenecks (missing >60 % of step anomalies), yielding a maximum Gap of only 23.7 % on Val-Unseen. Action Failure [1], which monitors coordinate shifts strictly during forward actions, similarly fails to reliably detect deviations, resulting in a negative Gap. In contrast, our method robustly captures navigation failures by monitoring the semantic misalignment between linguistic instructions and visual observations, rather than relying solely on the robot‚Äôs physical kinematics. Con-
+
+Rate (%) Rate (%) Latency (Ì†µÌ±≥!) Rate (%)
+
+70
+
+EDR
+
+60
+
+FER Gap
+
+50
+
+40
+
+30
+
+20
+
+10
+
+0
+
+FER ‚â§ 10 %
+
+1 2 3 4 5 6 7 8 9 10 Window Size (W)
+
+(a) Effect of Window size
+
+70
+
+60
+
+EDR 12
+FER
+
+50
+
+Gap 10
+Ì†µÌ∞ø
+
+40
+
+8
+
+30
+
+6
+
+20
+
+4 FER ‚â§ 10 %
+
+10
+
+2
+
+0 1 2 3 4 5 6 7 8 9 10
+Patience (P)
+
+(b) Effect of Patience
+
+EDR
+
+40
+
+FER
+
+Gap
+
+30
+
+20
+
+10
+
+FER ‚â§ 10 % 0
+
+0.85
+
+0.90
+
+0.95
+
+1.00
+
+1.05
+
+Threshold (Ì†µÌΩâ)
+
+(c) Effect of Threshold
+
+Fig. 7: Hyperparameter grid search for the proposed anomaly detector (K = 3) on the R2R train split. (a) Both EDR and detection Gap (EDR ‚àí FER) increase monotonically, saturating around W = 7. (b) Increasing P effectively suppresses FER, albeit at the cost of a linearly increasing mean detection latency. (c) The detector exhibits sharp sensitivity near œÑ = 1.0, where both EDR and FER drop rapidly. Ultimately, driven by the FER < 10 % constraint, we select (W = 10, P = 9, œÑ = 0.95) that achieves an EDR of 43.9 %, thereby preventing unnecessary interruptions during normal navigation.
+
+VLA Models Already Detect Path Deviation
+
+13
+
+sequently, on the Val-Unseen split, our detector achieves a Gap of 32.2 % and a step-level F1 score of 76.4 %, driven by a substantial improvement in recall (65.1 %). This confirms that leveraging intrinsic cross-modal attention dynamics yields a far more comprehensive and generalizable signal for path deviation than coordinate-based mechanisms. Qualitative results are in Fig. 9
+
+4.3 RL Obstacle Avoidance Performance
+
+Metric SR ‚Üë CR ‚Üì TR ‚Üì APF [26] 57.4 % 7.8 % 34.5 % DWA [14] 24.1 % 73.1 % 0.7 % MPPI [57] 3.4 % 86.1 % 0.4 % TEB [46] 55.4 % 37.5 % 6.9 %
+Ours 87.3 % 10.6 % 2.0 %
+(a) RL Policy Performance
+
+80 Cylinders
+
+Evaluation Environment
+
+60 Walls (b) Evaluation Environments
+
+Fig. 8: Evaluation of the low-level RL obstacle avoidance policy. (a) Quantitative comparison of average performance metrics (SR, CR, and TR) against classical local planning baselines. Our proposed policy significantly outperforms traditional methods, achieving the highest average success rate of 87.3 %. (b) Visualization of the IsaacLab evaluation environment. The testbed comprises a 60 m √ó 60 m subterrain populated with procedurally generated cylindrical obstacles and wall-shaped boxes to comprehensively assess collision-free navigation.
+
+Evaluation Setup. We evaluate our RL obstacle avoidance policy in IsaacLab [41]. The testbed comprises a single 60 m √ó 60 m subterrain (Fig. 8b) populated with 80 cylindrical obstacles and 60 wall-shaped boxes (all 2.0 m high). A minimum clearance of 2.0 m ensures the existence of feasible paths. Across four target-distance scenarios (5 m to 20 m), 512 parallel agents are spawned, yielding 2,048 independent episodes. The policy maps local costmaps to continuous velocity commands bounded to v ‚àà [‚àí0.5, 0.5] m/s and œâ ‚àà [‚àí1.0, 1.0] rad/s. Episodes conclude upon: (i) reaching within 0.5 m of the target (Success Rate, SR); (ii) stalling > 3.0 s or exceeding 150.0 s (Terminate Rate, TR); or (iii) colliding with an obstacle exceeding 200 N of force (Collision Rate, CR).
+Evaluation Analysis. Table 8a compares our policy against four classical local planners using purely local observations (a 128 √ó 128 costmap and relative goal position). Among the baselines, APF [26] attains a relatively high SR (57.4 %) but suffers a severe TR (34.5 %) due to frequent entrapment in local minima. TEB [46] shows a comparable SR (55.4 %) but struggles with collisions (CR 37.5 %) in dense configurations. DWA [14] and MPPI [57] fail entirely (CR > 73 %), as their short-horizon trajectory sampling cannot anticipate complex obstacle layouts. In contrast, our RL policy achieves the highest SR (87.3 %), outperforming the best baseline by nearly 30 percentage points, while maintaining a low CR (10.6 %) and TR (2.0 %). This demonstrates that our tailored reward function and extensive environmental interaction effectively equip the policy with implicit spatial reasoning, allowing it to smoothly navigate dense layouts where classical reactive planners crash or stall. Detailed per-distance metrics are provided in the Supplementary Material.
+
+14
+
+J. Jeong et al.
+
+(a) VLN-CE R2R
+
+Instruction: "Go through the large wooden doors and turn right. Pass the photos on the left and pass the second set of wooden doors. Continue going straight and stop at the chair at the end of the table."
+
+Y (m)
+
+(b) REAL WORLD
+
+3
+
+Trajectory Current
+
+Start
+2
+
+1
+
+0
+
+-1
+
+Instruction: "Go straight, pass the blue trash bin, turn left, and stop there."
+
+0
+
+2
+
+4
+
+6
+
+8
+
+X (m)
+
+Fig. 9: (a) Hallucination-induced path deviation and recovery in VLN-CE simulation.
+
+(b) Real-robot visualization of RL-driven recovery from path deviations during VLA
+
+navigation. Additional results are provided in the Supplementary Material.
+
+4.4 Real-world Evaluation
+As shown in Fig. 9, we evaluated our framework on a custom VLA-driven robot. Upon detecting deviations, an RL policy safely executes a trajectory rollback. Setup details and further experiments are in the Supplementary Material.
+
+5 Conclusion
+We present a training-free anomaly detection and recovery framework for VLA models. By analyzing the internals of a frozen VLA, we discovered a sparse set of Navigation Heads (Hnav) that naturally capture the spatiotemporal alignment between visual observations and linguistic instructions. Building on this, we propose a real-time system that detects path deviations by measuring the entropy of these specific heads without additional computational overhead. To ensure safe physical execution, we integrated this detection signal with a lightweight, low-level RL policy capable of reactive obstacle avoidance and shortest-path rollback. Evaluations in both simulations and real-robot experiments demonstrate that our approach effectively mitigates navigation failures caused by VLA hallucinations. Ultimately, this research provides a practical solution for deploying reliable, self-monitoring embodied agents in complex continuous environments.
+Limitations and Future Work. While our identification of navigation-specific attention heads enables cost-free anomaly detection and recovery, merely correcting the physical trajectory without synchronizing the VLA model‚Äôs internal context can trigger repetitive cognitive errors. Implementing active replanning or re-prompting frameworks to align these internal states would effectively break such error loops, thereby significantly enhancing overall navigation success rates. Furthermore, within the context of prior research on pruning redundant attention heads for model compression [40], our identification of navigation heads offers a strategic pathway for targeted optimization. By selectively retaining only the task-essential heads, inference speeds could be significantly accelerated, thereby enabling more efficient and responsive operation in on-device deployments.
+
+VLA Models Already Detect Path Deviation
+
+15
+
+Acknowledgements
+
+We acknowledge financial support from the National Institute of Food & Agriculture of the U.S. Department of Agriculture (Grant No. 2024-67021-42528) and the NVIDIA Academic Grants Program. This work was also supported by the Culture, Sports, and Tourism R&D Program through a Korea Creative Content Agency grant funded by the Ministry of Culture, Sports and Tourism in 2024 (International Collaborative Research and Global Talent Development for the Development of Copyright Management and Protection Technologies for Generative AI, No. RS-2024-00345025), as well as an Institute of Information & Communications Technology Planning & Evaluation (IITP) grant funded by the Korean government (MSIT) (No. RS-2019-II190079, Artificial Intelligence Graduate School Program, Korea University).
+
+References
+1. An, D., Wang, H., Wang, W., Wang, Z., Huang, Y., He, K., Wang, L.: Etpnav: Evolving topological planning for vision-language navigation in continuous environments. IEEE TPAMI (2024) 2, 4, 12
+2. Anderson, P., Chang, A., Chaplot, D.S., Dosovitskiy, A., Gupta, S., Koltun, V., Kosecka, J., Malik, J., Mottaghi, R., Savva, M., et al.: On evaluation of embodied navigation agents. arXiv preprint arXiv:1807.06757 (2018) 8
+3. Anderson, P., Wu, Q., Teney, D., Bruce, J., Johnson, M., S√ºnderhauf, N., Reid, I., Gould, S., Van Den Hengel, A.: Vision-and-language navigation: Interpreting visually-grounded navigation instructions in real environments. In: CVPR. pp. 3674‚Äì3683 (2018) 1, 10, 11
+4. Beemelmanns, T.: ros2_calib: A Multi-Sensor Calibration Tool for ROS2. https: //github.com/ika- rwth- aachen/ros2_calib (2025). https://doi.org/10. 5281/zenodo.17119720, accessed: 2026-03-11 15
+5. Chen, K., Chen, J.K., Chuang, J., V√°zquez, M., Savarese, S.: Topological planning with transformers for vision-and-language navigation. In: CVPR. pp. 11276‚Äì11286 (2021) 2
+6. Chen, L., Zhao, H., Liu, T., Bai, S., Lin, J., Zhou, C., Chang, B.: An image is worth 1/2 tokens after layer 2: Plug-and-play inference acceleration for large visionlanguage models. In: ECCV. pp. 19‚Äì35 (2024) 3
+7. Chen, S., Guhur, P.L., Schmid, C., Laptev, I.: History aware multimodal transformer for vision-and-language navigation. In: NeurIPS. vol. 34, pp. 5834‚Äì5847 (2021) 1
+8. Chen, S., Guhur, P.L., Tapaswi, M., Schmid, C., Laptev, I.: Think global, act local: Dual-scale graph transformer for vision-and-language navigation. In: CVPR. pp. 16537‚Äì16547 (2022) 1
+9. Chen, Z., Zhao, Z., Luo, H., Yao, H., Li, B., Zhou, J.: HALC: Object hallucination reduction via adaptive focal-contrast decoding. arXiv preprint arXiv:2403.00425 (2024) 2
+10. Cheng, A.C., Ji, Y., Yang, Z., Gongye, Z., Zou, X., et al.: Navila: Legged robot vision-language-action model for navigation. In: RSS (2025) 1, 5, 10, 11
+11. Clark, K., Khandelwal, U., Levy, O., Manning, C.D.: What does BERT look at? an analysis of BERT‚Äôs attention. In: BlackboxNLP. pp. 276‚Äì286 (2019) 5
+
+16
+
+J. Jeong et al.
+
+12. Du, Y., Fu, T., Chen, Z., Li, B., Su, S., Zhao, Z., Wang, C.: VL-Nav: Real-time vision-language navigation with spatial reasoning. arXiv preprint arXiv:2502.00931 (2025) 3
+13. Elnoor, M., Weerakoon, K., Seneviratne, G., Xian, R., Guan, T., Jaffar, M.K.M., Rajagopal, V., Manocha, D.: Robot navigation using physically grounded visionlanguage models in outdoor environments. arXiv preprint arXiv:2409.20445 (2024) 3
+14. Fox, D., Burgard, W., Thrun, S.: The dynamic window approach to collision avoidance. IEEE Robotics & Automation Magazine 4(1), 23‚Äì33 (2002) 4, 13, 10
+15. Fried, D., Hu, R., Cirik, V., Rohrbach, A., Andreas, J., et al.: Speaker-follower models for vision-and-language navigation. In: NeurIPS (2018) 1, 4
+16. Grattafiori, A., Dubey, A., Jauhri, A., Pandey, A., Kadian, A., Al-Dahle, A., Letman, A., Mathur, A., Schelten, A., Vaughan, A., et al.: The llama 3 herd of models. arXiv preprint arXiv:2407.21783 (2024) 5
+17. Hong, Y., Wu, Q., Qi, Y., Rodriguez-Opazo, C., Gould, S.: Vln bert: A recurrent vision-and-language bert for navigation. In: CVPR. pp. 1643‚Äì1653 (2021) 1
+18. Hornung, R., Urbanek, H., Klodmann, J., Osendorfer, C., van der Smagt, P.: Model-free robot anomaly detection. In: IROS. pp. 3676‚Äì3683 (2014) 2, 4
+19. Hu, Y., Lin, F., Zhang, T., Yi, L., Gao, Y.: Look before you leap: Unveiling the power of gpt-4v in robotic vision-language planning. arXiv preprint arXiv:2311.17842 (2023) 2, 4
+20. Jeong, J., Vu, T.A., Jony, M., Ahmad, S., Rahman, M.M., Kim, S., Jawed, M.K.: Agrichrono: A multi-modal dataset capturing crop growth and lighting variability with a field robot. arXiv preprint arXiv:2508.18694 (2025) 10
+21. Jeong, J., Vu, T.A., Lahoti, R., Wang, J., Alumootil, V., Kim, S., Jawed, M.K.: Vision-guided targeted grasping and vibration for robotic pollination in controlled environments. arXiv preprint arXiv:2510.06146 (2025) 15
+22. Ji, T., Sivakumar, A.N., Chowdhary, G., Driggs-Campbell, K.: Proactive anomaly detection for robot navigation with multi-sensor fusion. IEEE RA-L 7(2), 4975‚Äì 4982 (2022) 2, 4
+23. Kahn, G., Abbeel, P., Levine, S.: BADGR: An autonomous self-supervised learning-based navigation system. IEEE RA-L 6(2), 1312‚Äì1319 (2021) 4
+24. Kahn, G., Abbeel, P., Levine, S.: LaND: Learning to navigate from disengagements. IEEE RA-L 6(2), 1872‚Äì1879 (2021) 4
+25. Kang, S., Kim, J., Kim, J., Hwang, S.J.: Your large vision-language model only needs a few attention heads for visual grounding. In: CVPR. pp. 9339‚Äì9350 (2025) 5
+26. Khatib, O.: Real-time obstacle avoidance for manipulators and mobile robots. The International Journal of Robotics Research 5(1), 90‚Äì98 (1986) 13, 10
+27. Krantz, J., Lee, S.: Sim-2-sim transfer for vision-and-language navigation in continuous environments. In: ECCV. pp. 588‚Äì603 (2022) 3
+28. Krantz, J., Wijmans, E., Majumdar, A., Batra, D., Lee, S.: Beyond the nav-graph: Vision-and-language navigation in continuous environments. In: ECCV. pp. 104‚Äì 120 (2020) 1
+29. Ku, A., Anderson, P., Patel, R., Ie, E., Baldridge, J.: Room-across-room: Multilingual vision-and-language navigation with dense spatiotemporal grounding. In: EMNLP. pp. 4392‚Äì4412 (2020) 2
+30. Lakens, D.: Calculating and reporting effect sizes to facilitate cumulative science: A practical primer for t-tests and ANOVAs. Frontiers in Psychology 4, 863 (2013) 8
+
+VLA Models Already Detect Path Deviation
+
+17
+
+31. Lin, F., Nai, R., Hu, Y., You, J., Zhao, J., Gao, Y.: OneTwoVLA: A unified visionlanguage-action model with adaptive reasoning. arXiv preprint arXiv:2505.11917 (2025) 4
+32. Lin, J., Yin, H., Ping, W., Lu, Y., Molchanov, P., Tao, A., Mao, H., Kautz, J., Shoeybi, M., Han, S.: Vila: On pre-training for visual language models. In: CVPR (2024) 5
+33. Liu, Z., Zhu, L., Shi, B., Zhang, Z., Lou, Y., Yang, S., et al.: Nvila: Efficient frontier visual language models. arXiv preprint arXiv:2412.04468 (2024) 3
+34. Ma, C.Y., Lu, J., Wu, Z., AlRegib, G., Kira, Z., Socher, R., Xiong, C.: Selfmonitoring navigation agent via auxiliary progress estimation. arXiv preprint arXiv:1901.03035 (2019) 2, 4
+35. Ma, C.Y., Wu, Z., AlRegib, G., Xiong, C., Kira, Z.: The regretful agent: Heuristicaided navigation through progress estimation. In: CVPR. pp. 6732‚Äì6740 (2019) 2
+36. Macenski, S., Foote, T., Gerkey, B., Lalancette, C., Woodall, W.: Robot Operating System 2: Design, architecture, and uses in the wild. Science Robotics 7(66), eabm6074 (2022) 10
+37. Malhotra, P., Ramakrishnan, A., Anand, G., Vig, L., Agarwal, P., Shroff, G.: LSTM-based encoder-decoder for multi-sensor anomaly detection. arXiv preprint arXiv:1607.00148 (2016) 4
+38. Marafioti, A., Zohar, O., Farr√©, M., Noyan, M., Bakouch, E., Cuenca, P., Zakka, C., Allal, L.B., Lozhkov, A., Tazi, N., et al.: SmolVLM: Redefining small and efficient multimodal models. arXiv preprint arXiv:2504.05299 (2025) 1
+39. Marder-Eppstein, E., Berger, E., Foote, T., Gerkey, B., Konolige, K.: The office marathon: Robust navigation in an indoor office environment. In: ICRA. pp. 300‚Äì 307 (2010) 4, 12
+40. Michel, P., Levy, O., Neubig, G.: Are sixteen heads really better than one? In: NeurIPS (2019) 5, 14
+41. Mittal, M., Roth, P., Tigue, J., Richard, A., Zhang, O., Du, P., Serrano-Munoz, A., Yao, X., Zurbr√ºgg, R., Rudin, N., et al.: Isaac Lab: A GPU-accelerated simulation framework for multi-modal robot learning. arXiv preprint arXiv:2511.04831 (2025) 13
+42. Mittal, M., Roth, P., Tigue, J., Richard, A., Zhang, O., Du, P., et al.: Isaac lab: A gpu-accelerated simulation framework for multi-modal robot learning. arXiv preprint arXiv:2511.04831 (2025) 9, 3, 4
+43. Olson, E.: AprilTag: A robust and flexible visual fiducial system. In: ICRA. pp. 3400‚Äì3407 (2011) 10, 13
+44. Park, D., Hoshi, Y., Kemp, C.C.: A multimodal anomaly detector for robot-assisted feeding using an LSTM-based variational autoencoder. IEEE RA-L 3(3), 1544‚Äì 1551 (2018) 4
+45. Rajvanshi, A., Sikka, K., Lin, X., Lee, B., Chiu, H.P., Velasquez, A.: SayNav: Grounding large language models for dynamic planning to navigation in new environments. In: ICAPS. vol. 34, pp. 464‚Äì474 (2024) 2, 4
+46. R√∂smann, C., Feiten, W., W√∂sch, T., Hoffmann, F., Bertram, T.: Trajectory modification considering dynamic constraints of autonomous robots. In: ROBOTIK 2012; 7th German Conference on Robotics. pp. 1‚Äì6 (2012) 13, 10
+47. Schulman, J., Wolski, F., Dhariwal, P., Radford, A., Klimov, O.: Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 (2017) 9
+48. Serrano-Mu√±oz, A., Chrysostomou, D., B√∏gh, S., Arana-Arexolaleiba, N.: skrl: Modular and flexible library for reinforcement learning. Journal of Machine Learn-
+
+18
+
+J. Jeong et al.
+
+ing Research 24(254), 1‚Äì9 (2023), http://jmlr.org/papers/v24/23-0112.html 8, 9 49. Shukor, M., Aubakirova, D., Capuano, F., Kooijmans, P., et al.: Smolvla: A vision-language-action model for affordable and efficient robotics. arXiv preprint arXiv:2506.01844 (2025) 3 50. Taioli, F., Rosa, S., Castellini, A., Natale, L., Del Bue, A., Farinelli, A., Cristani, M., Wang, Y.: Mind the error! detection and localization of instruction errors in vision-and-language navigation. In: IROS. pp. 12993‚Äì13000 (2024) 2, 4 51. Tan, H., Yu, L., Bansal, M.: Learning to navigate unseen environments: Back translation with environmental dropout. In: NAACL. pp. 2610‚Äì2621 (2019) 1 52. Tang, F., Liu, C., Xu, Z., Hu, M., Huang, Z., Xue, H., Chen, Z., Peng, Z., Yang, Z., Zhou, S., et al.: Seeing far and clearly: Mitigating hallucinations in MLLMs with attention causal decoding. In: CVPR. pp. 26147‚Äì26159 (2025) 2 53. Voita, E., Talbot, D., Moiseev, F., Sennrich, R., Titov, I.: Analyzing multi-head self-attention: Specialized heads do the heavy lifting, the rest can be pruned. In: ACL. pp. 5797‚Äì5808 (2019) 5 54. Wang, H., Liang, W., Van Gool, L., Wang, W.: Dreamwalker: Mental planning for continuous vision-language navigation. In: ICCV. pp. 10873‚Äì10883 (2023) 2 55. Wang, Z., Li, X., Yang, J., Liu, Y., Hu, J., Jiang, M., Jiang, S.: Lookahead exploration with neural radiance representation for continuous vision-language navigation. In: CVPR. pp. 13753‚Äì13762 (2024) 1 56. Wellhausen, L., Ranftl, R., Hutter, M.: Safe robot navigation via multi-modal anomaly detection. IEEE RA-L 5(2), 1326‚Äì1333 (2020) 2, 4 57. Williams, G., Wagener, N., Goldfain, B., Drews, P., Rehg, J.M., Boots, B., Theodorou, E.A.: Information theoretic MPC for model-based reinforcement learning. In: ICRA. pp. 1714‚Äì1721 (2017) 13, 10 58. Zhang, J., Wang, K., Xu, R., Zhou, G., Hong, Y., Fang, X., Wu, Q., Zhang, Z., Wang, H.: Navid: Video-based vlm plans the next step for vision-and-language navigation. arXiv preprint arXiv:2402.15852 (2024) 1 59. Zheng, C., Xu, W., Zou, Z., Hua, T., Yuan, C., He, D., Zhou, B., Liu, Z., Lin, J., Zhu, F., et al.: FAST-LIVO2: Fast, direct LiDAR‚Äìinertial‚Äìvisual odometry. IEEE Transactions on Robotics 41, 326‚Äì346 (2024) 10, 13 60. Zheng, Z., Wang, Y., Huang, Y., Song, S., Yang, M., Tang, B., Xiong, F., Li, Z.: Attention heads of large language models: A survey. arXiv preprint arXiv:2409.03752 (2024) 5 61. Zhu, Y., Weng, Y., Zhu, F., Liang, X., Ye, Q., Lu, Y., Jiao, J.: Self-motivated communication agent for real-world vision-dialog navigation. In: ICCV. pp. 1594‚Äì 1603 (2021) 4
+
+VLA Models Already Detect Path Deviation
+
+1
+
+Your Vision-Language-Action Model Already Has Attention Heads For Path Deviation Detection
+
+Supplementary Material
+
+1. The Problem: VLA Model Hallucinations
+Instruction: ‚ÄúMove forward ...‚Äù
+
+Planned Path
+
+Door
+
+Hallucinated Path!
+
+2. The Discovery:
+
+3. Our Solution:
+
+Navigation Heads Already Know! Anomaly Detection & Rollback
+
+VLA Models Attention Heads
+
+RL Policy
+
+Rollback!
+
+Rollback
+
+‚ãØ
+
+‚ãØ
+
+‚ãØ
+Navigation Heads
+
+Path Deviation Detected? [Yes / No]
+
+Rollback Command ‚Ä¢ Bypass heavy VLA ‚Ä¢ Trigger a safe
+shortest-path rollback
+Robot Localization (RGB + LiDAR + IMU) Robot Operating System
+
+Contents
+A Expanding Path Deviation Detection . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+B Obstacle Avoidance RL Action Policy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 B.1 IsaacLab Simulation Setup . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3 B.2 Dynamic 2D Costmap Observation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5 B.3 Reinforcement Learning Configuration . . . . . . . . . . . . . . . . . . . . . . . . . . . 7 B.4 RL Policy Computational Resources . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9 B.5 Performance Metrics by Target Distance . . . . . . . . . . . . . . . . . . . . . . . . 10 B.6 Real-World Reactive Navigation of the RL Policy . . . . . . . . . . . . . . . 10
+C Real-Robot Platform System Implementation . . . . . . . . . . . . . . . . . . . . . . . . . 13 C.1 System Specifications . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 C.2 Kinematic Action Smoother . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .16 C.3 State Estimation Comparison . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+D Real-World Deployment Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+
+2
+
+J. Jeong et al.
+
+A Expanding Path Deviation Detection
+Table 3: Computational overhead analysis on a single NVIDIA RTX 6000 Ada GPU. The integration of our path deviation detection module introduces a marginal latency increase of less than 20 ms per step, with no additional GPU memory required.
+
+Configuration NaVILA (Baseline) NaVILA + Ours Difference
+
+Total Time 583.5 ms 603.3 ms
++19.8 ms
+
+Alloc VRAM 17,145.6 MB 17,145.6 MB 0.0 MB
+
+Peak VRAM 18,730.3 MB 18,730.3 MB
+0.0 MB
+
+Expanding upon Sec. 4.2 of the main paper, Table 3 demonstrates the nearzero computational overhead of our path deviation detection mechanism. This exceptional efficiency stems from repurposing the attention weights, which are inherently computed as a natural byproduct of the standard LVLM forward pass. Provided that the task-relevant navigation heads (Hnav) and the optimal natural threshold (œÑ ) are pre-identified via offline statistical analysis, the online inference phase merely performs an O(1) lookup to extract specific attention distributions from Hnav. Because the subsequent detection logic‚Äîcomprising entropy computation over visual tokens, relative difference calculation against a rollingwindow mean, and threshold comparison‚Äîconsists entirely of lightweight scalar operations, the mechanism requires no additional neural network computation beyond what the model already performs. Furthermore, to complement the results in Table 2 of the main paper, we conducted additional evaluations on the RxR dataset [29] to assess the generalizability of our approach in environments with greater linguistic and spatial complexity. As shown in Table 4, we followed the same offline analysis protocol, identifying the Hnav exclusively from the RxR training set. These configurations were subsequently frozen and evaluated on the Val-Seen and Val-Unseen splits. The results demonstrate that our method delivers robust performance across both splits. Notably, even in the RxR Val-Unseen environment, the proposed module yielded an episode-level EDR of 32.7 % and an FER of 9.7 %, while maintaining a remarkably high step-level precision of 93.2 %. These results confirm that our attention-based deviation detection serves as a robust, dataset-agnostic indicator of navigational confidence.
+
+Table 4: Path Deviation Detection Performance on the RxR Dataset. Extending the primary evaluation on the R2R dataset (Table 2 of the main paper), we further validate our proposed method on the RxR dataset [29]. The detection mechanism, configured with Hnav and hyperparameters derived exclusively from the training set, demonstrates robust generalizability across RxR validation splits, consistently maintaining high precision and significant EDR-FER gaps.
+
+RxR Val-Seen
+
+RxR Val-Unseen
+
+Method
+
+All Episodes
+
+N ‚Üí A Step-level
+
+All Episodes
+
+N ‚Üí A Step-level
+
+EDR ‚Üë FER ‚Üì Gap ‚Üë Prec. ‚Üë Rec. ‚Üë F1 ‚Üë EDR ‚Üë FER ‚Üì Gap ‚Üë Prec. ‚Üë Rec. ‚Üë F1 ‚Üë
+
+Ours 36.1 % 6.7 % 29.4 % 96.9 % 39.8 % 56.5 % 32.7 % 9.7 % 23.0 % 93.2 % 34.4 % 50.3 %
+
+VLA Models Already Detect Path Deviation
+
+3
+
+B Obstacle Avoidance RL Action Policy
+
+B.1 IsaacLab Simulation Setup
+
+SIMULATION ENVIRONMENT (Isaac Lab / PhysX)
+
+AgileX Scout 2.0
+[Physical Body, Joint Dynamics, Actuator Limits]
+
+Helios RS-32 LiDAR
+[32 Channel, Resolution, Vertical / Horizontal FoV]
+
+Environment & Terrain
+[World Size, Obstacle Layout, Safe Spawn, Goal Placement]
+
+TENSOR API (Zero-Copy Interface)
+Direct GPU Access (PhysX / Render Buffers ‚Üî PyTorch Tensors)
+
+PERCEPTION & MAPPING (GPU Core)
+
+LiDAR Preprocessing
+[Self-Filtering (Body Mask), Ground/Ceiling Removal (Z-Thresholds)]
+
+Batch GPU Local Costmap
+[128√ó128 Occupancy Grid, Ego-Motion Compensation, Temporal Decay & Inflation]
+
+HiVLA RL POLICY (PPO Actor-Critic Agent)
+
+Multimodal Observation
+[Visual (CNN): Costmap; State (MLP): Goal Vector]
+
+Sensor Fusion Network
+[Actor-Critic (CNN+MLP)]
+
+Raw Action Output
+[Normalized Diff-Drive Cmd]
+
+ACTUATION (Kinematics & Safety)
+
+Action Scaling & Limiting
+[Ì†µÌºê: ¬±0.5 Ì†µÌ±ö/Ì†µÌ±†, Ì†µÌºî: ¬±0.5 Ì†µÌ±üÌ†µÌ±éÌ†µÌ±ë/Ì†µÌ±†]
+
+Skid-Steer Kinematics
+[4-Wheel Velocity Targets]
+
+TRAINING FEEDBACK LOOP (Reward & Termination)
+
+Curriculum Strategy
+[Adaptive Goal Distance (5Ì†µÌ±ö ‚Üí 20Ì†µÌ±ö)]
+
+Reward Function
+[Goal(+), Collision(-), Danger(-), Stall(-), Time(-), ‚Ä¶]
+
+Termination Logic
+[Collision (Chassis & Wheel), Goal Reached, Timeout ]
+
+Fig. 10: RL training diagram. Utilizing IsaacLab [42] and PhysX, we construct a simulation environment that precisely aligns with real-world dynamics, incorporating the URDF-defined robot geometry and sensor extrinsics while tuning skid-steer friction, damping, and actuator forces alongside the 32-channel LiDAR configurations. To facilitate reward discovery and ensure stable convergence, we employ a curriculum strategy that adaptively scales the navigation challenge by increasing the goal distance from 5 m to 20 m across 20 sub-terrains mixed with cylinders and walls, as illustrated in Fig. 9 of the main paper. With rewards tailored for collision avoidance and goal-reaching, this large-scale training of 1,024 agents on a single NVIDIA RTX 6000 Ada GPU enables comprehensive exploration of the state space and robust policy optimization.
+
+4
+
+J. Jeong et al.
+
+Table 5: Configuration of the IsaacLab [42] Simulation Environment
+
+Category
+
+Parameter
+
+Value
+
+Wheel Radius (R) / Wheelbase (L)
+
+0.165 m / 0.582 m
+
+Robot & Kinematics
+
+Robot Dimensions (Length √ó Width) Max Linear / Angular Velocity
+
+1.06 m √ó 0.90 m ¬±0.5 m/s / ¬±0.5 rad/s
+
+Policy Control Frequency
+
+15 Hz (‚âà0.067 s/step)
+
+Sensor Mounting Height
+
+0.63 m
+
+3D LiDAR Sensor
+
+Channels / Max Range Vertical / Horizontal FOV
+
+32 / 10.0 m -55¬∞ to +15¬∞ / 360¬∞
+
+Horizontal Resolution
+
+0.2¬∞ (57,632 rays/scan)
+
+Sub-terrains (Size / Count)
+
+60 m √ó 60 m / 20 tiles
+
+Cylinder Obstacles
+
+80 per tile (Radius: 0.25 m, Height: 2.0 m)
+
+Terrain & Environment Wall Obstacles
+
+60 per tile (1.5 m √ó 0.75 m √ó 2.0 m)
+
+Min Obstacle Clearance
+
+2.0 m
+
+Min Spawn Clearance
+
+1.5 m
+
+Goal Reached Threshold
+
+0.5 m
+
+Timeout Limit Termination Conditions
+Collision Threshold (Chassis / Wheels)
+
+150.0 s > 200.0 N
+
+Stall Condition
+
+< 0.2 m displacement in 3.0 s
+
+To facilitate robust sim-to-real transfer, we meticulously designed the RL training environment within IsaacLab [42], as outlined in Fig. 10. Crucially, this simulation is engineered to precisely mirror our real-world physical setup, as demonstrated in Fig. 13. The comprehensive list of physical and environmental parameters utilized for this configuration is detailed in Table 5.
+Robot Configuration and Kinematics. To minimize the reality gap, we constructed a custom USD model of our mobile robot and imported it into the simulation at a 1:1 scale. Because the physical robot operates on a skid-steer differential drive mechanism, we explicitly engineered the left and right wheel velocities to be governed by the kinematic equations vleft = (v ‚àí œâ ¬∑ L/2)/R and vright = (v + œâ ¬∑ L/2)/R, where v and œâ denote the linear and angular velocities, respectively. We strictly applied the real-world specifications: a wheelbase of L = 0.582 m and a wheel radius of R = 0.165 m. The RL policy utilizes a tanh activation to output continuous actions bounded within [‚àí1, 1], which we explicitly mapped to a maximum linear velocity of 0.5 m/s and a maximum angular velocity of 0.5 rad/s. To define the physical collision boundaries during navigation, we adopted a conservative rectangular robot dimension of 1.06 m √ó 0.90 m, incorporating an empirical safety margin over the bare chassis measured directly on the physical robot. To balance rapid reactive obstacle avoidance with computational efficiency while maintaining physical realism, we designed the policy to operate at a control frequency of 15 Hz (i.e., ‚âà 0.067 s per step), allowing a maximum translational displacement of ‚âà 0.033 m per action step, while the underlying physics engine simulates dynamics at 60 Hz.
+
+VLA Models Already Detect Path Deviation
+
+5
+
+Sensor Setup. To guarantee seamless sim-to-real transfer of perception, we configured the 3D LiDAR module provided by IsaacLab to faithfully replicate the mounting position and hardware specifications of the physical Helios RS-32 LiDAR used in our real-world deployments. Specifically, the simulated sensor is mounted at a height of 0.63 m above the ground. It uses 32 vertical channels to enforce a vertical field of view (FOV) from ‚àí55‚ó¶ to +15‚ó¶, along with a full 360‚ó¶ horizontal FOV. With a 0.2‚ó¶ horizontal resolution, the sensor casts 57,632 rays per scan up to a maximum range of 10.0 m, providing a dense geometric representation of the surroundings identical to the real robot‚Äôs sensory input.
+Environment and MDP Definitions. Training occurs across a massive procedurally generated terrain composed of 20 sub-terrains. To enforce a reproducible and physically viable evaluation standard, we strictly populated each sub-terrain tile with 80 cylinders (radius 0.25 m, height 2.0 m) and 60 wall-shaped boxes (1.5 m √ó 0.75 m √ó 2.0 m). We configured a rejection-sampling algorithm to position the obstacles, ensuring a minimum obstacle-to-obstacle clearance of 2.0 m, with a 3.0 m- wide obstacle-free platform deliberately preserved at the center of each tile. At episode initialization, we programmed the robot to spawn 0.5 m above the ground, with a randomized yaw orientation to prevent physics clipping, and to enforce a strict 1.5 m obstacle-free spawn clearance. We defined the Markov Decision Process (MDP) to terminate under four distinct conditions: (i) reaching within 0.5 m of the goal, (ii) exceeding the maximum time limit of 150.0 s, (iii) experiencing physical collisions exceeding 200.0 N on either the chassis or the wheels (after a brief 20-step warm-up period to ignore initial spawn impacts), or (iv) stalling (trapped within a 0.2 m radius for over 3.0 s).
+
+B.2 Dynamic 2D Costmap Observation
+Rather than relying exclusively on sparse 1D LiDAR arrays, our RL policy operates on a dynamic 2D occupancy grid costmap. This intermediate representation, as illustrated in Fig. 11, equips the agent with spatial memory without requiring Recurrent Neural Networks (RNNs) and ensures sim-to-real robustness through sensor agnosticism. While raw 1D data is easily overfitted to specific hardware specifications, the 2D costmap decouples the input space from the raw sensor stream, allowing the policy to remain fully compatible with different LiDAR models or depth cameras without retraining. The visual observation space is a single-channel 128 √ó 128 tensor that captures a 6.4 m √ó 6.4 m physical area centered on the robot, yielding a dense, uniform 0.05 m/pixel resolution.
+Hardware-Accelerated Pipeline and Sim-to-Real Alignment. Processing 57,632 LiDAR rays on the CPU for thousands of parallel agents in simulation induces a severe computational bottleneck. To resolve this, we constructed the entire mapping pipeline using CUDA-optimized PyTorch operations and executed it directly on the GPU in FP16 precision. To eliminate the sim-to-real gap in the perception module, this identical PyTorch codebase is deployed on the physical robot‚Äôs NVIDIA Jetson AGX Orin. By setting the batch size to 1, the physical robot leverages its native Tensor Cores to process the costmap in real time with the same logic, completely bypassing CPU-GPU transfer overheads.
+
+(a) Ghosting Artifacts (w/o Odometry)
+
+6
+
+J. Jeong et al.
+
+Ghosting Artifact
+
+(b) Accurate Map Shifting
+
+Ego-motion Compensation
+Blind Spot Retention
+
+Moving Objects
+
+(c) Blind-spot Retention & Dynamic Objects
+
+Fig. 11: Dynamic 2D Costmap Observation with Ego-Motion Compensation and Temporal Decay. (a) Without proper odometry, uncompensated ego-motion causes severe ghosting artifacts during a clockwise rotation, permanently corrupting the spatial memory. (b) By incorporating strict ego-motion compensation during the same rotation, the local costmap accurately shifts in accordance with the robot‚Äôs movement, maintaining a clean and consistent representation. (c) Applying an optimal temporal decay factor (Œ≥ = 0.9) allows the system to temporarily retain static obstacles even when they enter the sensor‚Äôs blind spot, while gracefully fading the historical trails of dynamic moving objects.
+Ego-Motion Compensation via Zero-Allocation Warping. To maintain a globally consistent map, the local costmap must accurately shift in response to the robot‚Äôs movement. Our pipeline integrates 3D LiDAR point clouds with high-frequency odometry data to compute the relative translational and rotational displacements at each policy step. To eliminate overhead during real-time execution, we pre-allocate an affine transformation matrix buffer, fundamentally eradicating memory allocation and Garbage Collection (GC) spikes during navigation. Subsequently, we warp the previous costmap using sub-pixel grid sampling (F.grid_sample) to apply the inverse of the robot‚Äôs motion. During this process, newly revealed unknown areas entering the field of view are strictly zero-padded to ensure safety.
+
+VLA Models Already Detect Path Deviation
+
+7
+
+Temporal Decay for Dynamic Environments. Real-world environments inherently contain moving objects. If the costmap remains static (i.e., a decay factor of 1.0), a passing pedestrian would leave a permanent obstacle trail, completely blocking the robot‚Äôs path. Conversely, decaying the map too rapidly causes the agent to instantly forget static obstacles in temporary blind spots, leading to collisions. To resolve this dilemma, we apply a temporal decay factor of Œ≥ = 0.9 at each step. This specific rate strikes an optimal balance for spatial memory‚Äîsafely remembering temporary blind spots while gracefully fading the historical trails of dynamic entities.
+Spatial Filtering and Safety Margins. Finally, to ensure the policy reacts exclusively to genuine navigational hazards, we filter the LiDAR points along the Z-axis, retaining only data within 0.1 m ‚â§ Z ‚â§ 1.0 m to mask out ground noise and overhead structures. Furthermore, we apply a geometric self-masking filter to prevent the robot from perceiving its own chassis or antennas as obstacles. Rather than relying on simple CAD dimensions, the boundaries of this 1.10 m √ó 0.80 m exclusion footprint were empirically derived by directly measuring the physical RS-LiDAR sensor‚Äôs self-occlusion view. Any points falling within this measured zone are strictly ignored. To prevent the policy from shaving corners too closely, we apply a 2D Max Pooling operation (3 √ó 3 kernel) over the grid, geometrically inflating all valid obstacles by an exact 1-pixel (0.05 m) safety margin with negligible computational overhead.
+
+B.3 Reinforcement Learning Configuration
+We utilize Proximal Policy Optimization (PPO) to train the navigation policy within the IsaacLab environment. The training configuration is structurally divided into the design of a dense reward function and the specification of PPO network hyperparameters, as detailed in Tables 6 and 7, respectively.
+Reward Function. To cultivate robust, human-like navigation in highly constrained environments, we engineered a dense reward function (rtotal) structured into four domains (Table 6). To formalize the robot‚Äôs spatial perception, we define dcorridor as the minimum obstacle distance within a forward safety corridor, flagging the path as blocked (Iblk = 1) if dcorridor < 0.8 m. We calculate the lateral tightness (œÑside = max(œÑL, œÑR) ‚àà [0, 1]) to quantify the narrowness of the immediate surroundings. The rationale for each component is as follows: (i) Task Progression: Relying solely on a sparse success bonus (rsuccess) granted at a 0.5 m threshold is inefficient for long-horizon navigation. We employ a potentialbased shaping reward (rgoal) utilizing an exponential function of the 2D goal distance (dt). This provides a steepening, continuous gradient, effectively preventing the agent from being trapped in local minima. A step-wise time penalty (rtime) further encourages efficient routing. (ii) Kinematic Control: To ensure dynamically feasible trajectories, the projected velocity reward (rvel) incentivizes forward motion (vx) aligned with the goal (cos(œàerr)). Crucially, scaling this reward by œÑside and a distance-based speed factor (sspeed) encourages the policy to accelerate aggressively in open spaces while decelerating cautiously in narrow
+
+8
+
+J. Jeong et al.
+
+Table 6: Dense Reward Function Configuration. The total reward is the sum of these 12 components. Iblk denotes the path-blocked indicator (dcorridor < 0.8 m), and we define a speed scaling factor sspeed = clamp(dcorridor/2.0, 0, 1).
+
+Category Task
+Kinematics Safety Behavior
+
+Component Goal Progress (rgoal) Goal Success (rsuccess) Time Penalty (rtime) Projected Velocity (rvel) Heading Alignment (rhead) Yaw Error Reduction (ryaw) Micro-Displacement (rmove) Collision Penalty (rcol) Proximity Danger (rdanger) Angular Penalty (rang) Centering Reward (rcenter) Stall Penalty (rstall)
+
+Formulation & Condition 100 ¬∑ (e‚àí0.25dt ‚àí e‚àí0.25dt‚àí1 ) +20.0 if dt < 0.5 m ‚àí0.05 per step 3.0vx cos(œàerr)(1 ‚àí 0.85œÑside)sspeed(1 ‚àí Iblk) 1.0 ¬∑ (1 ‚àí |œàerr|/œÄ) ¬∑ I(|vx| > 0.1) ¬∑ (1 ‚àí Iblk) 2.0 ¬∑ (|œàerr|t‚àí1 ‚àí |œàerr|t) 0.2 ¬∑ tanh(‚àÜs/0.03) ‚àí30.0 if force > 200 N (chassis or wheels) ‚àí3.0 ¬∑ (1 ‚àí clamp(dcorridor/3.13, 0, 1))2 ‚àí0.3 ¬∑ |œâz| ¬∑ (1 ‚àí œÑside) ¬∑ (1 ‚àí Iblk) 2.5 ¬∑ (œÑR ‚àí œÑL) ¬∑ œâz max(‚àí0.5 ¬∑ max(tstall ‚àí 1.0, 0)2, ‚àí2.0)
+
+aisles. This is complemented by continuous heading alignment (rhead), step-wise yaw error reduction (ryaw), and micro-displacement (rmove) rewards to maintain momentum without lateral drifting. (iii) Safety Enforcement: For reliable sim-to-real transfer, a heavy discrete penalty (rcol) is strictly applied for physical collisions exceeding 200 N of force on the chassis or wheels. To proactively deter reckless driving, we introduce a proximity danger penalty (rdanger) formulated as a quadratic function of dcorridor. This establishes a virtual repulsive field that punishes dangerous approaches long before physical collisions occur. (iv) Behavioral Regularization: Skid-steer robots often suffer from oscillatory freezing in tight spaces. We penalize excessive angular velocity (rang) in open areas and punish prolonged stalls (rstall) exceeding a 1.0 s grace period. Most importantly, a centering reward (rcenter) leverages the spatial imbalance between the left and right clearances (œÑR ‚àí œÑL) to naturally steer the robot toward the wider side, keeping it smoothly centered through bottlenecks.
+PPO Hyperparameters. Expanding upon the reinforcement learning methodology introduced in Sec. 3.5 of the main paper, Table 7 details the SKRL-based PPO configuration [48] for stabilizing 1,024 parallel IsaacLab environments. The specific rationale for each key hyperparameter is as follows: (i) Temporal Discounting and Advantage Estimation: We deliberately lowered the discount factor to Œ≥ = 0.96 rather than the standard 0.99. In densely cluttered environments, distant future rewards are inherently uncertain. A lower Œ≥ effectively shortens the agent‚Äôs time horizon, thereby prioritizing immediate reactive obstacle avoidance over long-term planning. This temporal weighting is paired with a Generalized Advantage Estimation (GAE) parameter of Œª = 0.95 to strike an optimal balance between bias and variance. (ii) Observation and Batch
+
+VLA Models Already Detect Path Deviation
+
+9
+
+Table 7: PPO Network and Training Hyperparameters (SKRL [48])
+
+Hyperparameter Algorithm Parallel Environments Rollout Length Learning Epochs Mini-batches State Preprocessor
+
+Value PPO 1,024 96 steps
+5 4 Disabled
+
+Hyperparameter Learning Rate LR Scheduler Discount Factor (Œ≥) GAE Parameter (Œª) Total Timesteps Checkpoint Interval
+
+Value 3 √ó 10‚àí4 KL-Adaptive (0.008)
+0.96 0.95 100,000 5,000 steps
+
+Processing: We completely disabled the default state preprocessor. Since our primary visual observation is a structured 2D occupancy costmap, standard continuous normalization would distort its absolute geometric scale and distinct boundary values, thereby degrading the spatial memory of the CNN encoder. For policy optimization, collecting 96 rollout steps across all 1,024 environments yields a massive batch of 98,304 transitions per iteration. To maximize sample efficiency, these transitions are rigorously optimized over 5 epochs and 4 minibatches. (iii) Action Space and Actor Architecture: Driven by the nonholonomic kinematics of our target wheeled robot, the action space is explicitly restricted to two continuous control commands: the forward linear velocity (vx) and the angular velocity (œâz). To ensure policy stability and prevent the generation of physically unbounded commands, the final output layer of the actor network employs a tanh activation function. This strictly bounds the raw model outputs to the normalized range [‚àí1, 1] and subsequently scales them to match the robot chassis‚Äôs maximum physical velocity limits during simulation. (iv) Adaptive Learning Rate: To maintain policy stability across diverse procedurally generated sub-terrains, we employ a KL-adaptive learning rate scheduler starting at a base rate of 3√ó10‚àí4. By dynamically scaling the learning rate based on a target KL divergence threshold of 0.008, we strictly bound the magnitude of policy updates. This mechanism prevents excessively large policy steps, which can lead to catastrophic forgetting, ensuring that the robot retains its critical collision-avoidance reflexes throughout 100,000 training timesteps.
+
+B.4 RL Policy Computational Resources
+Table 8: Computational overhead analysis of the RL Action Policy. Evaluated on a single NVIDIA RTX 6000 Ada GPU, the lightweight CNN + MLP architecture (4.89 M parameters) achieves a near-instantaneous inference latency of 0.2 ms per step with minimal VRAM utilization.
+
+Configuration
+
+Total Time Alloc. VRAM Peak VRAM
+
+Ours (RL Policy)
+
+0.2 ms
+
+26.9 MB
+
+27.9 MB
+
+10
+
+J. Jeong et al.
+
+The RL Action Policy is designed as a streamlined CNN + MLP architecture with approximately 4.89 M parameters, specifically optimized for high-frequency reactive control. As detailed in Table 8, this lightweight configuration enables ultra-low-latency inference, requiring only 0.2 ms per step on an NVIDIA RTX 6000 Ada GPU. With a minimal VRAM footprint of less than 28 MB, this RL policy provides the essential agility for real-time obstacle avoidance and stability. By maintaining a negligible computational load even during continuous high-rate actuation, it ensures overall system efficiency and ultimately guarantees a stable control frequency of 10 Hz during real-world deployment, as detailed in Sec. C.
+
+B.5 Performance Metrics by Target Distance
+Table 9: Navigation performance by distance. SR: Success Rate, CR: Collision Rate, TR: Timeout Rate.
+
+Distance
+
+5m
+
+10m
+
+15m
+
+20m
+
+Method SR ‚Üë CR ‚Üì TR ‚Üì SR ‚Üë CR ‚Üì TR ‚Üì SR ‚Üë CR ‚Üì TR ‚Üì SR ‚Üë CR ‚Üì TR ‚Üì
+
+APF [26] 60.5 % 5.9 % 33.6 % 48.4 % 10.0 % 41.6 % 41.4 % 10.0 % 48.6 % 39.3 % 8.8 % 51.9 %
+
+DWA [14] 17.6 % 75.8 % 6.6 % 16.2 % 82.8 % 1.0 % 21.1 % 78.1 % 0.8 % 16.2 % 81.8 % 2.0 %
+
+MPPI [57] 3.7 % 90.0 % 6.3 % 2.7 % 91.6 % 5.7 % 1.6 % 91.6 % 6.8 % 2.0 % 91.4 % 6.6 %
+
+TEB [46] 65.6 % 24.0 % 10.4 % 51.0 % 40.6 % 8.4 % 41.0 % 50.4 % 8.6 % 31.1 % 59.4 % 9.6 %
+
+Ours
+
+92.2 % 5.1 % 2.7 % 89.8 % 8.6 % 1.6 % 83.6 % 14.3 % 2.1 % 83.9 % 14.5 % 1.6 %
+
+Expanding upon Sec. 4.3 of the main paper, Table 9 details the performance across target distances from 5 m to 20 m to analyze long-horizon robustness beyond the average metrics. As distance increases, baselines exhibit significant degradation: APF‚Äôs termination rate (TR) rises to 51.9 % at 20 m due to cumulative entrapment in local minima, while TEB‚Äôs collision rate (CR) climbs to 59.4 % in complex layouts. DWA and MPPI consistently fail across all ranges with CR exceeding 75 %. In contrast, our policy maintains a Success Rate (SR) of 83.9 % even at the maximum distance, more than doubling the performance of the strongest baseline (APF, 39.3 %). Notably, despite the fourfold increase in distance, our TR remains exceptionally stable below 3.0 %, proving that the policy effectively avoids local minima and maintains consistent safety in dense environments where classical reactive planners frequently stall or collide.
+
+B.6 Real-World Reactive Navigation of the RL Policy
+To evaluate the low-level action policy for obstacle avoidance, we demonstrated the real-world navigation performance of the standalone RL policy without VLA guidance. Given simple forward commands over distances of tens of meters, the agent operates at 10 Hz to safely navigate through dynamic and unstructured environments. As shown in Fig. 12, (a) the policy successfully avoids both static objects and moving pedestrians indoors, and (b) it demonstrates robust collision avoidance against complex, irregularly shaped trees in an outdoor orchard farm.
+
+VLA Models Already Detect Path Deviation
+
+11
+
+(a) Dynamic Obstacles
+
+(b) Orchard Trees
+
+Fig. 12: Real-world navigation performance of the standalone RL policy. Operating at 10 Hz without VLA guidance, the agent safely navigates dynamic environments over tens of meters. (a) Indoors, it successfully avoids static objects and moving pedestrians. (b) In an outdoor orchard, it demonstrates robust collision avoidance against complex, irregular trees.
+
+12
+
+J. Jeong et al.
+
+Fig. 13: Overview of the robotic system and simulation environment. First row: sensor calibration of the ZED 2i camera and RS-32 LiDAR. Second row: URDF robot model with sensor extrinsics and training terrains. Third row: Testing real-time ROS 2 integration within Isaac Sim. Fourth row: training visualization of a single agent among 1,024 parallel instances.
+
+VLA Models Already Detect Path Deviation
+
+13
+
+C Real-Robot Platform System Implementation
+
+C.1 System Specifications
+
+Jetson AGX Orin 64GB
+5. NAVIGATION & INTELLIGENCE
+
+RL Policy
+(Robot Control)
+
+(Fused Map) @ ~7Hz
+
+publish_costmap.py
+(Occupancy Grid map)
+
+(Sub Goal) @ ~0.3Hz
+Vison-Language-Action Model
+(Planner)
+
+(Control) @ ~10Hz
+
+(PointCloud2) @ ~9Hz
+
+(Global Odom) @ ~11Hz
+
+(Rec RGB) @ ~23Hz
+
+4. SENSOR FUSION (robot_localization)
+
+ekf_filter_node_odom
+(Local Odom Fusion ‚Äì High Rate)
+
+(Local Odom) @ ~11Hz
+
+ekf_filter_node_map
+(Global Map Fusion ‚Äì Lower Rate)
+
+(Fast-Livo2 Odom) @ ~10Hz (PoseStamped) @ ~30Hz
+
+3. PREPROCESSING & FEATURE EXTRACTION
+
+rs_to_velodyne_node
+(Format Converter)
+
+fast_livo2_node
+(LiDAR/IMU/RGB Odometry)
+
+apriltag_node
+(Image Processing)
+
+2. DRIVER LAYER (Raw Data Acquisition)
+
+(PointCloud2) @ ~9Hz
+
+scout_base_node
+(ugv_sdk wrapper)
+
+rslidar_sdk_node
+(ros_rslidar)
+
+(Latching)
+
+(Rec RGB) @ ~23Hz (Raw IMU) @ ~400Hz
+
+static_broadcaster
+(URDF Transforms / Sensor Calibration)
+
+zed_node
+(ZED SDK wrapper)
+
+1. PHYSICAL HARDWARE & CONNECTIONS
+
+(Final Control) @ ~10Hz Bidirectional CAN I/O
+AgileX Scout 2.0
+(CAN Bus via USB adapter)
+
+Ethernet packets
+Robosense Helios RS-32
+(Ethernet port)
+
+USB 3.2 Raw Data
+ZED 2i Stereo Camera
+(USB 3.2 port)
+
+Fig. 14: ROS 2 System Architecture. The on-device pipeline integrates multimodal data from a skid-steer robot, a 32-channel spinning LiDAR, and a stereo RGB-D camera. For precise robot localization and efficient resource allocation, we employ FastLIVO2 [59], which leverages LiDAR, RGB, and IMU sensor streams. This is coupled with an Extended Kalman Filter (EKF) that fuses AprilTag [43] detections to establish and maintain a robust globally fixed coordinate system. The navigation core operates asynchronously, comprising a ‚àº0.3 Hz VLA planner for high-level sub-goal generation and a ‚àº10 Hz RL policy that executes reactive control for obstacle avoidance.
+
+Expanding upon Sec. 3.6 of the main paper, we developed a comprehensive hardware-software bridge on our custom skid-steer robot to successfully transfer the learned policies from simulation to the physical world. As shown in Fig. 14, this architecture is explicitly designed to balance the high-frequency demands of reactive control with the intensive computational loads of visual reasoning. Furthermore, it enables effortless teleoperation and real-time monitoring of the robot through a dedicated WebUI, as illustrated in Fig. 15.
+Software Setup. To support this architecture, we configured a robust on-device environment, with detailed specifications summarized in Table 10. The core compute engine is an NVIDIA Jetson AGX Orin 64GB running Ubuntu 22.04 and ROS 2 Humble. To maximize edge computing efficiency, the deep learning stack is fully optimized using JetPack 6.2.1 and CUDA 12.6. Within this ROS 2 ecosystem, the system effectively manages the asynchronous execution of multi-rate nodes. It seamlessly handles intensive inference for the 8-billion-parameter NaVILA model and attention-based path deviation detection, while simultaneously
+
+14
+
+J. Jeong et al.
+
+Table 10: System specifications for physical deployment. This table outlines the comprehensive hardware and software stack configured on the NVIDIA Jetson AGX Orin edge computer. It details the full hierarchical navigation pipeline, encompassing the 8-billion-parameter NaVILA model for high-level reasoning, the attention-based path deviation detection mechanism (parameterized by window size W and thresholds), and the lightweight 4.89 M parameter RL action policy for reactive local control.
+
+Category Hardware
+System Software ROS 2 Stack NaVILA Model Deviation Detection RL Action Policy
+
+Component Compute Mobile Base Camera LiDAR JetPack Kernel OS CUDA cuDNN Python ROS 2 Distro Base Model Vision Encoder Checkpoint Input Resolution Inference Frames Selected Heads ([L, H]) Window Size Patience Threshold Natural Threshold Architecture Parameters Costmap Input Goal Input
+
+Specification NVIDIA Jetson AGX Orin Dev. 64 GB AgileX Scout 2.0 ZED 2i (Stereo RGB-D) RoboSense Helios RS-32 6.2.1 (L4T R36.4.7) 5.15.148-tegra Ubuntu 22.04 (aarch64) 12.6 9.3.0 3.10.12 Humble VILA (LLaMA-3 8B) SigLIP-So400M/patch14/384 navila-llama3-8b-8f 384 √ó 384 8 (7 history + 1 current) [21, 12], [16, 1], [14, 1] W = 10 steps P = 9 steps œÑ = 0.95 CNN + MLP 4.89 M 1 √ó 128 √ó 128 (Occupancy Grid) 1 √ó 2 (‚àÜx, ‚àÜy in local frame)
+
+executing high-frequency Fast-LIVO2 sensor-fusion odometry and a lightweight RL action policy for reactive control on the AgileX Scout 2.0 mobile base. Furthermore, to facilitate real-time monitoring without degrading the main computational pipeline, we deployed a custom WebUI utilizing a Janus server and Flask. As shown in Fig. 15, this integration ensures low-latency multimedia streaming and seamless teleoperation for the user.
+
+VLA Models Already Detect Path Deviation
+
+15
+
+1
+
+5
+
+6
+
+5G Router
+
+Stereolabs ZED 2i
+
+[Jetson AGX Orin 64GB] ! VLA inference & RL Policy ! LiDAR-RGB-IMU Odometry ! WebUI Control Server
+
+Robosense RS-Helios 32
+[DC-DC Converter] ! Battery ‚Üí 24V ! 24V ‚Üí 12V (Livox) ! 12V ‚Üí 19V (Jetson)
+
+7
+2
+3
+4
+Robot Control Center WebUI : ‚ë† Real-time RL Policy state overlay (target coordinates and errors) ‚ë° VLA action overlay showing model outputs and RL velocity commands ‚ë¢ Task input interface (instruction or coordinates / ROS bag recording) ‚ë£ Real-time hardware and network resource monitoring ‚ë§ 384 √ó 384 ZED RGB stream as direct input for the VLA model ‚ë• 128 √ó 128 2D costmap stream as direct input for the RL policy ‚ë¶ Interactive 2D trajectory visualization based on FAST-LIVO2 odometry
+
+Fig. 15: Physical Robot Setup and Control Center WebUI. (Left) Hardware configuration on the AgileX Scout 2.0 mobile base. A custom enclosure rigidly colocates the Helios-RS 32 LiDAR and ZED 2i stereo camera. The onboard NVIDIA Jetson AGX Orin processes the VLA inference, RL policy, and Fast-LIVO2 odometry. Power distribution is managed via a dedicated DC-DC converter, while a 5G router ensures low-latency remote connectivity. (Right) The custom Robot Control Center WebUI was deployed for teleoperation and monitoring.
+
+Hardware Setup. As visualized in Fig. 15, the 32-channel Helios-RS 32 LiDAR is mounted centrally at a height of 0.63,m to maximize ground terrain visibility, while the ZED 2i stereo camera is positioned to provide an unobstructed egocentric view. This hardware configuration precisely aligns with the environment described in Sec. C. To rigidly secure these sensors, we fabricated a custom hardware enclosure. Furthermore, to ensure accurate spatial alignment between the sensors, we performed cross-sensor extrinsic calibration using an interactive, targetless calibration tool [4, 21]. As depicted in Fig. 13, this calibration process yields the following transformation matrix, Tlciadmar:
+
+  T_{\text t {lidar} ^{\text t {cam}  &= \begin {bmatrix} 0.0 17 & -0.0349 & 0.9 94 & 0.0537 \  -1.0 0  & 0.0 17 & 0.0 18 & 0.0593 \  -0.0 17 & -0.9 94 & -0.0349 & -0.0938 \  0 & 0 & 0 & 1 \end {bmatrix} \label {eq:extrinsic_matrix}
+
+(6)
+
+This precise spatial mapping plays a crucial role in deriving highly accurate results across the entire navigation pipeline: RGB-based path planning for the VLA model, LiDAR-based reactive control for the RL policy, and robust LiDARRGB-IMU fusion for the Fast-LIVO2 odometry.
+
+16
+
+J. Jeong et al.
+
+C.2 Kinematic Action Smoother
+Table 11: Kinematic Action Smoother Configuration. Hyperparameters defining the physical constraints and symmetric acceleration limits for the skid-steer robot.
+
+Parameter Max Linear Velocity Max Angular Velocity Linear Acceleration Limit Angular Acceleration Limit Deadzone Threshold
+
+Symbol vmax œâmax amax aœâmax œµ
+
+Value
+0.5 m/s 0.5 rad/s 1.0 m/s2 5.0 rad/s2
+0.02
+
+At each control step t operating at 10 Hz (‚àÜt = 0.1 s), the RL policy outputs target velocity commands (vttgt, œâttgt). Directly applying these discontinuous commands to the physical robot can induce severe mechanical oscillations and physically unsafe accelerations. To ensure stable and safe locomotion, we implemented a three-stage Kinematic Action Smoother pipeline, utilizing the physical constraints and hyperparameters detailed in Table 11. (i) Velocity Saturation: The raw target velocities are first strictly bounded to the physical limits of the robot chassis to prevent hardware overload:
+
+  \hat {v}_t = \text {clip}(v_t^\texttt {tgt}, -v_\texttt {max}, v_\texttt {max}), \quad \hat {\omega }_t = \text {clip}(\omega _t^\texttt {tgt}, -\omega _\texttt {max}, \omega _\texttt {max})
+
+(7)
+
+(ii) Symmetric Acceleration Clamping: We compute the instantaneous ac-
+celeration over the elapsed time ‚àÜt. To prevent jerky starts and stops, we enforce symmetric linear (amax) and angular (aœâmax) acceleration limits. At the 10 Hz control frequency, this configuration allows the robot to safely decelerate from the
+maximum linear velocity (vmax) to a complete stop in exactly 5 steps (0.5 s) and execute a full angular direction reversal in 2 steps (0.2 s):
+
+  a_t &= \frac {\hat {v}_t - v_{t-1} {\Delta t}, \quad &\bar {v}_t &= v_{t-1} + \text {clip}(a_t, -a_\text t {max}, a_\text t {max}) \cdot \Delta t \label {eq:ac _clamp_v} \  a_t^\omega &= \frac {\hat {\omega }_t - \omega _{t-1} {\Delta t}, \quad &\bar {\omega }_t &= \omega _{t-1} + \text {clip}(a_t^\omega , -a_\text t {max}^\omega , a_\text t {max}^\omega ) \cdot \Delta t
+
+(9)
+
+(iii) Deadzone Suppression: Finally, sub-threshold commands are explicitly zeroed to suppress motor chatter and prevent mechanical creep when the robot is expected to remain stationary:
+
+  v_t = \begin {cases} 0 & \text {if } |\bar {v}_t| < \epsilon \  \bar {v}_t & \text {otherwise} \end {cases}, \quad \omega _t = \begin {cases} 0 & \text {if } |\bar {\omega }_t| < \epsilon \  \bar {\omega }_t & \text {otherwise} \end {cases}
+
+(10)
+
+The finalized, mechanically safe velocities (vt, œât) are then published to the motor drivers and cached as the previous state for the subsequent cycle.
+
+VLA Models Already Detect Path Deviation
+
+17
+
+C.3 State Estimation Comparison
+Table 12: State Estimation Resource Overhead. Additional system resources consumed by the localization nodes evaluated on the NVIDIA Jetson AGX Orin 64 GB.
+
+Odometry ZED VIO Fast-LIVO2
+
+CPU Usage (%) +19.4 +26.0
+
+GPU Usage (%) +42.6 +13.3
+
+Memory (MB) +577.3 +367.3
+
+As discussed in Sec. 3.4 and 3.5 of the main paper, our framework requires precise and continuous odometry for two critical operations: spatial trajectory recording for failure recovery and ego-motion compensation for the reactive costmap. While the StereoLabs ZED 2i provides a built-in VIO solution, its reliance on the GPU forces it to share it with the compute-intensive VLA model, resulting in degraded inference speed. To resolve this architectural bottleneck, we strategically adopted Fast-LIVO2.By utilizing the onboard 3D LiDAR and the sensor-calibrated ZED 2i, Fast-LIVO2 fuses multimodal data (LiDAR, RGB, IMU) to achieve high precision while executing the primary odometry tasks on the CPU, as detailed in Table 12. The evaluations in Table 14 and Fig. 16 highlight the synergistic efficiency of this design. Replacing the default ZED VIO with Fast-LIVO2 protects the VLA model‚Äôs computational bandwidth, guaranteeing faster inference without sacrificing LiDAR-enhanced precision. Ultimately, as Table 13 shows, our fully integrated system (NaVILA, path deviation detection, Fast-LIVO2, and the RL policy) incurs a marginal overhead of only 0.55 s compared to standalone NaVILA. This confirms that strategically distributing odometry to the CPU and utilizing a lightweight RL policy successfully preserves the system‚Äôs overall real-time performance.
+
+Table 13: VLA Inference Time Comparison. Evaluated over 100 runs each on the NVIDIA Jetson AGX Orin. As verified in Sec. B.4, the lightweight RL policy does not affect the VLA‚Äôs inference speed. While integrating state estimation inevitably adds overhead, Fast-LIVO2 maintains a lower latency than ZED VIO by effectively leveraging the CPU, as demonstrated in Table 2. Consequently, Ours (NaVILA + path deviation detection + Fast-LIVO2 + RL) requires only lightweight scalar operations from the attention heads, introducing a negligible additional overhead of ‚àº0.05 s. Ultimately, with only ‚àº0.55 s of total additional computation compared to standalone NaVILA, our system successfully executes primary VLA reasoning alongside trajectory recording, path deviation monitoring, and obstacle avoidance.
+
+Configuration NaVILA NaVILA + RL NaVILA + ZED VIO + RL NaVILA + Fast-LIVO2 + RL Ours
+
+Mean (s) 3.488 3.488 4.584 3.971 4.022
+
+Median (s) 3.489 3.489 4.588 3.968 4.020
+
+Min / Max (s) 3.461 / 3.509 3.461 / 3.509 4.525 / 4.645 3.918 / 4.046 3.910 / 4.120
+
+Stdev (s) 0.008 0.008 0.025 0.024 0.041
+
+18
+
+J. Jeong et al.
+
+Table 14: State Estimation Performance Comparison. Fast-LIVO2 vs. ZED VIO Odometry evaluated over 10 indoor and 10 outdoor runs. The position and yaw errors were measured by computing the accumulated drift relative to a fixed AprilTag before and after each run. The best (lowest) error in each metric is highlighted in bold.
+
+Environment Indoor Outdoor
+
+Method
+Fast-LIVO2 ZED VIO Fast-LIVO2 ZED VIO
+
+GT Pose Error (m)
+
+Median 0.082 0.276 0.375 0.839
+
+Mean 0.331 0.413 0.731 4.589
+
+GT Yaw Error (‚ó¶)
+
+Median 0.640 1.345 6.690 8.560
+
+Mean 4.463 5.850 13.469 22.314
+
+Static Drift (cm)
+
+Median 0.080 0.025 0.065 0.070
+
+Mean 0.080 0.053 0.166 0.124
+
+Y (m)
+
+Fast-LIVO2
+
+ZED VIO
+
+2.0
+
+Start End
+
+1.5
+
+(a) Trajectory
+
+1.0
+
+0.5
+
+0.0
+
+-0.5
+-1.5 -1.0 -0.5 0.0 0.5 1.0 1.5 2.0 X (m)
+
+(c) Trajectory
+
+20
+
+Fast-LIVO2 ZED VIO
+
+Start
+
+End
+
+0
+
+-20
+
+-40
+
+-60
+
+Yaw (deg)
+
+Yaw (deg)
+
+150 100
+50 0
+-50 -100 -150
+
+(b) Yaw Over Time
+Fast-LIVO2 ZED VIO GT start yaw (0.0¬∞) GT end yaw (27.1¬∞)
+
+0 10 20 30 40 50 60 70 Time (s)
+
+(d) Yaw Over Time
+
+150 100
+
+Fast-LIVO2 ZED VIO GT start yaw (0.0¬∞)
+GT end yaw (-28.5¬∞)
+
+50
+
+0
+
+-50
+
+-100
+
+-150
+
+Y (m)
+
+-100
+
+-80
+
+-60
+
+-40
+
+-20
+
+0
+
+X (m)
+
+0 50 100 150 200 250 300 350 400 Time (s)
+
+Fig. 16: Qualitative Trajectory and Yaw Estimation Analysis. Representative evaluation runs comparing Fast-LIVO2 and ZED VIO in (a, b) indoor and (c, d) outdoor environments. The robot starts at the green dot and ends at the red dot. Fast-LIVO2 successfully closes the loop in both scenarios, whereas ZED VIO suffers from severe scale and rotational drift, particularly in the outdoor environment.
+
+VLA Models Already Detect Path Deviation
+
+19
+
+D Real-World Deployment Results
+
+This section presents real-world testing of our fully integrated framework, combining the VLA backbone with path deviation detection, a rollback mechanism to the saved normal trajectory, and a low-level RL avoidance policy. We highlight two key capabilities. First, Fig. 17 demonstrates robust, real-time obstacle avoidance despite naive VLA commands. Second, Fig. 18 illustrates autonomous trajectory recovery to the last normal state following a path deviation.
+
+VLA output: ‚ÄúMove forward 75 cm‚Äù
+
+avoid obstacle! RL output: v = 0.50 m/s, Ì†µÌºî = - 0.29 rad /s
+
+Fig. 17: Robust Obstacle Avoidance via Low-Level RL Policy. This sequence demonstrates the system‚Äôs ability to correct unsafe high-level commands in real-time. Although the VLA model naively outputs a forward movement command ("Move forward 75 cm") despite a pedestrian blocking the path, our RL policy independently detects the obstacle. It immediately overrides the naive command by executing a safe avoidance maneuver (v=0.50 m/s, œâ=0.29 rad/s), allowing the robot to steer around the pedestrian without collision and continue its navigation.
+
+20
+
+J. Jeong et al.
+
+Path deviation detected
+
+Last Normal point: (5.34, 5.67, 47.0 ¬∞)
+
+RL output: (v, Ì†µÌºî)
+
+Fig. 18: Path Deviation Detection and Autonomous Trajectory Recovery. This sequence demonstrates the system‚Äôs rollback mechanism. When a path deviation caused by VLA hallucination is detected during navigation, the system aborts the erroneous trajectory. It then initiates a recovery phase toward the last normal state (e.g., x=5.34, y=5.67, z=47.0¬∞) from the real-time recorded trajectory. During this process, the robot automatically returns to that point via the shortest path, guided by the obstacle avoidance actions of the RL policy, ensuring the mission resumes smoothly.
+
+

@@ -1,0 +1,42 @@
+{
+  "id": "2610.09496",
+  "title": "Sparse Feature Policy Unlearning Mitigates State Hallucination in Vision-Language-Action Models",
+  "first_author": "Lee",
+  "year": 2026,
+  "venue": "arXiv preprint (Oct 2026)",
+  "tier": "core",
+  "models": ["OpenVLA", "pi0.5"],
+  "action_head": "discrete action tokens (OpenVLA) and flow/diffusion action expert (pi0.5)",
+  "methods": ["action-to-visual-token attention maps", "Top-k SAEs (4096 latents, k=100) on visual-token residual activations (OpenVLA layers 0/8/16/24/31; PaliGemma layers 0/5/11/17)", "region-conditioned feature association scores contrasting hallucination failures, non-hallucination failures and clean successes", "SOUL: LoRA training that penalizes forget-feature activations on hallucination samples and rewards retain-feature activations on clean-success samples", "gradient-ascent unlearning baseline"],
+  "question": "Is 'state hallucination' (acting as if a grasp/transport/place had succeeded when it did not) reflected in identifiable SAE features, and can unlearning those features reduce it without hurting other skills?",
+  "key_findings": [
+    "Hallucination rollouts show weaker action-to-visual attention on the gripper and target and more attention on background (qualitative, Fig. 2).",
+    "Region-conditioned SAE features exist whose rollout-max activation is higher in hallucination failures than in clean successes, and vice versa (Fig. 3, qualitative plus boxplots).",
+    "LIBERO-Plus with OpenVLA: hallucination 70.0% original vs 84.0% gradient ascent vs 44.0% SOUL; overall success 26.0 / 0.0 / 58.0%; clean success 16.0 / 0.0 / 52.0% (Table I).",
+    "RoboCasa with pi0.5: hallucination 40.0 / 60.0 / 22.9%; overall success 41.9 / 4.8 / 54.3%; clean success 39.0 / 3.8 / 52.4% (Table I).",
+    "Averaged over settings: hallucination 55.0% -> 33.5%, clean success 27.5% -> 52.2%; SOUL preserves 89% of originally successful executions, converts 40% of failures to successes and corrects 78% of hallucinated events (Fig. 7).",
+    "Region-guided feature selection beats tokenized and global (pooled) selection: hallucination 33.5 vs 41.5 vs 45.8% (Table II).",
+    "Real Franka: across 50 rollouts for both models, SOUL raises clean success by ~20 points and lowers hallucination failure by ~22 points on average."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["LIBERO-Plus (3 base tasks from goal/spatial/object with lighting and background variants)", "RoboCasa (6 pick-and-place tasks)", "real Franka Research 3 (tasks such as 'pick fries and put it on the plate', 'throw the coffee in the trash bin')"],
+    "scale": "simulation rollout counts per condition not explicitly stated in text read; up to 20 time steps sampled per rollout for SAE analysis; real robot 50 rollouts across both models",
+    "statistics": "no: point percentages only, no CIs, seeds or tests",
+    "baselines": "original pretrained policy, gradient-ascent unlearning on hallucination samples; ablations of feature granularity, forget score and retain loss"
+  },
+  "causal_validation": "Indirect: model weights are updated (LoRA) to suppress forget features and boost retain features, and behavior improves. There is no direct feature ablation or steering test showing the selected features cause hallucination.",
+  "closed_loop": "Yes: closed-loop simulation and real-robot rollouts.",
+  "limitations_stated": [
+    "No explicit limitations section in the text read; the authors note there was no prior unlearning baseline for robot policies, so gradient ascent was adapted."
+  ],
+  "critique": [
+    "The retain loss rewards success-associated features on clean-success samples, so SOUL is partly fine-tuning on successful behavior. The missing baseline is plain LoRA fine-tuning or filtered behavior cloning on the same clean-success rollouts; without it, the gain cannot be credited to 'unlearning hallucination features'.",
+    "Gradient ascent is a notoriously destructive baseline (here 0% success on OpenVLA), which flatters the comparison.",
+    "No train/test separation is described between the rollouts used to select features and train SOUL and the rollouts used for evaluation; with only 3 LIBERO-Plus and 6 RoboCasa tasks, overfitting to the evaluation tasks is a real risk.",
+    "Very low baseline success (OpenVLA 26% on LIBERO-Plus perturbations) leaves lots of headroom for any task-specific adaptation to help.",
+    "'State hallucination' is a useful behavioral category, but the evidence that SAE features represent a 'false belief' is correlational (activation differences by outcome), similar to probe-based failure prediction."
+  ],
+  "code": "not reported",
+  "one_line": "SAE features on VLA visual tokens that fire more in rollouts where the robot 'acts as if' it grasped or placed something are used as targets for a LoRA unlearning objective, which cuts such failures and raises success in simulation and on a real arm, though a plain fine-tuning baseline is missing."
+}

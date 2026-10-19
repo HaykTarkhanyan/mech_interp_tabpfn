@@ -1,0 +1,817 @@
+{
+ "n_core_notes": 72,
+ "setting": {
+  "simulation": 29,
+  "offline only": 6,
+  "both": 33,
+  "real robot": 3,
+  "other": 1
+ },
+ "closed_loop": {
+  "yes": 43,
+  "no": 29
+ },
+ "causal_validation": {
+  "no": 35,
+  "yes": 37
+ },
+ "statistics": {
+  "partial": 30,
+  "no": 27,
+  "yes": 14,
+  "unclear": 1
+ },
+ "models": {
+  "pi0.5": 38,
+  "OpenVLA / OFT": 35,
+  "pi0 / pi0-FAST": 22,
+  "GR00T": 11,
+  "world-action models": 8,
+  "Diffusion Policy": 8,
+  "SmolVLA": 7,
+  "Molmo family": 4,
+  "Octo": 2
+ },
+ "papers": [
+  {
+   "id": "2510.25616",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2608.08904",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "Molmo family"
+   ]
+  },
+  {
+   "id": "2606.19297",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2502.04558",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2509.24559",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "yes",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2608.13474",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST"
+   ]
+  },
+  {
+   "id": "2605.28527",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2607.03372",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "Octo"
+   ]
+  },
+  {
+   "id": "2609.34684",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "yes",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT",
+    "GR00T",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2610.06235",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "GR00T",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2609.02634",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "GR00T"
+   ]
+  },
+  {
+   "id": "2605.30117",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2610.20840",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "Molmo family"
+   ]
+  },
+  {
+   "id": "2609.30996",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2605.24642",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "yes",
+   "models": [
+    "GR00T"
+   ]
+  },
+  {
+   "id": "2603.19183",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2603.19233",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT",
+    "GR00T",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2603.05487",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2605.17204",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2602.01834",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2610.09496",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2610.20767",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "Molmo family"
+   ]
+  },
+  {
+   "id": "2509.00328",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2605.17144",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "GR00T",
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2606.00269",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2607.14280",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2511.22697",
+   "setting": "real robot",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST"
+   ]
+  },
+  {
+   "id": "2610.04681",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2606.11489",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2608.04692",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2605.30695",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT",
+    "Octo",
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2610.10178",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "GR00T",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2609.15005",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2610.20750",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "Molmo family"
+   ]
+  },
+  {
+   "id": "2605.00321",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST"
+   ]
+  },
+  {
+   "id": "2604.18000",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "GR00T"
+   ]
+  },
+  {
+   "id": "2603.13782",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": []
+  },
+  {
+   "id": "2606.09749",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5"
+   ]
+  },
+  {
+   "id": "2603.06001",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2610.05878",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2609.39973",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2606.27755",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2603.15618",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2609.39971",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "GR00T"
+   ]
+  },
+  {
+   "id": "2609.38401",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2506.09937",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2606.29699",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2608.04246",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "yes",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2606.09740",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2606.19998",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST"
+   ]
+  },
+  {
+   "id": "2605.30834",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2609.21246",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2606.21386",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "yes",
+   "models": [
+    "pi0.5"
+   ]
+  },
+  {
+   "id": "2609.04277",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2608.04510",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0 / pi0-FAST",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2510.09459",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2503.08558",
+   "setting": "both",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": [
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2607.14943",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2607.04681",
+   "setting": "offline only",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "partial",
+   "models": []
+  },
+  {
+   "id": "2603.12717",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": []
+  },
+  {
+   "id": "2510.16281",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0 / pi0-FAST"
+   ]
+  },
+  {
+   "id": "2609.34794",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2609.30833",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5"
+   ]
+  },
+  {
+   "id": "2610.03498",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "SmolVLA"
+   ]
+  },
+  {
+   "id": "2602.03153",
+   "setting": "real robot",
+   "closed_loop": "no",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2607.12571",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "pi0.5",
+    "OpenVLA / OFT"
+   ]
+  },
+  {
+   "id": "2505.05787",
+   "setting": "real robot",
+   "closed_loop": "yes",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2604.13645",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "partial",
+   "models": [
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2603.11642",
+   "setting": "simulation",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "yes",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "Diffusion Policy"
+   ]
+  },
+  {
+   "id": "2606.01095",
+   "setting": "simulation",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "pi0 / pi0-FAST",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2608.25757",
+   "setting": "both",
+   "closed_loop": "yes",
+   "causal": "yes",
+   "stats": "no",
+   "models": [
+    "pi0.5",
+    "GR00T",
+    "world-action models"
+   ]
+  },
+  {
+   "id": "2606.30686",
+   "setting": "other",
+   "closed_loop": "no",
+   "causal": "no",
+   "stats": "n",
+   "models": [
+    "pi0 / pi0-FAST",
+    "OpenVLA / OFT",
+    "GR00T"
+   ]
+  }
+ ]
+}

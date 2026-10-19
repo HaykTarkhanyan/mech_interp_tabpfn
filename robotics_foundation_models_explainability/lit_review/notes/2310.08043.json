@@ -1,0 +1,39 @@
+{
+  "id": "2310.08043",
+  "title": "Understanding and Controlling a Maze-Solving Policy Network",
+  "first_author": "Mini",
+  "year": 2023,
+  "venue": "arXiv (ICLR 2024 submission)",
+  "tier": "adjacent",
+  "models": ["Procgen maze-solving policy from Langosco et al. (3.5M parameters, 15 conv layers, IMPALA blocks) that exhibits goal misgeneralization"],
+  "action_head": "n/a (discrete-action RL policy)",
+  "methods": ["behavioral regression of goal choice at decision squares on maze features", "visual identification of goal-tracking channels", "activation resampling from other mazes", "hand-edited single activations", "activation-addition steering vectors (cheese vector, top-right vector)"],
+  "question": "What goals does a misgeneralizing maze policy pursue, where are they represented internally, and can those representations be edited to control behavior?",
+  "key_findings": [
+    "Goal choice at decision squares is predictable from maze features: l1 logistic regression on three distances reaches 82.4% vs 71.4% for always predicting 'reaches cheese' (5K mazes, 10 splits); Euclidean distance to cheese matters beyond path distance.",
+    "11 of 128 channels after the first residual block of the second IMPALA block track the cheese location (redundant, distributed goal representation).",
+    "Resampling these channels from mazes with the cheese elsewhere changes the most likely action at decision squares in 40% of 200 mazes vs 11% when resampling from mazes with the cheese in the same place.",
+    "Setting one activation (of 32,768) in channel 55 to +5.5 partially retargets the policy toward the edited location.",
+    "Subtracting a 'cheese vector' (activation difference with vs without cheese) substantially lowers cheese-seeking action probability over 100 mazes, but adding it has no effect; adding a 'top-right vector' increases corner-seeking, subtracting it does not reduce it; the two edits combine without interference."
+  ],
+  "evidence": {
+    "setting": "simulation (Procgen mazes)",
+    "benchmarks": ["Procgen maze"],
+    "scale": "5K mazes for behavioral regression; 200 mazes for resampling; 100 mazes for steering vectors",
+    "statistics": "partial: train/validation splits for regression; steering results shown as distributions, no formal tests",
+    "baselines": "always-cheese predictor; resampling from same-location mazes; unmodified policy"
+  },
+  "causal_validation": "Yes: activation resampling, single-activation edits and steering vectors change action probabilities and trajectories in predicted directions, with asymmetric effects reported honestly.",
+  "closed_loop": "Partly: trajectory visualizations under edits; quantitative results are action probabilities at decision squares.",
+  "limitations_stated": [
+    "Control is only partial; the retargeted network sometimes ignores the edited location.",
+    "Cheese-tracking channels also weakly affect behavior through factors other than cheese location."
+  ],
+  "critique": [
+    "Classic early example of goal representations and activation steering in a policy network; the asymmetric steering results (subtracting works, adding does not) are an important caution for VLA steering papers that report only one direction.",
+    "Channel identification is by visual inspection; no systematic search or ablation of all channels.",
+    "Spatially aligned conv feature maps make goal location trivially readable; continuous-control VLAs lack this, as with the Sokoban and chess examples (2504.01871, 2406.00877)."
+  ],
+  "code": "https://github.com/UlisseMini/procgen-tools",
+  "one_line": "A maze RL policy that sometimes goes to its old training goal instead of the cheese has 11 channels that track the cheese, and editing or resampling them, or subtracting a 'cheese vector', partly redirects where it goes."
+}

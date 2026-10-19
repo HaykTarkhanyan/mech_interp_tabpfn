@@ -1,0 +1,45 @@
+{
+  "id": "2609.15005",
+  "title": "IMPACT-VLA: Interaction-aware Multimodal Propagation Attribution via Counterfactual Trajectories for Vision-Language-Action Policies",
+  "first_author": "Kim",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["OpenVLA-OFT (action chunk K = 8)"],
+  "action_head": "regression head (OpenVLA-OFT parallel-decoded continuous action chunks)",
+  "methods": ["CUSUM changepoint segmentation of a successful reference rollout into behavioral phases aligned to policy-query boundaries", "phase x modality blocks (third-person image, wrist image, proprioception, language) as Shapley players", "closed-loop counterfactual re-execution with input replacement (mean, gray, blur, noise)", "sampled-permutation Shapley (128 permutations)", "cross-phase interaction finite differences", "behavioral vs functional recovery (difference-in-differences)", "deletion/insertion faithfulness"],
+  "question": "When during closed-loop execution does each input modality contribute to task success, and how do contributions from different phases interact and propagate?",
+  "key_findings": [
+    "Phase-dependent modality use: in 25 of 30 LIBERO tasks (83.3%) the dominant modality changes between adjacent phases; 37 of 92 dominant-set changes have no overlap. Spatial: wrist vision early, proprioception late; Object: wrist early, third-person late; Goal: language early, then wrist and proprioception.",
+    "Closed-loop faithfulness (pAUC, 95% task-bootstrap CI): deletion 0.810 [0.746, 0.861] vs Static Action Perturbation 0.670 [0.548, 0.777], LOO 0.780, random 0.278; insertion 0.104 vs 0.030 (static), 0.017 (LOO). Difference from phase-restricted Shapley not statistically clear.",
+    "Phase resolution helps: top-modality removal effect 0.948 (action-transition phases) vs 0.931 (uniform query-aligned) vs 0.915 (modality-only), paired CIs exclude zero.",
+    "Rankings are fairly stable across replacement kernels (Spearman 0.734-0.816, top-3 overlap 0.857-0.933), but absolute magnitudes depend on the kernel.",
+    "Held-out interaction validation: complementary edges +0.182 [0.136, 0.226] with 0.90 sign agreement; redundant edges -0.066 with only 0.52 sign agreement; negative controls +0.006.",
+    "For negatively interacting pairs, the later block's marginal gain rises from 0.025 to 0.082 (3.3x) when the early block is replaced.",
+    "Behavioral recovery (trajectory reconvergence) occurs in 50% of negative-control pairs, so reconvergence alone is not evidence of compensation; functional recovery without behavioral recovery is 62.5% in the redundant group.",
+    "Estimator validation in a synthetic closed-loop game: at 128 permutations MAE < 0.03 and Spearman > 0.89 against exact Shapley values."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Spatial, -Object, -Goal (30 tasks)"],
+    "scale": "one fixed initial state and one successful reference rollout per task; 128 permutations per kernel with one rollout seed per permutation; 32 contexts per pair plus 32 held-out; 32 paired rollout seeds for propagation/recovery; faithfulness 16 replicates per task",
+    "statistics": "yes: task-macro means with 95% task-cluster bootstrap CIs (10,000 resamples), paired comparisons",
+    "baselines": "leave-one-out, static action perturbation, random ranking; structural ablations (phase-restricted Shapley, modality-only Shapley, uniform phases)"
+  },
+  "causal_validation": "Yes at the input level: attributions are computed from closed-loop interventions on inputs and checked with closed-loop deletion/insertion. There is no analysis of internal components; it is input attribution, not mechanistic interpretability.",
+  "closed_loop": "Yes, this is the defining feature; every coalition value is a closed-loop success estimate.",
+  "limitations_stated": [
+    "Only OpenVLA-OFT on LIBERO.",
+    "Phase structure comes from a single successful reference execution per task, so results are relative to that reference.",
+    "Other references, architectures, failure trajectories, real robots and cheaper coalition evaluation left to future work."
+  ],
+  "critique": [
+    "Strong evaluation design for an attribution method: closed-loop faithfulness, paired bootstrap CIs, a controlled ground-truth game, and negative controls. The result that static (open-loop) action sensitivity is a worse guide to task-critical inputs than closed-loop attribution is a useful methodological point for the review.",
+    "One initial state per task means 'phase-dependent modality use' may reflect that particular episode; generality across initial states is untested.",
+    "Mean-image and empty-string replacements push inputs off-distribution; kernel dependence of magnitudes is acknowledged.",
+    "Low insertion pAUC across all methods (about 0.1) shows that restoring a few blocks rarely restores success, so rankings are informative mainly for deletion.",
+    "Input-level only; it does not say which internal mechanisms implement the modality switches."
+  ],
+  "code": "not reported",
+  "one_line": "Closed-loop Shapley attribution over phase-by-modality input blocks shows OpenVLA-OFT switches which sensor it relies on across task phases, and that closed-loop attribution identifies critical inputs better than one-step action sensitivity."
+}

@@ -1,0 +1,46 @@
+{
+  "id": "2609.39971",
+  "title": "When Instructions Retrieve Trajectories: Diagnosing and Mitigating Generalization Failures in VLA Models",
+  "first_author": "Chen",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0.5 (official LIBERO checkpoint; Frozen-LM and full-FT retrains)", "GR00T-N1.7 (official per-suite checkpoints)"],
+  "action_head": "flow/diffusion action expert (both)",
+  "methods": ["LIBERO-PRO evaluation split into nuisance (paraphrase, object appearance) and counterfactual (position swap, new task) cells, with corrected instruction delivery", "381 targeted behavioral probes with human labels (retrieval-like vs following), inter-annotator kappa", "prefix KV-cache readout: rank candidate task prefixes by cosine distance", "single-call prefix-KV patching with target-specificity analysis", "persistent closed-loop injection of another task's prefix KV cache (pi0.5) or backbone features (GR00T)", "analysis of the flow-matching objective under narrow conditional action support", "Equivariant Counterfactual Training (paired scene-mirrored demonstrations + paired loss)"],
+  "question": "Why do VLAs that are robust to nuisance changes fail when a change requires a different action, and is the selected behavior encoded in the task-conditioned state read by the action expert?",
+  "key_findings": [
+    "On LIBERO-PRO (500 episodes per cell), every nuisance cell beats every counterfactual cell in each suite for both pi0.5 and GR00T-N1.7, and Swap and Task are at least 42 points below in-distribution success.",
+    "Of 381 targeted pi0.5 probes, 69% replay a familiar behavior (52% the source task, 15% another task) and 27% follow the changed requirement; only 4% collapse incoherently; GR00T-N1.7: 73% retrieval-like, 14% following; annotator agreement kappa = 0.78.",
+    "Policies keep local visual tracking while choosing the wrong task: under swapped plus shifted objects, the policy tracks whatever object occupies the source-bound slot in all 9 probes.",
+    "Readout: final-layer prefix KV ranks the actually executed task first in 34/45 'other-task' Goal rollouts (top-3 in 43/45), versus 22/45 for text-only TF-IDF.",
+    "Closed-loop intervention: replacing pi0.5's prefix KV cache with one from a target task moves the arm nearer the target object in 109/200 rollouts vs 0/200 controls (all 50 task pairs shift), and source-task completion falls from 200/200 to 0; GR00T backbone-feature replacement gives 121/200 vs 0/200; neither completes the injected task.",
+    "Single-call patch displacement aligns more with the patched task's expert chunk than with other tasks (cosine 0.44 vs 0.18).",
+    "More data of the same kind does not fix it: from 25% to 100% of the data, Swap and Task stay at least 34 points below ID; ECT raises pi0.5 Swap success from 36% to 59% and Task from 21% to 28% (Frozen-LM, 3 seeds); ECT loss alone lifts CALVIN ABC->D five-task completion 58% -> 76%; real UR5e unseen-position success 3/40 -> 35/40 at a fixed 400-demo budget.",
+    "LIBERO-PRO's released evaluation code delivered the original instruction for the Semantic and Task cells (acknowledged by maintainers); a scripted oracle confirms the corrected Object Task cell is executable (90/100) while official pi0.5 scores 11.0%."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-PRO and CALVIN simulation; real UR5e)",
+    "benchmarks": ["LIBERO-PRO (Spatial, Object, Goal, Long; Semantic, Object, Swap, Task cells; Environment unavailable)", "CALVIN ABC->D", "UR5e reaching/placement study"],
+    "scale": "500 episodes per LIBERO-PRO cell; 381 labeled probes; 50 task pairs x 4 rollouts for persistent intervention; Frozen-LM comparisons over 3 training seeds; UR5e 40 trials per condition",
+    "statistics": "yes: bootstrap CIs on patching effects and annotator agreement, seed-level variability for main comparisons (Appendix I), with stated caveats that rollout intervals exclude training variability for single-seed rows",
+    "baselines": "official checkpoints; standard training at matched steps, batch and trainable parameters; ECT data with independent sampling vs paired ECT loss; TF-IDF text baseline for readout; matched controls for interventions"
+  },
+  "causal_validation": "Yes: closed-loop persistent replacement of the task-conditioned state with matched controls in two architectures, plus single-call patching with target-specificity checks. The authors note the swap changes visual content too and removes access to the live representation, so it shows that this state steers task-level motion, not a clean isolated variable.",
+  "closed_loop": "Yes for success rates, behavioral probes and the persistent intervention; the readout and single-call patching are open-loop.",
+  "limitations_stated": [
+    "Swap and Task stay below ID even after ECT.",
+    "'Binding' characterizes task selection, not a unique retrieval algorithm; the optimization mechanism of the paired loss is unclear.",
+    "Several comparisons use one training seed; official checkpoints are not matched retraining controls.",
+    "ECT needs action-valid, scene-dependent alternatives; generalist use without task fine-tuning, contact-rich, mobile and navigation settings are untested."
+  ],
+  "critique": [
+    "One of the strongest papers in the batch: a precise behavioral taxonomy, human labels with agreement, closed-loop interventions with matched controls across two flow-matching architectures, and a training fix that targets the diagnosed cause.",
+    "Reframes 'VLAs ignore language' (2603.06001, 2604.18000) as 'language selects a memorized trajectory family': language is used, but as a key, not composed with the scene.",
+    "The LIBERO-PRO instruction-delivery bug it documents means any paper reporting LIBERO-PRO Semantic or Task cells with the released code was likely evaluating the original instruction; it also reports that LIBERO-PRO Environment assets are not public, which bears on papers reporting 'env' cells (e.g. 2610.04681).",
+    "The interventions replace the whole task-conditioned cache, which is coarse; they localize the decision to the backbone-to-expert interface but not to specific components.",
+    "Findings are on task-specifically fine-tuned LIBERO/CALVIN policies with narrow demonstration support; whether generalist pretrained VLAs bind the same way is untested."
+  ],
+  "code": "not reported in the text read",
+  "one_line": "Fine-tuned pi0.5 and GR00T-N1.7 succeed under paraphrases but fail when the required action changes, because the instruction retrieves a memorized trajectory family; swapping the task-conditioned KV state redirects the arm, and training on paired counterfactual scenes partly fixes it."
+}

@@ -1,0 +1,43 @@
+{
+  "id": "2509.24559",
+  "title": "Emergent World Representations in OpenVLA",
+  "first_author": "Molinari",
+  "year": 2025,
+  "venue": "arXiv preprint (Sep 2025)",
+  "tier": "core",
+  "models": ["OpenVLA-7B", "OpenVLA early checkpoint v01", "OpenVLA LIBERO fine-tunes"],
+  "action_head": "discrete action tokens",
+  "methods": ["Lasso linear probes and 2-layer MLP probes on mean-pooled residual stream (layers 7, 15, 22, 30)", "regression target: state-transition vector e_{t+K} - e_t in embedding space", "embedding-only probe baseline", "permutation tests, moving-block bootstrap CIs", "Koopman-operator theoretical argument", "proposed (not run) SAE pipeline"],
+  "question": "Does OpenVLA implicitly encode a world model, i.e. can the K-step change in its scene embedding be predicted from its intermediate activations better than from the embedding itself?",
+  "key_findings": [
+    "Probes on activations beat embedding-only probes for every K in {1,3,10,30} and all 4 LIBERO suites; all 123 probes with R2 > 0 pass a 100-shuffle permutation test (Table 1; overall p < 0.0001 claimed).",
+    "Best test R2 grows with horizon: e.g. LIBERO-Long 0.086 (K=1), 0.160 (K=3), 0.334 (K=10), 0.515 (K=30); LIBERO-Object 0.183 -> 0.667 (Table 3).",
+    "Middle layers (7-22) give the best probes; layer 30 is worse.",
+    "Linear probes are never significantly beaten by MLP probes (MLP wins 0/48 at 90/95/99% CIs; ties 34-39/48) (Table 2), read as support for the linear representation hypothesis.",
+    "Early checkpoint v01 and LIBERO-only fine-tunes show weaker activation-over-embedding advantages (figures only), interpreted as the world model emerging with pretraining scale.",
+    "Negative results: K > 30 gives no further gain (R2 drops after ~100); using a window of past steps leads to overfitting."
+  ],
+  "evidence": {
+    "setting": "offline dataset only",
+    "benchmarks": ["LIBERO (Goal, Spatial, Long, Object)"],
+    "scale": "400 episodes (100 per suite), 66,931 steps; 70/15/15 chronological split; probe seed 0 only",
+    "statistics": "yes for probes: moving-block bootstrap CIs (400 reps), permutation tests (100 shuffles), two-sided CI comparisons of linear vs MLP; no variance over probe seeds or data splits",
+    "baselines": "probes on raw (mean-pooled) embeddings e_t; v01 checkpoint; LIBERO fine-tunes"
+  },
+  "causal_validation": "No. The authors say the embedding baseline establishes 'a causal link', but it is a correlational comparison; no ablation, patching or steering is done. They say mean pooling rules out interventions.",
+  "closed_loop": "No. Activations come from recorded LIBERO episodes; the transitions are those in the data, not produced by OpenVLA acting in closed loop (the text does not say who generated the episodes).",
+  "limitations_stated": [
+    "Mean pooling over patches prevents interventions and patch-level interpretation.",
+    "Only 400 episodes, which may disadvantage MLP probes.",
+    "No SAE was trained; the SAE planning pipeline is only proposed."
+  ],
+  "critique": [
+    "Predicting e_{t+K} - e_t from activations that already contain the instruction and task phase is not evidence of a dynamics model: under a fixed demonstration policy, task identity plus progress largely determine the next scene change. A baseline with instruction/task-id features or the action itself is missing.",
+    "'Linear-Joint' probes use activations plus embeddings, while the baseline uses embeddings alone, so the comparison partly rewards extra inputs.",
+    "Calling behavior cloning 'policy-based RL' and the result an 'internal world model' overstates the claim. R2 at K=1 is only 0.09-0.18.",
+    "The emergence-over-training and fine-tune claims rest on figures, with no tests reported in the text read.",
+    "Single probe seed and a chronological split whose unit (episode vs step) is not stated; if steps within an episode cross splits, leakage is possible."
+  ],
+  "code": "https://github.com/FlexCode29/reproducibility-emergent-world-model-openvla",
+  "one_line": "Linear probes on OpenVLA's middle-layer activations predict how its scene embedding will change K steps ahead better than the embedding alone does, which the authors read as an emergent world model, though the result is correlational and confounded with task identity."
+}

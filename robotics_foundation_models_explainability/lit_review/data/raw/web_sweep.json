@@ -1,0 +1,1375 @@
+{
+  "searched_on": "2026-10-19",
+  "queries": [
+    "mechanistic interpretability vision-language-action model",
+    "sparse autoencoder robot policy features OpenVLA",
+    "activation steering robot policy VLA",
+    "probing representations visuomotor diffusion policy interpretability",
+    "\"Hitchhiker's Guide to Mechanistic Interpretability of Vision-Language-Action Models\"",
+    "\"When Internal Feedback Goodharts\" SAE rewards robot",
+    "VLA failure prediction from internal representations probe",
+    "attention analysis OpenVLA pi0 what does the policy look at",
+    "\"Interpretable Signals Reveal Failure-Relevant Representations in Vision-Language-Action Models\"",
+    "awesome VLA interpretability github list",
+    "linear probe action tokens VLA layers what information is encoded",
+    "logit lens action tokens robot transformer",
+    "\"Predictable Before Action, Resistant to Correction\" VLA",
+    "neuron analysis vision-language-action model ablation neurons robot",
+    "causal intervention activation patching robot manipulation policy",
+    "counterfactual explanations robot policy foundation model",
+    "VLA representation analysis \"visual representations\" degrade fine-tuning probing OpenVLA",
+    "interpretability world model V-JEPA probing physics representations robotics",
+    "mechanistic interpretability Sokoban planning agent DRC probes",
+    "explainable autonomous driving vision-language-action model interpretability",
+    "sparse autoencoder diffusion policy robot interpretable features",
+    "concept bottleneck vision-language-action policy interpretable by design",
+    "Physical Intelligence blog pi0 interpretability internal representations",
+    "Goodfire OR Transluce interpretability robotics model",
+    "\"physical AI\" interpretability \"first-order objective\" robotics blog",
+    "Octo OR \"RT-2\" interpretability analysis internal features robot transformer",
+    "GR00T N1 interpretability OR probing OR \"attention maps\" analysis humanoid VLA",
+    "\"World Mechanics\" interpretable foundation models physical world lab",
+    "\"Layer-Wise Structural and Mechanistic Interpretation of OpenVLA\"",
+    "\"Explaining generalisation failures of Robotic Foundation Models\"",
+    "ICML 2026 Workshop on Mechanistic Interpretability accepted papers robot OR VLA OR embodied",
+    "neurips.cc 2026 workshop vision-language-action interpretability failure signals",
+    "RoboPAD Post-Training Adaptation of Robot Foundation Models NeurIPS 2026 workshop",
+    "NeurIPS 2026 mechanistic interpretability workshop vision-language-action accepted",
+    "CoRL 2026 workshop interpretability robot learning policies",
+    "github toolkit interpretability vision-language-action models hooks activations OpenVLA pi0",
+    "natural language self-explanation robot policy \"explain\" actions VLA faithfulness",
+    "attention sink vision tokens VLA analysis layers action generation",
+    "memorization analysis vision-language-action model training demonstrations internal",
+    "\"embodied chain-of-thought\" faithfulness interventions reasoning trace robot policy causal",
+    "survey vision-language-action models interpretability explainability section challenges",
+    "explainable AI robotics survey foundation models 2025 2026",
+    "saliency attribution diffusion policy which pixels matter robot manipulation explanation",
+    "\"Demystifying Robot Diffusion Policies\" arxiv",
+    "modality contribution execution stages VLA attribution proprioception language vision",
+    "do VLAs follow language instructions ignore language shortcut analysis counterfactual instruction",
+    "interpretability embodied LLM planner probing internal state SayCan robot planning representations",
+    "sparse autoencoder autonomous driving model interpretable features end-to-end planner",
+    "Leela chess zero look-ahead mechanistic interpretability OR AlphaZero concepts interpretability",
+    "interpreting world model Genie OR \"video world model\" latent action interpretability probing robotics",
+    "steering diffusion policy latent directions inference-time behavior modulation robot interpretable",
+    "circuit discovery OR transcoder OR \"attribution graph\" vision-language-action robot policy",
+    "LIBERO-Plus robustness analysis VLA ignore language perturbation dimensions",
+    "\"task vector\" OR \"function vector\" vision-language-action in-context robot",
+    "explainable VLA \"uncertainty\" hidden states probe calibration robot policy confidence internal",
+    "\"Reading and Steering a Vision Language Action Policy in English\"",
+    "\"Block the Heads\" VLA attention-head blocking spatial perturbation",
+    "\"How Do World Action Models Use Their Imagined Futures\"",
+    "\"Reasoning We Can TRUST\" steering reasoning VLA actions",
+    "TRUST token-level reward utility-steered trajectories VLA chain-of-thought monitoring steering",
+    "MultiSTEVE-1s model zoo interpretability suite instruction-following vision agents",
+    "\"Reacting to Text Is Not Following It\" driving VLA language grounding",
+    "Procgen maze policy network interpretability steering vector cheese goal misgeneralization",
+    "\"policy introspection\" OR \"concept probing\" robot foundation model internal concepts",
+    "polysemantic OR superposition neurons robot policy vision-language-action interpretability spatial concepts",
+    "VLA layer-wise analysis \"vision encoder\" \"action expert\" information flow pi0 probing study 2026",
+    "lesswrong OR alignmentforum interpretability robot VLA policy SAE steering post",
+    "neurips 2026 workshop sparse autoencoder robot policy OR VLA probing poster",
+    "survey explainability robot learning policies imitation reinforcement XAI robotics arxiv",
+    "REFLECT summarizing robot experiences failure explanation large language models",
+    "\"efference copy\" OR \"intention\" readable VLA hidden states hijacking actions probe",
+    "github VLA mechanistic interpretability code release steering pi0 openvla repository",
+    "Actionable Interpretability workshop ICML robot policy OR VLA OR embodied paper"
+  ],
+  "items": [
+    {
+      "title": "Closed-Loop Neural Activation Control in Vision-Language-Action Models",
+      "arxiv_id": "2606.00269",
+      "url": "https://arxiv.org/abs/2606.00269",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (models not confirmed from abstract)"
+      ],
+      "methods": [
+        "activation steering",
+        "closed-loop (PID) steering"
+      ],
+      "why_relevant": "Turns fixed-coefficient activation steering of VLAs into closed-loop control of the steering coefficient over time.",
+      "found_via": "activation steering robot policy VLA",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Contrastive Conceptor Activation Steering (COAST): Unlocking Vision-Language-Action Models through Hidden States",
+      "arxiv_id": "2605.17144",
+      "url": "https://arxiv.org/abs/2605.17144",
+      "year": 2026,
+      "venue": "ICML 2026 Workshop on Mechanistic Interpretability (also arXiv)",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (not confirmed)"
+      ],
+      "methods": [
+        "activation steering",
+        "conceptors",
+        "contrastive steering"
+      ],
+      "why_relevant": "Contrastive conceptor-based activation steering on VLA hidden states.",
+      "found_via": "activation steering robot policy VLA; ICML 2026 MI workshop page",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; also listed on icml.cc/virtual/2026/workshop/54071 (OpenReview ISSQxXRIvW)"
+    },
+    {
+      "title": "VLA-Trace: Diagnosing Vision-Language-Action Models through Representation and Behavior Tracing",
+      "arxiv_id": "2605.30117",
+      "url": "https://arxiv.org/abs/2605.30117",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (several, not enumerated)"
+      ],
+      "methods": [
+        "CKA representation analysis",
+        "checkpoint drift",
+        "causal control attribution"
+      ],
+      "why_relevant": "Diagnostic framework tracing VLA representations (CKA, checkpoint drift) through causal attribution to behavior.",
+      "found_via": "VLA failure prediction from internal representations probe",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "SAFE: Multitask Failure Detection for Vision-Language-Action Models",
+      "arxiv_id": "2506.09937",
+      "url": "https://arxiv.org/abs/2506.09937",
+      "year": 2025,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA",
+        "pi0",
+        "pi0-FAST"
+      ],
+      "methods": [
+        "failure prediction from internal features",
+        "learned probe"
+      ],
+      "why_relevant": "Trains a failure detector on VLA internal features that generalizes to unseen tasks.",
+      "found_via": "VLA failure prediction from internal representations probe",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; venue not confirmed; a slideslive talk exists"
+    },
+    {
+      "title": "Early Warning Signals for OpenVLA Failure under Visual Distribution Shift",
+      "arxiv_id": "2606.29699",
+      "url": "https://arxiv.org/abs/2606.29699",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA"
+      ],
+      "methods": [
+        "linear probes",
+        "failure prediction from activations"
+      ],
+      "why_relevant": "Layer-16 MLP activation probes in OpenVLA predict impending failure under occlusion (AUROC ~0.97).",
+      "found_via": "VLA failure prediction from internal representations probe",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "SAFECAST: Robust Failure Detection for VLA Policies with Contrast-Set Training and Calibration",
+      "arxiv_id": "2608.04246",
+      "url": "https://arxiv.org/abs/2608.04246",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (not enumerated)"
+      ],
+      "methods": [
+        "hidden-state probes",
+        "conformal prediction",
+        "failure detection"
+      ],
+      "why_relevant": "Hidden-state risk probes for VLA rollouts, made robust with contrast-set training and calibration.",
+      "found_via": "explainable VLA uncertainty hidden states probe",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "ProbeAct: Probe-Guided Training-Free Failure Recovery in Vision-Language-Action Models",
+      "arxiv_id": "2606.09740",
+      "url": "https://arxiv.org/abs/2606.09740",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (not enumerated)"
+      ],
+      "methods": [
+        "probes",
+        "probe-guided intervention",
+        "failure recovery"
+      ],
+      "why_relevant": "Uses internal probes to drive training-free failure recovery of VLAs at runtime.",
+      "found_via": "linear probe action tokens VLA layers what information is encoded",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Don't Blind Your VLA: Aligning Visual Representations for OOD Generalization",
+      "arxiv_id": "2510.25616",
+      "url": "https://arxiv.org/abs/2510.25616",
+      "year": 2025,
+      "venue": "ICML 2026",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA"
+      ],
+      "methods": [
+        "probing",
+        "attention map analysis",
+        "representation alignment"
+      ],
+      "why_relevant": "Probes VLA hidden states and attention maps to show action fine-tuning degrades visual-language representations.",
+      "found_via": "attention analysis OpenVLA pi0; VLA representation analysis",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; ICML 2026 listing at icml.cc/virtual/2026/67420 seen in search results"
+    },
+    {
+      "title": "Demystifying Diffusion Policies: Action Memorization and Simple Lookup Table Alternatives",
+      "arxiv_id": "2505.05787",
+      "url": "https://arxiv.org/abs/2505.05787",
+      "year": 2025,
+      "venue": "ICLR 2026 (poster titled 'Demystifying Robot Diffusion Policies: Action Memorization and a Simple Lookup Table Alternative')",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "Diffusion Policy"
+      ],
+      "methods": [
+        "latent nearest-neighbor analysis",
+        "memorization analysis"
+      ],
+      "why_relevant": "Argues diffusion policies act as latent-space action lookup tables, i.e. memorization rather than generalization.",
+      "found_via": "probing representations visuomotor diffusion policy interpretability",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; arXiv title differs slightly from the ICLR 2026 poster title"
+    },
+    {
+      "title": "IMPACT-VLA: Interaction-aware Multimodal Propagation Attribution via Counterfactual Trajectories for Vision-Language-Action Policies",
+      "arxiv_id": "2609.15005",
+      "url": "https://arxiv.org/abs/2609.15005",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLA (LIBERO-style tasks)"
+      ],
+      "methods": [
+        "counterfactual attribution",
+        "modality attribution",
+        "phase analysis"
+      ],
+      "why_relevant": "Counterfactual-trajectory attribution of vision/wrist/proprio/language contributions per execution phase.",
+      "found_via": "saliency attribution diffusion policy; modality contribution execution stages VLA",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Do Vision-Language-Action Models Mean What They Say? On the Role of Faithfulness in Embodied Reasoning",
+      "arxiv_id": "2607.04681",
+      "url": "https://arxiv.org/abs/2607.04681",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "embodied-CoT VLAs"
+      ],
+      "methods": [
+        "faithfulness of self-explanations",
+        "learned critic"
+      ],
+      "why_relevant": "Tests whether a VLA's embodied chain-of-thought faithfully reflects its decision process.",
+      "found_via": "natural language self-explanation robot policy VLA faithfulness",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Altered Thoughts, Altered Actions: Reasoning Chain as Control Surface for a Vision-Language-Action Policy",
+      "arxiv_id": "2603.12717",
+      "url": "https://arxiv.org/abs/2603.12717",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "reasoning VLA (not confirmed)"
+      ],
+      "methods": [
+        "causal intervention on reasoning chain",
+        "self-explanation"
+      ],
+      "why_relevant": "Edits a reasoning VLA's text chain and measures the causal effect on actions, testing CoT as an oversight interface.",
+      "found_via": "\"embodied chain-of-thought\" faithfulness interventions",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "LM-X: Explainable Vision--Language--Action Modeling via Progress, Event, and Uncertainty Prediction",
+      "arxiv_id": "2608.25757",
+      "url": "https://arxiv.org/abs/2608.25757",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "LM-X (own VLA)"
+      ],
+      "methods": [
+        "interpretable-by-design",
+        "progress/event/uncertainty heads"
+      ],
+      "why_relevant": "Interpretable-by-design VLA that exposes progress, next event and reliability signals.",
+      "found_via": "natural language self-explanation robot policy VLA faithfulness",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Beyond Task Success: Behavioral and Representational Diagnostics for WAM and VLA",
+      "arxiv_id": "2606.01095",
+      "url": "https://arxiv.org/abs/2606.01095",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "world action models",
+        "VLA"
+      ],
+      "methods": [
+        "representation diagnostics",
+        "behavioral diagnostics"
+      ],
+      "why_relevant": "Compares internal representations and behavior of world-action models vs VLAs beyond task success.",
+      "found_via": "neurips 2026 workshop sparse autoencoder robot policy OR VLA probing poster",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Look Before Acting: Enhancing Vision Foundation Representations for Vision-Language-Action Models",
+      "arxiv_id": "2603.15618",
+      "url": "https://arxiv.org/abs/2603.15618",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "several VLAs"
+      ],
+      "methods": [
+        "layer-wise visual-token sensitivity",
+        "attention analysis",
+        "masking"
+      ],
+      "why_relevant": "Layer-wise analysis showing VLA sensitivity to task-relevant visual tokens fades in deeper layers (then proposes a fix).",
+      "found_via": "neuron analysis VLA; attention sink vision tokens VLA",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; main contribution is a method; tagged core for its analysis section - borderline"
+    },
+    {
+      "title": "Does VLA Even Know the Basics? Measuring Commonsense and World Knowledge Retention in Vision-Language-Action Models",
+      "arxiv_id": "2606.19297",
+      "url": "https://arxiv.org/abs/2606.19297",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "VLAs vs their base VLMs"
+      ],
+      "methods": [
+        "knowledge retention evaluation"
+      ],
+      "why_relevant": "Measures how much VLM world knowledge survives VLA fine-tuning; behavioral, not internal.",
+      "found_via": "linear probe action tokens VLA layers",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Drop-Then-Recovery: How Redundant Are Vision-Language-Action Models?",
+      "arxiv_id": "2606.27755",
+      "url": "https://arxiv.org/abs/2606.27755",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "VLA (not enumerated)"
+      ],
+      "methods": [
+        "block ablation",
+        "redundancy analysis"
+      ],
+      "why_relevant": "Block-removal interventions show how much of a VLA's language backbone is needed for control.",
+      "found_via": "neuron analysis vision-language-action model ablation",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "When Vision Overrides Language: Evaluating and Mitigating Counterfactual Failures in VLAs",
+      "arxiv_id": "2602.17659",
+      "url": "https://arxiv.org/abs/2602.17659",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "several VLAs"
+      ],
+      "methods": [
+        "counterfactual instruction evaluation"
+      ],
+      "why_relevant": "Shows VLAs follow visual shortcuts over language; behavioral evidence that interp papers build on.",
+      "found_via": "do VLAs follow language instructions ignore language",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models",
+      "arxiv_id": "2510.13626",
+      "url": "https://arxiv.org/abs/2510.13626",
+      "year": 2025,
+      "venue": "CVPR 2026 (as 'LIBERO-Plus: A Progressive Robustness Benchmark for Visual-Language-Action Models')",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "OpenVLA",
+        "OpenVLA-OFT",
+        "pi0",
+        "pi0-FAST",
+        "others"
+      ],
+      "methods": [
+        "perturbation robustness analysis"
+      ],
+      "why_relevant": "Finds VLAs largely ignore language and are brittle to camera/initial-state changes; behavioral.",
+      "found_via": "LIBERO-Plus robustness analysis VLA ignore language",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Do What You Say: Steering Vision-Language-Action Models via Runtime Reasoning-Action Alignment Verification",
+      "arxiv_id": "2510.16281",
+      "url": "https://arxiv.org/abs/2510.16281",
+      "year": 2025,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "reasoning VLAs"
+      ],
+      "methods": [
+        "embodied CoT faithfulness",
+        "runtime selection"
+      ],
+      "why_relevant": "Frames reasoning-action misalignment as CoT unfaithfulness; fixes it by sampling and verification, not internals.",
+      "found_via": "\"Reasoning We Can TRUST\" steering reasoning VLA actions",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "VLA Knows Its Limits: Adaptive Execution Horizons for Robot Policies",
+      "arxiv_id": "2602.21445",
+      "url": "https://arxiv.org/abs/2602.21445",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "flow-based VLAs"
+      ],
+      "methods": [
+        "attention analysis (not confirmed)"
+      ],
+      "why_relevant": "Adaptive execution horizon for action chunks; search snippets attribute an action-attention-sink analysis to it - unconfirmed.",
+      "found_via": "GR00T N1 interpretability OR probing OR attention maps",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; relevance of attention analysis not confirmed from abstract"
+    },
+    {
+      "title": "GuidedAttention: Interpretable and Correctable Visual Attention for OOD-Robust Robot Manipulation via Imitation Learning",
+      "arxiv_id": "2607.21049",
+      "url": "https://arxiv.org/abs/2607.21049",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "diffusion policy (task-specific)"
+      ],
+      "methods": [
+        "interpretable-by-design attention keypoints"
+      ],
+      "why_relevant": "Interpretable and correctable visual attention as an explicit intermediate for a diffusion visuomotor policy.",
+      "found_via": "saliency attribution diffusion policy which pixels matter",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Explaining the Decisions of Deep Policy Networks for Robotic Manipulations",
+      "arxiv_id": "2310.19432",
+      "url": "https://arxiv.org/abs/2310.19432",
+      "year": 2023,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "deep visuomotor policies (non-foundation)"
+      ],
+      "methods": [
+        "Deep Taylor Decomposition",
+        "Relative Attributing Propagation",
+        "Guided Backprop"
+      ],
+      "why_relevant": "Input-attribution baselines for robot manipulation policies, pre-foundation-model.",
+      "found_via": "saliency attribution diffusion policy which pixels matter",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Interpreting Neural Policies with Disentangled Tree Representations",
+      "arxiv_id": "2210.06650",
+      "url": "https://arxiv.org/abs/2210.06650",
+      "year": 2022,
+      "venue": "CoRL 2023 (as 'Measuring Interpretability of Neural Policies of Robots with Disentangled Representation')",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "neural robot policies (non-foundation)"
+      ],
+      "methods": [
+        "disentangled tree representations",
+        "interpretability metrics"
+      ],
+      "why_relevant": "Early quantitative interpretability metric for robot neural policies.",
+      "found_via": "CoRL 2026 workshop interpretability robot learning policies",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; arXiv title differs from CoRL proceedings title"
+    },
+    {
+      "title": "REFLECT: Summarizing Robot Experiences for Failure Explanation and Correction",
+      "arxiv_id": "2306.15724",
+      "url": "https://arxiv.org/abs/2306.15724",
+      "year": 2023,
+      "venue": "CoRL 2023",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "LLM over robot sensor summaries"
+      ],
+      "methods": [
+        "natural-language failure explanation"
+      ],
+      "why_relevant": "LLM-based failure explanation for robots; external explanation, not model internals.",
+      "found_via": "REFLECT summarizing robot experiences failure explanation",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Driving the Wrong Way: Leveraging Interpretability in End2End Autonomous Driving Models",
+      "arxiv_id": "2607.06328",
+      "url": "https://arxiv.org/abs/2607.06328",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "end-to-end driving models"
+      ],
+      "methods": [
+        "dictionary learning",
+        "concept steering"
+      ],
+      "why_relevant": "Post-hoc dictionary learning on driving models with causal concept interventions.",
+      "found_via": "sparse autoencoder autonomous driving model interpretable features",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Interpreting Physics in Video World Models",
+      "arxiv_id": "2602.07050",
+      "url": "https://arxiv.org/abs/2602.07050",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "V-JEPA 2",
+        "video encoders"
+      ],
+      "methods": [
+        "layerwise probing",
+        "subspace geometry",
+        "attention ablation"
+      ],
+      "why_relevant": "Finds a mid-depth 'physics emergence zone' in video world-model encoders.",
+      "found_via": "interpretability world model V-JEPA probing physics",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Probing the Latent World: Emergent Discrete Symbols and Physical Structure in Latent Representations",
+      "arxiv_id": "2603.20327",
+      "url": "https://arxiv.org/abs/2603.20327",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "V-JEPA 2"
+      ],
+      "methods": [
+        "quantization probe",
+        "discrete symbol analysis"
+      ],
+      "why_relevant": "Probes JEPA video world-model latents for discrete physical structure.",
+      "found_via": "interpretability world model V-JEPA probing physics",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Causal Physics Steering in Video World Models via Concept Activation Vectors",
+      "arxiv_id": "2605.24322",
+      "url": "https://arxiv.org/abs/2605.24322",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "video world models"
+      ],
+      "methods": [
+        "concept activation vectors",
+        "steering"
+      ],
+      "why_relevant": "Steers physics in video world models via concept activation vectors.",
+      "found_via": "interpreting world model Genie OR video world model",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Event-Conditioned Diagnostics of Kinematic, Contact, and Object-Permanence Structure in Passive Object-State World Models",
+      "arxiv_id": "2606.28455",
+      "url": "https://arxiv.org/abs/2606.28455",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "object-state world models"
+      ],
+      "methods": [
+        "probing",
+        "event-conditioned diagnostics"
+      ],
+      "why_relevant": "Diagnostic protocol for kinematic/contact/permanence structure in world-model latents.",
+      "found_via": "Physical Intelligence blog pi0 interpretability internal representations",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "A Close Look At World Model Recovery In Supervised Fine-Tuned LLM Planners",
+      "arxiv_id": "2606.03685",
+      "url": "https://arxiv.org/abs/2606.03685",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "SFT LLM planners"
+      ],
+      "methods": [
+        "probing",
+        "world model recovery"
+      ],
+      "why_relevant": "Probes whether fine-tuned LLM planners linearly encode action validity and state predicates.",
+      "found_via": "interpretability embodied LLM planner probing",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Interpreting Emergent Planning in Model-Free Reinforcement Learning",
+      "arxiv_id": "2504.01871",
+      "url": "https://arxiv.org/abs/2504.01871",
+      "year": 2025,
+      "venue": "ICLR 2025",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "DRC agent (Sokoban)"
+      ],
+      "methods": [
+        "concept probing",
+        "interventions"
+      ],
+      "why_relevant": "Mechanistic evidence of learned planning in a model-free RL agent; template for policy interp.",
+      "found_via": "mechanistic interpretability Sokoban planning agent DRC probes",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Evidence of Learned Look-Ahead in a Chess-Playing Neural Network",
+      "arxiv_id": "2406.00877",
+      "url": "https://arxiv.org/abs/2406.00877",
+      "year": 2024,
+      "venue": "NeurIPS 2024",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "Leela Chess Zero"
+      ],
+      "methods": [
+        "activation patching",
+        "probing",
+        "attention analysis"
+      ],
+      "why_relevant": "Evidence of learned look-ahead in a chess policy network.",
+      "found_via": "Leela chess zero look-ahead mechanistic interpretability",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Understanding the learned look-ahead behavior of chess neural networks",
+      "arxiv_id": "2505.21552",
+      "url": "https://arxiv.org/abs/2505.21552",
+      "year": 2025,
+      "venue": "TMLR 2025",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "Leela Chess Zero"
+      ],
+      "methods": [
+        "activation patching",
+        "probing"
+      ],
+      "why_relevant": "Extends look-ahead analysis in chess networks to deeper horizons.",
+      "found_via": "Leela chess zero look-ahead mechanistic interpretability",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Understanding and Controlling a Maze-Solving Policy Network",
+      "arxiv_id": "2310.08043",
+      "url": "https://arxiv.org/abs/2310.08043",
+      "year": 2023,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "Procgen maze policy"
+      ],
+      "methods": [
+        "steering vectors",
+        "channel analysis"
+      ],
+      "why_relevant": "Classic steering/localization of goal misgeneralization in an RL policy network.",
+      "found_via": "Procgen maze policy network interpretability steering vector",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Mechanistic Interpretability of Reinforcement Learning Agents",
+      "arxiv_id": "2411.00867",
+      "url": "https://arxiv.org/abs/2411.00867",
+      "year": 2024,
+      "venue": "arXiv",
+      "kind": "paper",
+      "tier": "adjacent",
+      "models_studied": [
+        "Procgen maze policy"
+      ],
+      "methods": [
+        "feature visualization",
+        "saliency",
+        "mech interp"
+      ],
+      "why_relevant": "Mech interp of an RL maze agent; methods carry over to robot policies.",
+      "found_via": "Procgen maze policy network interpretability steering vector",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Prisma: An Open Source Toolkit for Mechanistic Interpretability in Vision and Video",
+      "arxiv_id": "2504.19475",
+      "url": "https://arxiv.org/abs/2504.19475",
+      "year": 2025,
+      "venue": "arXiv",
+      "kind": "repo",
+      "tier": "adjacent",
+      "models_studied": [
+        "vision and video transformers"
+      ],
+      "methods": [
+        "toolkit",
+        "SAE",
+        "hooks"
+      ],
+      "why_relevant": "Open-source mech-interp toolkit for vision/video models, usable on VLA vision towers.",
+      "found_via": "github toolkit interpretability vision-language-action models",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "Vision-Language-Action Safety: Threats, Challenges, Evaluations, and Mechanisms",
+      "arxiv_id": "2604.23775",
+      "url": "https://arxiv.org/abs/2604.23775",
+      "year": 2026,
+      "venue": "arXiv",
+      "kind": "survey",
+      "tier": "adjacent",
+      "models_studied": [
+        "VLAs"
+      ],
+      "methods": [
+        "survey"
+      ],
+      "why_relevant": "VLA safety survey; covers internal-state monitoring (interp coverage depth not checked).",
+      "found_via": "explainable VLA uncertainty hidden states probe",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched; interp-section depth not checked"
+    },
+    {
+      "title": "Explainable Autonomous Robots: A Survey and Perspective",
+      "arxiv_id": "2105.02658",
+      "url": "https://arxiv.org/abs/2105.02658",
+      "year": 2021,
+      "venue": "arXiv",
+      "kind": "survey",
+      "tier": "adjacent",
+      "models_studied": [],
+      "methods": [
+        "survey"
+      ],
+      "why_relevant": "Survey of explainable autonomous robots; pre-foundation-model XAI-for-robotics baseline.",
+      "found_via": "survey explainability robot learning policies XAI robotics",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "A Survey of Explainable Reinforcement Learning",
+      "arxiv_id": "2202.08434",
+      "url": "https://arxiv.org/abs/2202.08434",
+      "year": 2022,
+      "venue": "arXiv",
+      "kind": "survey",
+      "tier": "adjacent",
+      "models_studied": [],
+      "methods": [
+        "survey"
+      ],
+      "why_relevant": "Survey of explainable RL, the closest older literature to robot policy explanation.",
+      "found_via": "survey explainability robot learning policies XAI robotics",
+      "verified": true,
+      "verification_note": "arxiv abs page fetched; citation_title matched"
+    },
+    {
+      "title": "The Hitchhiker's Guide to Mechanistic Interpretability of Vision-Language-Action Models",
+      "arxiv_id": null,
+      "url": "https://icml.cc/virtual/2026/79347",
+      "year": 2026,
+      "venue": "ICML 2026 Workshop on Mechanistic Interpretability",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "seven VLA architecture types"
+      ],
+      "methods": [
+        "methodology",
+        "tool-transfer analysis"
+      ],
+      "why_relevant": "Maps which LLM mech-interp assumptions break for each VLA architecture type (2 to 6 of 7 lost).",
+      "found_via": "mechanistic interpretability vision-language-action model",
+      "verified": true,
+      "verification_note": "icml.cc page fetched; author Aryan Goyal; OpenReview mS9nh3L3iN; no arXiv id found"
+    },
+    {
+      "title": "Interpretable Signals Reveal Failure-Relevant Representations in Vision-Language-Action Models",
+      "arxiv_id": null,
+      "url": "https://icml.cc/virtual/2026/79411",
+      "year": 2026,
+      "venue": "ICML 2026 Workshop on Mechanistic Interpretability",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "pi0.5"
+      ],
+      "methods": [
+        "linear probes",
+        "attention summaries",
+        "failure prediction"
+      ],
+      "why_relevant": "Action-direction probe confidence on pi0.5 action-expert activations is the strongest failure predictor on LIBERO.",
+      "found_via": "VLA failure prediction from internal representations probe",
+      "verified": true,
+      "verification_note": "icml.cc page fetched; authors Tony Yang, Aidan Mokalla; OpenReview ZVY1lSGcnZ; no arXiv id found"
+    },
+    {
+      "title": "When Internal Feedback Goodharts: SAE Rewards Fail to Improve Robot Success",
+      "arxiv_id": null,
+      "url": "https://icml.cc/virtual/2026/78133",
+      "year": 2026,
+      "venue": "ICML 2026 Workshop RLxF: RL from World Feedback",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "Octo-Base"
+      ],
+      "methods": [
+        "SAE",
+        "feature-based reranking"
+      ],
+      "why_relevant": "Negative result: Octo SAE features are diagnostic and optimizable but reranking on them does not raise success.",
+      "found_via": "sparse autoencoder robot policy features OpenVLA",
+      "verified": true,
+      "verification_note": "icml.cc page fetched; authors Joy Z. Yang, Socrates Osorio; OpenReview h0uehSJqbm; no arXiv id found"
+    },
+    {
+      "title": "Predictable Before Action, Resistant to Correction: Failure Signals in Vision-Language-Action Models",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/162894",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop RoboPAD: Post-Training Adaptation of Robot Foundation Models",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "MemoryVLA"
+      ],
+      "methods": [
+        "linear probes",
+        "failure prediction",
+        "interventions"
+      ],
+      "why_relevant": "Linear probe on MemoryVLA's memory state predicts failure at 0.86 AUC before acting; none of four corrections help.",
+      "found_via": "VLA failure prediction from internal representations probe",
+      "verified": true,
+      "verification_note": "neurips.cc page fetched; OpenReview YEvN8LfCTQ; no arXiv id found"
+    },
+    {
+      "title": "Partial Composition, Not Blind Substitution: Decomposing a Grounding Failure in Vision-Language-Action Models",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/162908",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop RoboPAD",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "SmolVLA"
+      ],
+      "methods": [
+        "controlled mechanistic hypothesis tests",
+        "interp-method controls"
+      ],
+      "why_relevant": "Tests competing mechanistic explanations of a VLA grounding failure and shows standard interp methods mislead without controls.",
+      "found_via": "neurips.cc 2026 workshop vision-language-action interpretability failure signals",
+      "verified": true,
+      "verification_note": "neurips.cc page fetched; authors Michael Schmalz, Anant Gupta; OpenReview DPOBsubW55"
+    },
+    {
+      "title": "Reaction Without Attribution: Hijacking a VLA's Actions Reveals No Linearly Readable Efference Copy",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/162921",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop RoboPAD",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA-OFT"
+      ],
+      "methods": [
+        "linear probes",
+        "action hijacking interventions"
+      ],
+      "why_relevant": "Hidden-state probes cannot tell self-caused from hijacked actions in OpenVLA-OFT; the policy reacts by visual servoing only.",
+      "found_via": "RoboPAD workshop page (neurips.cc/virtual/2026/workshop/137618)",
+      "verified": true,
+      "verification_note": "listed on fetched RoboPAD workshop page (OpenReview 1OTHIshAFK); per-paper neurips.cc URL from search, not fetched itself"
+    },
+    {
+      "title": "Hijacking a 7B robot policy's actions: it reacts to what it sees, not to what it did",
+      "arxiv_id": null,
+      "url": "https://www.lesswrong.com/posts/fKBkAWZXEGArc9kyB/hijacking-a-7b-robot-policy-s-actions-it-reacts-to-what-it-1",
+      "year": 2026,
+      "venue": "LessWrong",
+      "kind": "blog",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA-OFT"
+      ],
+      "methods": [
+        "linear probes",
+        "action hijacking interventions"
+      ],
+      "why_relevant": "Blog write-up (part 1 of 2) of the efference-copy probing study on OpenVLA-OFT.",
+      "found_via": "\"efference copy\" OR \"intention\" readable VLA hidden states hijacking actions probe",
+      "verified": true,
+      "verification_note": "LessWrong page fetched (dated 2026-09-05); a part-2 post exists at /posts/DQEFzJ2rdZcNGNNiw but was not fetched"
+    },
+    {
+      "title": "How Do World Action Models Use Their Imagined Futures? Evidence from Mechanistic Interventions",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/workshop/137521",
+      "year": 2026,
+      "venue": "NeurIPS 2026 8th Robot Learning Workshop",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [
+        "Cosmos Policy",
+        "Cosmos 3"
+      ],
+      "methods": [
+        "future transplantation interventions",
+        "attention key/value patching"
+      ],
+      "why_relevant": "Swaps imagined futures in world-action models and patches attention K/V to locate the pathway that steers actions.",
+      "found_via": "8th Robot Learning Workshop page; \"How Do World Action Models Use Their Imagined Futures\"",
+      "verified": true,
+      "verification_note": "listed on fetched workshop page (OpenReview Wjbdqouh6p); sibling versions fetched: neurips.cc/virtual/2026/165275 (AI4Good workshop) and neurips.cc/virtual/2026/168151 'Auditing World Action Models Through Imagined-Future Interventions' (Agents in the Wild workshop)"
+    },
+    {
+      "title": "Block the Heads: Improving the Robustness of VLAs to Spatial Object Perturbation via Attention-Head Blocking",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=ei1BNFHxTo",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop: Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "attention-head ablation"
+      ],
+      "why_relevant": "Identifies and blocks specific VLA attention heads to improve robustness to spatial perturbations.",
+      "found_via": "workshop page neurips.cc/virtual/2026/workshop/137518",
+      "verified": false,
+      "verification_note": "title and link taken from fetched workshop page; OpenReview page blocked by a bot challenge, so abstract and models not checked"
+    },
+    {
+      "title": "Reading and Steering a Vision Language Action Policy in English with Action-Grounded Supervision",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=GQEGpBhtYk",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop: Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "natural-language readout of internals (inferred from title)",
+        "steering"
+      ],
+      "why_relevant": "Title indicates decoding and steering VLA internals in natural language; content not checked.",
+      "found_via": "workshop page neurips.cc/virtual/2026/workshop/137518",
+      "verified": false,
+      "verification_note": "title and link from fetched workshop page; OpenReview blocked by bot challenge; no arXiv version found by title search"
+    },
+    {
+      "title": "Layer-Wise Structural and Mechanistic Interpretation of OpenVLA Using Controlled Perturbations",
+      "arxiv_id": null,
+      "url": "https://ii.metu.edu.tr/node/1694",
+      "year": 2026,
+      "venue": "METU Informatics Institute, M.S. thesis (Cognitive Science)",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA"
+      ],
+      "methods": [
+        "linear probing",
+        "log-probability probing",
+        "controlled perturbations"
+      ],
+      "why_relevant": "Layer-wise probing of OpenVLA: ignores fixed prompt parts, fails negation, gripper dimension most important.",
+      "found_via": "GR00T N1 interpretability OR probing OR attention maps analysis humanoid VLA",
+      "verified": true,
+      "verification_note": "METU thesis page fetched; defended 2026-09-02"
+    },
+    {
+      "title": "Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation",
+      "arxiv_id": null,
+      "url": "https://journal.hep.com.cn/bir/EN/1223295907161035662",
+      "year": 2025,
+      "venue": "Biomimetic Intelligence and Robotics (journal), doi:10.1016/j.birob.2025.100249",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "Octo"
+      ],
+      "methods": [
+        "Grad-CAM (modified)"
+      ],
+      "why_relevant": "Modified Grad-CAM on Octo explains its zero-shot failures in industrial simulation.",
+      "found_via": "Octo OR RT-2 interpretability analysis internal features robot transformer",
+      "verified": true,
+      "verification_note": "journal page fetched; authors Kube, Hadwiger, Meisen"
+    },
+    {
+      "title": "Between pixels and policies: Toward interpretable representations for (inter)action",
+      "arxiv_id": null,
+      "url": "https://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html",
+      "year": 2025,
+      "venue": "UC Berkeley EECS Tech Report EECS-2025-155 (PhD dissertation, advisor Claire Tomlin)",
+      "kind": "paper",
+      "tier": "core",
+      "models_studied": [
+        "VLAs",
+        "driving networks"
+      ],
+      "methods": [
+        "representation analysis",
+        "interpretable-by-design"
+      ],
+      "why_relevant": "Dissertation by a co-author of the VLA steering paper; finds VLAs stay 'deeply semantic' after action fine-tuning.",
+      "found_via": "\"physical AI\" interpretability \"first-order objective\" robotics blog",
+      "verified": true,
+      "verification_note": "tech report page fetched; author Kaylene Stocking"
+    },
+    {
+      "title": "Event-SAE (code for Event-Grounded Sparse Autoencoders for Vision-Language-Action Policies)",
+      "arxiv_id": null,
+      "url": "https://github.com/xc-j/Event-SAE",
+      "year": 2026,
+      "venue": "GitHub",
+      "kind": "repo",
+      "tier": "core",
+      "models_studied": [
+        "OpenVLA",
+        "pi0.5 (OpenPI)"
+      ],
+      "methods": [
+        "SAE",
+        "event grounding",
+        "feature interventions"
+      ],
+      "why_relevant": "Code for SAE training, event scoring and closed-loop feature interventions on OpenVLA and pi0.5 in LIBERO.",
+      "found_via": "github toolkit interpretability vision-language-action models hooks activations",
+      "verified": true,
+      "verification_note": "GitHub page fetched; README says paper 2605.17204 is NeurIPS 2026 (paper itself already in found list)"
+    },
+    {
+      "title": "DR.VLA project page and code (Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models)",
+      "arxiv_id": null,
+      "url": "https://drvla.github.io",
+      "year": 2026,
+      "venue": "GitHub Pages / CoRL 2026",
+      "kind": "repo",
+      "tier": "core",
+      "models_studied": [
+        "pi0.5"
+      ],
+      "methods": [
+        "SAE",
+        "activation steering",
+        "feature browser"
+      ],
+      "why_relevant": "Interactive SAE feature browser and steering UI for pi0.5 (LIBERO, DROID); code at github.com/swannaiden/drvla.",
+      "found_via": "github VLA mechanistic interpretability code release steering pi0 openvla repository",
+      "verified": true,
+      "verification_note": "project page fetched; says accepted to CoRL 2026 (paper 2603.19183 already in found list); repo link not fetched"
+    },
+    {
+      "title": "The Science of Physical AI Safety (SPAIS 2026)",
+      "arxiv_id": null,
+      "url": "https://spais-ws.org",
+      "year": 2026,
+      "venue": "CoRL 2026 workshop (Austin, 2026-11-12)",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "venue"
+      ],
+      "why_relevant": "CoRL workshop with VLA interpretability in scope; organizers include authors of the VLA steering and feature-control papers.",
+      "found_via": "CoRL 2026 workshop interpretability robot learning policies",
+      "verified": true,
+      "verification_note": "workshop site fetched; 121 submissions, accepted list not yet posted"
+    },
+    {
+      "title": "Workshop on Mechanistic Interpretability (ICML 2026)",
+      "arxiv_id": null,
+      "url": "https://icml.cc/virtual/2026/workshop/54071",
+      "year": 2026,
+      "venue": "ICML 2026",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "venue"
+      ],
+      "why_relevant": "Hosted at least five VLA interp papers plus MultiSTEVE-1s; best single harvest venue.",
+      "found_via": "ICML 2026 Workshop on Mechanistic Interpretability accepted papers",
+      "verified": true,
+      "verification_note": "workshop page fetched"
+    },
+    {
+      "title": "RoboPAD: Post-Training Adaptation of Robot Foundation Models",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/workshop/137618",
+      "year": 2026,
+      "venue": "NeurIPS 2026 workshop (Paris, 2026-12-12)",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "venue"
+      ],
+      "why_relevant": "Hosts three VLA internal-signal papers (failure probes, efference copy, grounding failure).",
+      "found_via": "RoboPAD Post-Training Adaptation of Robot Foundation Models NeurIPS 2026 workshop",
+      "verified": true,
+      "verification_note": "workshop page fetched on second try"
+    },
+    {
+      "title": "Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "arxiv_id": null,
+      "url": "https://neurips.cc/virtual/2026/workshop/137518",
+      "year": 2026,
+      "venue": "NeurIPS 2026 workshop",
+      "kind": "workshop",
+      "tier": "core",
+      "models_studied": [],
+      "methods": [
+        "venue"
+      ],
+      "why_relevant": "Hosts several VLA steering / attention-head / faithfulness papers.",
+      "found_via": "neurips.cc 2026 workshop vision-language-action interpretability failure signals",
+      "verified": true,
+      "verification_note": "workshop page fetched"
+    },
+    {
+      "title": "Goodfire Silico for Robotics & Vision",
+      "arxiv_id": null,
+      "url": "https://www.goodfire.com/robotics-vision",
+      "year": 2026,
+      "venue": "Goodfire (company page)",
+      "kind": "blog",
+      "tier": "core",
+      "models_studied": [
+        "unnamed robotics foundation model"
+      ],
+      "methods": [
+        "data attribution",
+        "probes",
+        "SAE"
+      ],
+      "why_relevant": "Interp lab page with a robotics foundation model case study (information bottleneck, frame utility); no technical detail.",
+      "found_via": "Goodfire OR Transluce interpretability robotics model",
+      "verified": true,
+      "verification_note": "page fetched; thin marketing content, no linked paper"
+    },
+    {
+      "title": "MultiSTEVE-1s: A Model Zoo and Interpretability Suite for Instruction-Following Vision Agents",
+      "arxiv_id": null,
+      "url": "https://icml.cc/virtual/2026/79352",
+      "year": 2026,
+      "venue": "ICML 2026 Workshop on Mechanistic Interpretability",
+      "kind": "workshop",
+      "tier": "adjacent",
+      "models_studied": [
+        "VPT / STEVE-1 (Minecraft)"
+      ],
+      "methods": [
+        "model zoo",
+        "attention head analysis"
+      ],
+      "why_relevant": "140 fine-tuned VPT agents for studying goal misgeneralization in instruction-following embodied agents.",
+      "found_via": "ICML 2026 MI workshop page; MultiSTEVE-1s search",
+      "verified": true,
+      "verification_note": "listed on fetched workshop page (OpenReview lY7mivdb4k); icml.cc per-paper URL from search, not fetched"
+    },
+    {
+      "title": "Reasoning We Can TRUST: Steering Reasoning and Its Effects on VLA Actions",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=qFie1LpSrf",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop: Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "kind": "workshop",
+      "tier": "adjacent",
+      "models_studied": [
+        "Alpamayo-1.5 (driving VLA)"
+      ],
+      "methods": [
+        "CoT monitoring",
+        "steering"
+      ],
+      "why_relevant": "Token-level reward model to monitor and steer CoT in a driving VLA.",
+      "found_via": "workshop page neurips.cc/virtual/2026/workshop/137518",
+      "verified": true,
+      "verification_note": "title from fetched workshop page; model and numbers from search snippets only; OpenReview blocked"
+    },
+    {
+      "title": "Reacting to Text Is Not Following It: Verifying Language Grounding in Driving VLAs",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=uJy4INfmBA",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop: Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "kind": "workshop",
+      "tier": "adjacent",
+      "models_studied": [
+        "driving VLAs"
+      ],
+      "methods": [
+        "language grounding tests"
+      ],
+      "why_relevant": "Language-grounding verification for driving VLAs.",
+      "found_via": "workshop page neurips.cc/virtual/2026/workshop/137518",
+      "verified": false,
+      "verification_note": "title from fetched workshop page; OpenReview blocked; no arXiv version found"
+    },
+    {
+      "title": "Structured Velocity-Field Disagreement for Failure Awareness in Vision-Language-Action Models",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=Ycgsk5hBUu",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop: Grounded and Faithful Vision-Language Models for Real-World Deployment",
+      "kind": "workshop",
+      "tier": "adjacent",
+      "models_studied": [
+        "flow-matching VLAs (inferred)"
+      ],
+      "methods": [
+        "uncertainty from velocity field"
+      ],
+      "why_relevant": "Failure awareness from flow-policy velocity-field disagreement; closer to uncertainty than interp.",
+      "found_via": "workshop page neurips.cc/virtual/2026/workshop/137518",
+      "verified": false,
+      "verification_note": "title from fetched workshop page; content not checked"
+    },
+    {
+      "title": "Decision-Level Auditing of Latent Robot World Models",
+      "arxiv_id": null,
+      "url": "https://openreview.net/forum?id=FEWwJF9avD",
+      "year": 2026,
+      "venue": "NeurIPS 2026 Workshop RoboPAD",
+      "kind": "workshop",
+      "tier": "adjacent",
+      "models_studied": [
+        "latent robot world models"
+      ],
+      "methods": [
+        "auditing latent representations"
+      ],
+      "why_relevant": "Audits how world-model latents affect downstream robot decisions.",
+      "found_via": "RoboPAD workshop page",
+      "verified": false,
+      "verification_note": "title from fetched workshop page; content not checked"
+    }
+  ]
+}

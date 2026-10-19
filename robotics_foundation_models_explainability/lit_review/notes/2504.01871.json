@@ -1,0 +1,37 @@
+{
+  "id": "2504.01871",
+  "title": "Interpreting Emergent Planning in Model-Free Reinforcement Learning",
+  "first_author": "Bush",
+  "year": 2025,
+  "venue": "ICLR 2025",
+  "tier": "adjacent",
+  "models": ["Deep Repeated ConvLSTM (DRC) agent, 3 ConvLSTM layers x 3 internal ticks, 32 channels, trained 250M transitions on Boxoban (Sokoban)"],
+  "action_head": "n/a (discrete-action model-free RL policy)",
+  "methods": ["1x1 and 3x3 linear probes on ConvLSTM cell states for square-level planning concepts (agent-movement C_A, box-push C_B), macro F1", "visualization of plan formation over steps and internal ticks", "probe-vector addition interventions on cell states with random-probe controls on handcrafted 'shortcut' levels", "training-checkpoint analysis linking probe quality to test-time compute benefit"],
+  "question": "Does a model-free RL agent internally form, evaluate and act on plans, and can those plans be found and edited in its activations?",
+  "key_findings": [
+    "Square-level concepts predicting where the agent will move and where boxes will be pushed are linearly decodable from cell states, much better than baselines, at all layers and localized to single positions (1x1 probes nearly as good as 3x3).",
+    "Decoded plans improve with extra internal ticks when the agent is given 5 'thinking steps' (macro F1 rises over 15 ticks, 1000 episodes), and qualitatively resemble parallel bidirectional search from boxes and targets, including revising infeasible plans.",
+    "Adding probe vectors to cell states makes the agent take a designed suboptimal route: Agent-Shortcut success 94.6% / 90.1% / 98.8% (layers 1-3) vs random-probe controls 27.8-33.7%; Box-Shortcut 56.2% / 72.7% / 80.6% vs 4.1-31.5% (200 levels per type, 5 probes each) (Table 1).",
+    "Emergence of these plan representations during training coincides with the agent's ability to benefit from extra test-time compute (Fig. 9)."
+  ],
+  "evidence": {
+    "setting": "simulation (Sokoban grid world)",
+    "benchmarks": ["Boxoban", "handcrafted Agent-Shortcut and Box-Shortcut levels (25 base levels x 8 symmetries each)"],
+    "scale": "200 intervention levels per type, 5 independently trained or random probes; 1000 episodes for tick analysis",
+    "statistics": "partial: +/- 1 std over 5 probes",
+    "baselines": "randomly initialized probes scaled to the same norm; probe baselines for decoding"
+  },
+  "causal_validation": "Yes: concept-vector additions at specific board positions change the agent's internal plan and its full-episode behavior in the predicted way, with norm-matched random-vector controls.",
+  "closed_loop": "Yes: interventions applied every step during full episodes and success measured as executing the intended suboptimal plan.",
+  "limitations_stated": [
+    "Single agent architecture and a single, fully observable, discrete environment (details in the paper's discussion; not exhaustively read)."
+  ],
+  "critique": [
+    "A model of rigor for the robotics review: hypothesis-driven concepts, probes, plan visualization and closed-loop causal edits with random controls, all on one agent.",
+    "The environment is discrete, fully observable and spatially aligned with the network (8x8 cells map to board squares), which makes concepts easy to localize; VLAs on continuous control lack such alignment.",
+    "Contrasts with VLA reasoning work: here the 'plan' is internal and found by probes, whereas reasoning VLAs expose plans as text that can be partly bypassed (2603.12717, 2609.30833)."
+  ],
+  "code": "not reported in the parts read",
+  "one_line": "Probes on a Sokoban DRC agent reveal internal plans (where it will walk and push boxes) that improve with extra thinking time, and adding probe directions to its activations makes it follow a different plan in up to 99% of designed levels versus about 30% for random vectors."
+}

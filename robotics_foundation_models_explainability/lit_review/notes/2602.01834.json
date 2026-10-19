@@ -1,0 +1,42 @@
+{
+  "id": "2602.01834",
+  "title": "Concept-Based Dictionary Learning for Inference-Time Safety in Vision Language Action Models (SAFE-Dict)",
+  "first_author": "Wen",
+  "year": 2026,
+  "venue": "arXiv preprint (v2 Mar 2026)",
+  "tier": "core",
+  "models": ["OpenVLA", "pi0.5", "VLM-driven embodied agents: Llama-3.2-Vision, Qwen2-VL, LLaVA, Qwen2.5-VL"],
+  "action_head": "discrete action tokens (OpenVLA) and flow/diffusion action expert (pi0.5) for Libero-Harm; LLM/VLM planners (n/a action head) for BadRobot, RoboPair, IS-Bench",
+  "methods": ["concept mining with Qwen2.5-VL, LLM-generated single-concept stimulus sentences and LLM-assigned harm weights", "per-concept direction = first PCA component of last-decoder-layer activations on stimuli", "ElasticNet sparse coding of hidden state over the concept dictionary", "threshold-triggered attenuation of top-k harmful concept coefficients, preserving the off-dictionary residual"],
+  "question": "Can a supervised concept dictionary over VLA hidden states detect harmful-instruction concepts and, by attenuating them at inference time, block unsafe actions without retraining or hurting benign tasks?",
+  "key_findings": [
+    "Libero-Harm (hazard words injected into LIBERO-10/90 instructions): OpenVLA ASR 84.7% default, 41.2% prompt-based, 7.8% SAFE-Dict, with clean SR 78.6 / 67.4 / 75.8%; pi0.5 ASR 86.3 / 44.5 / 9.1%, clean SR 79.4 / 69.2 / 76.9% (Table 1).",
+    "BadRobot jailbreaks: ASR 73.83% -> 6.30% (Llama-3.2-Vision) and 29.52% -> 5.43% (Qwen2-VL) (Table 2a, 5 seeds).",
+    "RoboPair (LLaVA): ASR-auto 50.30% default, 20.25% best prior (CCE), 19.50% SAFE-Dict (Table 2b).",
+    "IS-Bench (Qwen2.5-VL): SR 66.5 / 29.8 / 59.2% and safe success rate 27.3 / 67.9 / 72.5% for default / prompt-based / SAFE-Dict (Table 3).",
+    "Cross-dataset transfer (Qwen2.5-VL): an IS-Bench dictionary reduces Libero-Harm ASR 73.4% -> 27.6% (in-domain 10.9%) (Table 4).",
+    "Best settings tau ~0.85, gamma ~0.6; gains saturate around M = 128 concepts and K = 40 stimuli per concept."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["Libero-Harm (new, built on LIBERO-10/90)", "BadRobot", "RoboPair", "IS-Bench"],
+    "scale": "mean +/- std over 5 seeds reported for jailbreaks; number of Libero-Harm episodes per condition not reported in text read",
+    "statistics": "partial: mean +/- std; no significance tests",
+    "baselines": "undefended model, prompt-based safety instruction, SmoothLLM, PARDEN, CCE (jailbreak defenses)"
+  },
+  "causal_validation": "Yes in a limited sense: attenuating concept coefficients in the hidden state changes downstream behavior (lower ASR), and an appendix check suppresses single concepts and compares hazard-relevant vs matched benign subsets. There is no test that the directions encode the claimed concept beyond this.",
+  "closed_loop": "Libero-Harm is closed-loop simulation for OpenVLA and pi0.5; the other benchmarks evaluate VLM/LLM-driven agents per their protocols, not VLAs.",
+  "limitations_stated": [
+    "Depends on a predefined concept dictionary; novel hazards outside it may be missed.",
+    "Covers instruction-driven and semantic risks only, not low-level control instability, perception failures or unexpected physical interactions."
+  ],
+  "critique": [
+    "Not an SAE: the 'dictionary' is one supervised PCA direction per LLM-named concept, closer to concept-activation vectors than to unsupervised dictionary learning.",
+    "In Libero-Harm the hazard lives in the instruction text while the scene and motion are unchanged LIBERO, so 'attack success' is essentially original-task completion. Given that LIBERO-tuned VLAs largely ignore instruction details (2603.19233, 2610.06235), the ASR drop may simply mean the edit disrupts execution. What the 'safe' behavior looks like is not described in the text read, and a keyword filter on the instruction is an obvious missing baseline.",
+    "Most evidence beyond Libero-Harm uses VLM/LLM planners (Llama-3.2-Vision, Qwen2-VL, LLaVA, Qwen2.5-VL), not VLAs, so the title overstates VLA coverage.",
+    "For pi0.5, the 'last decoder layer' hidden state is not what the action expert reads (it reads per-layer KV), so how the edit reaches actions is unclear from the text read.",
+    "Hyperparameters (tau, gamma, k, M) appear tuned on the same benchmarks they are evaluated on; episode counts for Libero-Harm are not stated."
+  ],
+  "code": "not reported",
+  "one_line": "SAFE-Dict builds supervised concept directions (e.g. gasoline, knife) from VLA hidden states and dampens them when a harm score fires, cutting attack success on a hazard-augmented LIBERO and several jailbreak benchmarks, though the LIBERO 'attacks' are text-only and most benchmarks use VLM planners rather than VLAs."
+}

@@ -1,0 +1,6106 @@
+{
+ "method": "arXiv ids regex-matched after the last References heading of each downloaded paper",
+ "limitation": "references without an arXiv id in their text are not captured",
+ "papers": {
+  "2306.15724": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 20
+  },
+  "2310.08043": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 21
+  },
+  "2406.00877": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 12
+  },
+  "2502.04558": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 12
+  },
+  "2504.01871": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 20
+  },
+  "2505.05787": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 18
+  },
+  "2506.09937": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 22
+  },
+  "2509.00328": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 8
+  },
+  "2509.20623": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 20
+  },
+  "2509.24559": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 11
+  },
+  "2510.09459": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 8
+  },
+  "2510.13626": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 16
+  },
+  "2510.16281": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 0
+  },
+  "2510.25616": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 47
+  },
+  "2511.22697": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 32
+  },
+  "2602.01834": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 36
+  },
+  "2602.03153": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 12
+  },
+  "2602.07050": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 13
+  },
+  "2603.05487": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 9
+  },
+  "2603.06001": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 18
+  },
+  "2603.11642": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 1
+  },
+  "2603.12717": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 8
+  },
+  "2603.13782": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 18
+  },
+  "2603.15618": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 42
+  },
+  "2603.19183": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 13
+  },
+  "2603.19233": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 55
+  },
+  "2604.13645": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 37
+  },
+  "2604.18000": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 36
+  },
+  "2604.23775": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 63
+  },
+  "2605.00321": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 16
+  },
+  "2605.17144": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 18
+  },
+  "2605.17204": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 10
+  },
+  "2605.24642": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 35
+  },
+  "2605.28527": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 17
+  },
+  "2605.30117": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 28
+  },
+  "2605.30695": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 0
+  },
+  "2605.30834": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 24
+  },
+  "2606.00269": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 14
+  },
+  "2606.01095": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 11
+  },
+  "2606.09740": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 15
+  },
+  "2606.09749": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 6
+  },
+  "2606.11489": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 3
+  },
+  "2606.19297": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 22
+  },
+  "2606.19998": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 22
+  },
+  "2606.21386": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 9
+  },
+  "2606.27755": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 30
+  },
+  "2606.29699": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 2
+  },
+  "2606.30686": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 35
+  },
+  "2607.03372": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 27
+  },
+  "2607.04681": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 15
+  },
+  "2607.06328": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 0
+  },
+  "2607.12571": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 10
+  },
+  "2607.14280": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 17
+  },
+  "2608.04246": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 16
+  },
+  "2608.04510": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 21
+  },
+  "2608.04692": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 20
+  },
+  "2608.07361": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 0
+  },
+  "2608.08904": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 16
+  },
+  "2608.13474": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 14
+  },
+  "2608.25757": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 28
+  },
+  "2609.02634": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 3
+  },
+  "2609.04277": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 23
+  },
+  "2609.15005": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 4
+  },
+  "2609.21246": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 17
+  },
+  "2609.30833": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 12
+  },
+  "2609.30996": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 9
+  },
+  "2609.34684": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 17
+  },
+  "2609.34794": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 31
+  },
+  "2609.38401": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 9
+  },
+  "2609.39971": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 16
+  },
+  "2609.39973": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 39
+  },
+  "2610.03498": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 7
+  },
+  "2610.04681": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 20
+  },
+  "2610.05878": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 8
+  },
+  "2610.06235": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 65
+  },
+  "2610.09496": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 11
+  },
+  "2610.10178": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 5
+  },
+  "2610.20750": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 34
+  },
+  "2610.20767": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 32
+  },
+  "2610.20840": {
+   "reference_heading_found": true,
+   "arxiv_ids_found": 36
+  }
+ },
+ "cited_ids": {
+  "2406.09246": {
+   "title": "OpenVLA: An Open-Source Vision-Language-Action Model",
+   "cited_by": [
+    "2502.04558",
+    "2509.24559",
+    "2510.25616",
+    "2511.22697",
+    "2602.01834",
+    "2602.03153",
+    "2603.15618",
+    "2603.19233",
+    "2604.18000",
+    "2604.23775",
+    "2605.24642",
+    "2605.28527",
+    "2605.30117",
+    "2606.00269",
+    "2606.09740",
+    "2606.19297",
+    "2606.19998",
+    "2606.21386",
+    "2606.30686",
+    "2607.03372",
+    "2607.04681",
+    "2607.14280",
+    "2608.04510",
+    "2608.04692",
+    "2608.08904",
+    "2608.13474",
+    "2608.25757",
+    "2609.04277",
+    "2609.21246",
+    "2609.34684",
+    "2609.34794",
+    "2609.39971",
+    "2610.20750",
+    "2610.20767"
+   ]
+  },
+  "2410.24164": {
+   "title": "$π_0$: A Vision-Language-Action Flow Model for General Robot Control",
+   "cited_by": [
+    "2506.09937",
+    "2510.25616",
+    "2603.05487",
+    "2603.06001",
+    "2603.15618",
+    "2603.19233",
+    "2604.18000",
+    "2604.23775",
+    "2605.17204",
+    "2605.28527",
+    "2605.30117",
+    "2605.30834",
+    "2606.00269",
+    "2606.09740",
+    "2606.09749",
+    "2606.19297",
+    "2606.19998",
+    "2606.30686",
+    "2607.03372",
+    "2607.12571",
+    "2608.04246",
+    "2608.04510",
+    "2608.04692",
+    "2608.08904",
+    "2608.25757",
+    "2609.04277",
+    "2609.34684",
+    "2609.34794",
+    "2610.06235",
+    "2610.20750",
+    "2610.20767"
+   ]
+  },
+  "2504.16054": {
+   "title": "$π_{0.5}$: a Vision-Language-Action Model with Open-World Generalization",
+   "cited_by": [
+    "2506.09937",
+    "2603.05487",
+    "2603.15618",
+    "2603.19183",
+    "2603.19233",
+    "2604.13645",
+    "2604.18000",
+    "2604.23775",
+    "2605.17204",
+    "2605.24642",
+    "2605.28527",
+    "2605.30117",
+    "2605.30834",
+    "2606.09740",
+    "2607.03372",
+    "2607.14280",
+    "2608.04246",
+    "2608.04692",
+    "2608.25757",
+    "2609.04277",
+    "2609.30833",
+    "2609.34794",
+    "2609.39971",
+    "2610.04681",
+    "2610.06235",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2503.14734": {
+   "title": "GR00T N1: An Open Foundation Model for Generalist Humanoid Robots",
+   "cited_by": [
+    "2506.09937",
+    "2510.09459",
+    "2510.13626",
+    "2510.25616",
+    "2603.06001",
+    "2603.12717",
+    "2603.15618",
+    "2603.19233",
+    "2604.13645",
+    "2604.18000",
+    "2605.17144",
+    "2605.24642",
+    "2605.30117",
+    "2605.30834",
+    "2606.30686",
+    "2607.03372",
+    "2607.04681",
+    "2608.25757",
+    "2609.02634",
+    "2609.39971",
+    "2610.06235",
+    "2610.20750",
+    "2610.20840"
+   ]
+  },
+  "2407.07726": {
+   "title": "PaliGemma: A versatile 3B VLM for transfer",
+   "cited_by": [
+    "2506.09937",
+    "2509.00328",
+    "2510.25616",
+    "2511.22697",
+    "2603.06001",
+    "2603.15618",
+    "2603.19183",
+    "2604.18000",
+    "2605.00321",
+    "2605.30117",
+    "2606.09749",
+    "2606.21386",
+    "2606.27755",
+    "2608.13474",
+    "2609.30833",
+    "2610.20750",
+    "2610.20840"
+   ]
+  },
+  "2510.13626": {
+   "title": "LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models",
+   "cited_by": [
+    "2603.05487",
+    "2603.06001",
+    "2603.15618",
+    "2603.19233",
+    "2604.18000",
+    "2605.00321",
+    "2605.30117",
+    "2606.09740",
+    "2606.21386",
+    "2606.27755",
+    "2606.30686",
+    "2608.04246",
+    "2609.21246",
+    "2609.38401",
+    "2609.39971",
+    "2610.06235",
+    "2610.09496"
+   ]
+  },
+  "2212.06817": {
+   "title": "RT-1: Robotics Transformer for Real-World Control at Scale",
+   "cited_by": [
+    "2506.09937",
+    "2510.25616",
+    "2603.06001",
+    "2603.15618",
+    "2603.19233",
+    "2604.18000",
+    "2604.23775",
+    "2605.24642",
+    "2605.28527",
+    "2605.30117",
+    "2606.19998",
+    "2608.04510",
+    "2608.08904",
+    "2608.25757",
+    "2609.04277",
+    "2610.20750"
+   ]
+  },
+  "2405.12213": {
+   "title": "Octo: An Open-Source Generalist Robot Policy",
+   "cited_by": [
+    "2502.04558",
+    "2510.25616",
+    "2511.22697",
+    "2602.01834",
+    "2603.06001",
+    "2604.23775",
+    "2605.28527",
+    "2605.30117",
+    "2606.09740",
+    "2607.12571",
+    "2608.04246",
+    "2608.04510",
+    "2608.08904",
+    "2609.04277",
+    "2610.06235"
+   ]
+  },
+  "2307.15818": {
+   "title": "RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control",
+   "cited_by": [
+    "2506.09937",
+    "2509.00328",
+    "2510.25616",
+    "2605.28527",
+    "2606.19998",
+    "2607.03372",
+    "2607.12571",
+    "2608.08904",
+    "2609.04277",
+    "2609.21246",
+    "2609.30996",
+    "2610.06235",
+    "2610.20750",
+    "2610.20767"
+   ]
+  },
+  "2506.01844": {
+   "title": "SmolVLA: A Vision-Language-Action Model for Affordable and Efficient Robotics",
+   "cited_by": [
+    "2602.01834",
+    "2603.13782",
+    "2603.19233",
+    "2605.28527",
+    "2606.19297",
+    "2607.03372",
+    "2607.14280",
+    "2608.04510",
+    "2608.04692",
+    "2609.34684",
+    "2610.03498",
+    "2610.09496",
+    "2610.20750"
+   ]
+  },
+  "2501.09747": {
+   "title": "FAST: Efficient Action Tokenization for Vision-Language-Action Models",
+   "cited_by": [
+    "2506.09937",
+    "2509.00328",
+    "2603.05487",
+    "2603.19233",
+    "2605.17144",
+    "2605.24642",
+    "2605.30117",
+    "2605.30834",
+    "2607.03372",
+    "2608.08904",
+    "2609.04277",
+    "2609.21246"
+   ]
+  },
+  "2509.00328": {
+   "title": "Mechanistic interpretability for steering vision-language-action models",
+   "cited_by": [
+    "2603.19183",
+    "2603.19233",
+    "2605.17144",
+    "2605.17204",
+    "2605.30117",
+    "2607.03372",
+    "2608.13474",
+    "2609.39971",
+    "2610.04681",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2308.10248": {
+   "title": "Steering Language Models With Activation Engineering",
+   "cited_by": [
+    "2310.08043",
+    "2509.20623",
+    "2511.22697",
+    "2602.07050",
+    "2603.19233",
+    "2605.17144",
+    "2607.03372",
+    "2607.14280",
+    "2609.30996",
+    "2610.04681",
+    "2610.20767"
+   ]
+  },
+  "2502.19645": {
+   "title": "Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success",
+   "cited_by": [
+    "2506.09937",
+    "2603.06001",
+    "2603.15618",
+    "2603.19233",
+    "2605.28527",
+    "2605.30117",
+    "2606.09740",
+    "2606.09749",
+    "2606.27755",
+    "2606.30686",
+    "2607.03372"
+   ]
+  },
+  "2403.12945": {
+   "title": "DROID: A Large-Scale In-The-Wild Robot Manipulation Dataset",
+   "cited_by": [
+    "2511.22697",
+    "2603.05487",
+    "2603.06001",
+    "2603.15618",
+    "2603.19183",
+    "2604.18000",
+    "2606.00269",
+    "2607.03372",
+    "2608.04510",
+    "2610.20750",
+    "2610.20767"
+   ]
+  },
+  "2603.05487": {
+   "title": "Observing and Controlling Features in Vision-Language-Action Models",
+   "cited_by": [
+    "2603.19183",
+    "2605.17204",
+    "2606.11489",
+    "2607.03372",
+    "2607.14280",
+    "2608.13474",
+    "2609.34684",
+    "2610.04681",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2510.03827": {
+   "title": "LIBERO-PRO: Towards Robust and Fair Evaluation of Vision-Language-Action Models Beyond Memorization",
+   "cited_by": [
+    "2603.19183",
+    "2603.19233",
+    "2604.18000",
+    "2604.23775",
+    "2606.09740",
+    "2606.30686",
+    "2608.13474",
+    "2609.39971",
+    "2610.04681",
+    "2610.06235",
+    "2610.09496"
+   ]
+  },
+  "2509.24559": {
+   "title": "Emergent World Representations in OpenVLA",
+   "cited_by": [
+    "2603.05487",
+    "2603.19183",
+    "2603.19233",
+    "2605.00321",
+    "2607.03372",
+    "2608.13474",
+    "2609.34684",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2603.19233": {
+   "title": "Not All Features Are Created Equal: A Mechanistic Study of Vision-Language-Action Models",
+   "cited_by": [
+    "2605.17204",
+    "2606.27755",
+    "2607.03372",
+    "2609.02634",
+    "2609.34684",
+    "2610.04681",
+    "2610.06235",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2603.19183": {
+   "title": "Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models",
+   "cited_by": [
+    "2605.17204",
+    "2605.30117",
+    "2606.01095",
+    "2608.13474",
+    "2609.15005",
+    "2609.34684",
+    "2610.04681",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2307.09288": {
+   "title": "Llama 2: Open Foundation and Fine-Tuned Chat Models",
+   "cited_by": [
+    "2310.08043",
+    "2502.04558",
+    "2509.00328",
+    "2603.06001",
+    "2605.30117",
+    "2606.00269",
+    "2606.27755",
+    "2609.34794",
+    "2610.20840"
+   ]
+  },
+  "2310.01405": {
+   "title": "Representation Engineering: A Top-Down Approach to AI Transparency",
+   "cited_by": [
+    "2504.01871",
+    "2509.20623",
+    "2602.07050",
+    "2605.17144",
+    "2606.00269",
+    "2607.14280",
+    "2608.13474",
+    "2609.30996",
+    "2610.04681"
+   ]
+  },
+  "2310.08864": {
+   "title": "Open X-Embodiment: Robotic Learning Datasets and RT-X Models",
+   "cited_by": [
+    "2509.00328",
+    "2509.24559",
+    "2603.19233",
+    "2605.28527",
+    "2606.27755",
+    "2607.03372",
+    "2608.04510",
+    "2608.25757",
+    "2609.21246"
+   ]
+  },
+  "1610.01644": {
+   "title": "Understanding intermediate layers using linear classifier probes",
+   "cited_by": [
+    "2504.01871",
+    "2509.20623",
+    "2603.19233",
+    "2605.28527",
+    "2606.09740",
+    "2606.29699",
+    "2607.03372",
+    "2609.30996"
+   ]
+  },
+  "2304.13705": {
+   "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+   "cited_by": [
+    "2505.05787",
+    "2603.19233",
+    "2604.23775",
+    "2606.19998",
+    "2608.04510",
+    "2609.04277",
+    "2609.38401",
+    "2610.06235"
+   ]
+  },
+  "2405.05941": {
+   "title": "Evaluating Real-World Robot Manipulation Policies in Simulation",
+   "cited_by": [
+    "2510.13626",
+    "2510.25616",
+    "2604.18000",
+    "2606.00269",
+    "2606.19297",
+    "2607.03372",
+    "2608.04246",
+    "2609.04277"
+   ]
+  },
+  "2503.08558": {
+   "title": "Can We Detect Failures Without Failure Data? Uncertainty-Aware Runtime Failure Detection for Imitation Learning Policies",
+   "cited_by": [
+    "2506.09937",
+    "2606.19998",
+    "2608.04246",
+    "2608.04510",
+    "2609.04277",
+    "2609.21246",
+    "2609.38401"
+   ]
+  },
+  "2503.20020": {
+   "title": "Gemini Robotics: Bringing AI into the Physical World",
+   "cited_by": [
+    "2509.00328",
+    "2603.06001",
+    "2605.30117",
+    "2606.27755",
+    "2610.06235",
+    "2610.09496",
+    "2610.10178"
+   ]
+  },
+  "2210.02747": {
+   "title": "Flow Matching for Generative Modeling",
+   "cited_by": [
+    "2603.19233",
+    "2604.18000",
+    "2607.14280",
+    "2608.25757",
+    "2609.04277",
+    "2609.30833",
+    "2609.39971"
+   ]
+  },
+  "2204.01691": {
+   "title": "Do As I Can, Not As I Say: Grounding Language in Robotic Affordances",
+   "cited_by": [
+    "2306.15724",
+    "2602.01834",
+    "2603.19233",
+    "2604.23775",
+    "2605.24642",
+    "2606.30686"
+   ]
+  },
+  "2306.03310": {
+   "title": "LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning",
+   "cited_by": [
+    "2502.04558",
+    "2510.25616",
+    "2605.24642",
+    "2605.28527",
+    "2606.19297",
+    "2609.21246"
+   ]
+  },
+  "2209.10652": {
+   "title": "Toy Models of Superposition",
+   "cited_by": [
+    "2509.20623",
+    "2509.24559",
+    "2511.22697",
+    "2605.17204",
+    "2607.14280",
+    "2610.20767"
+   ]
+  },
+  "2303.03378": {
+   "title": "PaLM-E: An Embodied Multimodal Language Model",
+   "cited_by": [
+    "2510.25616",
+    "2511.22697",
+    "2603.06001",
+    "2603.19233",
+    "2605.28527",
+    "2610.20750"
+   ]
+  },
+  "2501.15830": {
+   "title": "SpatialVLA: Exploring Spatial Representations for Visual-Language-Action Model",
+   "cited_by": [
+    "2603.15618",
+    "2603.19233",
+    "2604.18000",
+    "2605.24642",
+    "2606.19297",
+    "2608.04510"
+   ]
+  },
+  "2406.02523": {
+   "title": "RoboCasa: Large-Scale Simulation of Everyday Tasks for Generalist Robots",
+   "cited_by": [
+    "2603.19183",
+    "2604.13645",
+    "2604.18000",
+    "2605.17144",
+    "2606.30686",
+    "2608.04246"
+   ]
+  },
+  "2511.14759": {
+   "title": "$π^{*}_{0.6}$: a VLA That Learns From Experience",
+   "cited_by": [
+    "2603.19233",
+    "2605.30117",
+    "2605.30834",
+    "2606.19297",
+    "2608.25757",
+    "2610.20840"
+   ]
+  },
+  "2506.18088": {
+   "title": "RoboTwin 2.0: A Scalable Data Generator and Benchmark with Strong Domain Randomization for Robust Bimanual Robotic Manipulation",
+   "cited_by": [
+    "2606.01095",
+    "2606.27755",
+    "2608.25757",
+    "2609.38401",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2605.02881": {
+   "title": "MolmoAct2: Action Reasoning Models for Real-world Deployment",
+   "cited_by": [
+    "2606.21386",
+    "2607.14280",
+    "2608.08904",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2608.13474": {
+   "title": "Decoding Task Progress from VLA Representations",
+   "cited_by": [
+    "2609.15005",
+    "2609.30996",
+    "2609.34684",
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2403.03954": {
+   "title": "3D Diffusion Policy: Generalizable Visuomotor Policy Learning via Simple 3D Representations",
+   "cited_by": [
+    "2505.05787",
+    "2603.15618",
+    "2603.19233",
+    "2605.24642",
+    "2610.06235"
+   ]
+  },
+  "2403.09631": {
+   "title": "3D-VLA: A 3D Vision-Language-Action Generative World Model",
+   "cited_by": [
+    "2506.09937",
+    "2603.15618",
+    "2605.24642",
+    "2607.03372",
+    "2610.06235"
+   ]
+  },
+  "2309.08600": {
+   "title": "Sparse Autoencoders Find Highly Interpretable Features in Language Models",
+   "cited_by": [
+    "2509.20623",
+    "2511.22697",
+    "2603.19233",
+    "2605.17204",
+    "2607.03372"
+   ]
+  },
+  "2411.19650": {
+   "title": "CogACT: A Foundational Vision-Language-Action Model for Synergizing Cognition and Action in Robotic Manipulation",
+   "cited_by": [
+    "2510.13626",
+    "2603.15618",
+    "2603.19233",
+    "2607.03372",
+    "2608.04510"
+   ]
+  },
+  "2511.22697": {
+   "title": "Mechanistic Finetuning of Vision-Language-Action Models via Few-Shot Demonstrations",
+   "cited_by": [
+    "2603.05487",
+    "2605.00321",
+    "2605.30117",
+    "2609.34684",
+    "2610.04681"
+   ]
+  },
+  "2510.25616": {
+   "title": "Don't Blind Your VLA: Aligning Visual Representations for OOD Generalization",
+   "cited_by": [
+    "2603.15618",
+    "2606.19297",
+    "2608.08904",
+    "2608.13474",
+    "2609.39971"
+   ]
+  },
+  "2503.06669": {
+   "title": "AgiBot World Colosseo: A Large-scale Manipulation Platform for Scalable and Intelligent Embodied Systems",
+   "cited_by": [
+    "2603.15618",
+    "2604.18000",
+    "2606.30686",
+    "2608.25757",
+    "2610.20840"
+   ]
+  },
+  "2511.21631": {
+   "title": "Qwen3-VL Technical Report",
+   "cited_by": [
+    "2603.15618",
+    "2605.30117",
+    "2605.30834",
+    "2607.04681",
+    "2609.39973"
+   ]
+  },
+  "2510.01642": {
+   "title": "FailSafe: Reasoning and Recovery from Failures in Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775",
+    "2605.30834",
+    "2606.09740",
+    "2609.04277",
+    "2610.09496"
+   ]
+  },
+  "2605.30117": {
+   "title": "VLA-Trace: Diagnosing Vision-Language-Action Models through Representation and Behavior Tracing",
+   "cited_by": [
+    "2609.34684",
+    "2610.05878",
+    "2610.06235",
+    "2610.20750",
+    "2610.20840"
+   ]
+  },
+  "2410.00371": {
+   "title": "AHA: A Vision-Language-Model for Detecting and Reasoning Over Failures in Robotic Manipulation",
+   "cited_by": [
+    "2506.09937",
+    "2603.19233",
+    "2608.04246",
+    "2609.04277"
+   ]
+  },
+  "2212.14020": {
+   "title": "A System-Level View on Out-of-Distribution Data in Robotics",
+   "cited_by": [
+    "2506.09937",
+    "2510.09459",
+    "2606.29699",
+    "2608.04246"
+   ]
+  },
+  "2406.04093": {
+   "title": "Scaling and evaluating sparse autoencoders",
+   "cited_by": [
+    "2509.24559",
+    "2603.19183",
+    "2603.19233",
+    "2605.17144"
+   ]
+  },
+  "2505.23705": {
+   "title": "Knowledge Insulating Vision-Language-Action Models: Train Fast, Run Fast, Generalize Better",
+   "cited_by": [
+    "2510.25616",
+    "2603.19183",
+    "2608.08904",
+    "2608.13474"
+   ]
+  },
+  "2508.07917": {
+   "title": "MolmoAct: Action Reasoning Models that can Reason in Space",
+   "cited_by": [
+    "2510.25616",
+    "2604.13645",
+    "2606.21386",
+    "2610.20840"
+   ]
+  },
+  "2510.10274": {
+   "title": "X-VLA: Soft-Prompted Transformer as Scalable Cross-Embodiment Vision-Language-Action Model",
+   "cited_by": [
+    "2603.19233",
+    "2604.18000",
+    "2606.00269",
+    "2607.03372"
+   ]
+  },
+  "2303.04137": {
+   "title": "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion",
+   "cited_by": [
+    "2603.19233",
+    "2605.28527",
+    "2608.04510",
+    "2610.20750"
+   ]
+  },
+  "2407.08693": {
+   "title": "Robotic Control via Embodied Chain-of-Thought Reasoning",
+   "cited_by": [
+    "2604.13645",
+    "2606.30686",
+    "2607.04681",
+    "2609.34794"
+   ]
+  },
+  "2507.05331": {
+   "title": "A Careful Examination of Large Behavior Models for Multitask Dexterous Manipulation",
+   "cited_by": [
+    "2604.13645",
+    "2605.24642",
+    "2605.30834",
+    "2606.00269"
+   ]
+  },
+  "2602.17659": {
+   "title": "When Vision Overrides Language: Evaluating and Mitigating Counterfactual Failures in VLAs",
+   "cited_by": [
+    "2605.17204",
+    "2606.09740",
+    "2609.39971",
+    "2610.06235"
+   ]
+  },
+  "2602.15922": {
+   "title": "World Action Models are Zero-shot Policies",
+   "cited_by": [
+    "2605.30117",
+    "2605.30834",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2604.15483": {
+   "title": "$π_{0.7}$: a Steerable Generalist Robotic Foundation Model with Emergent Capabilities",
+   "cited_by": [
+    "2605.30117",
+    "2608.25757",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2209.07753": {
+   "title": "Code as Policies: Language Model Programs for Embodied Control",
+   "cited_by": [
+    "2306.15724",
+    "2602.01834",
+    "2603.19233"
+   ]
+  },
+  "1707.06347": {
+   "title": "Proximal Policy Optimization Algorithms",
+   "cited_by": [
+    "2310.08043",
+    "2603.13782",
+    "2606.00269"
+   ]
+  },
+  "2107.07511": {
+   "title": "A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification",
+   "cited_by": [
+    "2506.09937",
+    "2608.04246",
+    "2608.04510"
+   ]
+  },
+  "2407.21783": {
+   "title": "The Llama 3 Herd of Models",
+   "cited_by": [
+    "2506.09937",
+    "2603.13782",
+    "2604.23775"
+   ]
+  },
+  "2311.03658": {
+   "title": "The Linear Representation Hypothesis and the Geometry of Large Language Models",
+   "cited_by": [
+    "2509.24559",
+    "2607.14280",
+    "2610.20767"
+   ]
+  },
+  "2412.18194": {
+   "title": "VLABench: A Large-Scale Benchmark for Language-Conditioned Robotics Manipulation with Long-Horizon Reasoning Tasks",
+   "cited_by": [
+    "2510.13626",
+    "2606.19297",
+    "2608.13474"
+   ]
+  },
+  "2505.17016": {
+   "title": "Interactive Post-Training for Vision-Language-Action Models",
+   "cited_by": [
+    "2510.13626",
+    "2603.19233",
+    "2609.38401"
+   ]
+  },
+  "2506.21539": {
+   "title": "WorldVLA: Towards Autoregressive Action World Model",
+   "cited_by": [
+    "2510.13626",
+    "2603.15618",
+    "2610.06235"
+   ]
+  },
+  "2505.06111": {
+   "title": "UniVLA: Learning to Act Anywhere with Task-centric Latent Actions",
+   "cited_by": [
+    "2510.13626",
+    "2602.01834",
+    "2606.19998"
+   ]
+  },
+  "2505.08243": {
+   "title": "Training Strategies for Efficient Embodied Reasoning",
+   "cited_by": [
+    "2510.25616",
+    "2607.04681",
+    "2609.34794"
+   ]
+  },
+  "2304.07193": {
+   "title": "DINOv2: Learning Robust Visual Features without Supervision",
+   "cited_by": [
+    "2510.25616",
+    "2605.28527",
+    "2609.34794"
+   ]
+  },
+  "2505.11917": {
+   "title": "OneTwoVLA: A Unified Vision-Language-Action Model with Adaptive Reasoning",
+   "cited_by": [
+    "2510.25616",
+    "2603.13782",
+    "2606.30686"
+   ]
+  },
+  "2106.09685": {
+   "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+   "cited_by": [
+    "2510.25616",
+    "2511.22697",
+    "2609.30833"
+   ]
+  },
+  "2205.06175": {
+   "title": "A Generalist Agent",
+   "cited_by": [
+    "2511.22697",
+    "2605.30117",
+    "2606.00269"
+   ]
+  },
+  "2312.11805": {
+   "title": "Gemini: A Family of Highly Capable Multimodal Models",
+   "cited_by": [
+    "2511.22697",
+    "2603.06001",
+    "2604.23775"
+   ]
+  },
+  "2312.06681": {
+   "title": "Steering Llama 2 via Contrastive Activation Addition",
+   "cited_by": [
+    "2511.22697",
+    "2602.07050",
+    "2607.14280"
+   ]
+  },
+  "2502.19250": {
+   "title": "ObjectVLA: End-to-End Open-World Object Manipulation Without Demonstration",
+   "cited_by": [
+    "2602.01834",
+    "2606.19998",
+    "2606.30686"
+   ]
+  },
+  "2307.05973": {
+   "title": "VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models",
+   "cited_by": [
+    "2602.01834",
+    "2604.23775",
+    "2610.06235"
+   ]
+  },
+  "2410.07864": {
+   "title": "RDT-1B: a Diffusion Foundation Model for Bimanual Manipulation",
+   "cited_by": [
+    "2602.01834",
+    "2603.15618",
+    "2608.04510"
+   ]
+  },
+  "2406.11717": {
+   "title": "Refusal in Language Models Is Mediated by a Single Direction",
+   "cited_by": [
+    "2602.07050",
+    "2607.14280",
+    "2610.04681"
+   ]
+  },
+  "2506.09985": {
+   "title": "V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning",
+   "cited_by": [
+    "2602.07050",
+    "2606.01095",
+    "2609.30996"
+   ]
+  },
+  "2512.24426": {
+   "title": "Counterfactual VLA: Self-Reflective Vision-Language-Action Model with Adaptive Reasoning",
+   "cited_by": [
+    "2603.06001",
+    "2605.00321",
+    "2607.04681"
+   ]
+  },
+  "2508.13446": {
+   "title": "CAST: Counterfactual Labels Improve Instruction Following in Vision-Language-Action Models",
+   "cited_by": [
+    "2603.06001",
+    "2603.19233",
+    "2609.39971"
+   ]
+  },
+  "2403.01823": {
+   "title": "RT-H: Action Hierarchies Using Language",
+   "cited_by": [
+    "2603.15618",
+    "2606.30686",
+    "2608.25757"
+   ]
+  },
+  "2601.03309": {
+   "title": "VLM4VLA: Revisiting Vision-Language-Models in Vision-Language-Action Models",
+   "cited_by": [
+    "2603.15618",
+    "2603.19233",
+    "2606.19297"
+   ]
+  },
+  "2508.10104": {
+   "title": "DINOv3",
+   "cited_by": [
+    "2603.15618",
+    "2609.34684",
+    "2610.20767"
+   ]
+  },
+  "2502.04558": {
+   "title": "Probing a Vision-Language-Action Model for Symbolic States and Integration into a Cognitive Architecture",
+   "cited_by": [
+    "2603.19183",
+    "2608.13474",
+    "2609.34684"
+   ]
+  },
+  "2202.05262": {
+   "title": "Locating and Editing Factual Associations in GPT",
+   "cited_by": [
+    "2603.19233",
+    "2608.08904",
+    "2610.20750"
+   ]
+  },
+  "2509.19012": {
+   "title": "Pure Vision Language Action (VLA) Models: A Comprehensive Survey",
+   "cited_by": [
+    "2604.23775",
+    "2605.00321",
+    "2609.34794"
+   ]
+  },
+  "2510.03342": {
+   "title": "Gemini Robotics 1.5: Pushing the Frontier of Generalist Robots with Advanced Embodied Reasoning, Thinking, and Motion Transfer",
+   "cited_by": [
+    "2605.30117",
+    "2610.06235",
+    "2610.20840"
+   ]
+  },
+  "2102.06746": {
+   "title": "The Importance of Being a Band: Finite-Sample Exact Distribution-Free Prediction Sets for Functional Data",
+   "cited_by": [
+    "2605.30834",
+    "2606.19998",
+    "2609.04277"
+   ]
+  },
+  "2603.17240": {
+   "title": "GigaWorld-Policy: An Efficient Action-Centered World--Action Model",
+   "cited_by": [
+    "2606.01095",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2601.21998": {
+   "title": "Causal World Modeling for Robot Control",
+   "cited_by": [
+    "2606.01095",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2603.16666": {
+   "title": "Fast-WAM: Do World Action Models Need Test-time Future Imagination?",
+   "cited_by": [
+    "2606.01095",
+    "2609.39973",
+    "2610.06235"
+   ]
+  },
+  "2601.02295": {
+   "title": "CycleVLA: Proactive Self-Correcting Vision-Language-Action Models via Subtask Backtracking and Minimum Bayes Risk Decoding",
+   "cited_by": [
+    "2606.09740",
+    "2606.21386",
+    "2609.04277"
+   ]
+  },
+  "2510.09459": {
+   "title": "Failure Prediction at Runtime for Generative Robot Policies",
+   "cited_by": [
+    "2606.19998",
+    "2608.04510",
+    "2609.21246"
+   ]
+  },
+  "2410.04640": {
+   "title": "Unpacking Failure Modes of Generative Policies: Runtime Monitoring of Consistency and Progress",
+   "cited_by": [
+    "2606.19998",
+    "2609.04277",
+    "2609.21246"
+   ]
+  },
+  "2604.28119": {
+   "title": "Do Sparse Autoencoders Capture Concept Manifolds?",
+   "cited_by": [
+    "2607.14280",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2606.08508": {
+   "title": "ActProbe: Action-Space Probe for Early Failure Detection of Generative Robot Policies",
+   "cited_by": [
+    "2609.04277",
+    "2609.21246",
+    "2610.05878"
+   ]
+  },
+  "2605.17204": {
+   "title": "Event-Grounded Sparse Autoencoders for Vision-Language-Action Policies",
+   "cited_by": [
+    "2609.15005",
+    "2610.03498",
+    "2610.20767"
+   ]
+  },
+  "2601.15197": {
+   "title": "LangForce: Bayesian Decomposition of Vision Language Action Models via Latent Action Queries",
+   "cited_by": [
+    "2609.30833",
+    "2609.39971",
+    "2610.06235"
+   ]
+  },
+  "2412.06410": {
+   "title": "BatchTopK Sparse Autoencoders",
+   "cited_by": [
+    "2610.09496",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2603.16861": {
+   "title": "MolmoB0T: Large-Scale Simulation Enables Zero-Shot Manipulation",
+   "cited_by": [
+    "2610.20750",
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2201.11903": {
+   "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+   "cited_by": [
+    "2306.15724",
+    "2607.04681"
+   ]
+  },
+  "2302.13971": {
+   "title": "LLaMA: Open and Efficient Foundation Language Models",
+   "cited_by": [
+    "2306.15724",
+    "2607.14280"
+   ]
+  },
+  "2207.05608": {
+   "title": "Inner Monologue: Embodied Reasoning through Planning with Language Models",
+   "cited_by": [
+    "2306.15724",
+    "2606.30686"
+   ]
+  },
+  "2403.15498": {
+   "title": "Emergent World Models and Latent Variable Estimation in Chess-Playing Language Models",
+   "cited_by": [
+    "2406.00877",
+    "2504.01871"
+   ]
+  },
+  "2303.08112": {
+   "title": "Eliciting Latent Predictions from Transformers with the Tuned Lens",
+   "cited_by": [
+    "2406.00877",
+    "2607.03372"
+   ]
+  },
+  "2404.15255": {
+   "title": "How to use and interpret activation patching",
+   "cited_by": [
+    "2406.00877",
+    "2610.20750"
+   ]
+  },
+  "2402.11917": {
+   "title": "A Mechanistic Analysis of a Transformer Trained on a Symbolic Multi-Step Reasoning Task",
+   "cited_by": [
+    "2406.00877",
+    "2504.01871"
+   ]
+  },
+  "2310.16410": {
+   "title": "Bridging the Human-AI Knowledge Gap: Concept Discovery and Transfer in AlphaZero",
+   "cited_by": [
+    "2406.00877",
+    "2504.01871"
+   ]
+  },
+  "2108.07258": {
+   "title": "On the Opportunities and Risks of Foundation Models",
+   "cited_by": [
+    "2502.04558",
+    "2604.23775"
+   ]
+  },
+  "2407.01812": {
+   "title": "Equivariant Diffusion Policy",
+   "cited_by": [
+    "2505.05787",
+    "2610.06235"
+   ]
+  },
+  "2007.00245": {
+   "title": "Fighting Failures with FIRE: Failure Identification to Reduce Expert Burden in Intervention-Based Learning",
+   "cited_by": [
+    "2506.09937",
+    "2608.04246"
+   ]
+  },
+  "2502.06575": {
+   "title": "Predictive Red Teaming: Breaking Policies Without Breaking Robots",
+   "cited_by": [
+    "2506.09937",
+    "2608.04246"
+   ]
+  },
+  "2307.10236": {
+   "title": "Look Before You Leap: An Exploratory Study of Uncertainty Measurement for Large Language Models",
+   "cited_by": [
+    "2506.09937",
+    "2608.04246"
+   ]
+  },
+  "2412.05563": {
+   "title": "A Survey on Uncertainty Quantification of Large Language Models: Taxonomy, Open Research Challenges, and Future Directions",
+   "cited_by": [
+    "2506.09937",
+    "2608.04246"
+   ]
+  },
+  "2503.10965": {
+   "title": "Auditing language models for hidden objectives",
+   "cited_by": [
+    "2509.00328",
+    "2610.20767"
+   ]
+  },
+  "2012.14913": {
+   "title": "Transformer Feed-Forward Layers Are Key-Value Memories",
+   "cited_by": [
+    "2509.00328",
+    "2608.08904"
+   ]
+  },
+  "1803.10122": {
+   "title": "World Models",
+   "cited_by": [
+    "2509.20623",
+    "2609.30996"
+   ]
+  },
+  "2306.09537": {
+   "title": "QuadSwarm: A Modular Multi-Quadrotor Simulator for Deep Reinforcement Learning with Direct Thrust Control",
+   "cited_by": [
+    "2509.20623",
+    "2606.11489"
+   ]
+  },
+  "1301.3781": {
+   "title": "Efficient Estimation of Word Representations in Vector Space",
+   "cited_by": [
+    "2509.20623",
+    "2509.24559"
+   ]
+  },
+  "2001.08361": {
+   "title": "Scaling Laws for Neural Language Models",
+   "cited_by": [
+    "2509.24559",
+    "2606.30686"
+   ]
+  },
+  "2108.03298": {
+   "title": "What Matters in Learning from Offline Human Demonstrations for Robot Manipulation",
+   "cited_by": [
+    "2510.09459",
+    "2609.38401"
+   ]
+  },
+  "2412.06264": {
+   "title": "Flow Matching Guide and Code",
+   "cited_by": [
+    "2510.09459",
+    "2608.25757"
+   ]
+  },
+  "2505.15660": {
+   "title": "Exploring the Limits of Vision-Language-Action Manipulations in Cross-task Generalization",
+   "cited_by": [
+    "2510.13626",
+    "2606.19998"
+   ]
+  },
+  "2501.16664": {
+   "title": "Improving Vision-Language-Action Model with Online Reinforcement Learning",
+   "cited_by": [
+    "2510.13626",
+    "2510.25616"
+   ]
+  },
+  "2506.09930": {
+   "title": "From Intention to Execution: Probing the Generalization Boundaries of Vision-Language-Action Models",
+   "cited_by": [
+    "2510.13626",
+    "2605.30117"
+   ]
+  },
+  "2505.19789": {
+   "title": "What Can RL Bring to VLA Generalization? An Empirical Study",
+   "cited_by": [
+    "2510.13626",
+    "2510.25616"
+   ]
+  },
+  "2402.08191": {
+   "title": "THE COLOSSEUM: A Benchmark for Evaluating Generalization for Robotic Manipulation",
+   "cited_by": [
+    "2510.13626",
+    "2609.21246"
+   ]
+  },
+  "2503.00200": {
+   "title": "Unified Video Action Model",
+   "cited_by": [
+    "2510.13626",
+    "2604.13645"
+   ]
+  },
+  "2107.14483": {
+   "title": "ManiSkill: Generalizable Manipulation Skill Benchmark with Large-Scale Demonstrations",
+   "cited_by": [
+    "2510.13626",
+    "2604.18000"
+   ]
+  },
+  "2510.07067": {
+   "title": "Bring the Apple, Not the Sofa: Impact of Irrelevant Context in Embodied AI Commands on VLA Models",
+   "cited_by": [
+    "2510.25616",
+    "2606.19297"
+   ]
+  },
+  "2502.13130": {
+   "title": "Magma: A Foundation Model for Multimodal AI Agents",
+   "cited_by": [
+    "2510.25616",
+    "2606.19297"
+   ]
+  },
+  "2502.13923": {
+   "title": "Qwen2.5-VL Technical Report",
+   "cited_by": [
+    "2510.25616",
+    "2609.34794"
+   ]
+  },
+  "2502.10550": {
+   "title": "Memory, Benchmark & Robots: A Benchmark for Solving Complex Tasks with Reinforcement Learning",
+   "cited_by": [
+    "2510.25616",
+    "2606.19297"
+   ]
+  },
+  "2503.15558": {
+   "title": "Cosmos-Reason1: From Physical Common Sense To Embodied Reasoning",
+   "cited_by": [
+    "2510.25616",
+    "2606.19297"
+   ]
+  },
+  "2508.18265": {
+   "title": "InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency",
+   "cited_by": [
+    "2510.25616",
+    "2604.18000"
+   ]
+  },
+  "2112.03227": {
+   "title": "CALVIN: A Benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks",
+   "cited_by": [
+    "2510.25616",
+    "2606.19297"
+   ]
+  },
+  "2405.07987": {
+   "title": "The Platonic Representation Hypothesis",
+   "cited_by": [
+    "2510.25616",
+    "2606.30686"
+   ]
+  },
+  "2310.15916": {
+   "title": "In-Context Learning Creates Task Vectors",
+   "cited_by": [
+    "2511.22697",
+    "2610.04681"
+   ]
+  },
+  "2412.03555": {
+   "title": "PaliGemma 2: A Family of Versatile VLMs for Transfer",
+   "cited_by": [
+    "2511.22697",
+    "2606.27755"
+   ]
+  },
+  "2502.05855": {
+   "title": "DexVLA: Vision-Language Model with Plug-In Diffusion Expert for General Robot Control",
+   "cited_by": [
+    "2602.01834",
+    "2610.20750"
+   ]
+  },
+  "2407.20242": {
+   "title": "BadRobot: Jailbreaking Embodied LLM Agents in the Physical World",
+   "cited_by": [
+    "2602.01834",
+    "2604.23775"
+   ]
+  },
+  "2505.16377": {
+   "title": "VLM-SAFE: Vision-Language Model-Guided Safety-Aware Reinforcement Learning with World Models for Autonomous Driving",
+   "cited_by": [
+    "2602.01834",
+    "2604.23775"
+   ]
+  },
+  "2505.16916": {
+   "title": "Backdoor Cleaning without External Guidance in MLLM Fine-tuning",
+   "cited_by": [
+    "2602.03153",
+    "2607.12571"
+   ]
+  },
+  "2502.14881": {
+   "title": "A Survey of Safety on Large Vision-Language Models: Attacks, Defenses and Evaluations",
+   "cited_by": [
+    "2602.03153",
+    "2607.12571"
+   ]
+  },
+  "2506.03350": {
+   "title": "Adversarial Attacks on Robotic Vision Language Action Models",
+   "cited_by": [
+    "2603.12717",
+    "2604.23775"
+   ]
+  },
+  "2505.16640": {
+   "title": "BadVLA: Towards Backdoor Attacks on Vision-Language-Action Models via Objective-Decoupled Optimization",
+   "cited_by": [
+    "2603.12717",
+    "2607.12571"
+   ]
+  },
+  "1807.06757": {
+   "title": "On Evaluation of Embodied Navigation Agents",
+   "cited_by": [
+    "2603.13782",
+    "2604.23775"
+   ]
+  },
+  "2511.04831": {
+   "title": "Isaac Lab: A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning",
+   "cited_by": [
+    "2603.13782",
+    "2604.13645"
+   ]
+  },
+  "2602.18020": {
+   "title": "UAOR: Uncertainty-aware Observation Reinjection for Vision-Language-Action Models",
+   "cited_by": [
+    "2603.15618",
+    "2606.09740"
+   ]
+  },
+  "2506.01953": {
+   "title": "Fast-in-Slow: A Dual-System Foundation Model Unifying Fast Manipulation within Slow Reasoning",
+   "cited_by": [
+    "2603.15618",
+    "2606.30686"
+   ]
+  },
+  "2408.03326": {
+   "title": "LLaVA-OneVision: Easy Visual Task Transfer",
+   "cited_by": [
+    "2603.15618",
+    "2604.18000"
+   ]
+  },
+  "2503.10631": {
+   "title": "HybridVLA: Collaborative Diffusion and Autoregression in a Unified Vision-Language-Action Model",
+   "cited_by": [
+    "2603.15618",
+    "2610.06235"
+   ]
+  },
+  "1711.05101": {
+   "title": "Decoupled Weight Decay Regularization",
+   "cited_by": [
+    "2603.15618",
+    "2609.34794"
+   ]
+  },
+  "2408.00118": {
+   "title": "Gemma 2: Improving Open Language Models at a Practical Size",
+   "cited_by": [
+    "2603.19183",
+    "2606.27755"
+   ]
+  },
+  "2509.04996": {
+   "title": "FLOWER: Democratizing Generalist Robot Policies with Efficient Vision-Language-Action Flow Policies",
+   "cited_by": [
+    "2603.19233",
+    "2606.19998"
+   ]
+  },
+  "2504.08729": {
+   "title": "Steering CLIP's vision transformer with sparse autoencoders",
+   "cited_by": [
+    "2603.19233",
+    "2610.03498"
+   ]
+  },
+  "2410.16314": {
+   "title": "Steering Large Language Models using Conceptors: Improving Addition-Based Activation Engineering",
+   "cited_by": [
+    "2603.19233",
+    "2605.17144"
+   ]
+  },
+  "1802.03426": {
+   "title": "UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction",
+   "cited_by": [
+    "2603.19233",
+    "2604.13645"
+   ]
+  },
+  "2310.17596": {
+   "title": "MimicGen: A Data Generation System for Scalable Robot Learning using Human Demonstrations",
+   "cited_by": [
+    "2604.13645",
+    "2604.18000"
+   ]
+  },
+  "2507.15597": {
+   "title": "Being-H0: Vision-Language-Action Pretraining from Large-Scale Human Videos",
+   "cited_by": [
+    "2604.13645",
+    "2604.18000"
+   ]
+  },
+  "2207.12598": {
+   "title": "Classifier-Free Diffusion Guidance",
+   "cited_by": [
+    "2604.13645",
+    "2609.30833"
+   ]
+  },
+  "2504.02792": {
+   "title": "Unified World Models: Coupling Video and Action Diffusion for Pretraining on Large Robotic Datasets",
+   "cited_by": [
+    "2604.13645",
+    "2610.06235"
+   ]
+  },
+  "2501.14818": {
+   "title": "Eagle 2: Building Post-Training Data Strategies from Scratch for Frontier Vision-Language Models",
+   "cited_by": [
+    "2604.18000",
+    "2609.02634"
+   ]
+  },
+  "2512.22539": {
+   "title": "VLA-Arena: An Open-Source Framework for Benchmarking Vision-Language-Action Models",
+   "cited_by": [
+    "2604.18000",
+    "2604.23775"
+   ]
+  },
+  "2507.06261": {
+   "title": "Gemini 2.5: Pushing the Frontier with Advanced Reasoning, Multimodality, Long Context, and Next Generation Agentic Capabilities",
+   "cited_by": [
+    "2604.18000",
+    "2605.24642"
+   ]
+  },
+  "2510.13778": {
+   "title": "InternVLA-M1: A Spatially Guided Vision-Language-Action Framework for Generalist Robot Policy",
+   "cited_by": [
+    "2604.18000",
+    "2606.19297"
+   ]
+  },
+  "2512.16760": {
+   "title": "Vision-Language-Action Models for Autonomous Driving: Past, Present, and Future",
+   "cited_by": [
+    "2604.23775",
+    "2609.34794"
+   ]
+  },
+  "2303.08774": {
+   "title": "GPT-4 Technical Report",
+   "cited_by": [
+    "2604.23775",
+    "2610.10178"
+   ]
+  },
+  "2410.23262": {
+   "title": "EMMA: End-to-End Multimodal Model for Autonomous Driving",
+   "cited_by": [
+    "2604.23775",
+    "2607.04681"
+   ]
+  },
+  "2510.24795": {
+   "title": "A Survey on Efficient Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775",
+    "2609.34794"
+   ]
+  },
+  "2604.12447": {
+   "title": "HazardArena: Evaluating Semantic Safety in Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775",
+    "2610.05878"
+   ]
+  },
+  "2506.09937": {
+   "title": "SAFE: Multitask Failure Detection for Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775",
+    "2608.04510"
+   ]
+  },
+  "2511.16203": {
+   "title": "When Alignment Fails: Multimodal Adversarial Attacks on Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775",
+    "2610.03498"
+   ]
+  },
+  "2512.11891": {
+   "title": "VLSA: Vision-Language-Action Models with Plug-and-Play Safety Constraint Layer",
+   "cited_by": [
+    "2604.23775",
+    "2606.09749"
+   ]
+  },
+  "2604.03956": {
+   "title": "VLA-Forget: Vision-Language-Action Unlearning for Embodied Foundation Models",
+   "cited_by": [
+    "2604.23775",
+    "2608.04692"
+   ]
+  },
+  "2601.16065": {
+   "title": "DTP: A Simple yet Effective Distracting Token Pruning Framework for Vision-Language Action Models",
+   "cited_by": [
+    "2605.00321",
+    "2610.05878"
+   ]
+  },
+  "2507.01925": {
+   "title": "A Survey on Vision-Language-Action Models: An Action Tokenization Perspective",
+   "cited_by": [
+    "2605.00321",
+    "2609.04277"
+   ]
+  },
+  "2510.16281": {
+   "title": "Do What You Say: Steering Vision-Language-Action Models via Runtime Reasoning-Action Alignment Verification",
+   "cited_by": [
+    "2605.00321",
+    "2605.17144"
+   ]
+  },
+  "2510.01711": {
+   "title": "Contrastive Representation Regularization for Vision-Language-Action Models",
+   "cited_by": [
+    "2605.17144",
+    "2605.24642"
+   ]
+  },
+  "2510.19752": {
+   "title": "Learning Affordances at Inference-Time for Vision-Language-Action Models",
+   "cited_by": [
+    "2605.17144",
+    "2606.09740"
+   ]
+  },
+  "2506.15799": {
+   "title": "Steering Your Diffusion Policy with Latent Space Reinforcement Learning",
+   "cited_by": [
+    "2605.17144",
+    "2606.00269"
+   ]
+  },
+  "2510.12276": {
+   "title": "Spatial Forcing: Implicit Spatial Representation Alignment for Vision-language-action Model",
+   "cited_by": [
+    "2605.24642",
+    "2606.27755"
+   ]
+  },
+  "2501.03575": {
+   "title": "Cosmos World Foundation Model Platform for Physical AI",
+   "cited_by": [
+    "2605.30117",
+    "2608.25757"
+   ]
+  },
+  "2511.17502": {
+   "title": "RynnVLA-002: A Unified Vision-Language-Action and World Model",
+   "cited_by": [
+    "2605.30834",
+    "2610.06235"
+   ]
+  },
+  "2603.03596": {
+   "title": "MEM: Multi-Scale Embodied Memory for Vision Language Action Models",
+   "cited_by": [
+    "2605.30834",
+    "2608.25757"
+   ]
+  },
+  "2510.19430": {
+   "title": "GigaBrain-0: A World Model-Powered Vision-Language-Action Model",
+   "cited_by": [
+    "2606.00269",
+    "2606.27755"
+   ]
+  },
+  "2603.13782": {
+   "title": "Your Vision-Language-Action Model Already Has Attention Heads For Path Deviation Detection",
+   "cited_by": [
+    "2606.09749",
+    "2610.05878"
+   ]
+  },
+  "2602.12684": {
+   "title": "Xiaomi-Robotics-0: An Open-Sourced Vision-Language-Action Model with Real-Time Execution",
+   "cited_by": [
+    "2606.19297",
+    "2609.39973"
+   ]
+  },
+  "2502.08623": {
+   "title": "Robot Data Curation with Mutual Information Estimators",
+   "cited_by": [
+    "2606.19998",
+    "2610.20767"
+   ]
+  },
+  "2510.21571": {
+   "title": "Scalable Vision-Language-Action Model Pretraining for Robotic Manipulation with Real-Life Human Activity Videos",
+   "cited_by": [
+    "2606.21386",
+    "2609.39973"
+   ]
+  },
+  "2601.18692": {
+   "title": "A Pragmatic VLA Foundation Model",
+   "cited_by": [
+    "2606.27755",
+    "2609.39973"
+   ]
+  },
+  "2506.10100": {
+   "title": "EfficientVLA: Training-Free Acceleration and Compression for Vision-Language-Action Models",
+   "cited_by": [
+    "2606.27755",
+    "2610.20750"
+   ]
+  },
+  "2403.08295": {
+   "title": "Gemma: Open Models Based on Gemini Research and Technology",
+   "cited_by": [
+    "2606.27755",
+    "2610.20840"
+   ]
+  },
+  "2409.12191": {
+   "title": "Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution",
+   "cited_by": [
+    "2606.27755",
+    "2610.20840"
+   ]
+  },
+  "2503.20384": {
+   "title": "MoLe-VLA: Dynamic Layer-skipping Vision Language Action Model via Mixture-of-Layers for Efficient Robot Manipulation",
+   "cited_by": [
+    "2606.27755",
+    "2610.20750"
+   ]
+  },
+  "2506.19816": {
+   "title": "CronusVLA: Towards Efficient and Robust Manipulation via Multi-Frame Vision-Language-Action Modeling",
+   "cited_by": [
+    "2606.30686",
+    "2607.03372"
+   ]
+  },
+  "2511.00088": {
+   "title": "Alpamayo-R1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail",
+   "cited_by": [
+    "2607.04681",
+    "2608.04510"
+   ]
+  },
+  "2606.18043": {
+   "title": "Uncertainty Quantification for Flow-Based Generalist Robot Policies",
+   "cited_by": [
+    "2608.04510",
+    "2608.25757"
+   ]
+  },
+  "2401.06121": {
+   "title": "TOFU: A Task of Fictitious Unlearning for LLMs",
+   "cited_by": [
+    "2608.04692",
+    "2610.09496"
+   ]
+  },
+  "2502.14786": {
+   "title": "SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features",
+   "cited_by": [
+    "2608.08904",
+    "2609.34684"
+   ]
+  },
+  "2605.17144": {
+   "title": "Contrastive Conceptor Activation Steering (COAST): Unlocking Vision-Language-Action Models through Hidden States",
+   "cited_by": [
+    "2609.30996",
+    "2610.04681"
+   ]
+  },
+  "2605.28527": {
+   "title": "What Frozen VLAs Already Know About Success: A Probing Study of Value-Like Structure in Foundation Robot Policies",
+   "cited_by": [
+    "2609.30996",
+    "2609.34684"
+   ]
+  },
+  "2601.16163": {
+   "title": "Cosmos Policy: Fine-Tuning Video Models for Visuomotor Control and Planning",
+   "cited_by": [
+    "2610.04681",
+    "2610.06235"
+   ]
+  },
+  "2407.14435": {
+   "title": "Jumping Ahead: Improving Reconstruction Fidelity with JumpReLU Sparse Autoencoders",
+   "cited_by": [
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2606.25234": {
+   "title": "Structuring Sparsity: Block-Sparse Featurizers Capture Visual Concept Manifolds",
+   "cited_by": [
+    "2610.20767",
+    "2610.20840"
+   ]
+  },
+  "2209.11302": {
+   "title": "ProgPrompt: Generating Situated Robot Task Plans using Large Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2210.03629": {
+   "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2205.10747": {
+   "title": "Language Models with Image Descriptors are Strong Few-Shot Video-Language Learners",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2203.06671": {
+   "title": "Summarizing a virtual robot's past actions in natural language",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2205.11916": {
+   "title": "Large Language Models are Zero-Shot Reasoners",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "1712.05474": {
+   "title": "AI2-THOR: An Interactive 3D Environment for Visual AI",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2212.04088": {
+   "title": "LLM-Planner: Few-Shot Grounded Planning for Embodied Agents with Large Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2303.16010": {
+   "title": "User Study Exploring the Role of Explanation of Failures by Robots in Human Robot Collaboration Tasks",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2303.12712": {
+   "title": "Sparks of Artificial General Intelligence: Early experiments with GPT-4",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2301.09209": {
+   "title": "Summarize the Past to Predict the Future: Natural Language Descriptions of Context Boost Multimodal Object Interaction Anticipation",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2211.09935": {
+   "title": "CAPE: Corrective Actions from Precondition Errors using Large Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2303.11366": {
+   "title": "Reflexion: Language Agents with Verbal Reinforcement Learning",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2301.12597": {
+   "title": "BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2305.11014": {
+   "title": "Generalized Planning in PDDL Domains with Pretrained Large Language Models",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "2303.14100": {
+   "title": "Errors are Useful Prompts: Instruction Guided Task Programming with Verifier-Assisted Iterative Prompting",
+   "cited_by": [
+    "2306.15724"
+   ]
+  },
+  "1805.01954": {
+   "title": "Behavioral Cloning from Observation",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2109.07958": {
+   "title": "TruthfulQA: Measuring How Models Mimic Human Falsehoods",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2212.03827": {
+   "title": "Discovering Latent Knowledge in Language Models Without Supervision",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2307.09458": {
+   "title": "Does Circuit Analysis Interpretability Scale? Evidence from Multiple Choice Capabilities in Chinchilla",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2210.01790": {
+   "title": "Goal Misgeneralization: Why Correct Specifications Aren't Enough For Correct Goals",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2211.09110": {
+   "title": "Holistic Evaluation of Language Models",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2212.08073": {
+   "title": "Constitutional AI: Harmlessness from AI Feedback",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2009.03300": {
+   "title": "Measuring Massive Multitask Language Understanding",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2306.03341": {
+   "title": "Inference-Time Intervention: Eliciting Truthful Answers from a Language Model",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2204.05862": {
+   "title": "Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2209.14375": {
+   "title": "Improving alignment of dialogue agents via targeted human judgements",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "1912.01588": {
+   "title": "Leveraging Procedural Generation to Benchmark Reinforcement Learning",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2305.18290": {
+   "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2209.00626": {
+   "title": "The Alignment Problem from a Deep Learning Perspective",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2105.14111": {
+   "title": "Goal Misgeneralization in Deep Reinforcement Learning",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2205.05124": {
+   "title": "Extracting Latent Steering Vectors from Pretrained Language Models",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "1811.07871": {
+   "title": "Scalable agent alignment via reward modeling: a research direction",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "2212.09251": {
+   "title": "Discovering Language Model Behaviors with Model-Written Evaluations",
+   "cited_by": [
+    "2310.08043"
+   ]
+  },
+  "1611.02779": {
+   "title": "RL$^2$: Fast Reinforcement Learning via Slow Reinforcement Learning",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "2303.09435": {
+   "title": "Jump to Conclusions: Short-Cutting Transformers With Linear Transformations",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "2309.00941": {
+   "title": "Emergent Linear Representations in World Models of Self-Supervised Sequence Models",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "2309.05858": {
+   "title": "Uncovering mesa-optimization algorithms in Transformers",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "1906.01820": {
+   "title": "Risks from Learned Optimization in Advanced Machine Learning Systems",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "1611.05763": {
+   "title": "Learning to reinforcement learn",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "2402.04494": {
+   "title": "Amortized Planning with Large-Scale Transformers: A Case Study on Chess",
+   "cited_by": [
+    "2406.00877"
+   ]
+  },
+  "2408.09176": {
+   "title": "Cognitive LLMs: Towards Integrating Cognitive Architectures and Large Language Models for Manufacturing Decision-making",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "1909.01066": {
+   "title": "Language Models as Knowledge Bases?",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2208.11057": {
+   "title": "Prompting as Probing: Using Language Models for Knowledge Base Construction",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2102.11115": {
+   "title": "Probing Multimodal Embeddings for Linguistic Properties: the Visual-Semantic Case",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2409.12894": {
+   "title": "VLATest: Testing and Evaluating Vision-Language-Action Models for Robotic Manipulation",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2312.04333": {
+   "title": "Is Bigger and Deeper Always Better? Probing LLaMA Across Scales and Layers",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2310.06846": {
+   "title": "Exploiting Language Models as a Source of Knowledge for Cognitive Agents",
+   "cited_by": [
+    "2502.04558"
+   ]
+  },
+  "2011.04021": {
+   "title": "On the role of planning in model-based deep reinforcement learning",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "1803.10227": {
+   "title": "Forward-Backward Reinforcement Learning",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2112.00114": {
+   "title": "Show Your Work: Scratchpads for Intermediate Computation with Language Models",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "1707.06170": {
+   "title": "Learning model-based planning from scratch",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2406.00877": {
+   "title": "Evidence of Learned Look-Ahead in a Chess-Playing Neural Network",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2402.10877": {
+   "title": "Robust agents learn causal world models",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2405.15071": {
+   "title": "Grokked Transformers are Implicit Reasoners: A Mechanistic Journey to the Edge of Generalization",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2206.07682": {
+   "title": "Emergent Abilities of Large Language Models",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2402.14083": {
+   "title": "Beyond A*: Better Planning with Transformers via Search Dynamics Bootstrapping",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "1804.00379": {
+   "title": "Recall Traces: Backtracking Models for Efficient Reinforcement Learning",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2310.08043": {
+   "title": "Understanding and Controlling a Maze-Solving Policy Network",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2407.15421": {
+   "title": "Planning in a recurrent neural network that plays Sokoban",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2211.05500": {
+   "title": "Reinforcement Learning in an Adaptable Chess Environment for Detecting Human-understandable Concepts",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2501.12948": {
+   "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2309.09702": {
+   "title": "Information based explanation methods for deep learning agents -- with applications on large open-source chess models",
+   "cited_by": [
+    "2504.01871"
+   ]
+  },
+  "2310.10639": {
+   "title": "Zero-Shot Robotic Manipulation with Pretrained Image-Editing Diffusion Models",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2402.10329": {
+   "title": "Universal Manipulation Interface: In-The-Wild Robot Teaching Without In-The-Wild Robots",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2409.00588": {
+   "title": "Diffusion Policy Policy Optimization",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2311.15127": {
+   "title": "Stable Video Diffusion: Scaling Latent Video Diffusion Models to Large Datasets",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2406.01586": {
+   "title": "ManiCM: Real-time 3D Diffusion Policy via Consistency Model for Robotic Manipulation",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2407.00451": {
+   "title": "Language-Guided Object-Centric Diffusion Policy for Generalizable and Collision-Aware Robotic Manipulation",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2410.14868": {
+   "title": "Diff-DAgger: Uncertainty Estimation with Diffusion Policy for Robotic Manipulation",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2211.01324": {
+   "title": "eDiff-I: Text-to-Image Diffusion Models with an Ensemble of Expert Denoisers",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2410.03072": {
+   "title": "Multi-Robot Motion Planning with Diffusion Models",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2302.13335": {
+   "title": "Diffusion Model-Augmented Behavioral Cloning",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2310.02664": {
+   "title": "On Memorization in Diffusion Models",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2411.16738": {
+   "title": "Classifier-Free Guidance inside the Attraction Basin May Cause Memorization",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2406.12752": {
+   "title": "Extracting Training Data from Unconditional Diffusion Models",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2204.07172": {
+   "title": "Diagnosing and Fixing Manifold Overfitting in Deep Generative Models",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2204.06125": {
+   "title": "Hierarchical Text-Conditional Image Generation with CLIP Latents",
+   "cited_by": [
+    "2505.05787"
+   ]
+  },
+  "2410.22685": {
+   "title": "Improving Uncertainty Quantification in Large Language Models via Semantic Embeddings",
+   "cited_by": [
+    "2506.09937"
+   ]
+  },
+  "2503.01917": {
+   "title": "Steer LLM Latents for Hallucination Detection",
+   "cited_by": [
+    "2506.09937"
+   ]
+  },
+  "2410.20783": {
+   "title": "Graph-based Uncertainty Metrics for Long-form Language Model Outputs",
+   "cited_by": [
+    "2506.09937"
+   ]
+  },
+  "2406.15927": {
+   "title": "Semantic Entropy Probes: Robust and Cheap Hallucination Detection in LLMs",
+   "cited_by": [
+    "2506.09937"
+   ]
+  },
+  "2110.07602": {
+   "title": "P-Tuning v2: Prompt Tuning Can Be Comparable to Fine-tuning Universally Across Scales and Tasks",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2402.02868": {
+   "title": "Fine-tuning Reinforcement Learning Models is Secretly a Forgetting Mitigation Problem",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "1912.01603": {
+   "title": "Dream to Control: Learning Behaviors by Latent Imagination",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2502.00935": {
+   "title": "Generalizing Safety Beyond Collision-Avoidance via Latent-Space Reachability Analysis",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2408.03539": {
+   "title": "Deep Reinforcement Learning for Robotics: A Survey of Real-World Successes",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "1704.01444": {
+   "title": "Learning to Generate Reviews and Discovering Sentiment",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2412.08794": {
+   "title": "Latent Safety-Constrained Policy Approach for Safe Offline Reinforcement Learning",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2210.01801": {
+   "title": "Safe Reinforcement Learning From Pixels Using a Stochastic Latent Representation",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2108.01073": {
+   "title": "SDEdit: Guided Image Synthesis and Editing with Stochastic Differential Equations",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2312.10812": {
+   "title": "Learning to Act without Actions",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "1904.12901": {
+   "title": "Challenges of Real-World Reinforcement Learning",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "1709.10087": {
+   "title": "Learning Complex Dexterous Manipulation with Deep Reinforcement Learning and Demonstrations",
+   "cited_by": [
+    "2509.20623"
+   ]
+  },
+  "2403.19647": {
+   "title": "Sparse Feature Circuits: Discovering and Editing Interpretable Causal Graphs in Language Models",
+   "cited_by": [
+    "2509.24559"
+   ]
+  },
+  "2006.16712": {
+   "title": "Model-based Reinforcement Learning: A Survey",
+   "cited_by": [
+    "2509.24559"
+   ]
+  },
+  "2102.01293": {
+   "title": "Scaling Laws for Transfer",
+   "cited_by": [
+    "2509.24559"
+   ]
+  },
+  "2212.04114": {
+   "title": "Group Generalized Mean Pooling for Vision Transformer",
+   "cited_by": [
+    "2509.24559"
+   ]
+  },
+  "2408.04380": {
+   "title": "Deep Generative Models in Robotics: A Survey on Learning from Multimodal Demonstrations",
+   "cited_by": [
+    "2510.09459"
+   ]
+  },
+  "1812.04606": {
+   "title": "Deep Anomaly Detection with Outlier Exposure",
+   "cited_by": [
+    "2510.09459"
+   ]
+  },
+  "2503.07771": {
+   "title": "RoboCopilot: Human-in-the-loop Interactive Imitation Learning for Robot Manipulation",
+   "cited_by": [
+    "2510.09459"
+   ]
+  },
+  "2312.12036": {
+   "title": "LHManip: A Dataset for Long-Horizon Language-Grounded Manipulation Tasks in Cluttered Tabletop Environments",
+   "cited_by": [
+    "2510.09459"
+   ]
+  },
+  "2504.19854": {
+   "title": "NORA: A Small Open-Sourced Generalist Vision Language Action Model for Embodied Tasks",
+   "cited_by": [
+    "2510.13626"
+   ]
+  },
+  "2505.18719": {
+   "title": "VLA-RL: Towards Masterful and General Robotic Manipulation with Scalable Reinforcement Learning",
+   "cited_by": [
+    "2510.13626"
+   ]
+  },
+  "2405.05803": {
+   "title": "Boosting Multimodal Large Language Models with Visual Tokens Withdrawal for Rapid Inference",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2303.15343": {
+   "title": "Sigmoid Loss for Language Image Pre-Training",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2401.15914": {
+   "title": "Overcoming the Pitfalls of Vision-Language Model Finetuning for OOD Generalization",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2411.02344": {
+   "title": "Seq-VCR: Preventing Collapse in Intermediate Transformer Representations for Enhanced Reasoning",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2509.09372": {
+   "title": "VLA-Adapter: An Effective Paradigm for Tiny-Scale Vision-Language-Action Model",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2407.20179": {
+   "title": "Theia: Distilling Diverse Vision Foundation Models for Robot Learning",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2410.10247": {
+   "title": "LPT: Less-overfitting Prompt Tuning for Vision-Language Model",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2402.07865": {
+   "title": "Prismatic VLMs: Investigating the Design Space of Visually-Conditioned Language Models",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2507.07982": {
+   "title": "Geometry Forcing: Marrying Video Diffusion and 3D Representation for Consistent World Modeling",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2412.07679": {
+   "title": "RADIOv2.5: Improved Baselines for Agglomerative Vision Foundation Models",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2509.02359": {
+   "title": "Why Do MLLMs Struggle with Spatial Understanding? A Systematic Analysis from Data to Architecture",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2506.01946": {
+   "title": "3DRS: MLLMs Need 3D-Aware Representation Supervision for Scene Understanding",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2410.00425": {
+   "title": "ManiSkill3: GPU Parallelized Robotics Simulation and Rendering for Generalizable Embodied AI",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2002.05709": {
+   "title": "A Simple Framework for Contrastive Learning of Visual Representations",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2412.09585": {
+   "title": "Elevating Visual Perception in Multimodal LLMs with Visual Embedding Distillation",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2508.11737": {
+   "title": "Ovis2.5 Technical Report",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2302.06671": {
+   "title": "GenAug: Retargeting behaviors to unseen situations via Generative Augmentation",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2504.01017": {
+   "title": "Scaling Language-Free Visual Representation Learning",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2401.05224": {
+   "title": "Do Vision and Language Encoders Represent the World Similarly?",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2510.07151": {
+   "title": "ELMUR: External Layer Memory with Update/Rewrite for Long-Horizon RL Problems",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2503.03321": {
+   "title": "See What You Are Told: Visual Attention Sink in Large Multimodal Models",
+   "cited_by": [
+    "2510.25616"
+   ]
+  },
+  "2506.16211": {
+   "title": "ControlVLA: Few-shot Object-centric Adaptation for Pre-trained Vision-Language-Action Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2310.05916": {
+   "title": "Interpreting CLIP's Image Representation via Text-Based Decomposition",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2310.05905": {
+   "title": "TAIL: Task-specific Adapters for Imitation Learning with Large Pretrained Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2507.01368": {
+   "title": "Activation Reward Models for Few-Shot Model Alignment",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2406.04236": {
+   "title": "Understanding Information Storage and Transfer in Multi-modal Large Language Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2411.01168": {
+   "title": "Prompt Tuning with Diffusion for Few-Shot Pre-trained Policy Generalization",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2309.16609": {
+   "title": "Qwen Technical Report",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2411.04549": {
+   "title": "Vision Language Models are In-Context Value Learners",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2412.00142": {
+   "title": "Enhancing Few-Shot Vision-Language Classification with Large Multimodal Model Features",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2503.01238": {
+   "title": "A Taxonomy for Evaluating Generalist Robot Manipulation Policies",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2304.08742": {
+   "title": "Behavior Retrieval: Few-Shot Imitation Learning by Querying Unlabeled Datasets",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2301.11796": {
+   "title": "Call for Papers -- The BabyLM Challenge: Sample-efficient pretraining on a developmentally plausible corpus",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2502.17516": {
+   "title": "A Survey on Mechanistic Interpretability for Multi-Modal Foundation Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2405.01008": {
+   "title": "On Mechanistic Knowledge Localization in Text-to-Image Generative Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2504.15517": {
+   "title": "Few-Shot Vision-Language Action-Incremental Policy Learning",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2304.00740": {
+   "title": "Inspecting and Editing Knowledge Representations in Language Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2209.11895": {
+   "title": "In-context Learning and Induction Heads",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2508.02062": {
+   "title": "RICL: Adding In-Context Adaptability to Pre-Trained Vision-Language-Action Models",
+   "cited_by": [
+    "2511.22697"
+   ]
+  },
+  "2410.20971": {
+   "title": "BlueSuffix: Reinforced Blue Teaming for Vision-Language Models Against Jailbreak Attacks",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2502.04204": {
+   "title": "Short-length Adversarial Training Helps LLMs Defend Long-length Jailbreak Attacks: Theoretical and Empirical Evidence",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2403.02475": {
+   "title": "Enhancing LLM Safety via Constrained Direct Preference Optimization",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2402.13494": {
+   "title": "GradSafe: Detecting Jailbreak Prompts for LLMs via Safety-Critical Gradient Analysis",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2410.10863": {
+   "title": "Exploring the Personality Traits of LLMs through Latent Features Steering",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2412.06843": {
+   "title": "Semantic Loss Guided Data Efficient Supervised Fine Tuning for Safe Responses in LLMs",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2310.06112": {
+   "title": "Theoretical Analysis of Robust Overfitting for Wide DNNs: An NTK Approach",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2411.11543": {
+   "title": "PSA-VLM: Enhancing Vision-Language Model Safety through Progressive Concept-Bottleneck-Driven Alignment",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2312.10766": {
+   "title": "JailGuard: A Universal Detection Framework for LLM Prompt-based Attacks",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2406.14144": {
+   "title": "Towards Understanding Safety Alignment: A Mechanistic Perspective from Safety Neurons",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2405.10529": {
+   "title": "Safeguarding Vision-Language Models Against Patched Visual Prompt Injectors",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2507.14049": {
+   "title": "EdgeVLA: Efficient Vision-Language-Action Models",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2507.04447": {
+   "title": "DreamVLA: A Vision-Language-Action Model Dreamed with Comprehensive World Knowledge",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2401.02906": {
+   "title": "MLLM-Protector: Ensuring MLLM's Safety without Hurting Performance",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2411.01703": {
+   "title": "UniGuard: Towards Universal Safety Guardrails for Jailbreak Attacks on Multimodal Large Language Models",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2405.07932": {
+   "title": "PARDEN, Can You Repeat That? Defending against Jailbreaks via Repetition",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2310.03684": {
+   "title": "SmoothLLM: Defending Large Language Models Against Jailbreaking Attacks",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2506.16402": {
+   "title": "IS-Bench: Evaluating Interactive Safety of VLM-Driven Embodied Agents in Daily Household Tasks",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2508.20766": {
+   "title": "Turning the Spell Around: Lightweight Alignment Amplification via Rank-One Safety Injection",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2406.09250": {
+   "title": "MirrorCheck: Efficient Adversarial Defense for Vision-Language Models",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2310.12773": {
+   "title": "Safe RLHF: Safe Reinforcement Learning from Human Feedback",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2210.03094": {
+   "title": "VIMA: General Robot Manipulation with Multimodal Prompts",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2404.03323": {
+   "title": "Sparse Concept Bottleneck Models: Gumbel Tricks in Contrastive Learning",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2506.05739": {
+   "title": "To Protect the LLM Agent Against the Prompt Injection Attack with Polymorphic Prompt",
+   "cited_by": [
+    "2602.01834"
+   ]
+  },
+  "2411.11683": {
+   "title": "Robot Collapse: Supply Chain Backdoor Attacks Against VLM-based Robotic Manipulation",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2503.04543": {
+   "title": "Keeping Yourself is Important in Downstream Tuning Multimodal Large Language Model",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "1712.05526": {
+   "title": "Targeted Backdoor Attacks on Deep Learning Systems Using Data Poisoning",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2502.20900": {
+   "title": "DexGraspVLA: A Vision-Language-Action Framework Towards General Dexterous Grasping",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "1708.06733": {
+   "title": "BadNets: Identifying Vulnerabilities in the Machine Learning Model Supply Chain",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2506.04743": {
+   "title": "SRD: Reinforcement-Learned Semantic Perturbation for Backdoor Defense in VLMs",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2304.02786": {
+   "title": "UNICORN: A Unified Backdoor Trigger Inversion Framework",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2410.14425": {
+   "title": "Unlearning Backdoor Attacks for LLMs with Weak-to-Strong Knowledge Distillation",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "2010.11929": {
+   "title": "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale",
+   "cited_by": [
+    "2602.03153"
+   ]
+  },
+  "1807.06980": {
+   "title": "Video Time: Properties, Encoders and Evaluation",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "1910.01442": {
+   "title": "CLEVRER: CoLlision Events for Video REpresentation and Reasoning",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "1803.07616": {
+   "title": "IntPhys: A Framework and Benchmark for Visual Intuitive Physics Reasoning",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2509.07996": {
+   "title": "3D and 4D World Modeling: A Survey",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2204.03458": {
+   "title": "Video Diffusion Models",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2510.21840": {
+   "title": "Improving the Physics of Video Generation with VJEPA-2 Reward Signal",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2303.16727": {
+   "title": "VideoMAE V2: Scaling Video Masked Autoencoders with Dual Masking",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2511.15684": {
+   "title": "Walrus: A Cross-Domain Foundation Model for Continuum Dynamics",
+   "cited_by": [
+    "2602.07050"
+   ]
+  },
+  "2507.21509": {
+   "title": "Persona Vectors: Monitoring and Controlling Character Traits in Language Models",
+   "cited_by": [
+    "2603.05487"
+   ]
+  },
+  "2506.03292": {
+   "title": "HyperSteer: Activation Steering at Scale with Hypernetworks",
+   "cited_by": [
+    "2603.05487"
+   ]
+  },
+  "2503.03480": {
+   "title": "SafeVLA: Towards Safety Alignment of Vision-Language-Action Model via Constrained Learning",
+   "cited_by": [
+    "2603.06001"
+   ]
+  },
+  "2606.01600": {
+   "title": "RoboTrustBench: Benchmarking the Trustworthiness of Video World Models for Robotic Manipulation",
+   "cited_by": [
+    "2603.06001"
+   ]
+  },
+  "2512.10675": {
+   "title": "Evaluating Gemini Robotics Policies in a Veo World Simulator",
+   "cited_by": [
+    "2603.06001"
+   ]
+  },
+  "2504.09456": {
+   "title": "Don't Deceive Me: Mitigating Gaslighting through Attention Reallocation in LMMs",
+   "cited_by": [
+    "2603.06001"
+   ]
+  },
+  "2602.12978": {
+   "title": "Learning Native Continuation for Action Chunking Flow Policies",
+   "cited_by": [
+    "2603.11642"
+   ]
+  },
+  "2502.12893": {
+   "title": "H-CoT: Hijacking the Chain-of-Thought Safety Reasoning Mechanism to Jailbreak Large Reasoning Models, Including OpenAI o1/o3, DeepSeek-R1, and Gemini 2.0 Flash Thinking",
+   "cited_by": [
+    "2603.12717"
+   ]
+  },
+  "2511.15669": {
+   "title": "DeepThinkVLA: Enhancing Reasoning Capability of Vision-Language-Action Models",
+   "cited_by": [
+    "2603.12717"
+   ]
+  },
+  "2507.05246": {
+   "title": "When Chain of Thought is Necessary, Language Models Struggle to Evade Monitors",
+   "cited_by": [
+    "2603.12717"
+   ]
+  },
+  "2608.00583": {
+   "title": "A False Average: Pooled CoT-Monitor Accuracy Conceals a Reasoning-Dependent Fragility",
+   "cited_by": [
+    "2603.12717"
+   ]
+  },
+  "2405.20902": {
+   "title": "Preemptive Answer \"Attacks\" on Chain-of-Thought Reasoning",
+   "cited_by": [
+    "2603.12717"
+   ]
+  },
+  "2311.17842": {
+   "title": "Look Before You Leap: Unveiling the Power of GPT-4V in Robotic Vision-Language Planning",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2502.00931": {
+   "title": "VL-Nav: Neuro-Symbolic Reasoning-based Vision-Language Navigation",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2504.05299": {
+   "title": "SmolVLM: Redefining small and efficient multimodal models",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2412.04468": {
+   "title": "NVILA: Efficient Frontier Visual Language Models",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "1901.03035": {
+   "title": "Self-Monitoring Navigation Agent via Auxiliary Progress Estimation",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2402.15852": {
+   "title": "NaVid: Video-based VLM Plans the Next Step for Vision-and-Language Navigation",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "1607.00148": {
+   "title": "LSTM-based Encoder-Decoder for Multi-sensor Anomaly Detection",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2403.00425": {
+   "title": "HALC: Object Hallucination Reduction via Adaptive Focal-Contrast Decoding",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2409.03752": {
+   "title": "Attention Heads of Large Language Models: A Survey",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2409.20445": {
+   "title": "Robot Navigation Using Physically Grounded Vision-Language Models in Outdoor Environments",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2508.18694": {
+   "title": "AgriChrono: A Multi-modal Dataset Capturing Crop Growth and Lighting Variability with a Field Robot",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2510.06146": {
+   "title": "Vision-Guided Targeted Grasping and Vibration for Robotic Pollination in Controlled Environments",
+   "cited_by": [
+    "2603.13782"
+   ]
+  },
+  "2510.17801": {
+   "title": "Robobench: A Comprehensive Evaluation Benchmark for Multimodal Large Language Models as Embodied Brain",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2407.07895": {
+   "title": "LLaVA-NeXT-Interleave: Tackling Multi-image, Video, and 3D in Large Multimodal Models",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2510.13375": {
+   "title": "DepthVLA: Enhancing Vision-Language-Action Models with Depth-Aware Spatial Reasoning",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2602.07845": {
+   "title": "Recurrent-Depth VLA: Implicit Test-Time Compute Scaling of Vision-Language-Action Models via Latent Iterative Reasoning",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2406.08418": {
+   "title": "OmniCorpus: A Unified Multimodal Corpus of 10 Billion-Level Images Interleaved with Text",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2508.10333": {
+   "title": "ReconVLA: Reconstructive Vision-Language-Action Model as Effective Robot Perceiver",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2601.05248": {
+   "title": "LaST$_{0}$: Latent Spatio-Temporal Chain-of-Thought for Robotic Vision-Language-Action Model",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2502.19417": {
+   "title": "Hi Robot: Open-Ended Instruction Following with Hierarchical Vision-Language-Action Models",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2505.03912": {
+   "title": "OpenHelix: A Short Survey, Empirical Analysis, and Open-Source Dual-System VLA Model for Robotic Manipulation",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2501.17811": {
+   "title": "Janus-Pro: Unified Multimodal Understanding and Generation with Data and Model Scaling",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2410.08001": {
+   "title": "Towards Synergistic, Generalized, and Efficient Dual-System for Robotic Manipulation",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2311.01977": {
+   "title": "RT-Trajectory: Robotic Task Generalization via Hindsight Trajectory Sketches",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2510.14836": {
+   "title": "QDepth-VLA: Quantized Depth Prediction as Auxiliary Supervision for Vision-Language-Action Models",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2403.05525": {
+   "title": "DeepSeek-VL: Towards Real-World Vision-Language Understanding",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2509.26642": {
+   "title": "MLA: A Multisensory Language-Action Model for Multimodal Understanding and Forecasting in Robotic Manipulation",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2412.13877": {
+   "title": "RoboMIND: Benchmark on Multi-embodiment Intelligence Normative Data for Robot Manipulation",
+   "cited_by": [
+    "2603.15618"
+   ]
+  },
+  "2601.11516": {
+   "title": "Building Production-Ready Probes For Gemini",
+   "cited_by": [
+    "2603.19183"
+   ]
+  },
+  "2505.17127": {
+   "title": "Pixels Versus Priors: Controlling Knowledge Priors in Vision-Language Models through Visual Counterfacts",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2405.02292": {
+   "title": "ALOHA 2: An Enhanced Low-Cost Hardware for Bimanual Teleoperation",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2602.09153": {
+   "title": "SceneSmith: Agentic Generation of Simulation-Ready Indoor Scenes",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2508.13998": {
+   "title": "Embodied-R1: Reinforced Embodied Reasoning for General Robotic Manipulation",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2412.02818": {
+   "title": "RoboMD: Uncovering Robot Vulnerabilities through Semantic Potential Fields",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2509.00373": {
+   "title": "Activation Steering Meets Preference Optimization: Defense Against Jailbreaks in Vision Language Models",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2507.15493": {
+   "title": "GR-3 Technical Report",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2407.04690": {
+   "title": "Missed Causes and Ambiguous Effects: Counterfactuals Pose Challenges for Interpreting Neural Networks",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2502.06755": {
+   "title": "Interpretable and Testable Vision Features via Sparse Autoencoders",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2409.14674": {
+   "title": "RACER: Rich Language-Guided Failure Recovery Policies for Imitation Learning",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "1506.03099": {
+   "title": "Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2503.22020": {
+   "title": "CoT-VLA: Visual Chain-of-Thought Reasoning for Vision-Language-Action Models",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2507.01424": {
+   "title": "TriVLA: A Triple-System-Based Unified Vision-Language-Action Model with Episodic World Modeling for General Robot Control",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2501.09929": {
+   "title": "Interpretable Steering of Large Language Models with Feature Guided Activation Additions",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2502.20578": {
+   "title": "Interpreting CLIP with Hierarchical Sparse Autoencoders",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2510.26769": {
+   "title": "SteerVLM: Robust Model Control through Lightweight Activation Steering for Vision Language Models",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2509.25681": {
+   "title": "dVLA: Diffusion Vision-Language-Action Model with Multimodal Chain-of-Thought",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2510.09607": {
+   "title": "VITA-VLA: Efficiently Teaching Vision-Language Models to Act via Action Expert Distillation",
+   "cited_by": [
+    "2603.19233"
+   ]
+  },
+  "2508.09976": {
+   "title": "Masquerade: Learning from In-the-wild Human Videos using Data-Editing",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2402.19432": {
+   "title": "Pushing the Limits of Cross-Embodiment Learning for Manipulation and Navigation",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2209.03003": {
+   "title": "Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2509.17759": {
+   "title": "MotionTrans: Human VR Data Enable Motion-Level Learning for Robotic Manipulation Policies",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2512.01809": {
+   "title": "Much Ado About Noising: Dispelling the Myths of Generative Robotic Control",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2503.00779": {
+   "title": "Phantom: Training Robots Without Robots Using Only Human Videos",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2411.04983": {
+   "title": "DINO-WM: World Models on Pre-trained Visual Features enable Zero-shot Planning",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2510.01378": {
+   "title": "Selective Underfitting in Diffusion Models",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2602.01067": {
+   "title": "A Systematic Study of Data Modalities and Strategies for Co-training Large Behavior Models for Robot Manipulation",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2512.22414": {
+   "title": "Emergence of Human to Robot Transfer in Vision-Language-Action Models",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2503.22634": {
+   "title": "Empirical Analysis of Sim-and-Real Cotraining of Diffusion Policies for Planar Pushing from Pixels",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2009.12293": {
+   "title": "robosuite: A Modular Simulation Framework and Benchmark for Robot Learning",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2509.18631": {
+   "title": "Generalizable Domain Adaptation for Sim-and-Real Policy Co-Training",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2505.05787": {
+   "title": "Demystifying Diffusion Policies: Action Memorization and Simple Lookup Table Alternatives",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2408.11812": {
+   "title": "Scaling Cross-Embodied Learning: One Policy for Manipulation, Navigation, Locomotion and Aviation",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2503.24361": {
+   "title": "Sim-and-Real Co-Training: A Simple Recipe for Vision-Based Robotic Manipulation",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2508.03944": {
+   "title": "Constraint-Preserving Data Generation for Visuomotor Policy Learning",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2508.00795": {
+   "title": "Video Generators are Robot Policies",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2410.11758": {
+   "title": "Latent Action Pretraining from Videos",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2505.21864": {
+   "title": "DexUMI: Using Human Hand as the Universal Manipulation Interface for Dexterous Manipulation",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2512.16881": {
+   "title": "PolaRiS: Scalable Real-to-Sim Evaluations for Generalist Robot Policies",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2505.09601": {
+   "title": "Real2Render2Real: Scaling Robot Data Without Dynamics Simulation or Robot Hardware",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2511.15704": {
+   "title": "In-N-On: Scaling Egocentric Manipulation with in-the-wild and on-task Data",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2502.08844": {
+   "title": "MuJoCo Playground",
+   "cited_by": [
+    "2604.13645"
+   ]
+  },
+  "2506.04308": {
+   "title": "RoboRefer: Towards Spatial Referring with Reasoning in Vision-Language Models for Robotics",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2412.04447": {
+   "title": "EgoPlan-Bench2: A Benchmark for Multimodal Large Language Model Planning in Real-World Scenarios",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2402.19474": {
+   "title": "The All-Seeing Project V2: Towards General Relation Comprehension of the Open World",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2507.02029": {
+   "title": "RoboBrain 2.0 Technical Report",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2601.12993": {
+   "title": "Being-H0.5: Scaling Human-Centric Robot Learning for Cross-Embodiment Generalization",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2512.13080": {
+   "title": "Spatial-Aware VLA Pretraining through Visual-Physical Alignment from Human Videos",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "1806.10293": {
+   "title": "QT-Opt: Scalable Deep Reinforcement Learning for Vision-Based Robotic Manipulation",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2512.19562": {
+   "title": "REALM: A Real-to-Sim Validated Benchmark for Generalization in Robotic Manipulation",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2406.10721": {
+   "title": "RoboPoint: A Vision-Language Model for Spatial Affordance Prediction for Robotics",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2508.21112": {
+   "title": "EO-1: An Open Unified Embodied Foundation Model for General Robot Control",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2511.16518": {
+   "title": "MiMo-Embodied: X-Embodied Foundation Model Technical Report",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2410.02713": {
+   "title": "LLaVA-Video: Video Instruction Tuning With Synthetic Data",
+   "cited_by": [
+    "2604.18000"
+   ]
+  },
+  "2510.07313": {
+   "title": "WristWorld: Generating Wrist-Views via 4D World Models for Robotic Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2503.08663": {
+   "title": "Generating Robot Constitutions & Benchmarks for Semantic Safety",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2601.10835": {
+   "title": "Can Vision-Language Models Understand Construction Workers? An Exploratory Study",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2506.14697": {
+   "title": "AGENTSAFE: Benchmarking the Safety of Embodied Agents on Hazardous Instructions",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2603.05754": {
+   "title": "Safe-Night VLA: Seeing the Unseen via Thermal-Perceptive Vision-Language-Action Models for Safety-Critical Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2511.05889": {
+   "title": "From Words to Safety: Language-Conditioned Safety Filtering for Robot Navigation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2306.15724": {
+   "title": "REFLECT: Summarizing Robot Experiences for Failure Explanation and Correction",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2601.11475": {
+   "title": "Generative Scenario Rollouts for End-to-End Autonomous Driving",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2604.05378": {
+   "title": "ICR-Drive: Instruction Counterfactual Robustness for End-to-End Language-Driven Autonomous Driving",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2511.17781": {
+   "title": "ROVER: Regulator-Driven Robust Temporal Verification of Black-Box Robot Policies",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2410.21276": {
+   "title": "GPT-4o System Card",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2505.10219": {
+   "title": "Towards Safe Robot Foundation Models Using Inductive Biases",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2401.02117": {
+   "title": "Mobile ALOHA: Learning Bimanual Mobile Manipulation with Low-Cost Whole-Body Teleoperation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2601.15541": {
+   "title": "CompliantVLA-adaptor: VLM-Guided Variable Impedance Action for Safe Contact-Rich Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2511.20216": {
+   "title": "CostNav: A Navigation Benchmark for Real-World Economic-Cost Evaluation of Physical AI Agents",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2509.19870": {
+   "title": "FreezeVLA: Action-Freezing Attacks against Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2403.05530": {
+   "title": "Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2604.19844": {
+   "title": "If you're waiting for a sign... that might not be it! Mitigating Trust Boundary Confusion from Visual Injections on Vision-Language Agentic Systems",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2412.13178": {
+   "title": "SafeAgentBench: A Benchmark for Safe Task Planning of Embodied LLM Agents",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2402.02025": {
+   "title": "A Survey of Constraint Formulations in Safe Reinforcement Learning",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2603.06001": {
+   "title": "Restoring Linguistic Grounding in VLA Models via Train-Free Attention Recalibration",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2503.00211": {
+   "title": "SafeAuto: Knowledge-Enhanced Safe Autonomous Driving with Multimodal Foundation Models",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2405.10948": {
+   "title": "Surgical-LVLM: Learning to Adapt Large Vision-Language Model for Grounded Visual Question Answering in Robotic Surgery",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2506.20966": {
+   "title": "Parallels Between VLA Model Post-Training and Human Motor Learning: Progress, Challenges, and Trends",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2601.13809": {
+   "title": "DroneVLA: VLA based Aerial Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2509.25885": {
+   "title": "SafeMind: Benchmarking and Mitigating Safety Risks in Embodied LLM Agents",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2507.17049": {
+   "title": "Evaluating Uncertainty and Quality of Vision-Language-Action-enabled Robots",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2512.07472": {
+   "title": "Affordance Field Intervention: Enabling VLAs to Escape Memory Traps in Robotic Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2511.12149": {
+   "title": "AttackVLA: Benchmarking Adversarial and Backdoor Attacks on Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2402.12289": {
+   "title": "DriveVLM: The Convergence of Autonomous Driving and Large Vision-Language Models",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2507.17383": {
+   "title": "Confidence Calibration in Vision-Language-Action Models",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2604.01723": {
+   "title": "Causal Scene Narration with Runtime Safety Supervision for Vision-Language-Action Driving",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2603.11106": {
+   "title": "RC-NF: Robot-Conditioned Normalizing Flow for Real-Time Anomaly Detection in Robotic Manipulation",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2604.21192": {
+   "title": "How VLAs (Really) Work In Open-World Environments",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2511.16347": {
+   "title": "The Shawshank Redemption of Embodied AI: Understanding and Benchmarking Indirect Environmental Jailbreaks",
+   "cited_by": [
+    "2604.23775"
+   ]
+  },
+  "2510.08044": {
+   "title": "Towards Reliable LLM-based Robot Planning via Combined Uncertainty Estimation",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2511.18617": {
+   "title": "AutoFocus-IL: VLM-based Saliency Maps for Data-Efficient Visual Imitation Learning without Extra Human Annotations",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2511.19914": {
+   "title": "CoC-VLA: Delving into Adversarial Domain Transfer for Explainable Autonomous Driving via Chain-of-Causality Visual-Language-Action Model",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2505.13888": {
+   "title": "InSpire: Vision-Language-Action Models with Intrinsic Spatial Reasoning",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2512.11921": {
+   "title": "Towards Accessible Physical AI: LoRA-Based Fine-Tuning of VLA Models for Real-World Robot Control",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2505.21906": {
+   "title": "ChatVLA-2: Vision-Language-Action Model with Open-World Embodied Reasoning from Pretrained Knowledge",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2509.24524": {
+   "title": "PhysiAgent: An Embodied Agent Framework in Physical World",
+   "cited_by": [
+    "2605.00321"
+   ]
+  },
+  "2603.10052": {
+   "title": "OmniGuide: Universal Guidance Fields for Enhancing Generalist Robot Policies",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2512.02834": {
+   "title": "Steering Vision-Language-Action Models as Anti-Exploration: A Test-Time Scaling Approach",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2605.04980": {
+   "title": "Conceptors for Semantic Steering",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2509.20623": {
+   "title": "Latent Activation Editing: Inference-Time Refinement of Learned Policies for Safer Multirobot Navigation",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2507.15073": {
+   "title": "Reinforcement Learning for Flow-Matching Policies",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2602.06022": {
+   "title": "Correctness-Optimized Residual Activation Lens (CORAL): Transferrable and Calibration-Aware Inference-Time Steering",
+   "cited_by": [
+    "2605.17144"
+   ]
+  },
+  "2505.03500": {
+   "title": "VLAs are Confined yet Capable of Generalizing to Novel Instructions",
+   "cited_by": [
+    "2605.17204"
+   ]
+  },
+  "2409.18125": {
+   "title": "LLaVA-3D: A Simple yet Effective Pathway to Empowering LMMs with 3D-awareness",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2509.13414": {
+   "title": "MapAnything: Universal Feed-Forward Metric 3D Reconstruction",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2511.20343": {
+   "title": "AMB3R: Accurate Feed-forward Metric-scale 3D Reconstruction with Backend",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2509.20297": {
+   "title": "mindmap: Spatial Memory in Deep Feature Maps for 3D Action Policies",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2506.21348": {
+   "title": "PanSt3R: Multi-view Consistent Panoptic Segmentation",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2511.19971": {
+   "title": "VGGT4D: Mining Motion Cues in Visual Geometry Transformers for 4D Scene Reconstruction",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2511.10560": {
+   "title": "OmniVGGT: Omni-Modality Driven Visual Geometry Grounded Transformer",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2509.14117": {
+   "title": "GeoAware-VLA: Implicit Geometry Aware Vision-Language-Action Model",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2411.18623": {
+   "title": "Lift3D Foundation Policy: Lifting 2D Large-Scale Pretrained Models for Robust 3D Robotic Manipulation",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2510.15530": {
+   "title": "VO-DP: Semantic-Geometric Adaptive Diffusion Policy for Vision-Only Robotic Manipulation",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2503.11651": {
+   "title": "VGGT: Visual Geometry Grounded Transformer",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2406.09414": {
+   "title": "Depth Anything V2",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2510.17439": {
+   "title": "From Spatial to Actions: Grounding Vision-Language-Action Model in Spatial Foundation Priors",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2507.00416": {
+   "title": "Evo-0: Vision-Language-Action Model with Implicit Spatial Understanding",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2412.14803": {
+   "title": "Video Prediction Policy: A Generalist Robot Policy with Predictive Visual Representations",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2507.16290": {
+   "title": "Dens3R: A Foundation Model for 3D Geometry Prediction",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2509.18778": {
+   "title": "VGGT-DP: Generalizable Robot Control via Vision Foundation Models",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2410.15549": {
+   "title": "A Dual Process VLA: Efficient Robotic Manipulation Leveraging VLM",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2503.07511": {
+   "title": "PointVLA: Injecting the 3D World into Vision-Language-Action Models",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2406.08545": {
+   "title": "RVT-2: Learning Precise Manipulation from Few Demonstrations",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "2508.16433": {
+   "title": "HAMSt3R: Human-Aware Multi-view Stereo 3D Reconstruction",
+   "cited_by": [
+    "2605.24642"
+   ]
+  },
+  "1812.00568": {
+   "title": "Visual Foresight: Model-Based Deep Reinforcement Learning for Vision-Based Robotic Control",
+   "cited_by": [
+    "2605.28527"
+   ]
+  },
+  "2204.06252": {
+   "title": "What Matters in Language Conditioned Robotic Imitation Learning over Unstructured Data",
+   "cited_by": [
+    "2605.28527"
+   ]
+  },
+  "1711.10203": {
+   "title": "Visualisation and 'diagnostic classifiers' reveal how recurrent and recursive neural networks process hierarchical structure",
+   "cited_by": [
+    "2605.28527"
+   ]
+  },
+  "2509.11417": {
+   "title": "Enhancing Generalization in Vision-Language-Action Models by Preserving Pretrained Representations",
+   "cited_by": [
+    "2605.30117"
+   ]
+  },
+  "2012.14768": {
+   "title": "Understanding and Improving Encoder Layer Fusion in Sequence-to-Sequence Learning",
+   "cited_by": [
+    "2605.30117"
+   ]
+  },
+  "2606.20545": {
+   "title": "Current World Models Lack a Persistent State Core",
+   "cited_by": [
+    "2605.30117"
+   ]
+  },
+  "2602.01640": {
+   "title": "A2Eval: Agentic and Automated Evaluation for Embodied Brain",
+   "cited_by": [
+    "2605.30117"
+   ]
+  },
+  "2605.17070": {
+   "title": "EPIC-Bench: A Perception-Centric Benchmark for Fine-Grained Embodied Visual Grounding in Vision-Language Models",
+   "cited_by": [
+    "2605.30117"
+   ]
+  },
+  "2603.09292": {
+   "title": "See, Plan, Rewind: Progress-Aware Vision-Language-Action Models for Robust Robotic Manipulation",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2602.22474": {
+   "title": "When to Act, Ask, or Learn: Uncertainty-Aware Policy Steering",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2601.03267": {
+   "title": "OpenAI GPT-5 System Card",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2512.21430": {
+   "title": "EVE: A Generator-Verifier System for Generative Policies",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2411.11919": {
+   "title": "VL-Uncertainty: Detecting Hallucination in Large Vision-Language Model via Uncertainty Estimation",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2509.15061": {
+   "title": "Ask-to-Clarify: Resolving Instruction Ambiguity through Multi-turn Dialogue",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2504.00907": {
+   "title": "Grounding Multimodal LLMs to Embodied Agents that Ask for Help with Reinforcement Learning",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2302.04549": {
+   "title": "Weakly Supervised Anomaly Detection: A Survey",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "1412.3555": {
+   "title": "Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2602.18532": {
+   "title": "VLANeXt Family: A Systematic Study of VLA Models from Core Recipes to Emerging Paradigms",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2512.11362": {
+   "title": "An Anatomy of Vision-Language-Action Models: From Modules to Milestones and Challenges",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2402.00253": {
+   "title": "A Survey on Hallucination in Large Vision-Language Models",
+   "cited_by": [
+    "2605.30834"
+   ]
+  },
+  "2510.01068": {
+   "title": "Compose Your Policies! Improving Diffusion-based or Flow-based Robot Policies via Test-time Distribution-level Composition",
+   "cited_by": [
+    "2606.00269"
+   ]
+  },
+  "2412.13630": {
+   "title": "Policy Decorator: Model-Agnostic Online Refinement for Large Policy Model",
+   "cited_by": [
+    "2606.00269"
+   ]
+  },
+  "2603.19312": {
+   "title": "LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels",
+   "cited_by": [
+    "2606.01095"
+   ]
+  },
+  "2602.17259": {
+   "title": "FRAPPE: Infusing World Modeling into Generalist Policies via Multiple Future Representation Alignment",
+   "cited_by": [
+    "2606.01095"
+   ]
+  },
+  "2602.10717": {
+   "title": "Say, Dream, and Act: Learning Video World Models for Instruction-Driven Robot Manipulation",
+   "cited_by": [
+    "2606.01095"
+   ]
+  },
+  "2511.00062": {
+   "title": "World Simulation with Video Foundation Models for Physical AI",
+   "cited_by": [
+    "2606.01095"
+   ]
+  },
+  "2603.14482": {
+   "title": "V-JEPA 2.1: Unlocking Dense Features in Video Self-Supervised Learning",
+   "cited_by": [
+    "2606.01095"
+   ]
+  },
+  "2512.02787": {
+   "title": "Diagnose, Correct, and Learn from Manipulation Failures via Visual Symbols",
+   "cited_by": [
+    "2606.09740"
+   ]
+  },
+  "2509.23224": {
+   "title": "Leave No Observation Behind: Real-time Correction for VLA Action Chunks",
+   "cited_by": [
+    "2606.09740"
+   ]
+  },
+  "2305.18565": {
+   "title": "PaLI-X: On Scaling up a Multilingual Vision and Language Model",
+   "cited_by": [
+    "2606.09749"
+   ]
+  },
+  "2602.03973": {
+   "title": "VLS: Steering Pretrained Robot Policies via Vision-Language Models",
+   "cited_by": [
+    "2606.11489"
+   ]
+  },
+  "2403.09227": {
+   "title": "BEHAVIOR-1K: A Human-Centered, Embodied AI Benchmark with 1,000 Everyday Activities and Realistic Simulation",
+   "cited_by": [
+    "2606.19297"
+   ]
+  },
+  "2502.17894": {
+   "title": "FetchBot: Learning Generalizable Object Fetching in Cluttered Scenes via Zero-Shot Sim2Real",
+   "cited_by": [
+    "2606.19297"
+   ]
+  },
+  "1603.07396": {
+   "title": "A Diagram Is Worth A Dozen Images",
+   "cited_by": [
+    "2606.19297"
+   ]
+  },
+  "2412.13211": {
+   "title": "ManiSkill-HAB: A Benchmark for Low-Level Manipulation in Home Rearrangement Tasks",
+   "cited_by": [
+    "2606.19297"
+   ]
+  },
+  "2511.10276": {
+   "title": "RoboBenchMart: Benchmarking Robots in Retail Environment",
+   "cited_by": [
+    "2606.19297"
+   ]
+  },
+  "2508.01442": {
+   "title": "Physically-based Lighting Generation for Robotic Manipulation",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "2505.12214": {
+   "title": "Behavior Synthesis via Contact-Aware Fisher Information Maximization",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "2502.02853": {
+   "title": "Rethinking Latent Redundancy in Behavior Cloning: An Information Bottleneck Approach for Robot Manipulation",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "1802.06070": {
+   "title": "Diversity is All You Need: Learning Skills without a Reward Function",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "1901.10902": {
+   "title": "InfoBot: Transfer and Exploration via the Information Bottleneck",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "1810.01176": {
+   "title": "EMI: Exploration with Mutual Information",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "2502.13175": {
+   "title": "Towards Robust and Secure Embodied AI: A Survey on Vulnerabilities and Attacks",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "1907.01657": {
+   "title": "Dynamics-Aware Unsupervised Discovery of Skills",
+   "cited_by": [
+    "2606.19998"
+   ]
+  },
+  "2602.01515": {
+   "title": "RAPT: Model-Predictive Out-of-Distribution Detection and Failure Diagnosis for Sim-to-Real Humanoid Deployment",
+   "cited_by": [
+    "2606.21386"
+   ]
+  },
+  "2512.23703": {
+   "title": "Robo-Dopamine: General Process Reward Modeling for High-Precision Robotic Manipulation",
+   "cited_by": [
+    "2606.21386"
+   ]
+  },
+  "2602.03782": {
+   "title": "QVLA: Not All Channels Are Equal in Vision-Language-Action Model's Quantization",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2603.24652": {
+   "title": "Demystifying When Pruning Works via Representation Hierarchies",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2306.11695": {
+   "title": "A Simple and Effective Pruning Approach for Large Language Models",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2402.09025": {
+   "title": "SLEB: Streamlining LLMs through Redundancy Verification and Elimination of Transformer Blocks",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2604.23001": {
+   "title": "Vision-Language-Action in Robotics: A Survey of Datasets, Benchmarks, and Data Engines",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2406.15786": {
+   "title": "What Matters in Transformers? Not All Attention is Needed",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2506.17639": {
+   "title": "RLRC: Reinforcement Learning-based Recovery for Compressed Vision-Language-Action Models",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2602.17951": {
+   "title": "ROCKET: Residual-Oriented Multi-Layer Alignment for Spatially-Aware Vision-Language-Action Models",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2601.19503": {
+   "title": "GradPruner: Gradient-Guided Layer Pruning Enabling Efficient Fine-Tuning and Inference for LLMs",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2506.07530": {
+   "title": "BitVLA: 1-bit Vision-Language-Action Models for Robotics Manipulation",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2510.08464": {
+   "title": "Don't Run with Scissors: Pruning Breaks VLA Models but They Can Be Recovered",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2601.20262": {
+   "title": "Shallow-π: Knowledge Distillation for Flow-based VLAs",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2509.05614": {
+   "title": "SpecPrune-VLA: Accelerating Vision-Language-Action Models via Action-Aware Self-Speculative Pruning",
+   "cited_by": [
+    "2606.27755"
+   ]
+  },
+  "2204.00598": {
+   "title": "Socratic Models: Composing Zero-Shot Multimodal Reasoning with Language",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2406.20095": {
+   "title": "LLaRA: Supercharging Robot Learning Data for Vision-Language Policy",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "1910.11215": {
+   "title": "RoboNet: Large-Scale Multi-Robot Learning",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2506.07639": {
+   "title": "Fast ECoT: Efficient Embodied Chain-of-Thought via Thoughts Reuse",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2604.23121": {
+   "title": "Breaking Lock-In: Preserving Steerability under Low-Data VLA Post-Training",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2505.21432": {
+   "title": "Hume: Introducing System-2 Thinking in Visual-Language-Action Model",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2412.03293": {
+   "title": "Diffusion-VLA: Generalizable and Interpretable Robot Foundation Model via Self-Generated Reasoning",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2506.03574": {
+   "title": "SwitchVLA: Execution-Aware Task Switching for Vision-Language-Action Models",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2509.18953": {
+   "title": "Eva-VLA: Evaluating Vision-Language-Action Models' Robustness Under Real-World Physical Variations",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2102.02503": {
+   "title": "Understanding the Capabilities, Limitations, and Societal Impact of Large Language Models",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2312.08782": {
+   "title": "Toward General-Purpose Robots via Foundation Models: A Survey and Meta-Analysis",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "1712.00409": {
+   "title": "Deep Learning Scaling is Predictable, Empirically",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2512.08333": {
+   "title": "Robust Finetuning of Vision-Language-Action Robot Policies via Parameter Merging",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2408.05873": {
+   "title": "Recognizing Limits: Investigating Infeasibility in Large Language Models",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2505.03233": {
+   "title": "GraspVLA: a Grasping Foundation Model Pre-trained on Billion-scale Synthetic Action Data",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2304.13826": {
+   "title": "Programmatically Grounded, Compositionally Generalizable Robotic Manipulation",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2602.21445": {
+   "title": "VLA Knows Its Limits: Adaptive Execution Horizons for Robot Policies",
+   "cited_by": [
+    "2606.30686"
+   ]
+  },
+  "2412.10345": {
+   "title": "TraceVLA: Visual Trace Prompting Enhances Spatial-Temporal Awareness for Generalist Robotic Policies",
+   "cited_by": [
+    "2607.03372"
+   ]
+  },
+  "2508.19236": {
+   "title": "MemoryVLA: Perceptual-Cognitive Memory in Vision-Language-Action Models for Robotic Manipulation",
+   "cited_by": [
+    "2607.03372"
+   ]
+  },
+  "2505.09561": {
+   "title": "Learning Long-Context Diffusion Policies via Past-Token Prediction",
+   "cited_by": [
+    "2607.03372"
+   ]
+  },
+  "2510.04246": {
+   "title": "ContextVLA: Vision-Language-Action Model with Amortized Multi-Frame Context",
+   "cited_by": [
+    "2607.03372"
+   ]
+  },
+  "2512.08580": {
+   "title": "Mind to Hand: Purposeful Robotic Control via Embodied Reasoning",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2602.08440": {
+   "title": "SteerVLA: Steering Vision-Language-Action Models in Long-Tail Driving Scenarios",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2503.08679": {
+   "title": "Chain-of-Thought Reasoning In The Wild Is Not Always Faithful",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2506.13757": {
+   "title": "AutoVLA: A Vision-Language-Action Model for End-to-End Autonomous Driving with Adaptive Reasoning and Reinforcement Fine-Tuning",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2510.26125": {
+   "title": "WOD-E2E: Waymo Open Dataset for End-to-End Driving in Challenging Long-tail Scenarios",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2601.11659": {
+   "title": "The Llama 4 Herd: Architecture, Training, Evaluation, and Deployment Notes",
+   "cited_by": [
+    "2607.04681"
+   ]
+  },
+  "2502.00290": {
+   "title": "Estimating LLM Uncertainty with Evidence",
+   "cited_by": [
+    "2607.12571"
+   ]
+  },
+  "2602.00500": {
+   "title": "Inject Once Survive Later: Backdooring Vision-Language-Action Models to Persist Through Downstream Fine-tuning",
+   "cited_by": [
+    "2607.12571"
+   ]
+  },
+  "2312.00343": {
+   "title": "OpenStereo: A Comprehensive Benchmark for Stereo Matching and Strong Baseline",
+   "cited_by": [
+    "2607.12571"
+   ]
+  },
+  "2411.14053": {
+   "title": "Stereo Anything: Unifying Zero-shot Stereo Matching with Large-Scale Mixed Data",
+   "cited_by": [
+    "2607.12571"
+   ]
+  },
+  "2510.08638": {
+   "title": "Into the Rabbit Hull: From Task-Relevant Concepts in DINO to Minkowski Geometry",
+   "cited_by": [
+    "2607.14280"
+   ]
+  },
+  "1312.6114": {
+   "title": "Auto-Encoding Variational Bayes",
+   "cited_by": [
+    "2607.14280"
+   ]
+  },
+  "2510.02324": {
+   "title": "Hallucination reduction with CASAL: Contrastive Activation Steering For Amortized Learning",
+   "cited_by": [
+    "2607.14280"
+   ]
+  },
+  "2506.07461": {
+   "title": "From Calibration to Collaboration: LLM Uncertainty Quantification Should Be More Human-Centered",
+   "cited_by": [
+    "2608.04246"
+   ]
+  },
+  "2407.03967": {
+   "title": "Investigating the Role of Instruction Variety and Task Difficulty in Robotic Manipulation Tasks",
+   "cited_by": [
+    "2608.04246"
+   ]
+  },
+  "1312.6034": {
+   "title": "Deep Inside Convolutional Networks: Visualising Image Classification Models and Saliency Maps",
+   "cited_by": [
+    "2608.04510"
+   ]
+  },
+  "1803.04765": {
+   "title": "Deep k-Nearest Neighbors: Towards Confident, Interpretable and Robust Deep Learning",
+   "cited_by": [
+    "2608.04510"
+   ]
+  },
+  "2202.05894": {
+   "title": "Failure Prediction with Statistical Guarantees for Vision-Based Robot Control",
+   "cited_by": [
+    "2608.04510"
+   ]
+  },
+  "2410.08827": {
+   "title": "Do Unlearning Methods Remove Information from Language Model Weights?",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2310.02238": {
+   "title": "Who's Harry Potter? Approximate Unlearning in LLMs",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2407.06460": {
+   "title": "MUSE: Machine Unlearning Six-Way Evaluation for Language Models",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2604.17422": {
+   "title": "Where to Focus: Query-Modulated Multimodal Keyframe Selection for Long Video Understanding",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2605.22283": {
+   "title": "Spatial Memory for Out-of-Vision Manipulation in Vision-Language-Action",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2601.14628": {
+   "title": "NeuroVLA: A Brain-inspired Embodied Intelligence for Fluid and Fast Reflexive Robotics Control",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2605.18610": {
+   "title": "CATA: Continual Machine Unlearning via Conflict-Averse Task Arithmetic",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2409.18025": {
+   "title": "An Adversarial Perspective on Machine Unlearning for AI Safety",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2606.03598": {
+   "title": "PHASER: Phase-Aware and Semantic Experience Replay for Vision-Language-Action Models",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2606.23617": {
+   "title": "RECALL: Recovery Experience Collection for Active Lifelong Learning in Vision-Language-Action Models",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2402.16835": {
+   "title": "Eight Methods to Evaluate Robust Unlearning in LLMs",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2601.21794": {
+   "title": "Knowledge Vector Weakening: Efficient Training-free Unlearning for Large Vision-Language Models",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2511.18810": {
+   "title": "MergeVLA: Cross-Skill Model Merging Toward a Generalist Vision-Language-Action Agent",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2603.03818": {
+   "title": "Pretrained Vision-Language-Action Models are Surprisingly Resistant to Forgetting in Continual Learning",
+   "cited_by": [
+    "2608.04692"
+   ]
+  },
+  "2103.13413": {
+   "title": "Vision Transformers for Dense Prediction",
+   "cited_by": [
+    "2608.08904"
+   ]
+  },
+  "2404.08636": {
+   "title": "Probing the 3D Awareness of Visual Foundation Models",
+   "cited_by": [
+    "2608.08904"
+   ]
+  },
+  "2603.17228": {
+   "title": "From Drop-off to Recovery: A Mechanistic Analysis of Segmentation in MLLMs",
+   "cited_by": [
+    "2608.08904"
+   ]
+  },
+  "2203.14680": {
+   "title": "Transformer Feed-Forward Layers Build Predictions by Promoting Concepts in the Vocabulary Space",
+   "cited_by": [
+    "2608.08904"
+   ]
+  },
+  "1909.03368": {
+   "title": "Designing and Interpreting Probes with Control Tasks",
+   "cited_by": [
+    "2608.13474"
+   ]
+  },
+  "2401.05566": {
+   "title": "Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training",
+   "cited_by": [
+    "2608.13474"
+   ]
+  },
+  "2602.04208": {
+   "title": "SCALE: Self-uncertainty Conditioned Adaptive Looking and Execution for Vision-Language-Action Models",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2606.29834": {
+   "title": "STEAM: Self-Supervised Temporal Ensemble Advantage Modeling for Real-World Robot Learning",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2608.02547": {
+   "title": "Why Does Action Chunking Improve Behavioral Cloning Performance in Robotic Control?",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2602.10326": {
+   "title": "Flow Matching with Uncertainty Quantification and Guidance",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2505.07395": {
+   "title": "ReinboT: Amplifying Robot Visual-Language Manipulation with Reinforcement Learning",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2511.05397": {
+   "title": "EveryDayVLA: A Vision-Language-Action Model for Affordable Robotic Manipulation",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2502.20946": {
+   "title": "Generative Uncertainty in Diffusion Models",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2604.27472": {
+   "title": "PRTS: A Primitive Reasoning and Tasking System via Contrastive Representations",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2603.18342": {
+   "title": "Shifting Uncertainty to Critical Moments: Towards Reliable Uncertainty Quantification for VLA Model",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2606.26801": {
+   "title": "Improving Vision-Language-Action Model Fine-Tuning with Structured Stage and Keyframe Supervision",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2606.20092": {
+   "title": "EventVLA: Event-Driven Visual Evidence Memory for Long-Horizon Vision-Language-Action Policies",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2606.02800": {
+   "title": "Cosmos 3: Omnimodal World Models for Physical AI",
+   "cited_by": [
+    "2608.25757"
+   ]
+  },
+  "2606.23686": {
+   "title": "LIBERO-Safety: A Comprehensive Benchmark for Physical and Semantic Safety in Vision-Language-Action Models",
+   "cited_by": [
+    "2609.04277"
+   ]
+  },
+  "2605.30834": {
+   "title": "Hide-and-Seek in Trajectories: Discovering Failure Signals for VLA Runtime Monitoring",
+   "cited_by": [
+    "2609.04277"
+   ]
+  },
+  "2303.07280": {
+   "title": "Vision-Language Models as Success Detectors",
+   "cited_by": [
+    "2609.04277"
+   ]
+  },
+  "2509.16072": {
+   "title": "I-FailSense: Towards General Robotic Failure Detection with Vision-Language Models",
+   "cited_by": [
+    "2609.04277"
+   ]
+  },
+  "2606.23085": {
+   "title": "Foresight: Failure Detection for Long-Horizon Robotic Manipulation with Action-Conditioned World Model Latents",
+   "cited_by": [
+    "2609.04277"
+   ]
+  },
+  "2405.17418": {
+   "title": "A Self-Correcting Vision-Language-Action Model for Fast and Slow System Manipulation",
+   "cited_by": [
+    "2609.15005"
+   ]
+  },
+  "2606.29699": {
+   "title": "Early Warning Signals for OpenVLA Failure under Visual Distribution Shift",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "2608.04246": {
+   "title": "SAFECAST: Robust Failure Detection for VLA Policies with Contrast-Set Training and Calibration",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "2110.11334": {
+   "title": "Generalized Out-of-Distribution Detection: A Survey",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "1807.03888": {
+   "title": "A Simple Unified Framework for Detecting Out-of-Distribution Samples and Adversarial Attacks",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "2106.13703": {
+   "title": "Task-Driven Detection of Distribution Shifts with Statistical Guarantees for Robot Learning",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "2512.02902": {
+   "title": "VLA Models Are More Generalizable Than You Think: Revisiting Physical and Spatial Modeling",
+   "cited_by": [
+    "2609.21246"
+   ]
+  },
+  "2506.13725": {
+   "title": "CEED-VLA: Consistency Vision-Language-Action Model with Early-Exit Decoding",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2510.03895": {
+   "title": "NoTVLA: Semantics-Preserving Robot Adaptation via Narrative Action Interfaces",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2606.31329": {
+   "title": "3D HAMSTER: Bridging Planning and Control in Hierarchical Vision Language Action Models through 3D Trajectory Guidance",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2606.07107": {
+   "title": "Coarse-to-Control: Action-Token Planning for Vision-Language-Action Models",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2510.03896": {
+   "title": "GAE: Unleashing Physical Potential of VLM with Generalizable Action Expert",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2311.13443": {
+   "title": "Guided Flows for Generative Modeling and Decision Making",
+   "cited_by": [
+    "2609.30833"
+   ]
+  },
+  "2303.18240": {
+   "title": "Where are we in the search for an Artificial Visual Cortex for Embodied Intelligence?",
+   "cited_by": [
+    "2609.34684"
+   ]
+  },
+  "2605.00321": {
+   "title": "Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models",
+   "cited_by": [
+    "2609.34684"
+   ]
+  },
+  "2606.09740": {
+   "title": "ProbeAct: Probe-Guided Training-Free Failure Recovery in Vision-Language-Action Models",
+   "cited_by": [
+    "2609.34684"
+   ]
+  },
+  "2503.21776": {
+   "title": "Video-R1: Reinforcing Video Reasoning in MLLMs",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2601.21358": {
+   "title": "Latent Chain-of-Thought as Planning: Decoupling Reasoning from Verbalization",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2512.21711": {
+   "title": "Do Latent Tokens Think? A Causal and Adversarial Analysis of Chain-of-Continuous-Thought",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2507.16815": {
+   "title": "ThinkAct: Vision-Language-Action Reasoning via Reinforced Visual Latent Planning",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2412.13171": {
+   "title": "Compressed Chain of Thought: Efficient Reasoning Through Dense Representations",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2602.01166": {
+   "title": "Latent Reasoning VLA: Latent Thinking and Prediction for Vision-Language-Action Models",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2402.02385": {
+   "title": "A Survey on Robotics with Foundation Models: toward Embodied AI",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2502.03275": {
+   "title": "Token Assorted: Mixing Latent and Text Tokens for Improved Language Model Reasoning",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2502.06258": {
+   "title": "Emergent Response Planning in LLMs",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2509.02350": {
+   "title": "Implicit Reasoning in Large Language Models: A Comprehensive Survey",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2512.12623": {
+   "title": "Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2510.13054": {
+   "title": "VLA-0: Building State-of-the-Art VLAs with Zero Modification",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2511.19418": {
+   "title": "Chain-of-Visual-Thought: Teaching VLMs to See and Think Better with Continuous Visual Tokens",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2505.12629": {
+   "title": "Enhancing Latent Computation in Transformers with Latent Tokens",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2507.06203": {
+   "title": "A Survey on Latent Reasoning",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2601.09708": {
+   "title": "Fast-ThinkAct: Efficient Vision-Language-Action Reasoning via Verbalizable Latent Planning",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2508.13073": {
+   "title": "Large VLM-based Vision-Language-Action Models for Robotic Manipulation: A Survey",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2509.06932": {
+   "title": "LLaDA-VLA: Vision Language Diffusion Action Models",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "2508.15201": {
+   "title": "Survey of Vision-Language-Action Models for Embodied Manipulation",
+   "cited_by": [
+    "2609.34794"
+   ]
+  },
+  "1910.07113": {
+   "title": "Solving Rubik's Cube with a Robot Hand",
+   "cited_by": [
+    "2609.38401"
+   ]
+  },
+  "2507.06219": {
+   "title": "Is Diversity All You Need for Scalable Robotic Manipulation?",
+   "cited_by": [
+    "2609.38401"
+   ]
+  },
+  "2508.06426": {
+   "title": "Shortcut Learning in Generalist Robot Policies: The Role of Dataset Diversity and Fragmentation",
+   "cited_by": [
+    "2609.38401"
+   ]
+  },
+  "2604.09824": {
+   "title": "ProGAL-VLA: Grounded Alignment through Prospective Reasoning in Vision-Language-Action Models",
+   "cited_by": [
+    "2609.39971"
+   ]
+  },
+  "2510.25889": {
+   "title": "$π_\\texttt{RL}$: Online RL Fine-tuning for Flow-based Vision-Language-Action Models",
+   "cited_by": [
+    "2609.39971"
+   ]
+  },
+  "1611.02163": {
+   "title": "Unrolled Generative Adversarial Networks",
+   "cited_by": [
+    "2609.39971"
+   ]
+  },
+  "2512.11218": {
+   "title": "Seeing to Act, Prompting to Specify: A Bayesian Factorization of Vision Language Action Policy",
+   "cited_by": [
+    "2609.39971"
+   ]
+  },
+  "2503.03734": {
+   "title": "OTTER: A Vision-Language-Action Model with Text-Aware Visual Feature Extraction",
+   "cited_by": [
+    "2609.39971"
+   ]
+  },
+  "2607.15330": {
+   "title": "Xiaomi-Robotics-1: Scaling Vision-Language-Action Models with over 100K Hours of Real-World Trajectories",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2509.00576": {
+   "title": "Galaxea Open-World Dataset and G0 Dual-System VLA Model",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2510.17950": {
+   "title": "RoboChallenge: Large-scale Real-robot Evaluation of Embodied Policies",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2603.22078": {
+   "title": "Do World Action Models Generalize Better than VLAs? A Robustness Study",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2604.20100": {
+   "title": "JoyAI-RA 0.1: A Foundation Model for Robotic Autonomy",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2608.15875": {
+   "title": "GigaBrain-0.7: Scaling Embodied Foundation Models to Emergent Capabilities with a Three-System Architecture",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2604.05014": {
+   "title": "StarVLA: A Lego-like Codebase for Vision-Language-Action Model Developing",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.17385": {
+   "title": "EgoInfinity: A Web-Scale 4D Hand-Object Interaction Data Engine for Any-View Robot Retargeting and Video-to-Action Robot Learning",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.17846": {
+   "title": "Qwen-RobotManip Technical Report: Alignment Unlocks Scale for Robotic Manipulation Foundation Models",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2604.26694": {
+   "title": "Unified 4D World Action Modeling from Video Priors with Asynchronous Denoising",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2608.08023": {
+   "title": "4D-WAM: Infusing Spatiotemporal Awareness into World Action Models through Trajectory Fields",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2601.11421": {
+   "title": "The Great March 100: 100 Detail-oriented Tasks for Evaluating Embodied AI Agents",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.19531": {
+   "title": "ImageWAM: Do World Action Models Really Need Video Generation, or Just Image Editing?",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2605.03452": {
+   "title": "BifrostUMI: Bridging Robot-Free Demonstrations and Humanoid Whole-Body Manipulation",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2601.02456": {
+   "title": "InternVLA-A1: Unifying Understanding, Generation and Action for Robotic Manipulation",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2607.06403": {
+   "title": "From Foundation to Application: Improving VLA Models in Practice",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.17200": {
+   "title": "ACE-Ego-0: Unifying Egocentric Human and Robotic Data for VLA Pretraining",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.15768": {
+   "title": "LaWAM: Latent World Action Models for Efficient Dynamics-Aware Robot Policies",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2604.20246": {
+   "title": "Cortex 2.0: Grounding World Models in Real-World Industrial Deployment",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2605.30280": {
+   "title": "Qwen-VLA: Unifying Vision-Language-Action Modeling across Tasks, Environments, and Robot Embodiments",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2512.24653": {
+   "title": "RoboMIND 2.0: A Multimodal, Bimanual Mobile Manipulation Dataset for Generalizable Embodied Intelligence",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2602.11236": {
+   "title": "ABot-M0: VLA Foundation Model for Robotic Manipulation with Action Manifold Learning",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2602.10983": {
+   "title": "Scaling World Model for Hierarchical Manipulation Policies",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2503.20314": {
+   "title": "Wan: Open and Advanced Large-Scale Video Generative Models",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.14409": {
+   "title": "Hy-Embodied-0.5-VLA: From Vision-Language-Action Models to a Real-World Robot Learning Stack",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.19333": {
+   "title": "Do as I Do: Dexterous Manipulation Data from Everyday Human Videos",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2505.14683": {
+   "title": "Emerging Properties in Unified Multimodal Pretraining",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2511.17441": {
+   "title": "RoboCOIN: An Open-Sourced Bimanual Robotic Data Collection for Integrated Manipulation",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "2606.05979": {
+   "title": "World-Language-Action Model for Unified World Modeling, Language Reasoning, and Action Synthesis",
+   "cited_by": [
+    "2609.39973"
+   ]
+  },
+  "1806.02299": {
+   "title": "DPatch: An Adversarial Patch Attack on Object Detectors",
+   "cited_by": [
+    "2610.03498"
+   ]
+  },
+  "2510.13237": {
+   "title": "Model-agnostic Adversarial Attack and Defense for Vision-Language-Action Models",
+   "cited_by": [
+    "2610.03498"
+   ]
+  },
+  "1712.09665": {
+   "title": "Adversarial Patch",
+   "cited_by": [
+    "2610.03498"
+   ]
+  },
+  "2510.10975": {
+   "title": "RoVer: Robot Reward Model as Test-Time Verifier for Vision-Language-Action Model",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2310.06824": {
+   "title": "The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2607.14943": {
+   "title": "Steering Robustness into World Action Models via Mechanistic Interpretability and Optimal Control",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2603.10980": {
+   "title": "PPGuide: Steering Diffusion Policies with Performance Predictive Guidance",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2607.02092": {
+   "title": "Guided Action Flow: Value-Guided Sampling for Frozen Vision-Language-Action Policies",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2310.15213": {
+   "title": "Function Vectors in Large Language Models",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2310.15154": {
+   "title": "Linear Representations of Sentiment in Large Language Models",
+   "cited_by": [
+    "2610.04681"
+   ]
+  },
+  "2606.09749": {
+   "title": "Your Model Already Knows: Attention-Guided Safety Filter for Vision-Language-Action Models",
+   "cited_by": [
+    "2610.05878"
+   ]
+  },
+  "2410.05191": {
+   "title": "LADEV: A Language-Driven Testing and Evaluation Platform for Vision-Language-Action Models in Robotic Manipulation",
+   "cited_by": [
+    "2610.05878"
+   ]
+  },
+  "2603.28301": {
+   "title": "LIBERO-Para: A Diagnostic Benchmark and Metrics for Paraphrase Robustness in VLA Models",
+   "cited_by": [
+    "2610.05878"
+   ]
+  },
+  "2602.03310": {
+   "title": "RDT2: Exploring the Scaling Limit of UMI Data Towards Zero-Shot Cross-Embodiment Generalization",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2503.12466": {
+   "title": "Modality-Composable Diffusion Policy via Inference-Time Distribution-level Composition",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2302.11550": {
+   "title": "Scaling Robot Learning with Semantically Imagined Experience",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2603.08383": {
+   "title": "MoMaStage: Skill-State Graph Guided Planning and Closed-Loop Execution for Long-Horizon Indoor Mobile Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2604.07774": {
+   "title": "RoboAgent: Chaining Basic Capabilities for Embodied Task Planning",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2510.27607": {
+   "title": "Dual-Stream Diffusion for World-Model Augmented Vision-Language-Action Model",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2505.12705": {
+   "title": "DreamGen: Unlocking Generalization in Robot Learning through Video World Models",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2410.13126": {
+   "title": "ALOHA Unleashed: A Simple Recipe for Robot Dexterity",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2607.21725": {
+   "title": "Addressing the Orchestration Gap in Generalist Robots via Physical Agency",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2608.22990": {
+   "title": "InstructMove: A Text-Indispensable Benchmark for Instruction-Following Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2607.05369": {
+   "title": "GaP: A Graph-as-Policy Multi-Agent Self-Learning Harness For Variational Automation Tasks",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2609.19138": {
+   "title": "In-Context Robot Learning with VLM Agents",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2410.06158": {
+   "title": "GR-2: A Generative Video-Language-Action Model with Web-Scale Knowledge for Robot Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2409.16283": {
+   "title": "Gen2Act: Human Video Generation in Novel Scenarios enables Generalizable Robot Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2605.12491": {
+   "title": "Do Vision Transformers Need All-to-All Attention? Global Communication Through Elastic Learned Cores",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2602.12215": {
+   "title": "LDA-1B: Scaling Latent Dynamics Action Model via Universal Embodied Data Ingestion",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2604.27792": {
+   "title": "Motubrain: An Advanced World Action Model for Robot Control",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2402.10885": {
+   "title": "3D Diffuser Actor: Policy Diffusion with 3D Scene Representations",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2211.04604": {
+   "title": "StructDiffusion: Language-Guided Creation of Physically-Valid Structures using Unseen Objects",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2509.01819": {
+   "title": "ManiFlow: A General Robot Manipulation Policy via Consistency Flow Training",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2512.23541": {
+   "title": "Act2Goal: From World Model To General Goal-conditioned Policy",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2306.17817": {
+   "title": "Act3D: 3D Feature Field Transformers for Multi-Task Robotic Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2507.12898": {
+   "title": "Vidar: Embodied Video Diffusion Model for Generalist Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2502.16707": {
+   "title": "Reflective Planning: Vision-Language Models for Multi-Stage Long-Horizon Robotic Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2603.00592": {
+   "title": "LangGap: Diagnosing and Closing the Language Gap in Vision-Language-Action Models",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2609.12541": {
+   "title": "Agent as Policy for Robotic Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2405.18196": {
+   "title": "Render and Diffuse: Aligning Image and Action Spaces for Diffusion-based Behaviour Cloning",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2505.15659": {
+   "title": "FLARE: Robot Learning with Implicit World Modeling",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2603.11558": {
+   "title": "RoboClaw: An Agentic Framework for Scalable Long-Horizon Robotic Tasks",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2508.15874": {
+   "title": "Spatial Policy: Guiding Visuomotor Robotic Manipulation with Spatial-Aware Modeling and Reasoning",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2406.04806": {
+   "title": "Streaming Diffusion Policy: Fast Policy Synthesis with Variable Noise Diffusion Models",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2407.05996": {
+   "title": "Multimodal Diffusion Transformer: Learning Versatile Behavior from Multimodal Goals",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2602.06949": {
+   "title": "DreamDojo: A Generalist Robot World Model from Large-Scale Human Videos",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2409.01652": {
+   "title": "ReKep: Spatio-Temporal Reasoning of Relational Keypoint Constraints for Robotic Manipulation",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2311.01419": {
+   "title": "C3DM: Constrained-Context Conditional Diffusion Models for Imitation Learning",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2404.12377": {
+   "title": "RoboDreamer: Learning Compositional World Models for Robot Imagination",
+   "cited_by": [
+    "2610.06235"
+   ]
+  },
+  "2602.06339": {
+   "title": "Action Hallucination in Generative Vision-Language-Action Models",
+   "cited_by": [
+    "2610.09496"
+   ]
+  },
+  "1312.5663": {
+   "title": "k-Sparse Autoencoders",
+   "cited_by": [
+    "2610.09496"
+   ]
+  },
+  "2511.11298": {
+   "title": "Experiences from Benchmarking Vision-Language-Action Models for Robotic Manipulation",
+   "cited_by": [
+    "2610.09496"
+   ]
+  },
+  "2602.21633": {
+   "title": "Self-Correcting VLA: Online Action Refinement via Sparse World Imagination",
+   "cited_by": [
+    "2610.09496"
+   ]
+  },
+  "2305.00586": {
+   "title": "How does GPT-2 compute greater-than?: Interpreting mathematical abilities in a pre-trained language model",
+   "cited_by": [
+    "2610.10178"
+   ]
+  },
+  "2403.00745": {
+   "title": "AtP*: An efficient and scalable method for localizing LLM behaviour to components",
+   "cited_by": [
+    "2610.10178"
+   ]
+  },
+  "2503.19786": {
+   "title": "Gemma 3 Technical Report",
+   "cited_by": [
+    "2610.10178"
+   ]
+  },
+  "2106.02997": {
+   "title": "Causal Abstractions of Neural Networks",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2606.27755": {
+   "title": "Drop-Then-Recovery: How Redundant Are Vision-Language-Action Models?",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2606.31382": {
+   "title": "Revisiting Parameter Redundancy in Vision-Language-Action Models: Insights from VLM-to-VLA Adaptation",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2606.20246": {
+   "title": "Finetuning Vision-Language-Action Models Requires Fewer Layers Than You Think",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2004.12265": {
+   "title": "Causal Mediation Analysis for Interpreting Neural NLP: The Case of Gender Bias",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2604.05672": {
+   "title": "A1: A Fully Transparent Open-Source, Adaptive and Efficient Truncated Vision-Language-Action Model",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2411.02359": {
+   "title": "DeeR-VLA: Dynamic Inference of Multimodal Large Language Models for Efficient Robot Execution",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2211.00593": {
+   "title": "Interpretability in the Wild: a Circuit for Indirect Object Identification in GPT-2 small",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2309.16042": {
+   "title": "Towards Best Practices of Activation Patching in Language Models: Metrics and Methods",
+   "cited_by": [
+    "2610.20750"
+   ]
+  },
+  "2602.10067": {
+   "title": "Features as Rewards: Scalable Supervision for Open-Ended Tasks via Interpretability",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2506.19121": {
+   "title": "CUPID: Curating Data your Robot Loves with Influence Functions",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2303.14186": {
+   "title": "TRAK: Attributing Model Behavior at Scale",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2509.02565": {
+   "title": "Understanding sparse autoencoder scaling in the presence of feature manifolds",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2602.14869": {
+   "title": "Concept Influence: Leveraging Interpretability to Improve Performance and Efficiency in Training Data Attribution",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2503.17547": {
+   "title": "Learning Multi-Level Features with Matryoshka Sparse Autoencoders",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2606.12360": {
+   "title": "Anatomy of Post-Training: Using Interpretability to Characterize Data and Shape the Learning Signal",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2502.12892": {
+   "title": "Archetypal SAE: Adaptive and Stable Dictionary Learning for Concept Extraction in Large Vision Models",
+   "cited_by": [
+    "2610.20767"
+   ]
+  },
+  "2602.11337": {
+   "title": "MolmoSpaces: A Large-Scale Open Ecosystem for Robot Navigation and Manipulation",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2406.03662": {
+   "title": "The Missing Curve Detectors of InceptionV1: Applying Sparse Autoencoders to InceptionV1 Early Vision",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2601.04480": {
+   "title": "When Models Manipulate Manifolds: The Geometry of a Counting Task",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2602.15029": {
+   "title": "Symmetry in language statistics shapes the geometry of model representations",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2505.18235": {
+   "title": "The Origins of Representation Manifolds in Large Language Models",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2605.01148": {
+   "title": "Arithmetic in the Wild: Llama uses Base-10 Addition to Reason About Cyclic Concepts",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2605.05115": {
+   "title": "Manifold Steering Reveals the Shared Geometry of Neural Network Representation and Behavior",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2510.16820": {
+   "title": "Finding Manifolds With Bilinear Autoencoders",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2603.12261": {
+   "title": "The Latent Color Subspace: Emergent Order in High-Dimensional Chaos",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2601.22364": {
+   "title": "Context Structure Reshapes the Representational Geometry of Language Models",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2602.24264": {
+   "title": "Compositional Generalization Requires Linear, Orthogonal Representations in Vision Embedding Models",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2502.00873": {
+   "title": "Language Models Use Trigonometry to Do Addition",
+   "cited_by": [
+    "2610.20840"
+   ]
+  },
+  "2602.02315": {
+   "title": "The Shape of Beliefs: Geometry, Dynamics, and Interventions along Representation Manifolds of Language Models' Posteriors",
+   "cited_by": [
+    "2610.20840"
+   ]
+  }
+ },
+ "unresolved": []
+}

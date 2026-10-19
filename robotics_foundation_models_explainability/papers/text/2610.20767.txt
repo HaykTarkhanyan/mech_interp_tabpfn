@@ -1,0 +1,441 @@
+arXiv:2610.20767v1 [cs.RO] 14 Oct 2026
+
+Multi-Dimensional Featurizers Yield Fine-Grained Steering and Data Shaping in Robot Foundation Models
+Aiden Swann⋆,•,a Mozes Jacobs⋆,•,b Mathilde Papillon⋆,•,c Siddharth Boppana• David Chanin• Dron Hazra• Usha Bhalla• Curt Tigges•
+Mac Schwagera Owen Lewis• Jack Merullo• Ekdeep Singh Lubana• Atticus Geiger• Thomas Fel†,• Matthew Kowal†,• ⋆Core contributors †Equal senior contribution
+https://github.com/goodfire-ai/robotics_multi_dimensional •Goodfire aStanford University bHarvard University cUniversity of California, Santa Barbara
+Figure 1: Block-sparse featurizers (BSFs) recover multi-dimensional robotics concepts. Examples from vision-languageaction models encode end-effector position (top), fruit-and-vegetable semantics (middle), and proprioceptive state (bottom). Each point is a token’s 3D feature code, colored by PCA coordinates, task or semantic labels, and sparse-autoencoder (SAE) assignments across columns. Activations from MolmoAct2 L25, L21, L13 (top to bottom). Left overlays share the PCA colors. SAE features tile distinct regions within each block, showing how BSFs group related variation into a single feature.
+Can better feature discovery improve control over robot behavior through internal interventions and training data? Recent work in vision and language models reveals multidimensional features, motivating block-sparse featurizers (BSFs), which represent each feature in a low-dimensional subspace. We investigate whether recovering this structure provides an interpretable interface for steering vision-language-action models and shaping the data from which they learn. We show that BSFs recover several multi-dimensional task-relevant features underlying the model’s computation (e.g., perception, language, proprioceptive state, episode phase, and control variables). We causally validate these features through fine-grained steering: targeted changes in visual perception, semantic representation, and spatial localization produce predictable changes in downstream action prediction. Finally, we use feature-based data attribution to isolate where a specific behavior (failure recovery) arises in the training dataset, identifying fewer than 1.4% of training tokens whose masking is sufficient to remove
+
+the targeted behavior. Overall, our results show how matching featurizers to representation geometry can provide more effective tools for understanding and changing robot behavior.
+1 Introduction
+A vision-language-action (VLA) model maps visual observations, language instructions, and robot state to actions in the physical world (Black et al., 2025; Lee et al., 2026; Fang et al., 2026; Black et al., 2024; Brohan et al., 2023; Kim et al., 2024; Deshpande et al., 2026). Although today’s VLAs rarely perform consequential real-world tasks, fully learned robotics models may soon see widespread deployment. Yet little is known about the computations underlying their actions. Understanding these internal representations will be essential for safe deployment.
+One way to understand the internal representation of a learned model is through the perspective of features, which are recurring internal variables that encode concepts, states, relationships and ultimately underlie the process by which the model converts input to output. A promising line of work, e.g., sparse autoencoders (SAEs), leverages the linear representation hypothesis (LRH) (Park et al., 2023a; Huben et al., 2024; Gao et al., 2025; Elhage et al., 2022) and assume that activations are composed of a sparse set of vectors. These methods have been well studied in language and vision modalities (Huben et al., 2024; Templeton et al., 2026; Gao et al., 2025). Examining models in the basis of the features that they express is useful for a plethora of problems, such as to study generalization (Gallifant et al., 2025; Olson et al., 2025), steer model behavior (Templeton et al., 2026; Prasad et al., 2026; Turner et al., 2023; Rimsky et al., 2024), attribute behaviors to training data (Kowal et al., 2026; Bergen et al., 2026; Koh & Liang, 2017), and identify safety-relevant computation (Templeton et al., 2026; Marks et al., 2025).
+However, a featurizer is ultimately a hypothesis about the data-generating process of the activations (Fel et al., 2026a). The LRH is particularly questionable for visual domains involving perception, since continuous factors such as viewpoint, illumination, position, and motion naturally generate low-dimensional manifolds that are reflected in learned representations (Cohen et al., 2020; Kvinge et al., 2024; Fel et al., 2026a; Engels et al., 2025; Michaud et al., 2025). Despite this, the majority of work in VLA interpretability assumes the LRH, with varying degrees of success. Early studies showed that specific MLP directions can offer limited control of variables like speed and height (Häon et al., 2025). Complementary studies use linear probes and activation interventions to characterize the contributions of visual, language, and action pathways and identify representations of environmental dynamics and task progress (Molinari et al., 2025; Grant et al., 2026; Bhardwaj et al., 2026; Buurmeijer et al., 2026). More recently, SAEs have been applied to recover semantic concepts, motion primitives, task structure, and episode-specific memorization, demonstrating that interventions on individual features can alter policy behavior (Swann et al., 2026; Khan et al., 2025; Jin et al., 2026; Grant et al., 2026).Prior work has improved our understanding of VLA policies, but precise behavioral steering remains challenging, with interventions often producing inconsistent, off-target, or weak effects. Much of this work relies on pooled visual activations or small activation corpora, leaving open whether training SAEs on individual token activations at greater scale improves feature discovery and steering.
+In this work, we apply recent methods for multi-dimensional feature discovery—block-sparse featurizers (BSFs) (Fel et al., 2026a)—to frontier open-source VLA models, training BSFs and baseline SAEs on the largest corpora of unpooled VLA token activations to date. BSFs represent features as sparse low-dimensional blocks (Yuan & Lin, 2006; Eldar & Bölcskei, 2009; Jenatton et al., 2010; Bach et al., 2012) rather than single directions, making them a natural fit for robotic representations. Across models and layers, we recover a broad vocabulary of task-relevant features spanning visual perception, language, proprioceptive state, task variables and episode progress. BSFs outperform matched SAEs on recovering and intervening on task-relevant structure, suggesting that the additional geometry is useful rather than simply excess representational capacity. We then causally validate them through fine-grained steering experiments across multiple layers, inducing targeted changes at several stages of the policy: what is perceived in the observation, which object is selected, where that object is localized. Finally, we perform feature-based attribution to connect interpretable behaviors directly to the episodes in the fine-tuning dataset that shaped them. Related robot data-curation methods select demonstrations with datamodels, influence estimates, or mutual information (Dass et al., 2026; Agia et al., 2025; Hejna et al., 2025). Using a ‘failure-recovery’ feature as as case-study, we isolate fewer than 1.4% of fine-tuning tokens in DROID whose influence is disproportionately associated with this behavior. Our contributions are:
+2
+
+1. Comparing block-sparse and linear featurizers for VLAs. We systematically compare BSFs and SAEs in VLAs. BSFs recover features spanning perception, language, proprioception, task state and episode progress, better capturing computational geometry qualitatively and quantitatively. We also strengthen VLA SAE baselines with substantially larger, unpooled activation corpora to better evaluate multidimensional features.
+2. Causal validation through fine-grained steering. Across multiple layers, and computational regimes, we causally validate recovered features by steering perception, semantics, target-object selection, geometric localization, and downstream robot behavior.
+3. Feature-based dataset attribution and shaping. We trace behaviors captured by BSF features to the data that caused them. For failure recovery, masking ∼ 1.4% of fine-tuning tokens qualitatively transforms robot behavior, demonstrating precise control over robot datasets and learned policies.
+
+2 From Sparse Directions to Sparse Subspaces
+
+The goal of a featurizer is to factorize model activations into a set of interpretable concepts (Huben et al., 2024; Bricken et al., 2023; Gao et al., 2025; Bussmann et al., 2024; Rajamanoharan et al., 2024; Fel et al., 2025; Hindupur et al., 2025; Bussmann et al., 2025). Moreover, each featurizer also implicitly encodes a hypothesis about how activations are generated Hindupur et al. (2025). Choosing a featurizer for a VLA therefore requires matching this geometry to the variables the policy represents and Figure 2: BSFs better capture low-dimensional computes. In this section, we first describe the feature unit manifolds. (b) One three-coordinate BSF block assumed by sparse autoencoders, generalize it to block- reconstructs the helix. (c) Many individual SAE sparse subspaces, explain their selection, and define the features tile the helix. reconstruction metric shared by both featurizers.
+
+Notation. For a positive integer n, we write [n] = {1, . . . , n}. Vectors are bold lowercase and treated as row
+vectors, and matrices are bold uppercase. For v ∈ Rn, ∥v∥2 is the Euclidean norm and ∥v∥0 = |{i ∈ [n] : vi ≠ 0}| counts nonzero coordinates. For a matrix A, ∥A∥F is the Frobenius norm. We write x ∈ Rd for an activation and z ∈ Rm for its feature code. The coordinates of z are partitioned into G disjoint groups I = {I1, . . . , IG} of size b, so that m = Gb. The subvector zg := zIg ∈ Rb contains the latent coordinates associated with feature g. For a decoder D ∈ Rm×d, the corresponding rows form the decoder block Dg := DIg,: ∈ Rb×d. We omit
+decoder biases. The two featurizers below differ only in the value of b, and we start with the smallest one.
+
+Sparse autoencoders. Sparse autoencoders use b = 1 and m = G. Each feature has one coordinate zg and one decoder direction dg ∈ Rd, and the reconstruction is
+
+G
+
+xˆ = zg(x) dg = z(x)D, ∥z(x)∥0 ≤ k.
+
+(1)
+
+g=1
+
+The decoder range is a union of spans span{dg : g ∈ S} over supports S ⊆ [G] of size k. Each feature therefore contributes along a fixed direction, with its coefficient determining magnitude and, for signed codes, its orientation. Several scalar features together can represent multidimensional variation, but the SAE architecture cannot group them as a single feature. The helix in Figure 2, which is a one-dimensional curve with a three-dimensional linear span, illustrates this: an SAE tiles it with scalar features covering individual sub-arcs (Bhalla et al., 2026), splitting one variable across features whose relationships must be recovered after training. This leads to a natural question: can the unit of a feature be enlarged to hold such a curve, while keeping a linear decoder?
+
+Block-sparse featurizers. The simplest answer is to allow b > 1. A block-sparse featurizer (BSF) (Fel et al.,
+
+2026a) replaces the scalar zg with a vector zg ∈ Rb and the direction dg with a matrix Dg. The reconstruction
+
+stays linear:
+
+G
+
+xˆ = zg(x)Dg = z(x)D
+
+(2)
+
+g=1
+
+3
+
+and feature g now contributes within a learned subspace
+
+Sg := uDg : u ∈ Rb , dim(Sg) = rank(Dg) ≤ b.
+
+(3)
+
+An activation with k active features lies in the Minkowski sum Sg1 + · · · + Sgk (Fel et al., 2026b). The decoder range becomes a union of sums of subspaces instead of a union of sums of rays. The observed contributions need not fill Sg. They can occupy a curve, a surface, or another structured subset Mg ⊆ Sg, allowing one block to hold the helix, or a multi-dimensional variable such as gripper aperture or end-effector position. Importantly, the block dimension does not fix the intrinsic dimension of Mg (analyzed in Section 3) and only bounds the dimension above.
+A larger unit also changes what can be read from an active feature. Unlike an SAE feature which provides a single scalar value, a block conveys both how strongly the feature is present via the block norm ||zg(x)||2, and where the activation lies on Mg, i.e., the position of zg(x) within the block, without privileging any particular basis for the block coordinates. Specifically, for any orthogonal Q ∈ O(b), replacing zg with zgQ and Dg with Q⊤Dg, combined with a matching rotation of the block encoder, preserves the feature subspace, the reconstruction, and all block norms. Unless otherwise specified, we use this freedom to display block codes in a principal-component basis in Section 3.3.
+
+Selecting features jointly. BSFs assume that a block is active or inactive as a whole. If its coordinates could be selected independently, the block norm would no longer measure the presence of one feature, and the block would decompose back into scalar features. Sparsity must therefore act on groups rather than on coordinates, so that the coordinates of a selected block vary together and unselected blocks are exactly zero. We count active features with the group pseudo-norm
+
+G
+
+∥z∥0,I := 1(∥zg∥2 > 0) ,
+
+(4)
+
+g=1
+
+which reduces to ∥z∥0 when b = 1. We use the Vanilla BSF of Fel et al. (2026a), with independently learned encoder and decoder. Its per-activation encoder is
+
+z(x) = Πk(xW + benc) , W ∈ Rd×m, benc ∈ Rm.
+
+(5)
+
+Here Πk is the Euclidean projection onto {z : ∥z∥0,I ≤ k}. It keeps the k blocks with largest ℓ2 norm and sets the others to zero. Retained coordinates are signed, and no coordinate-wise nonlinearity is applied. For b = 1, the block norm becomes an absolute value and the featurizer becomes a TopK SAE (Gao et al., 2025; Zhu et al., 2026). All SAE baselines in this paper are this special case, trained on the same data with the same pipeline, so the block dimension is the only difference between the two featurizers. In practice, we train with the BatchTopK variant of Πk (Bussmann et al., 2024), which keeps the Bk highest-scoring blocks across a batch of B activations, with each block scored by ∥ang∥2∥Dg∥F to account for decoder scale. Because a block uses b coordinates where a scalar feature uses one, we always report which budget is matched, either the number of active features k or the number of active coordinates kb; details are given in Appendix C. With the unit of a feature and its selection rule fixed, the remaining choice is the objective used to train it.
+
+Reconstruction and functional reconstruction. We first recall briefly the usual featurizer reconstruction loss
+
+and then introduce a functional invariant that we investigate in parallel. The standard objective is the expected
+
+squared reconstruction error,
+
+Lrec = Ex ∥x − xˆ∥22 .
+
+(6)
+
+This loss treats all directions of activation space equally: an error of a given norm costs the same wherever it
+
+points. However, some directions of the activation strongly affect the predicted action, while others have almost no effect on it. We therefore also measure reconstruction error by its effect on the policy’s output. Let g ∈ Rd be
+the gradient, with respect to the activation, of the teacher-forced log-likelihood of the on policy action tokens. For an error e = x − xˆ, the change in log-likelihood is, to first order, eg⊤. Averaging the square over a corpus
+
+of N gradients gives
+
+1N N
+
+egn⊤ 2 = e Fˆ e⊤,
+
+Fˆ = 1 N
+
+N
+
+gn⊤gn,
+
+(7)
+
+n=1
+
+n=1
+
+4
+
+Figure 3: Reconstruction, dimensionality, and behavioral relevance of SAE and BSF features in MolmoAct2. Left three panels (layer 13): Held-out reconstruction R2 and absolute recorded-action log-likelihood change versus active blocks k (lower change is better; mean ± SEM, 48 episodes), and within-block stable rank versus block size at k = 32 (bands: interquartile range; gray: full dimension). Colors denote block size (b = 1: SAE); solid/dashed lines denote Vanilla/Fisher training. Right two panels (across layers): Three-dimensional Vanilla and Fisher BSFs versus SAEs at approximately matched latent widths and active-coordinate budgets (21 blocks versus 63 latents). Ablation effects measure mean predicted end-effector displacement over the top seven BSF blocks or 21 SAE latents by activation mass. Decodability is the best single-feature ridge-probe R2 on held-out episodes, averaged over ten robot-state and task-progress variables.
+where Fˆ ∈ Rd×d is the empirical Fisher matrix. An error along a direction of large curvature changes the predicted action and is thus heavily penalized. Put differently, if there exist a null space in the activations (e.g. a neuron with no effect) then the reconstruction error in the null space of Fˆ satisfies egn⊤ = 0 for every n: it has no first-order effect on the action and does not need to be reconstructed.
+Activation corpus and SAE baselines. Since our claims about block structure’s benefits are relative to an SAE, we aim for the strongest possible baseline. Prior SAEs trained on VLA activations have two limitations: the main experiments of Swann et al. (2026) mean-pool activations, combining all modalities into one vector; Grant et al. (2026) and Jin et al. (2026) avoid pooling but use small corpora—500k action-token activations and a few hundred simulated rollouts per SAE, respectively. Instead, we retain each image, text, and state token as a separate activation, yielding approximately 52M training activations collected uniformly across 45,344 episodes, roughly two orders of magnitude more than the pooled activations in the next largest dataset from Swann et al. (2026). All our featurizers train on this corpus, so differences in results can be attributed purely to featurizer structure.
+3 Results
+Given the featurizers covered in Section 2, we now turn to the features they discover and the understanding and control they admit. We first perform a quantitative comparison of BSFs to SAEs (Section 3.1) and causally validate the discovered features through open- and closed-loop steering experiments (Section 3.2). We then review a broad range of feature phenomenology, spanning visual, language, control, and proprioceptive features (Section 3.3). Finally, we demonstrate an application of BSF features for the goal of behavior modification through data attribution (Section 4).
+3.1 Quantitative Comparison to SAEs
+We hypothesize that BSFs—due to their inductive prior of low-dimensional features that are smooth over time— are a more natural fit to VLAs than traditional SAEs. We perform a quantitative comparison between SAEs, Vanilla BSFs, and Fisher-weighted BSFs on MolmoAct2, and use the following three metrics: (i) activation reconstruction, (ii) preservation of output behavior (i.e., action likelihood), and (iii) robotics-grounded measures of causal influence and task-variable decodability.
+Figure 3 (column 1 and 2) shows held-out activation reconstruction and action fidelity (i.e., how much the teacherforced log-likelihood of recorded actions changes when prompt activations are replaced by their reconstructions) for various methods and block sizes (note, SAEs are just a special case of BSFs where block size is one). As expected, larger blocks improve both metrics at fixed block sparsity while Fisher weighting trades lower R2 for better preservation of action likelihoods. We further estimate the effective dimensionality for the features recovered using the stable rank of each (Figure 3 column 3). Vanilla and Fisher BSFs both grow slower than the block dimension, reaching a mean stable rank of approximately 5.3 for 16-dimensional blocks.
+5
+
+Intervention
+
+Featurizer # Features↓ Held-out recovery ↑
+
+Semantic L3 Noun token
+
+BSF
+
+2.15
+
+Fisher BSF∗
+
+2.56
+
+SAE
+
+3.50
+
+83.8% 78.9% 81.9%
+
+Visual L7
+
+BSF
+
+63 exo-image tokens Fisher BSF
+
+SAE
+
+20.40 16.33 36.25
+
+84.6% 88.3% 97.3%
+
+Geometric L23
+
+BSF
+
+1.00
+
+Action-readout token Fisher BSF
+
+1.08
+
+SAE
+
+1.00
+
+99.7% 83.9% 98.2%
+
+Figure 4: Fine-grained steering through three representations. Semantic, visual, and geometric interventions redirect predicted actions from the prompted object to the other object while leaving input images and instructions unchanged. Results cover 52 held-out scene–instruction comparisons with six noise seeds each. # Features: selected-set size, counting three-dimensional BSF blocks or scalar SAE features. Held-out recovery: fraction of the activation-patching effect reproduced by the selected features, averaged over comparisons for which feature discovery finds a steering set. ∗A steering set is found for only 50/52 comparisons; all other rows cover all 52. Details in Appendix B.1.
+
+Figure 3 ((column 4 and 5) shows the comparison for the two robotics-specific metrics. First, task-variable decodability measures how well a linear probe predicts robot state and task progress from individual features, i.e., the best held-out single-feature R2 for each target, averaged across targets. Specifically, the targets are comprised of: end-effector position and displacement, episode progress, gripper state, distance to the first gripper-closure position, and whether that closure has occurred. Second, per-feature causal effect measures the change in predicted end-effector position after ablating an individual feature, where more causal features are assumed to induce a larger change. Indeed, we observe that BSFs produce both larger per-feature ablation effects than SAEs across layers as well as higher task-variable decodability, particularly through the middle and later layers. Moreover Fisher-weighted BSFs match or exceed vanilla BSFs across both causal effect and task-variable decodability.
+3.2 Causal Validation of Features via Steering
+Open-Loop Steering Results. A useful featurizer should enable targeted changes to policy behavior through a small number of feature edits that generalize to new scenes. We evaluate this with a redirection task in which two objects sit at opposite ends of a table, making the first predicted action chunk indicative of the robot’s intended target. We instruct the policy to pick up one object and test the minimum number of feature edits required to redirect its reach toward the other. To scale this evaluation across hundreds of scene–method combinations, we use an automated search to identify compact feature sets that achieve redirection (see Appendix B.1 for full details) on a ‘train’ set of episodes, and then hold the selected sets fixed and evaluate their effectiveness on held-out episodes.
+We apply this procedure at three sites associated with distinct aspects of target grasping (Figure 4). Editing the early-layer noun token changes what the robot is looking for; editing mid-layer image tokens changes where it perceives each object; and editing the late-layer action-readout token changes the represented target position. At each steering location, replacing the activations with those from the condition targeting the other object flipped the robot’s target action towards the corresponding object. We use this activation-patching effect as a reference, measuring held-out recovery as the fraction of our steering relative to it. Held-out evaluation tests whether the selected feature sets generalize beyond the episodes we found them on, while task completion is evaluated separately in closed loop (Table 1). Full details are provided in Appendix B.1.
+Figure 4 reports two metrics averaged over 52 scenes: steerable feature search success, the number of selected features, and held-out recovery. Each feature is one SAE latent or BSF block, and 100% recovery means matching the trajectory shift produced by activation patching (Appendix B.1). All configurations yield successful interventions on 52/52 scenes except semantic steering with Fisher-weighted BSFs, which succeeds on 50/52. Geometric steering is the most compact: a single BSF block achieves 99.7% recovery, comparable to a single
+
+6
+
+SAE
+
+BSF
+
+Object pair # Feat. Select Grasp Task # Feat. Select Grasp Task
+
+Apple / banana 2.0 90% 85% 75% Bowl / cable 2.5 100% 95% 85% Mouse / towel 3.0 75% 70% 65%
+
+2.5 100% 95% 90% 2.0 100% 100% 100% 2.5 100% 95% 90%
+
+Total
+
+2.5 88.3% 83.3% 75.0% 2.3 100% 96.7% 93.3%
+
+Table 1: Closed-loop semantic target redirection. The policy is instructed to pick up one object while a fixed
+
+semantic feature intervention redirects it to the other. Entries are success rates over 20 trials per object pair (10
+
+per direction; 60 in total): Select, the policy goes for the redirected object; Grasp, it grasps that object; Task, it
+
+places that object in the basket. # Feat.: features per direction, averaged. Per-direction counts are in Table 3.
+
+SAE latent. For semantic steering, standard BSFs require fewer features while slightly improving held-out recovery. Perceptual steering reveals a trade-off: the BSF variants require roughly 16–20 blocks, compared with 36 SAE latents, but the SAE transfers more effectively to held-out scenes. Overall, BSFs thus provide more compact semantic and perceptual interventions, although fewer feature edits do not consistently yield better transfer.
+Closed-Loop Target-Object Redirection. We next test whether semantic steering, whose intervention does not depend on the specific observation, persists through closed-loop execution. The robot is asked to “pick up the [noun] and put it in the basket” for one object, while a fixed noun-token feature intervention, selected as in Figure 4, redirects it to the other object for the whole episode. We use three object pairs, each steered in both directions for 10 trials, and randomize the object and basket positions in every trial. BSF features redirect the policy more reliably with fewer features (Table 1): they select the redirected object in every trial and complete the task in 93.3% of trials using 2.3 features on average, compared with 88.3% selection and 75.0% completion for 2.5 SAE features.
+
+Figure 5: Visual BSF features capture variation across task stages and robot parts. (left) Marker feature F2973, with points colored by task completion. Linked images illustrate changes in appearance across a single episode; the larger overlays show the four highest-activating timesteps in the dataset. (right) Robot feature F2571, with PCA colors and linked images showing how different regions of the block correspond to different robot parts. Both features are Fisher-weighted BSFs from MolmoACT2 layer 7.
+3.3 Feature phenomenology
+In this section, we highlight a representative sample of BSF features across models and layers, focusing on how variation within a block relates to interpretable properties of its inputs. Broadly, we find BSF features associated with visual, visual-language, and robot state and control concepts. Each point in the activation visualization represents the three-dimensional code of a block at an individual token where it activates and we center and rotate these codes using PCA, retaining all three dimensions.
+Visual Features. We find visual features similar to those reported by Fel et al. (2026a) in DINOv3 (Siméoni et al., 2025), now in VLA activations on robotics data (Figure 5). These include features selective for objects in the environment and for the robot itself. In contrast to the features found in DINOv3, latent reconstruction is not part of the VLA training objective. We show two example features in Figure 5, one which activates on ‘markers’ and another which activates on the robot. Both features illustrate how a block can capture concept variation within a single object category: the
+7
+
+Figure 6: A single BSF feature links related container concepts across vision and language. The left column of point clouds shows activations colored by PCA coordinates (top) and token modality (bottom). The right column shows only activating text tokens, colored by token identity (top) and SAE assignment (bottom). The feature nicely represents different types of containers across spatially distinct positions. This feature is Vanilla BSF F1777 from π0.5 layer 3.
+marker’s activation geometry varies with the appearance of markers at different stages of manipulation, while the robot feature instead organizes patches from different parts of the arm. In both cases, the block captures recognizable visual content together with structure within that content. Across our models and layers we find plentiful features for a wide range of objects.
+Visual-Language Features. Many blocks activate across both pixels and instruction text and are common across the tested models and layers. For example, Figure 6 shows a container feature in π0.5 that activates on external-camera, wrist-camera, and text tokens. Within the block, words referring to related containers occupy distinct regions. This organization is consistent with a shared vision–language representation that retains distinctions between members of a semantic category. The fruit-and-vegetable feature in Figure 1 provides another example of a block spanning related objects. Notably, three SAE features tile much of the displayed text-token geometry, while the BSF represents these related groups within a single block.
+Task and Control Variables. Beyond visual and semantic content, we find blocks associated with robot configuration and spatial variables (Figure 7). A gripper feature forms an X-shaped point cloud whose organization reflects both gripper opening and the side of the gripper on which the feature activates. Notably, each side is tiled by exactly one SAE feature. The BSF block brings these complementary views of a changing two-side gripper into a single feature.
+A second feature varies with the end-effector’s Cartesian coordinates over a single episode. This association is notable because the policy receives joint angles as proprioceptive input, rather than explicit Cartesian end-effector coordinates. The feature also primary activates on unused image token positions near the robot base. This use of image-tokens for information storage is a unique phenomenon to π0.5 given its bidirectional attention mask. A third example comes from MolmoBot, which is trained on synthetic data. Known camera poses allow us to relate the feature’s geometry to camera position relative to the robot, including whether the camera lies to its left or right. This feature captures a property of the observation viewpoint alongside the robot-state variables illustrated above.
+Proprioceptive Features. Proprioception, the robot’s state information, enters the VLM backbone as part of the prompt. The two models encode these inputs differently: π0.5 expresses discretized state values as numeric text, while MolmoACT2 uses dedicated discrete state tokens. Despite this difference, both models exhibit features with geometry related to proprioceptive values as shown in Figure 8.
+The highlighted MolmoACT2 feature notably forms a complex manifold of three looping branches that converge into a common extension. Coloring by quantized state value reveals an ordering along the curves, while coloring by state-component index reveals additional structure associated with which component is represented. The block thus organizes both numeric value and component identity. Other examples exhibit discrete clusters, curved trajectories, and more diffuse clouds, demonstrating the range of geometries associated with proprioceptive inputs across layers and models.
+8
+
+Figure 7: A sample of BSF control-relevant features. Left: MolmoACT2 layer 13, F937, sampled across the dataset. Colorings show PCA coordinates, SAE assignment, image-patch position, and gripper state; linked images illustrate the gripper configurations and locations associated with selected points. Middle: π0.5 layer 7, F2113, sampled from a single episode and colored by PCA coordinates (top) and end-effector x, y, and z position (bottom). Right: MolmoBot layer 24, F725, colored by camera side and camera position in the robot frame, with four representative views.
+
+4 Application: Behavior Shaping via Data Attribution
+
+Identifying failure recovery features. We next ask whether a discovered feature can identify training data responsible for a policy behavior, and whether filtering that data predictably Method
+
+Reopen Success Complete (s) ↑ (%) ↑ (s) ↓
+
+changes the learned policy. We focus on F1515 (Figure 9), Unmodified
+
+3.13
+
+90 12.13
+
+a three-dimensional BSF feature in layer nine of π0.5 that Random
+
+4.34 100 10.15
+
+activates during recovery from failed grasps. We identified Diff. means
+
+5.01
+
+65 17.49
+
+it using a small dataset of our own rollouts Figure 9 shows kNN
+
+3.45 100 12.82
+
+the feature’s geometry and activations during repeated grasp Influence
+
+5.74 100 11.12
+
+failures and corrections in a DROID demonstration (top) and Concept (ours) 12.93
+
+100
+
+11.79
+
+a real-robot rollout (bottom). Because it fires broadly across
+
+visual tokens, we show mean activation per frame for clarity. Table 2: Behavior shaping. Mean reopening
+
+The feature activates during missed grasps in both settings and has a distinctly nonlinear, conical geometry: multiple SAE features tile this structure, while the BSF captures it in a single block.
+
+time (15 perturbed trials) and task performance (20 unperturbed trials; 500-step limit). Longer reopening indicates stronger recovery suppression; completion time averages successful trials only.
+
+From features to training data. We identify recovery windows in DROID where F1515 activation exceeds a threshold for at least two consecutive evaluated frames (Appendix A), finding failures in approximately 6.5%
+
+9
+
+Figure 8: Sampling of vanilla BSFs proprioception features. Top: A MolmoACT2 layer-13 feature shown with PCA coloring (left), quantized state value from 0 to 255 (middle), and state-component index (right).
+of episodes. To test whether these segments teach recovery, we fine-tune from π0.5-base and mask the loss for any 16-step action chunk overlapping a F1515 selected window. This removes supervision for 1.38% of tokens while preserving observations and trajectory structure. We compare our BSF-based selection with TRAK attribution (Park et al., 2023b), a covariance-adjusted difference-of-means labeler, kNN, and random masking, matching selected-frame budgets and training recipes across methods. No feature interventions are used at inference time.
+Targeted changes in recovery behavior. We evaluate recovery by manually closing the gripper before a grasp and measuring the time to reopen it (this remains in distribution because the models have no memory). Across five trials per method (Table 2), concept-based masking increases mean reopening time more than sevenfold, from 1.89 to 14.25 seconds, exceeding the mean delay of all comparison methods. In a separate real-world pick-and-place evaluation without induced failures, the concept-filtered policy completes the task with a perfect success rate and similar rollout durations (11.79 versus 12.13 seconds). These results show how interpretable feature-guided data attribution can target specific behaviors while preserving overall task performance in this evaluation.
+5 Conclusion
+We have shown that BSFs recover interpretable, multidimensional features in vision-language-action models, providing tools for steering robot behavior and tracing it to training data. Targeted interventions establish these features’ behavioral relevance, while feature-guided data masking selectively delays failure recovery and preserves task performance in our evaluation. In terms of limitations, our analysis does not fully explain how these features emerge or participate in policy computation; tracing their geometry to proprioceptive inputs is a
+10
+
+promising next step. We demonstrate closed-loop semantic steering, but some interventions are evaluated only open loop. Robust closed-loop visual and geometric steering will require tracking moving image regions and adapting to changing observations and robot state. BSFs are also not uniformly superior: SAEs perform better on some quantitative metrics, and our stronger baselines underscore the importance of unpooled activations and training scale alongside feature geometry.
+Figure 9: Feature associated with failure recovery. Left: F1515 block codes colored by PCA coordinates and SAE assignment. Right: Wrist observations, gripper state, and mean feature norm across exterior-image, wrist-image, and text tokens in a DROID demonstration (top) and a real-robot rollout (bottom). Feature activations are measured by replaying the recordings through π0.5-DROID.
+11
+
+References
+Agia, C., Sinha, R., Yang, J., Antonova, R., Pavone, M., Nishimura, H., Itkina, M., and Bohg, J. Cupid: Curating data your robot loves with influence functions. arXiv preprint arXiv:2506.19121, 2025. doi: 10.48550/arxiv.2506.19121.
+Bach, F., Jenatton, R., Mairal, J., and Obozinski, G. Structured sparsity through convex optimization. Stat. Sci., 27(4):450–468, 2012. doi: 10.1214/12-sts394.
+Bergen, L., Bhalla, U., Baskaran, S., Loeffler, M., Sarfati, R., Gala, D., Panwar, R., Aranguri, S., Fel, T., Geiger, A., Kowal, M., Boppana, S., Balsam, D., Lewis, O., Merullo, J., McGrath, T., and Lubana, E. S. Anatomy of post-training: Using interpretability to characterize data and shape the learning signal. arXiv preprint arXiv:2606.12360, 2026. doi: 10.48550/arxiv.2606.12360.
+Bhalla, U., Fel, T., Rager, C., Feucht, S., Haklay, T., Wurgaft, D., Boppana, S., Kowal, M., Shyam, V., Merullo, J., Geiger, A., and Lubana, E. S. Do sparse autoencoders capture concept manifolds? arXiv preprint arXiv:2604.28119, 2026. doi: 10.48550/arxiv.2604.28119.
+Bhardwaj, A., Duan, E. W., Dan, P., Ma, W.-C., and Culbertson, P. Decoding task progress from vla representations. arXiv preprint arXiv:2608.13474, 2026. doi: 10.48550/arxiv.2608.13474.
+Black, K., Brown, N., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., Groom, L., Hausman, K., Ichter, B., Jakubczak, S., Jones, T., Ke, L., Levine, S., Li-Bell, A., Mothukuri, M., Nair, S., Pertsch, K., Shi, L. X., Tanner, J., Vuong, Q., Walling, A., Wang, H., and Zhilinsky, U. π0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024. doi: 10.48550/arxiv.2410.24164.
+Black, K., Brown, N., Darpinian, J., Dhabalia, K., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., and others. π0.5: A vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054, 2025.
+Bricken, T., Templeton, A., Batson, J., Chen, B., Jermyn, A., Conerly, T., Turner, N., Anil, C., Denison, C., Askell, A., Lasenby, R., Wu, Y., Kravec, S., Schiefer, N., Maxwell, T., Joseph, N., Hatfield-Dodds, Z., Tamkin, A., Nguyen, K., McLean, B., Burke, J. E., Hume, T., Carter, S., Henighan, T., and Olah, C. Towards monosemanticity: Decomposing language models with dictionary learning. Transformer Circuits Thread, 2023.
+Brohan, A., Brown, N., Carbajal, J., Chebotar, Y., Choromanski, K., Ding, T., Driess, D., Dubey, K. A., Finn, C., Florence, P. R., Fu, C., Arenas, M. G., Gopalakrishnan, K., Han, K., Hausman, K., Herzog, A., Hsu, J., Ichter, B., Irpan, A., Joshi, N. J., Julian, R. C., Kalashnikov, D., Kuang, Y., Leal, I., Levine, S., Michalewski, H., Mordatch, I., Pertsch, K., Rao, K., Reymann, K., Ryoo, M., Salazar, G., Sanketi, P. R., Sermanet, P., Singh, J., Singh, A., Soricut, R., Tran, H., Vanhoucke, V., Vuong, Q., Wahid, A., Welker, S., Wohlhart, P., Xiao, T., Yu, T.-H., and Zitkovich, B. Rt-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818, 2023. doi: 10.48550/arxiv.2307.15818.
+Bussmann, B., Leask, P., and Nanda, N. Batchtopk sparse autoencoders. arXiv preprint arXiv:2412.06410, 2024. doi: 10.48550/arxiv.2412.06410.
+Bussmann, B., Nabeshima, N., Karvonen, A., and Nanda, N. Learning multi-level features with matryoshka sparse autoencoders. arXiv preprint arXiv:2503.17547, 2025. doi: 10.48550/arxiv.2503.17547.
+Buurmeijer, H., Alonso, C. A., Swann, A., and Pavone, M. Observing and controlling features in vision-languageaction models. arXiv preprint arXiv:2603.05487, 2026. doi: 10.48550/arxiv.2603.05487.
+Cohen, U., Chung, S., Lee, D. D., and Sompolinsky, H. Separability and geometry of object manifolds in deep neural networks. Nature communications, 11(1):746, 2020. doi: 10.1038/s41467-020-14578-5.
+Dass, S., Khaddaj, A., Engstrom, L., Madry, A., Ilyas, A., and Martin-Martin, R. Datamil: Selecting data for robot imitation learning with datamodels. In International Conference on Learning Representations, pp. 1311–1336, 2026. doi: 10.48550/arxiv.2505.09603.
+12
+
+Deshpande, A., Guru, M., Hendrix, R., Jauhri, S., Eftekhar, A., Tripathi, R., Argus, M., Salvador, J., Fang, H., Wallingford, M., Pumacay, W., Kim, Y., Pfeifer, Q., Lee, Y.-C., Wolters, P., Rayyan, O., Zhang, M., Duan, J., Farley, K., Han, W., Vanderbilt, E., Fox, D., Farhadi, A., Chalvatzaki, G., Shah, D., and Krishna, R. Molmob0t: Large-scale simulation enables zero-shot manipulation. arXiv preprint arXiv:2603.16861, 2026. doi: 10.48550/arxiv.2603.16861.
+Eldar, Y. C. and Bölcskei, H. Block-sparsity: Coherence and efficient recovery. In IEEE International Conference on Acoustics, Speech, and Signal Processing, pp. 2885–2888, 2009. doi: 10.1109/icassp.2009.4960226.
+Elhage, N., Hume, T., Olsson, C., Schiefer, N., Henighan, T., Kravec, S., Hatfield-Dodds, Z., Lasenby, R., Drain, D., Chen, C., Grosse, R., McCandlish, S., Kaplan, J., Amodei, D., Wattenberg, M., and Olah, C. Toy models of superposition. arXiv preprint arXiv:2209.10652, 2022. doi: 10.48550/arxiv.2209.10652.
+Engels, J., Michaud, E. J., Liao, I., Gurnee, W., and Tegmark, M. Not all language model features are one-dimensionally linear. In International Conference on Learning Representations, volume 2025, pp. 84591– 84622, 2025. doi: 10.48550/arxiv.2405.14860.
+Fang, H., Duan, J., Clay, D., Wang, S., Liu, S., Huang, W., Fan, X., Tsai, W.-C., Chen, S., Wang, Y. R., Xing, S., Cho, J., Park, J. S., Eftekhar, A., Sushko, P., Farley, K., Wadhwa, A., Harrison, C., Han, W., Lee, Y.-C., VanderBilt, E., Hendrix, R., Ellawela, S., Ngoo, L., Chai, J., Ren, Z., Farhadi, A., Fox, D., and Krishna, R. Molmoact2: Action reasoning models for real-world deployment. arXiv preprint arXiv:2605.02881, 2026. doi: 10.48550/arxiv.2605.02881.
+Fel, T., Lubana, E., Prince, J. S., Kowal, M., Boutin, V., Papadimitriou, I., Wang, B., Wattenberg, M., Ba, D. E., and Konkle, T. Archetypal sae: Adaptive and stable dictionary learning for concept extraction in large vision models. arXiv preprint arXiv:2502.12892, 2025. doi: 10.48550/arxiv.2502.12892.
+Fel, T., Kowal, M., Jacobs, M., Hazra, D., Bhalla, U., Sharkey, L., Bushnaq, L., Grant, S., Haklay, T., Icard, T., Rager, C., Pearce, M., Wurgaft, D., Swann, A., Doshi, F., Boppana, S., Tigges, C., Cammarata, N., Serre, T., Shyam, V., Lewis, O., McGrath, T., Merullo, J., Lubana, E. S., and Geiger, A. Structuring sparsity: Block-sparse featurizers capture visual concept manifolds. arXiv preprint arXiv:2606.25234, 2026a. doi: 10.48550/arxiv.2606.25234.
+Fel, T., Wang, B., Lepori, M. A., Kowal, M., Lee, A., Balestriero, R., Joseph, S., Lubana, E., Konkle, T., Ba, D. E., and Wattenberg, M. Into the rabbit hull: From task-relevant concepts in dino to minkowski geometry. In International Conference on Learning Representations, pp. 154538–154584, 2026b. doi: 10.48550/arxiv.2510.08638.
+Gallifant, J., Chen, S., Sasse, K., Aerts, H. J. W. L., Hartvigsen, T., and Bitterman, D. Sparse autoencoder features for classifications and transferability. In Conference on Empirical Methods in Natural Language Processing, pp. 29939–29963, 2025. doi: 10.48550/arxiv.2502.11367.
+Gao, L., Tour, T. D. l., Tillman, H., Goh, G., Troll, R., Radford, A., Sutskever, I., Leike, J., and Wu, J. Scaling and evaluating sparse autoencoders. In International Conference on Learning Representations, pp. 26721–26754, 2025. doi: 10.48550/arxiv.2406.04093.
+Grant, B., Zhao, X., and Wang, P. Not all features are created equal: A mechanistic study of vision-languageaction models. arXiv preprint arXiv:2603.19233, 2026. doi: 10.48550/arxiv.2603.19233.
+Häon, B., Stocking, K., Chuang, I., and Tomlin, C. Mechanistic interpretability for steering vision-language-action models. arXiv preprint arXiv:2509.00328, 2025. doi: 10.48550/arxiv.2509.00328.
+Hejna, J., Mirchandani, S., Balakrishna, A., Xie, A., Wahid, A., Tompson, J., Sanketi, P., Shah, D., Devin, C., and Sadigh, D. Robot data curation with mutual information estimators. arXiv preprint arXiv:2502.08623, 2025. doi: 10.48550/arxiv.2502.08623.
+Hindupur, S. S. R., Lubana, E., Fel, T., and Ba, D. E. Projecting assumptions: The duality between sparse autoencoders and concept geometry. Advances in Neural Information Processing Systems, pp. 11649–11699, 2025. doi: 10.48550/arxiv.2503.01822.
+13
+
+Huben, R., Cunningham, H., Smith, L., Ewart, A., and Sharkey, L. Sparse autoencoders find highly interpretable features in language models. In International Conference on Learning Representations, volume 2024, pp. 7827–7845, 2024.
+Jenatton, R., Obozinski, G., and Bach, F. Structured sparse principal component analysis. In International Conference on Artificial Intelligence and Statistics, pp. 366–373, 2010. doi: 10.48550/arxiv.0909.1440.
+Jin, X., Chatterjee, A., Kumar, P., and Paleja, R. Event-grounded sparse autoencoders for vision-language-action policies. arXiv preprint arXiv:2605.17204, 2026. doi: 10.48550/arxiv.2605.17204.
+Khan, M. A., Boskov, N., Anwar, F. M., and Khan, M. A. Controlling vision–language–action policies through sparse latent directions. In Mechanistic Interpretability Workshop at NeurIPS 2025, 2025.
+Khazatsky, A., Pertsch, K., Nair, S., Balakrishna, A., Dasari, S., Karamcheti, S., Nasiriany, S., Srirama, M. K., Chen, L. Y., Ellis, K., Fagan, P., Hejna, J., Itkina, M., Lepert, M., Ma, Y., Miller, P., Wu, J., Belkhale, S., Dass, S., Ha, H., Jain, A., Lee, A., Lee, Y., Memmel, M., Park, S., Radosavovic, I., Wang, K., Zhan, A., Black, K., Chi, C., Hatch, K., Lin, S., Lu, J., Mercat, J.-P., Rehman, A., Sanketi, P. R., Sharma, A., Simpson, C., Vuong, Q., Walke, H., Wulfe, B., Xiao, T., Yang, J., Yavary, A., Zhao, T., Agia, C., Baijal, R., Castro, M. G., Chen, D., Chen, Q., Chung, T., Drake, J., Foster, E. P., Gao, J., Herrera, D., Heo, M., Hsu, K., Hu, J., Irshad, M. Z., Jackson, D., Le, C., Li, Y., Lin, K., Lin, R., Ma, Z.-H., Maddukuri, A., Mirchandani, S., Morton, D., Nguyen, T., O’Neill, A., Scalise, R., Seale, D., Son, V., Tian, S., Tran, E., Wang, A., Wu, Y., Xie, A., Yang, J.-Y., Yin, P., Zhang, Y., Bastani, O., Berseth, G., Bohg, J., Goldberg, K., Gupta, A., Gupta, A., Jayaraman, D., Lim, J. J., Malik, J., Martin-Martin, R., Ramamoorthy, S., Sadigh, D., Song, S., Wu, J.-J., Yip, M. C., Zhu, Y.-K., Kollar, T., Levine, S., and Finn, C. Droid: A large-scale in-the-wild robot manipulation dataset. arXiv preprint arXiv:2403.12945, 2024. doi: 10.48550/arxiv.2403.12945.
+Kim, M. J., Pertsch, K., Karamcheti, S., Xiao, T., Balakrishna, A., Nair, S., Rafailov, R., Foster, E., Lam, G., Sanketi, P. R., Vuong, Q., Kollar, T., Burchfiel, B., Tedrake, R., Sadigh, D., Levine, S., Liang, P., and Finn, C. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024. doi: 10.48550/arxiv.2406.09246.
+Koh, P. W. and Liang, P. Understanding black-box predictions via influence functions. In International conference on machine learning, pp. 1885–1894, 2017. doi: 10.48550/arxiv.1703.04730.
+Kowal, M., Paulo, G., Jaburi, L., Tseng, T., McKinney, L. E., Heimersheim, S., Tucker, A. D., Gleave, A., and Pelrine, K. Concept influence: Leveraging interpretability to improve performance and efficiency in training data attribution. arXiv preprint arXiv:2602.14869, 2026. doi: 10.48550/arxiv.2602.14869.
+Kvinge, H., Jorgenson, G., Brown, D., Godfrey, C., and Emerson, T. Internal representations of vision models through the lens of frames on data manifolds. In Sanborn, S., Shewmake, C., Azeglio, S., and Miolane, N. (eds.), Proceedings of the 2nd NeurIPS Workshop on Symmetry and Geometry in Neural Representations, volume 228 of Proceedings of Machine Learning Research, pp. 75–115. PMLR, 2024. doi: 10.48550/arxiv.2211.10558. URL https://proceedings.mlr.press/v228/kvinge24a.html.
+Lee, J., Duan, J., Fang, H., Deng, Y.-Q., Liu, S., Li, B.-Y., Fang, B., Zhang, J.-Y., Wang, Y.-R., Lee, S.-H., Han, W., Pumacay, W., Wu, A., Hendrix, R., Farley, K., VanderBilt, E., Farhadi, A., Fox, D., and Krishna, R. Molmoact: Action reasoning models that can reason in space. In IEEE International Conference on Robotics and Automation, pp. 2585–2592, 2026. doi: 10.1109/icra57385.2026.11696546.
+Marks, S., Treutlein, J., Bricken, T., Lindsey, J., Marcus, J., Mishra-Sharma, S., Ziegler, D., Ameisen, E., Batson, J., Belonax, T., Bowman, S. R., Carter, S., Chen, B., Cunningham, H., Denison, C., Dietz, F., Golechha, S., Khan, A., Kirchner, J., Leike, J., Meek, A., Nishimura-Gasparian, K., Ong, E., Olah, C., Pearce, A., Roger, F., Salle, J., Shih, A., Tong, M., Thomas, D., Rivoire, K., Jermyn, A., MacDiarmid, M., Henighan, T., and Hubinger, E. Auditing language models for hidden objectives. arXiv preprint arXiv:2503.10965, 2025. doi: 10.48550/arxiv.2503.10965.
+Michaud, E. J., Gorton, L., and McGrath, T. Understanding sparse autoencoder scaling in the presence of feature manifolds. arXiv preprint arXiv:2509.02565, 2025. doi: 10.48550/arxiv.2509.02565.
+14
+
+Molinari, M., Nevali, L., Navani, S., and Younis, O. G. Emergent world representations in openvla. arXiv preprint arXiv:2509.24559, 2025. doi: 10.48550/arxiv.2509.24559.
+Olson, M., Hinck, M., Ratzlaff, N., Li, C.-B., Howard, P., Lal, V., and Tseng, S.-Y. Probing the representational power of sparse autoencoders in vision models. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pp. 6226–6236, 2025. doi: 10.1109/iccvw69036.2025.00648.
+Park, K., Choe, Y. J., and Veitch, V. The linear representation hypothesis and the geometry of large language models. arXiv preprint arXiv:2311.03658, pp. 39643–39666, 2023a. doi: 10.48550/arxiv.2311.03658.
+Park, S. M., Georgiev, K., Ilyas, A., Leclerc, G., and Ma¸dry, A. Trak: Attributing model behavior at scale. arXiv preprint arXiv:2303.14186, pp. 27074–27113, 2023b. doi: 10.48550/arxiv.2303.14186.
+Prasad, A. V., Watts, C., Merullo, J., Gala, D., Lewis, O., McGrath, T., and Lubana, E. S. Features as rewards: Scalable supervision for open-ended tasks via interpretability. arXiv preprint arXiv:2602.10067, 2026. doi: 10.48550/arxiv.2602.10067.
+Rajamanoharan, S., Lieberum, T., Sonnerat, N., Conmy, A., Varma, V., Kramár, J., and Nanda, N. Jumping ahead: Improving reconstruction fidelity with jumprelu sparse autoencoders. arXiv preprint arXiv:2407.14435, 2024. doi: 10.48550/arxiv.2407.14435.
+Rimsky, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., and Turner, A. Steering llama 2 via contrastive activation addition. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pp. 15504–15522, 2024.
+Siméoni, O., Vo, H. V., Seitzer, M., Baldassarre, F., Oquab, M., Jose, C., Khalidov, V., Szafraniec, M., Yi, S., Ramamonjisoa, M., Massa, F., Haziza, D., Wehrstedt, L., Wang, J., Darcet, T., Moutakanni, T., Sentana, L., Roberts, C., Vedaldi, A., Tolan, J., Brandt, J., Couprie, C., Mairal, J., Jégou, H., Labatut, P., and Bojanowski, P. Dinov3. arXiv preprint arXiv:2508.10104, 2025. doi: 10.48550/arxiv.2508.10104.
+Swann, A., McGranahan, L., Buurmeijer, H., Kennedy, III, M., and Schwager, M. Sparse autoencoders reveal interpretable and steerable features in vla models. arXiv preprint arXiv:2603.19183, 2026. doi: 10.48550/arxiv.2603.19183.
+Templeton, A., Conerly, T., Marcus, J., Lindsey, J., Bricken, T., Chen, B., Pearce, A., Citro, C., Ameisen, E., Jones, A., Cunningham, H., Turner, N. L., McDougall, C., MacDiarmid, M., Tamkin, A., Durmus, E., Hume, T., Mosconi, F., Daniel Freeman, C., Sumers, T. R., Rees, E., Batson, J., Jermyn, A., Carter, S., Olah, C., and Henighan, T. Scaling monosemanticity: Extracting interpretable features from claude 3 sonnet. arXiv [cs.AI], 28 May 2026. doi: 10.48550/arxiv.2605.29358.
+Turner, A. M., Thiergart, L., Leech, G., Udell, D., Vazquez, J. J., Mini, U., and MacDiarmid, M. Steering language models with activation engineering. arXiv preprint arXiv:2308.10248, 2023. doi: 10.48550/arxiv.2308.10248.
+Yuan, M. and Lin, Y. Model selection and estimation in regression with grouped variables. Journal of the Royal Statistical Society Series B: Statistical Methodology, 68(1):49–67, 2006.
+Zhu, X., Khalili, M., and Zhu, Z. Abstopk: Rethinking sparse autoencoders for bidirectional features. In International Conference on Learning Representations, pp. 50325–50352, 2026. doi: 10.48550/arxiv.2510. 00404.
+15
+
+A Behavior Shaping: Implementation Details
+Concept Based Attribution. We labeled 81 timesteps of failed-grasp recovery and 25 timesteps of successful grasps, drawn from real-robot rollouts of π0.5-DROID on a pick-and-place task. F1515 fires on 56 of the 81 recovery timesteps and on none of the 25 successful grasps. We use this feature to scan the full DROID training set for other failure-recovery behavior. For each timestep we record the F1515 block norm summed over all image and text tokens, E, and the number of tokens where the block is active, C. A timestep is active if E ≥ 150 and C ≥ 50. Runs of at least two consecutive active frames, with single-frame gaps bridged, form a recovery event. Across the entire dataset this flags 4,866 of 74,604 episodes (6.5%). The median duration is 1.1s.
+Figure 10: Highest-scoring frames for each labeler. Each column shows five DROID episodes for one method. For the four scored methods, these are the five highest-scoring episodes, and t is the highest-scoring evaluated frame within that method’s selected windows. Random has no score, so its column shows five randomly drawn windows with t at each window’s midpoint; its row order carries no meaning.
+Baselines. Every baseline scores the same evaluated frames. Its threshold is chosen so that its windows, built with the same event and padding rules, cover exactly as many raw frames as the F1515 windows (150,656).
+• Difference of means. A direction in the mean-pooled layer-9 residual, fit to separate the 81 recovery timesteps from all other frames of the same seven episodes, with the within-class covariance shrunk toward the identity (α = 0.95, chosen by nested leave-one-episode-out cross-validation). Frames are scored by projection onto this direction.
+• kNN. Each frame’s mean-pooled layer-9 residual, centered on the annotated-rollout mean, is scored by its mean cosine similarity to the five nearest recovery timesteps minus its mean cosine similarity to the five nearest successful-grasp timesteps.
+• Influence Functions. Following CUPID (Agia et al., 2025), we estimate action influence, the effect of a training state–action pair on the policy’s log-likelihood of a query action, with TRAK (Park et al., 2023b). We compute per-example gradients of the flow-matching loss with respect to the action expert (430M parameters) of the baseline policy, randomly project them to 4,096 dimensions, and apply the Gauss–Newton kernel. CUPID weights action influence by the binary return of closed-loop rollouts, estimating each demonstration’s effect on expected return, and curates whole demonstrations. We target a specific behavior rather than task success. The query is therefore the annotated recovery timesteps, contrasted against the successful-grasp timesteps, and each training frame is scored as its mean influence on the recovery queries minus its mean influence on the successful-grasp queries. Scores stay at the frame level, so the same budget and windowing apply as for every other labeler.
+16
+
+• Random. Windows with the same count and length distribution as the F1515 windows, placed uniformly at random in episodes F1515 did not flag.
+Selections overlap little with the concept windows: Jaccard similarity over raw frames is 0.20 for difference of means, 0.09 for kNN, 0.02 for TRAK and 0.00 for random. Figure 10 shows the highest-scoring frames selected by each method.
+
+Training. All policies are fine-tuned from π0.5-base on 98% of DROID (73,112 episodes); the remaining 2% is held out. Training runs for 25k steps at batch size 1024 with a constant learning rate of 10−4 after a 1k-step warmup, on 32 H100s. All runs share the same seed and data order. For the masked policies, the flow-matching loss is zeroed for any 16-step action chunk containing a selected frame; observations are unchanged. Because window lengths differ, the masked fraction of action tokens varies slightly: 1.38% for concept, 1.28% for difference of means, 1.27% for kNN, 1.44% for TRAK and 1.27% for random.
+
+B Steering
+
+B.1 Open-Loop Steering Protocol
+
+Our goal is to find a set of features which steers the robot toward a target object on a set discovery inputs and then evaluated, on held-out inputs with fresh noise seeds. Consider a scene with a banana on the left and an apple on the right. We task the robot with “pick up the banana", our goal is to steer it to instead pick up the apple using three different means: steering semantic representations (changing what the model thinks the target object is), steering visual tokens (changing where the model sees the target object) or geometry representations (changing the model’s internal representation of the location of the target object). For each of these we have a different held out set to evaluate our steering on. Semantic steering is evaluated on the other mirrored layout. So for example if we have a set of features which redirects the policy from the banana towards the apple we may evaluate this on a different scene where the position of the banana and apple are flipped. For visual token steering we evaluate with the other object’s instruction and for geometry we evaluate on an entirely new scene (leave-one-pair-out over the 13 pairs). The experimental setup is shown in Figure 11. Steering results are conducted on MolmoACT2.
+
+Finding features. We want to find a compact set of features that steers the policy as well as patching the full activation does, since the number of features needed measures how directly a featurizer’s units capture the representation that drives the behaviour. Searching all feature subsets is intractable, so we use a greedy procedure. Candidates are the BSF blocks or SAE latents are ranked by how much their activation differs between the prompted and redirected conditions. We add features to a group until its steering effect recovers at least 75% of the patching effect. Then we remove features one at a time while the set still recovers over 75% of patching effect, so the reported sets are small but not guaranteed to be the smallest possible.
+
+Applying features. The policy represents the task at different layers and tokens in different forms. Activation patching localizes three sites where the target object is determined: the early noun token encodes which object is requested, mid-layer image tokens encode where each object appears, and the late action-readout token encodes where the arm should move. At the L3 noun token, the selected features’ contribution is replaced with that of the redirected instruction. At the 63 L7 image tokens, the recipient’s activation within the selected features’ subspace is replaced, token by token, with that of the mirrored scene. The 63 tokens are a fixed 9 × 7 window (rows 7–13, columns 2–10 of the 14 × 14 exo-camera patch grid) covering the table region where both objects appear in every layout. These tokens are 78% of the image-token activation difference between mirrored layouts and the background remains the same between scenes. Geometric edits add one fixed vector at the L23 action-readout token.
+
+Measuring recovery. We compare the endpoint of the predicted action chunk under steering and under activation patching, each relative to the unmodified policy and averaged over six held-out noise seeds:
+
+R
+
+=
+
+100
+
+⟨∆xsteer, ∆xpatch⟩ ∥∆xpatch∥2
+
+.
+
+A value of 100% means steering moves the endpoint as far as patching, in the same direction. Our patching replaces the full activation at the noun token, all 196 exo-image tokens, or all 79 text tokens at the intervention layer.
+
+17
+
+B.2 Closed-loop Steering
+
+Figure 11: Open and closed-loop steering setups. Open loop (Section B.1): we find candidate semantic features and evaluate them on the mirrored scene for semantic features. Visual edits are instead evaluated under the other object’s instruction, and geometric edits on held-out object pairs. Closed loop: feature sets are discovered on both mirrored layouts, then fixed and tested on new scenes and tasks, “pick up the banana and put it in the basket".
+
+Feature sets for the closed-loop evaluation are selected with the semantic procedure of Appendix B.1 and shown in Figure 4. We evaluate on new untested scenes and tasks Because no benchmark scene needs to be held out, each object pair and direction is calibrated on both mirrored layouts at once. Feature sets are fixed before evaluation and applied without gain tuning at the noun token of the prompt “pick up the [noun] and put it in the basket” throughout each episode. Note that this is different than the scene and task we used to identify the relevant features: “pick up the [noun]“. Each object pair is evaluated in both directions with 10 trials per direction.
+
+A→B
+
+B→A
+
+Objects (A / B) Featurizer # Feat. Select Grasp Successful # Feat. Select Grasp Successful
+
+Apple / banana SAE BSF
+
+2 10/10 9/10 7/10 2 10/10 10/10 9/10
+
+2 8/10 8/10 8/10 3 10/10 9/10 9/10
+
+Cable / bowl SAE BSF
+
+3 10/10 9/10 8/10 2 10/10 10/10 10/10
+
+2 10/10 10/10 9/10 2 10/10 10/10 10/10
+
+Towel / mouse SAE
+
+4 6/10 5/10 4/10
+
+2 9/10 9/10 9/10
+
+BSF
+
+4 10/10 9/10 8/10
+
+1 10/10 10/10 10/10
+
+Table 3: Closed-loop redirection by direction. Trials out of 10. Full version of Table 1. A → B: instructed to
+
+pick up A while steered toward B. Feat.: number of features in the intervention; Grasp counts trials that grasp the
+
+redirected object; Successful counts trials that place it in the basket.
+
+C Featurizer Training and Evaluation
+Activation Collection We record the residual stream at the output of language backbone block L (zero-indexed). Featurizers are trained at every odd block of MolmoAct2 (L ∈ {1, 3, . . . , 35}) and of π0.5 (L ∈ {1, 3, . . . , 17}), and at blocks {1, 3, 13, 15, 24} of MolmoBot. Every image, text, and state token of the is kept as a separate activation. We collect activations from MolmoAct2 and π0.5 on the DROID dataset (Khazatsky et al., 2024).For MolmoBot, which is trained entirely in simulation, we collect activations on its own training distribution (Deshpande et al., 2026). We collect and train on approximately 50M activations for each model and layer combination. To eliminate issues with outlier tokens we filter tokens by activation magnitude [p0.5, min(p99.5, 8 · median)], removes between 1–5% of tokens depending on the layer. We then subtract a per-position mean computed over training tokens and rescale activations to a mean squared norm of d.
+Training Decoder blocks are initialized as Gaussian matrices with unit Frobenius norm, the encoder is initialized to the decoder transpose, and benc = 0. Once training begins the encoder and decoder are untied. The loss is the squared error of reconstructing the clean input from a lightly co√rrupted one: before encoding we add isotropic Gaussian noise with per-coordinate standard deviation 0.1∥x∥2/ d (1% of the token’s energy). To revive unused blocks we add the AuxK loss of Gao et al. (2025) The featurizers used throughout the paper (phenomenology, steering, data shaping, and the per-layer comparison) are trained with a b = 3 BSF with k = 21 and the SAEs are
+18
+
+a b = 1 BSF with k = 63. Both have the same number of coordinates in total. They train for 10 epochs, on one H200. We use Adam with a constant learning rate of 10−4 on batches of 16,384 tokens drawn from an 8M-token shuffle buffer; BatchTopK selects blocks during training and a fixed threshold (an EMA of the training thresholds, decay 0.99) at inference, a block counts as dead for AuxK (weight 1/k) after 1,000 steps without selection, and every 20th episode is held out for evaluation (at most 1M tokens). Fisher-weighted featurizers Section 2 contrasts the standard reconstruction loss (Eq. (6)), which weights every activation direction equally, with the functional error eFˆe⊤ (Eq. (7)), which counts only errors that change the policy’s action. The functional error alone would leave the null space of Fˆ unconstrained, so we add a small isotropic term. Fisher-weighted featurizers minimize E e (Fˆ/λ¯ + δI) e⊤ , where λ¯ is the mean eigenvalue of Fˆ and δ = 0.25 keeps one fifth of the weight as plain MSE. We implement this by training an unchanged featurizer on whitened activations xWf with Wf = (Fˆ/λ¯ + δI)1/2, and map decoded features and steering edits back to the residual stream with Wf−1. We train Fisher-weighted featurizers for MolmoAct2 at every odd block up to 33. For a 2,000 DROID episode subset, we compute the gradient of the teacher-forced log-likelihood of the on policy action tokens with respect to the residual stream, yielding roughly 28M activation–gradient pairs per layer, and clip gradient norms to their [p0.5, p99.5] range.
+19
+
+

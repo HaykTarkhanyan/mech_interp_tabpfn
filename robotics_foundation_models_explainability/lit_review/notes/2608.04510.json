@@ -1,0 +1,43 @@
+{
+  "id": "2608.04510",
+  "title": "GUARD: Grounding Uncertainty and Ablation-Based Risk Detection for Diffusion-Based VLAs",
+  "first_author": "Hegde",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0 (LIBERO, SimplerEnv)", "SmolVLA (LIBERO, MetaWorld)", "Alpamayo-1.5 driving VLA (PhysicalAI-AV)"],
+  "action_head": "flow/diffusion action expert (conditioned on the VLM's final KV cache via prefix or cross-attention)",
+  "methods": ["gradient saliency of the action-chunk norm w.r.t. token-indexed entries of the final VLM KV cache", "counterfactual mean-ablation of the top 10% salient visual and language cache entries", "single-step denoising response comparison (sensitivity, modality bias)", "final-layer action-to-context attention entropy and 'grounding efficiency'", "episode-calibrated low-sensitivity events", "temporal classifier (GRU/LSTM/Transformer) plus functional conformal thresholds"],
+  "question": "Does a diffusion VLA's action generation stop depending on its most salient visual and language evidence before it fails, and can that loss of 'grounding', measured by counterfactual KV-cache ablation, serve as a transferable failure detector?",
+  "key_findings": [
+    "Unseen-task ROC-AUC averaged over five policy-benchmark settings (Table 1): GUARD 88.84 vs FIPER 83.11, SAFE 76.22, STAC 55.64; GUARD is first on 4 of 5 unseen settings and second on SmolVLA MetaWorld (FIPER 99.69 vs GUARD 98.84).",
+    "Seen-task average: GUARD 89.99 vs best (cosine distance) 90.18 and SAFE 90.05; embedding-distance detectors drop sharply from seen to unseen.",
+    "Per setting unseen: pi0 LIBERO 91.24 (FIPER 89.46, SAFE 82.64); SmolVLA LIBERO 91.06 (FIPER 84.97); pi0 SimplerEnv 90.98 (FIPER 88.95, SAFE 80.11); Alpamayo PhysicalAI-AV 72.08 (FIPER 68.46).",
+    "Saliency-targeted ablation matters: at 10% ablation, top-saliency beats random selection by 8.10 and least-salient selection by 9.84 unseen ROC-AUC points on average; ablating 30% or 50% is worse than 10% in four of five settings (Table 2).",
+    "In thresholded online detection GUARD leads balanced accuracy on 3 of 5 settings; FIPER is best on pi0 SimplerEnv and Alpamayo.",
+    "Overhead is 1.14x per action-generation step for pi0 and 1.27x for SmolVLA, dominated by the saliency backward pass."
+  ],
+  "evidence": {
+    "setting": "simulation and offline driving data (no physical robot)",
+    "benchmarks": ["LIBERO-10", "SimplerEnv", "MetaWorld", "NVIDIA PhysicalAI-AV (failure = min-ADE > 3.0)"],
+    "scale": "three seen/unseen task splits per setting; per-task rollout counts in appendix tables (not extracted here); seeds beyond the three splits not reported",
+    "statistics": "no: point ROC-AUC values, no std, CIs or tests in the main table",
+    "baselines": "SAFE, Euclidean, cosine, Mahalanobis, PCA-kMeans, logpZO, FIPER, STAC, STAC-single; random and least-salient ablation controls"
+  },
+  "causal_validation": "Partly. The detector itself is built from interventions (mean-ablation of salient KV entries), and a random/least-salient ablation control shows the targeted intervention is what carries the signal. But the claim that failures are caused by weakened grounding is not tested by intervening to restore grounding, and the ablations measure single-step denoising change, not changes in executed behavior.",
+  "closed_loop": "No. Ablations are counterfactual probes computed alongside the policy without changing executed actions; detection is evaluated on recorded rollouts and offline driving clips.",
+  "limitations_stated": [
+    "Only applicable to VLAs with diffusion/flow action heads, not autoregressive ones.",
+    "Saliency backward pass needs retained action-head activations and increases peak VRAM."
+  ],
+  "critique": [
+    "One of the few failure-detection papers whose signal is itself an interpretability intervention (attribution plus ablation), and it is checked against random and least-salient ablation controls, which strengthens the 'grounding' reading.",
+    "The pi0 SimplerEnv baseline numbers (e.g. Euclidean 89.73 / 68.41, cosine 90.19 / 71.32, Mahalanobis 88.42 / 52.84, logpZO 88.79 / 74.66) appear identical to those in SAFE's Table 1 (2506.09937), suggesting copied baseline results rather than reruns on GUARD's own rollouts; if so, that comparison is not like-for-like.",
+    "The 'grounding' interpretation is plausible but unproven: low sensitivity to ablation could also reflect saturated or confident action-head states that are not failures; Fig. 1 is a single qualitative example.",
+    "Mean ablation over the selected tokens is a standard but not neutral counterfactual; no comparison with resampling or zero ablation of the KV entries is reported in the main text.",
+    "No real-robot evaluation; the driving case is open-loop data with an ADE threshold as the failure label.",
+    "Episode score is the mean over windows, so unlike max-pooling it is not directly an online alarm; online results rely on separate conformal thresholds."
+  ],
+  "code": "not reported",
+  "one_line": "Ablating the most salient visual and language KV-cache entries feeding a diffusion VLA's action head and measuring how little the denoising output changes gives a failure signal that generalizes to held-out tasks better than SAFE or FIPER on pi0, SmolVLA and a driving VLA."
+}

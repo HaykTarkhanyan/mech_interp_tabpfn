@@ -1,0 +1,40 @@
+{
+  "id": "2603.15618",
+  "title": "Look Before Acting: Enhancing Vision Foundation Representations for Vision-Language-Action Models",
+  "first_author": "Luo",
+  "year": 2026,
+  "venue": "arXiv preprint (under review)",
+  "tier": "core",
+  "models": ["OpenVLA (analysis)", "pi0 (analysis)", "QwenVLA-OFT (custom Qwen3-VL 4B baseline, analysis and base model)", "DeepVision-VLA (proposed: QwenVLA-OFT + DINOv3 vision expert)", "baselines incl. pi0.5, HybridVLA, CogACT, OpenVLA-OFT"],
+  "action_head": "mixed in the analysis: discrete action tokens (OpenVLA), flow/diffusion action expert (pi0), regression head (QwenVLA-OFT, L1 parallel decoding); proposed model uses the regression head",
+  "methods": ["layer-wise Grad-CAM of visual tokens with respect to predicted action", "layer-wise zero-masking of a fraction of ROI visual tokens (Grounding-DINO boxes for arm, object, interaction area) with action MSE as metric", "Vision-Language Mixture-of-Transformers: shared attention injecting DINOv3 QKV into the last 16 backbone layers", "Action-Guided Visual Pruning using shallow-layer action-to-vision attention"],
+  "question": "Does the influence of task-relevant visual tokens on action prediction fade in deeper backbone layers of VLAs, and does injecting vision-foundation features into deep layers help?",
+  "key_findings": [
+    "Across OpenVLA, pi0 and QwenVLA-OFT (1,500 BridgeV2 trajectories), zeroing ROI visual tokens in shallow layers sharply increases action MSE, while the effect shrinks with depth and complete ROI removal in the deepest layers causes only minor changes (Fig. 2, values not tabulated in the text).",
+    "Grad-CAM maps are concentrated on the object and arm in shallow layers and diffuse in deeper layers for all three models (qualitative).",
+    "RLBench (10 tasks, 20 rollouts x 3 seeds): DeepVision-VLA 83% vs HybridVLA 74%, QwenVLA-OFT 69%, pi0.5 65%, CogACT 61%; e.g. Sweep to Dustpan 0.95 vs 0.15 over the base.",
+    "Ablations (4 tasks, 50 rollouts each): base 65.5%; early fusion of DINOv3 73%; feature alignment to DINOv3 67%; VL-MoT 88%; using the first 16 DINOv3 layers 61.5%, uniform 85%, last 16 88%; SigLIP instead of DINOv3 77%; pruning guided by DINOv3 CLS 65.5%, by instruction-to-vision attention 84%, by action-to-vision attention 88%.",
+    "Real Franka, 4 tasks: average 91.7% vs pi0.5 84.2%, QwenVLA-OFT 74.2%, OpenVLA-OFT 71.7%."
+  ],
+  "evidence": {
+    "setting": "both (offline BridgeV2 analysis; RLBench simulation; real Franka)",
+    "benchmarks": ["BridgeV2 (offline analysis)", "RLBench (10 tasks)", "4 real-world Franka tasks"],
+    "scale": "analysis on 1,500 trajectories; RLBench 20 rollouts x 3 seeds per task; ablations 50 rollouts per task; real-robot trial count per task not reported in the text read",
+    "statistics": "no tests or CIs",
+    "baselines": "OpenVLA, SpatialVLA, CogACT, CoT-VLA, pi0.5, HybridVLA, QwenVLA-OFT; fusion and pruning variants"
+  },
+  "causal_validation": "Partly: the ROI masking is an intervention, but measured as open-loop action MSE on offline data. There is no random-token masking control, and the design cannot separate 'deep layers ignore vision' from 'visual information was already copied into text and action tokens in earlier layers'. The architecture change is validated behaviorally, not as a test of the mechanism.",
+  "closed_loop": "The diagnostic analysis is open-loop (offline action MSE); the proposed model is evaluated closed-loop in RLBench and on a real robot.",
+  "limitations_stated": [
+    "Not stated in a separate section in the text read; the authors note that other vision experts than DINOv3 are left for future work."
+  ],
+  "critique": [
+    "The central diagnostic is confounded: in a causal transformer, masking visual tokens at layer L only removes information that has not already been moved into later token positions. Low late-layer sensitivity is the expected signature of information routing (cf. 2610.20750, where geometric information sits in later text positions), not evidence that vision is 'underutilized'.",
+    "The architecture adds a 0.8B DINOv3 expert and higher-resolution input (512x512), so gains may come from extra capacity and resolution rather than fixing a deep-layer deficit; the early-fusion baseline (73%) only partly controls for this.",
+    "The authors' own base model (QwenVLA-OFT) is pretrained by them while baselines use released weights and recommended configs, a common but uneven comparison.",
+    "Grad-CAM diffuseness in deep layers is qualitative and method-dependent.",
+    "Mainly a model paper; the interpretability contribution is a motivating observation."
+  ],
+  "code": "project page https://deepvision-vla.github.io/ (code status not stated)",
+  "one_line": "Masking object and arm visual tokens hurts action prediction less in deeper backbone layers of OpenVLA, pi0 and a Qwen-based VLA, which motivates injecting DINOv3 features into the deep layers, giving higher success on RLBench and a real Franka."
+}

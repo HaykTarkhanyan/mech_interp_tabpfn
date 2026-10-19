@@ -1,0 +1,39 @@
+{
+  "id": "2607.14943",
+  "title": "Steering Robustness into World Action Models via Mechanistic Interpretability and Optimal Control",
+  "first_author": "Hong",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["Cosmos-Policy 2B", "DiT4DiT", "LingBot-VA"],
+  "action_head": "world-action model: diffusion-transformer video-generation backbone that denoises latent actions together with future states",
+  "methods": ["linear separability of activations (hinge loss) between nominal and perturbed rollouts", "contrastive activation addition (ActAdd)", "closed-loop steering by LQR on locally linearised activation dynamics (WA-LQR)"],
+  "question": "Do world-action models represent robustness-relevant perturbations (camera orientation, initial gripper position, image noise) in a linearly separable way, and can that be used to steer them back to success without fine-tuning?",
+  "key_findings": [
+    "Separability is architecture-dependent: Cosmos-Policy and DiT4DiT show clear low-dimensional linear separation of perturbed vs nominal activations; LingBot-VA does not.",
+    "Separability predicts steerability: hinge loss correlates negatively with steering gains across models and perturbations.",
+    "Cosmos-Policy, camera-orientation perturbation, LIBERO-10, average over 5 task transfers: no steering 46.0% +-4.1, prompt steering 46.7%, ActAdd 49.3%, WA-LQR 59.3% +-4.0.",
+    "DiT4DiT: initial-gripper perturbation 65.7% -> 65.8% (ActAdd) -> 71.7% (WA-LQR); Gaussian image noise 15.6% -> 43.3% (ActAdd) -> 48.9% (WA-LQR).",
+    "LingBot-VA: no major improvement from steering; open-loop ActAdd often degrades success through over-steering, which closed-loop WA-LQR avoids.",
+    "ActAdd is hyperparameter-fragile: under Gaussian noise its gain peaks sharply at one steering scale (gamma = 0.1) and vanishes for smaller or larger values.",
+    "Linear directions that work for all scenes and tasks could not be constructed; directions transfer only within discovered task groups."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10 with camera, gripper and noise perturbations"],
+    "scale": "30 trials per task (Cosmos-Policy), 20 trials per task (LingBot-VA); 5 task transfers per perturbation",
+    "statistics": "partial: +- values reported per cell (appear to be standard errors over trials); no significance tests",
+    "baselines": "no steering, prompt steering, open-loop ActAdd"
+  },
+  "causal_validation": "Yes: steering interventions in closed-loop rollouts test whether the separating directions control behavior; separability is used as a prediction that the steering results then confirm or refute per architecture.",
+  "closed_loop": "Yes, success rates are from closed-loop LIBERO rollouts; WA-LQR is itself a closed-loop controller on activations.",
+  "limitations_stated": ["Limited applicability across tasks and models; requires per-setting mechanistic analysis", "Strong dependence on model architecture", "No method to predict when tasks share transferable representations"],
+  "critique": [
+    "The steering directions are built from rollouts labelled by success or failure under the same perturbation family, so 'steering robustness in' is partly supervised adaptation to a known shift rather than a general robustness mechanism.",
+    "Simulation only, single benchmark; the headline 'up to 41%' is a best cell, while the camera-orientation average gain over no steering is 13.3 points.",
+    "ActAdd's sharp sensitivity to gamma raises the question of how the scale was chosen and whether it was tuned on evaluation tasks; not reported.",
+    "The useful contribution is the negative half: separability as a cheap pre-check that predicts when steering will fail (LingBot-VA)."
+  ],
+  "code": "project website and code linked in the paper",
+  "one_line": "Robustness-relevant perturbations are linearly separable inside some world-action models but not others; where they are, contrastive and LQR-based activation steering raises success under shift, and separability predicts in advance where steering will work."
+}

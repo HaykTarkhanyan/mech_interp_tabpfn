@@ -1,0 +1,45 @@
+{
+  "id": "2510.25616",
+  "title": "Don't Blind Your VLA: Aligning Visual Representations for OOD Generalization",
+  "first_author": "Kachaev",
+  "year": 2025,
+  "venue": "ICML 2026 (arXiv v1 Oct 2025 says 'under review')",
+  "tier": "core",
+  "models": ["OpenVLA-7B", "PrismaticVLM (base VLM)", "Qwen2.5-VL-7B", "InternVL3.5-4B/8B", "Ovis2.5-2B/9B"],
+  "action_head": "discrete action tokens",
+  "methods": ["attention-map visualization", "t-SNE of token embeddings", "linear probing (ImageNet-100)", "VL-Think behavioral task suite", "representation-alignment regularizer (cosine loss to frozen C-RADIOv3 teacher)"],
+  "question": "Does action fine-tuning of a VLA degrade the vision-language representations inherited from its VLM, and can a lightweight alignment loss during SFT preserve them and improve OOD generalization?",
+  "key_findings": [
+    "Naive SFT of OpenVLA lowers ImageNet-100 linear-probe accuracy on intermediate visual features: pretrained 79.88%, SFT 77.48%, Align 82.13%, C-RADIOv3 teacher 87.31% (Table 3).",
+    "VL-Think (8 board-selection domains in Simpler/WidowX): OpenVLA-7B is below its base PrismaticVLM in most domains, e.g. Arrow 0.26 vs 0.47, PublicInfo 0.24 vs 0.62, Weather 0.32 vs 0.62, Shape 0.40 vs 0.59; Color is the only domain at parity (0.69 vs 0.69) (Table 2).",
+    "Align only partly recovers VL-Think: Color 0.69->0.82, Shape 0.40->0.48, PublicInfo 0.24->0.30, but Arrow 0.26->0.24, Weather 0.32->0.27, Traffic 0.29->0.28 (Table 2).",
+    "OOD success on the RL4VLA-style Simpler benchmark improves with Align in most columns, e.g. Carrot 0.49->0.61, Instruct 0.74->0.83, Position 0.43->0.58 (Table 1); the paper states 'up to a 10% relative gain'.",
+    "Freezing the visual encoder during SFT collapses success to ~0.01-0.05 across all columns (Table 1).",
+    "Ablations: middle-layer alignment beats early (Semantic 0.61 vs 0.51, p<0.01) and late (0.54, p=0.03); Backbone2Enc beats Enc2Enc on Semantic (0.61 vs 0.55, p=0.01); C-RADIOv3 beats DINOv2/SigLIP/Theia; frozen MLP projector beats trainable ones; cosine loss with weight 0.2 best.",
+    "Qualitative: OpenVLA attention maps in layers ~14-24 are diffuse ('attention sink') vs object-centred Qwen2.5-VL; t-SNE of COCO object tokens shows overlapping classes for OpenVLA vs separated for PrismaticVLM/Qwen2.5-VL."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["Simpler (WidowX-250S, ManiSkill3) OOD benchmark from RL4VLA (Liu et al. 2025): Semantic / Vision / Execution axes", "VL-Think (new, 8 domains)", "ImageNet-100 linear probing", "COCO (t-SNE, 3 classes)"],
+    "scale": "1400 motion-planner demonstrations for SFT; each model variant evaluated over 128 randomized evaluation seeds per environment; appears to be one training run per configuration (training-seed variance not reported)",
+    "statistics": "partial: mean +/- SD over 128 eval seeds; one-sided paired Wilcoxon signed-rank tests for ablations; no tests reported for the main Default vs Align comparison in Table 1; no training-seed replication",
+    "baselines": "Default SFT (LoRA), Freeze (frozen visual encoder); VLM references InternVL3.5, Ovis2.5, Qwen2.5-VL, PrismaticVLM"
+  },
+  "causal_validation": "No interpretability claim is causally tested inside the model. The intervention is a training-time regularizer, and its effect is measured behaviorally. Attention-sink and collapse claims rest on attention maps and t-SNE (the appendix itself says t-SNE plots are illustrative only).",
+  "closed_loop": "Yes for the policy results: OOD success and VL-Think VLA success are closed-loop simulated rollouts. The VLM side of VL-Think is a static VQA prompt, not closed-loop.",
+  "limitations_stated": [
+    "Compute constraints: study covers fine-tuning only, not full-scale pretraining.",
+    "Align leaves most VL-Think domains unchanged; authors hypothesize the small, low-diversity SFT set and limited LoRA expressivity cannot restore rare concepts.",
+    "Linear probing run on a reduced ImageNet-100 due to compute; t-SNE plots are illustrative only."
+  ],
+  "critique": [
+    "Only one model (OpenVLA, discrete tokens) and only simulation; no flow/diffusion-head VLA, no real robot, so the 'VLA fine-tuning blinds the model' claim is narrower than the title suggests.",
+    "VL-Think compares a VLM answered via VQA prompt with a VLA scored on closed-loop placing; these are different measurement channels, so the VLM-VLA gap mixes knowledge loss with action-readout difficulty.",
+    "The claim of 'consistent improvements across all axes' is contradicted by its own Table 1: PosChangeTo is 0.23 Default vs 0.20 Align.",
+    "Near-zero success of the Freeze baseline is suspicious for a LoRA setup and suggests a configuration problem rather than evidence about frozen representations.",
+    "Attention-sink and representation-collapse claims are qualitative (cherry-pickable maps, t-SNE on 3 COCO classes); only the 2.4-point ImageNet-100 probe drop quantifies degradation.",
+    "Evaluation seeds are not training seeds; with one training run per configuration, the p-values reflect eval-episode variance only."
+  ],
+  "code": "blind-vla-paper.github.io",
+  "one_line": "Fine-tuning OpenVLA on robot actions erodes some of its VLM's visual knowledge (lower probe accuracy, worse symbol grounding), and a cosine alignment loss to a frozen vision teacher on middle layers partly fixes it and improves simulated OOD success."
+}

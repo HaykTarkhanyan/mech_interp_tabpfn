@@ -1,0 +1,44 @@
+{
+  "id": "2603.19183",
+  "title": "Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models",
+  "first_author": "Swann",
+  "year": 2026,
+  "venue": "arXiv preprint (v2 Jun 2026)",
+  "tier": "core",
+  "models": ["pi0.5-LIBERO", "pi0.5-DROID", "OpenVLA (LIBERO fine-tuned)"],
+  "action_head": "flow/diffusion action expert (pi0.5, main) and discrete action tokens (OpenVLA, secondary)",
+  "methods": ["TopK SAEs with AuxK on mean-pooled residual stream (PaliGemma and action-expert layers 0/5/11/17)", "feature generality metrics (episode coverage, onset count, activation magnitude, relative run length) + logistic-regression general-vs-memorized classifier", "additive steering and projection ablation of single SAE decoder directions", "comparison with FFN-neuron steering (Haon et al.)"],
+  "question": "Do SAEs on VLA residual streams find interpretable, general (not memorized) features, and does steering or ablating those features change closed-loop robot behavior in predictable ways?",
+  "key_findings": [
+    "79.2% of 120 randomly sampled SAE features (pi0.5 and OpenVLA layers) are judged interpretable vs 30.0% of 20 sampled FFN neurons (Haon et al. adaptation).",
+    "Share of features classified as general: pi0.5-DROID 10.81%, pi0.5-LIBERO 2.62%, OpenVLA-LIBERO-Goal 0.45% (Table 1), read as broader fine-tuning data giving more reusable features.",
+    "Real DROID ablation on two held-out tasks (4 features x 5 trials per task per tier): unsteered 39/40, memorized-feature ablation 37/40, random general 26/40, top-4 most general 0/40 (Table 2).",
+    "With an empty instruction, steering a single object feature biases target grasps by +9 to +21 of 25 trials over baseline (e.g. sponge 1/25 -> 22/25), vs +1 to +4 for FFN-neuron steering (Table 3).",
+    "Gripper control: 'close the gripper' prompt gives closure 0.005; SAE feature F586 gives 0.653; FFN neuron 0.361 (5 trials each, first 50 steps). Opening: prompt 0.575, SAE F406 0.510, FFN 0.938 (Table 4).",
+    "Authors report many clean-looking features have limited or unpredictable causal effects when steered."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["LIBERO (training-set activations, 1,693 episodes)", "DROID 2,000-episode subset (activations)", "real DROID Franka setup, two scenes"],
+    "scale": "ablation: 4 features x 5 trials x 2 tasks per tier; object steering: 25 trials per target; gripper: 5 trials per condition; interpretability: 120 SAE features, 20 FFN neurons",
+    "statistics": "no: raw counts only, no CIs or tests",
+    "baselines": "unsteered policy, language prompting, FFN-neuron steering (Haon et al. 2509.00328), memorized-feature ablation"
+  },
+  "causal_validation": "Yes: additive steering and projection ablation of single SAE features, evaluated in closed-loop real-robot rollouts, with tiered controls (memorized vs general features).",
+  "closed_loop": "Yes, on a real Franka DROID setup (plus LIBERO ablations in the appendix).",
+  "limitations_stated": [
+    "Meaningful top activations do not imply reliable steerability; many clean features have limited or unpredictable causal impact.",
+    "Some features do not fit the general-vs-memorized split (e.g. general but only at episode start or end; general but rare).",
+    "Orders of magnitude less data than VLM SAE work.",
+    "Mainly mean-pooled tokens per timestep; per-token SAEs are less interpretable."
+  ],
+  "critique": [
+    "The ablation tiers are not matched on activation magnitude or frequency. 'Most general' features have the highest coverage by construction, so projecting them out removes the largest, most frequent directions, and 0/40 could be generic damage rather than loss of a semantic primitive. A frequency- and norm-matched random-direction control is missing.",
+    "Interpretability rates come from author labeling of top-activating trajectories without blind raters, and the FFN baseline is only 20 neurons.",
+    "Steering strengths (alpha 25-150) differ per feature and method and appear hand-tuned; small trial counts (5-25) and no statistics.",
+    "SAEs use a 1x expansion ratio with k=100 of 2048 active, i.e. not overcomplete and not very sparse. This is closer to a rotated basis than a typical SAE dictionary, which limits comparison with LLM SAE results.",
+    "Mean-pooling all tokens per timestep, then steering in the residual stream, blurs which tokens carry the feature. The 'empty instruction' object-steering setup is a useful demonstration but not a normal operating mode."
+  ],
+  "code": "project page https://drvla.github.io; Dr. VLA package 'to be released'",
+  "one_line": "SAEs on pi0.5 and OpenVLA residual streams give mostly interpretable features, a small share of which are 'general'; ablating the most general ones breaks a real robot, and steering single object or gripper features biases real-robot behavior more than FFN-neuron steering or prompting."
+}

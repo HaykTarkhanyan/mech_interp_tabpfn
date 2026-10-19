@@ -1,0 +1,45 @@
+{
+  "id": "2605.24642",
+  "title": "Understanding the Impact of Geometric Foundation Models on Vision-Language-Action Models",
+  "first_author": "Yang",
+  "year": 2026,
+  "venue": "arXiv preprint (May 2026)",
+  "tier": "core",
+  "models": ["GR00T N1.5", "VGGT (geometric foundation model)", "GR00T variants: Early Fusion, Late Fusion, Spatial Forcing"],
+  "action_head": "flow/diffusion action expert (GR00T DiT trained with flow matching)",
+  "methods": ["dense depth probes (described as a 'linear probe' / simple MLP) on NYU Depth V2", "three geometry-injection architectures (cross-attention fusion with gating before or after the LLM; alignment loss)", "closed-loop benchmark evaluation with McNemar tests", "ablations of data scale (mid-training), number of cameras, VGGT depth error"],
+  "question": "Does GR00T already encode scene geometry, and does injecting VGGT geometry tokens (early fusion, late fusion or spatial forcing) improve manipulation?",
+  "key_findings": [
+    "Depth probe on frozen GR00T: vision encoder RMSE 0.92 m / delta1 0.51; VLM output 0.73 / 0.63; VGGT 0.41 / 0.89 (Table 1). The authors call the difference the 'geometric gap'.",
+    "Early and Late Fusion outputs reach VGGT-level depth probing (RMSE 0.44 / 0.45, delta1 0.88 / 0.87), but the fusion module is trained jointly with the probe.",
+    "Task-level fine-tuning of geometric VLAs gives no significant gain on RoboCasa (8 tasks, 75 trials each): GR00T-N1.5 71.7% vs Early Fusion 69.7%, Late Fusion 71.0%, Spatial Forcing 68.3% (all p > 0.1) (Table 2); similar on LIBERO (appendix).",
+    "Early Fusion with mid-training on all RoboCasa data: 75.2% average (p = 0.104); the authors also report it beats a mid-trained GR00T in the appendix.",
+    "Single camera: Early Fusion 21.5% vs GR00T 17.2% (p = 0.030) (Table 4).",
+    "Real Unitree G1 (90 trials): overall success GR00T 22.2%, Early Fusion 27.8% (p = 0.511), Late Fusion 25.6% (p = 0.710); Early Fusion approach stage 84.4% vs 57.8% (p < 0.001) (Table 3).",
+    "Per-episode VGGT depth error vs Early Fusion success: Spearman rho = -0.202."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["NYU Depth V2 (probing)", "RoboCasa (8 pick-and-place tasks)", "LIBERO (appendix)", "Unitree G1 real-robot pick-and-place"],
+    "scale": "RoboCasa: 5 episodes x 15 trials per task = 75 per task, 600 total per model; LIBERO 500 trials per suite; G1: 90 trials per model; best success over 15 checkpoints reported",
+    "statistics": "yes: two-sided McNemar tests vs baseline; fixed seeds and fixed diffusion noise",
+    "baselines": "GR00T-N1.5 fine-tuned under the same protocol; published numbers for DP3, pi0, pi0-FAST, GR00T N1 and others"
+  },
+  "causal_validation": "No interpretability intervention. Geometry is added architecturally and the effect is measured behaviorally; the probes are correlational.",
+  "closed_loop": "Yes for all policy evaluations (simulation and real G1). Probing is offline on NYU Depth V2.",
+  "limitations_stated": [
+    "Only one VLA (GR00T-N1.5) and one GFM (VGGT).",
+    "Mostly simulation; some benchmarks are saturated.",
+    "Did not ablate other design choices (Spatial Forcing layer, non-cross-attention fusion).",
+    "p-values leave margin for error."
+  ],
+  "critique": [
+    "The fusion-model 'probes' train the cross-attention fusion module together with the depth probe, so depth recoverability there is largely created by the probe training. It is not evidence that the frozen VLA can use the geometry.",
+    "Probing GR00T on NYU Depth V2 (indoor scenes outside the robot domain) with probes whose capacity differs by layer (1024 vs 2048 hidden; the authors admit this explains the encoder-vs-VLM ordering) makes the 'geometric gap' size hard to interpret. Compare 2608.08904, which uses in-domain LIBERO frames and capacity-matched probes.",
+    "Reporting the best success rate over 15 evaluated checkpoints per model is selection on the test metric; it inflates all numbers and can bias McNemar comparisons.",
+    "The text says mid-trained Early Fusion is better 'in a statistically significant manner', but the average p-value in Table 2 is 0.104; only some per-task cells are below 0.05.",
+    "A useful honest negative result: a measurable representational gap (depth) did not translate into closed-loop gains under standard fine-tuning. Probe-measured deficits are a weak predictor of behavioral benefit. Contrast 2510.25616, where an alignment regularizer did raise simulated OOD success, though the in-distribution effect there was not the focus."
+  ],
+  "code": "not reported",
+  "one_line": "GR00T N1.5 encodes much less depth than VGGT under probing, but feeding VGGT tokens into it does not significantly improve manipulation unless data is scaled up or only one camera is used, and even then the gains are modest."
+}

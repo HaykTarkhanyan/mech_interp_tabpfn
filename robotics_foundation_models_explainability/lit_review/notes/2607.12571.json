@@ -1,0 +1,44 @@
+{
+  "id": "2607.12571",
+  "title": "TrustVLA: Mechanism-Guided Inference-Time Defense Against Vision-Language-Action Backdoors",
+  "first_author": "Fu",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["OpenVLA (LIBERO Spatial/Object/Goal/10) poisoned by BadVLA or INFUSE", "pi0.5 poisoned by BadVLA (LIBERO-style transfer and a real Piper X 6-DoF arm)"],
+  "action_head": "discrete action tokens (OpenVLA) and flow/diffusion action expert (pi0.5); monitoring always uses VLM hidden states projected through the language-model head",
+  "methods": ["per-token, per-layer Dirichlet evidence (epistemic uncertainty) by projecting hidden states through the LM head (logit-lens style)", "clean-calibrated mechanism score with three rules (spatial uncertainty collapse, evidence-evolution drift, early-layer dispersion)", "attention rank promotion in deep vs all layers to seed candidate trigger tokens", "counterfactual masking: accept a compact support only if masking returns the score to the clean region", "localized inpainting, or fail-safe if no support validates", "adaptive-attacker evasion regularizer diagnostic"],
+  "question": "Do independently designed visual backdoors in VLAs leave a shared internal signature, and can a monitor built on it detect, localize and remove the trigger at inference time without retraining?",
+  "key_findings": [
+    "Across BadVLA and INFUSE poisoned OpenVLA models, triggered states show 'epistemic homogenization' (token-level evidence uncertainty becomes nearly uniform across the image, especially in late layers) and 'attention reallocation' (trigger-region tokens promoted in deep fusion layers without dominating global attention).",
+    "Detection with frozen clean-calibrated thresholds: 0/2000 clean false alarms for both attacks; detection 1989/2000 (BadVLA) and 2000/2000 (INFUSE) (Table 2).",
+    "OpenVLA BadVLA residual VLA-ASR falls from 99.9-100% (no defense, JPEG, Gaussian noise, Delta-W auditing) to 0.6%, 8.5%, 9.4%, 9.5% across the four LIBERO suites; INFUSE triggered success after defense 97.4%, 97.4%, 93.4%, 86.6% (Sec. 4.2).",
+    "pi0.5 LIBERO-style transfer (Table 3): no-defense VLA-ASR 99.36-100%; TrustVLA lowers it to 0.44% (Spatial), 6.04% (Object), 11.80% (Goal), 24.06% (LIBERO-10), with triggered success 90.8 / 90.2 / 82.2 / 60.6%.",
+    "Real pi0.5 robot (30 rollouts per cell, Table 4): triggered success 1/30 on both tasks; with TrustVLA 15/30 (Strawberries) and 24/30 (Blocks); note poisoning already lowered clean success from 26/30 to 17/30 on Strawberries.",
+    "Attention alone is not a reliable localizer; counterfactual score-drop selection with cluster closure raises LIBERO-10 recovery from 57.0 to 83.5 (Appendix Tables 13-14).",
+    "A simple adaptive evasion regularizer (lambda 0.1 and 0.5, 50 episodes) still gets fully detected (50/50, 0 false alarms) with VLA-ASR 6.3% and 0.0% after defense (Table 5)."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO simulation; real 6-DoF manipulator with pi0.5)",
+    "benchmarks": ["LIBERO Spatial, Object, Goal, LIBERO-10", "real Strawberries and Blocks tasks"],
+    "scale": "paired 500-episode clean/trigger cells per suite (10 tasks x 50 rollouts); real: 30 rollouts per cell; adaptive diagnostic 50 episodes per cell",
+    "statistics": "partial: Wilson 95% intervals for main TrustVLA cells in the appendix; no hypothesis tests",
+    "baselines": "no defense, JPEG (q=20), Gaussian noise (eps=0.08), Delta-W auditing (20% reset), Fine-Pruning (appendix, collapses clean performance), oracle masking upper bound"
+  },
+  "causal_validation": "Yes, operationally: a candidate trigger region is accepted only if masking it returns the internal mechanism score to the clean region, and closed-loop recovery after inpainting confirms behavioral relevance. Authors explicitly say this is sufficiency under their monitor, not a structural-causal claim; attention is never used as an explanation by itself.",
+  "closed_loop": "Yes: all success and VLA-ASR numbers come from closed-loop LIBERO and real-robot rollouts with the defense active.",
+  "limitations_stated": [
+    "Targets localizable visual triggers with self-hosted hidden-state access and a small clean calibration set.",
+    "Recovery depends on the compact-footprint hypothesis; semantic or non-visual triggers, severe distribution shift and adaptive attackers that mimic evidence while defeating localization are out of scope.",
+    "pi0.5 rows are a transfer feasibility check, not a tuned defense."
+  ],
+  "critique": [
+    "Among the security papers, the best combination of internal-signature analysis, explicit counterfactual validation, separate detection vs recovery metrics, and paired 500-episode cells with intervals.",
+    "The 'mechanism' is still a statistical signature of evidence geometry (logit-lens uncertainty), not a circuit-level account of how the trigger rewires action decoding.",
+    "The adaptive-attack test is a two-point diagnostic on one suite; a stronger attacker optimizing directly against the counterfactual localizer is not tested.",
+    "Same research group as Bera (2602.03153); both end in localized image inpainting, so the internal analysis serves detection and localization while the actual fix is still input-side.",
+    "Reusing an LM-head projection for pi0.5, whose actions come from a flow expert, assumes the VLM prefix carries the trigger effect; the weaker pi0.5 LIBERO-10 recovery (24% residual ASR) may reflect that limit."
+  ],
+  "code": "not reported",
+  "one_line": "Backdoored OpenVLA and pi0.5 models show a shared internal signature (uniform layerwise evidence uncertainty plus deep-layer attention promotion of the trigger), and a monitor that detects it, validates the trigger region by counterfactual masking and inpaints it cuts residual attack success to under 10% on most LIBERO suites with no clean false alarms."
+}

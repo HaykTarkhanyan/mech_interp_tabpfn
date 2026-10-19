@@ -1,0 +1,40 @@
+{
+  "id": "2603.13782",
+  "title": "Your Vision-Language-Action Model Already Has Attention Heads For Path Deviation Detection",
+  "first_author": "Jeong",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["NaVILA (VILA-8B based navigation VLA, 32 layers x 32 heads)", "custom PPO obstacle-avoidance policy for recovery"],
+  "action_head": "n/a for manipulation: NaVILA autoregressively generates mid-level language actions ('turn left 30 degrees') executed by a low-level controller",
+  "methods": ["state-machine labeling of trajectory steps as Normal/Anomaly from waypoint progress", "attention-head scoring by spatiotemporal alignment (uniformity, peak, diagonal, shift between frames and instruction tokens)", "head ranking by Cohen's d of focus sharpness between Normal and Anomaly steps", "entropy-ratio monitor over top-K heads with patience threshold", "grid search of K, W, P, tau on train split", "RL rollback controller in IsaacLab, ROS 2 deployment"],
+  "question": "Do a few attention heads in a frozen navigation VLA carry a signal that detects when the robot has deviated from the instructed path?",
+  "key_findings": [
+    "Three 'navigation heads' out of over a thousand suffice: on R2R Val-Seen, episode detection rate (EDR) 44.6% at false episode rate (FER) 11.7%, step-level F1 78.3%; Val-Unseen EDR 41.9%, FER 9.6%, F1 76.4% (precision 92.5%, recall 65.1%).",
+    "Rule-based baselines are weaker: position stagnation EDR 29.6% / FER 5.9% / F1 55.1% on Val-Unseen; action-failure heuristic has negative gap (-4.8%).",
+    "Transfer to RxR without retuning: EDR 32.7%, FER 9.7%, F1 50.3% on Val-Unseen.",
+    "On the train split, K = 3 heads give EDR 43.9%, FER 9.6%, step precision 92.9%, recall 61.6% (304 N->A scenarios, 2,277 normal and 4,271 anomalous steps).",
+    "Ground-truth labels separate on-path (median deviation 0.13-0.16 m) from deviated steps (2.38-2.97 m), Cohen's d > 1.2.",
+    "The RL recovery policy reaches 87.3% success in IsaacLab obstacle tests vs 57.4% (APF) and 55.4% (TEB); real-robot rollback on an AgileX Scout is shown qualitatively."
+  ],
+  "evidence": {
+    "setting": "both (VLN-CE simulation for detection; real robot demonstration)",
+    "benchmarks": ["VLN-CE R2R (1,000 train episodes, Val-Seen 778, Val-Unseen 1,839)", "RxR (generalization)", "IsaacLab obstacle course for the RL policy (2,048 episodes)"],
+    "scale": "detection over all validation episodes; 9,000 hyperparameter combinations searched on train",
+    "statistics": "partial: Cohen's d for label and head separation; no CIs on detection rates",
+    "baselines": "position stagnation and action-failure heuristics; classical local planners (APF, DWA, MPPI, TEB) for the recovery controller"
+  },
+  "causal_validation": "No. The heads are selected and used as a correlational monitor; there is no ablation or patching of the heads to show they implement navigation grounding, and no random-head baseline.",
+  "closed_loop": "Detection is evaluated on NaVILA's own closed-loop trajectories, but the effect of detection plus rollback on navigation success is not reported quantitatively; real-robot recovery is anecdotal.",
+  "limitations_stated": [
+    "Correcting the physical trajectory without resetting the VLA's internal context can cause repeated errors; replanning or re-prompting is future work."
+  ],
+  "critique": [
+    "'Training-free' is a stretch: heads and thresholds are chosen with ground-truth anomaly labels and a 9,000-configuration grid search on the train split, i.e. supervised selection of a low-dimensional detector.",
+    "Detection recall at episode level is modest (about 42-45% of deviated episodes) and the end-to-end benefit (does rollback raise success rate?) is never measured.",
+    "No comparison to a learned probe or uncertainty baseline, only to weak kinematic heuristics, so it is unclear whether attention heads are special or any internal signal would do.",
+    "Navigation VLA with language-action outputs; relevance to manipulation VLAs with continuous action heads is indirect. Belongs with failure-prediction-from-internals work as much as with attention mechanisms."
+  ],
+  "code": "not released at time of writing (stated 'will be publicly available')",
+  "one_line": "Entropy of three selected attention heads in the frozen NaVILA navigation VLA flags path deviations (about 42% of deviated episodes at about 10% false alarms), which then triggers an RL rollback controller."
+}

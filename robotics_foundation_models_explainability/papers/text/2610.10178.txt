@@ -1,0 +1,362 @@
+DO VISION-LANGUAGE-ACTION MODELS UNDERSTAND INSTRUCTIONS?
+A MECHANISTIC INTERPRETABILITY STUDY ON LANGUAGE GROUNDING
+
+PREPRINT
+
+Theodor Wulff Department of Computer Science
+The University of Manchester Manchester, United Kingdom theodor.wulff@manchester.ac.uk
+
+Angelo Cangelosi Department of Computer Science
+The University of Manchester Manchester, United Kingdom angelo.cangelosi@manchester.ac.uk
+
+arXiv:2610.10178v1 [cs.RO] 7 Oct 2026
+
+October 8, 2026
+ABSTRACT
+Vision-Language-Action models are designed to generalise across environments and task descriptions, raising the question of whether their action generation actually depends on the language instruction, or whether they largely rely on visual cues and superficial correlations. Robustness to variance in the visual and linguistic observation space is critical for real-world deployment, yet VLAs lack explicit grounding modules and instead rely on the intrinsic language grounding capabilities of their VisionLanguage model backbones. For this reason, we conduct a controlled mechanistic interpretability study on the language grounding capabilities of two state-of-the-art Vision-Language-Action models, π0.5 and GR00T N1.7, by applying activation and attribution patching to the residual stream of the action generation modules. We systematically corrupt the task instruction of input samples of the LIBERO benchmark following five strategies: synonym replacement, semantic scaling, directional corruption, random object substitution, and empty string. Our experiments find that both models are comparatively insensitive to abstract rephrasing and to referencing non-existent objects, but react strongly to empty task descriptions and, especially, to directional language. During action generation, this sensitivity is concentrated in different loci for each model: mainly in the early, periodic cross-attention layers for GR00T N1.7, versus distributed across the earliest and selected later layers for π0.5. For GR00T N1.7, directional perturbations drive some of the largest causal effects while leaving the internal representational geometry comparatively unchanged, a dissociation we do not observe clearly for π0.5. Finally, the reliability of attribution patching is model-dependent: it closely tracks activation patching for GR00T N1.7 but not for π0.5.
+1 Introduction
+Robotic systems deployed in real-world environments must be robust, as unpredictable behaviour may lead to severe and potentially catastrophic consequences. Vision-Language-Action models (VLAs) achieve impressive generalisation across different environments and task formulations, and yet the internal mechanisms underlying this behaviour remain largely a black box. This creates a gap between empirical performance and scientific understanding. Mechanistic interpretability has yielded insights in Large Language Wang et al. [2022] and Vision models Goh et al. [2021], but only a handful of works exist that investigate Vision-Language-Action models from a model-internal perspective Grant et al. [2026], Miao et al. [2026], particularly with respect to their action decoding strategies. While findings in NLP and Computer Vision might transfer to the shared underlying Language and Vision-Language model backbones, VLA action generation strategies regularly introduce specific action expert modules with varying decoding strategies that particularly require the generation of language-conditioned outputs.
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+To this end, we address the gap between generalisability and understanding of the model’s internal computations by analysing the action expert modules of two state-of-the-art VLAs: π0.5 Black et al. [2025] and GR00T N1.7 NVIDIA et al. [2025a]. Like many VLAs, both models employ a modular architecture in which an action expert incorporates visuolinguistic information from a Vision-Language model (VLM) backbone into a conditional flow-matching process for action generation. However, they differ in how this conditioning is implemented: π0.5 integrates language via shared attention between action expert and backbone layers, while GR00T uses dedicated masked cross-attention layers. This contrast lets us ask whether such differences in conditioning have measurable consequences for how language is causally used inside the action expert.
+We apply the mechanistic interpretability techniques attribution patching and activation patching to the residual stream of the transformer layers in each model’s action expert, and complement these causal measures with Centred Kernel Alignment (CKA) between clean and perturbed activations. Pairing a causal measure with a representational-similarity measure lets us distinguish two failure modes that are otherwise easy to conflate: (i) where a model’s representations are simply insensitive to a perturbation, and (ii) where representations shift but the action expert routes only a subset of that shift into behaviourally relevant computation. By following a systematic language perturbation scheme, we construct the required corrupted instructions from the clean instructions for the corresponding patching methods. Our perturbation scheme operates on five categories of increasing severity: synonym replacements, semantic scaling, directional perturbations, random object substitution, and empty string. While the first two address sensitivity toward less specific inputs and alternate formulations on a verb and noun level, the directional perturbations directly investigate the effect of processing directional attributes within the action expert. We test whether the model can fall back on purely visual information by rendering the task impossible due to referencing objects not visible in the current scene or dropping the instruction altogether. Since all perturbed predictions are evaluated against the original demonstration, our experiments establish whether and where language causally influences the action, not whether it is interpreted correctly.
+Specifically, our contributions can be summarised as follows:
+• A combined causal/representational analysis framework for diffusion/flow-matching VLA action experts. We integrate attribution patching, activation-patching verification, and CKA into a single evaluation framework applicable to transformer-based diffusion action heads, and use activation patching to directly quantify where attribution patching’s linear approximation deviates from the true causal effect of language conditioning, and for which model this approximation is reliable.
+• Language-perturbation sensitivity is model-specific. GR00T N1.7 exhibits a periodic layer-wise pattern that coincides with the placement of its cross-attention conditioning blocks, whereas π0.5 shows stronger effects concentrated in early and selected later layers. Because the two models differ in more than their conditioning mechanism, we regard the link to architecture as a hypothesis. π0.5 is comparatively more sensitive to verb perturbations, while GR00T N1.7 is more sensitive to noun perturbations. GR00T N1.7 also exhibits larger CKA shifts across several perturbation conditions, whereas π0.5’s global representational geometry remains relatively stable.
+• Causal attribution and representational geometry dissociate for directional language in GR00T N1.7. In GR00T N1.7, directional perturbations elicit some of the largest attribution-patching effects of any perturbation type, yet leave the residual stream’s representational geometry, as measured by CKA, comparatively unchanged. We do not observe this dissociation clearly for π0.5. For synonym, hypernym, and empty-string perturbations, causal and representational effects track one another more closely and follow our proposed perturbation-severity ranking. We hypothesise that this dissociation arises because directional phrases occupy a narrow, tightly clustered region of the embedding space, so the model’s action output is highly sensitive to the perturbation despite the underlying representation shifting comparatively little.
+2 Related Work
+2.1 Vision-Language-Action Models
+Inspired by the successes and generalisable capabilities of foundation models in domains such as NLP and image generation OpenAI et al. [2023], Dubey et al. [2024], Betker et al. [2023], Rombach et al. [2022], Vision-LanguageAction models aim to create robot policies that generalise across tasks, environments and embodiments Liu et al. [2024], Gemini Robotics Team et al. [2025], Qu et al. [2025], Belkhale et al. [2024], NVIDIA et al. [2025a], Kim et al. [2025]. VLAs are usually built on top of pretrained VLM backbones to inherit their vision-language understanding. They either add a dedicated action decoder module Black et al. [2025], NVIDIA et al. [2025a] to generate embodiment-specific trajectories or utilize the VLM vocabulary to assign discrete actions to tokens Kim et al. [2025]. The action decoding strategies employed by VLAs range from simple linear mappings to sophisticated diffusion-based action decoders.
+2
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+1. Language Perturbation
+
+2. Vision-Language-Action Models
+
+3.1 Per-Layer Attribution Patching
+
+Clean Instruction Type-based Perturbation
+Corrupted Instruction
+
+VLM Backbone Core
+
+Joint SelfAttention
+
+Action Expert
+
+Action Denoising
+
+GR00T N1.7
+VLM Backbone Core Cross-Attention
+
+Action Expert Layer 1
+Layer l
+
+3.2 Selected-Layer Activation Patching
+
+LIBERO-10 Visual Obs.
+
+Action Expert Action Denoising
+
+Layer L
+
+3.3 Centered Kernel Alignment
+
+Figure 1: Method Overview. We study how π0.5 and GR00T N1.7 process linguistic instructions during action decoding. (1) We corrupt the clean instructions following six different perturbation strategies. (2) We record the residual stream activations of both models during action decoding. (3) We analyse the causal and representational changes using attribution patching (3.1), activation patching (3.2), and Centered Kernel Alignment (3.3)
+
+The latter employ flow matching or traditional diffusion denoising strategies as used by Chi et al. [Chi et al., 2024]. As input, they take at least a task instruction in natural language alongside a visual observation. While VLAs show promising directions to generalising to differently formulated instructions as seen by their task success rates, it remains unclear how strong their language grounding actually is.
+2.2 Mechanistic Interpretability for Multimodal Foundation Models
+Early mechanistic interpretability work at the intersection of vision and language focused on foundation models, uncovering multimodal neurons that respond to shared visual-linguistic concepts Goh et al. [2021] and interpreting CLIP’s image representations directly Gandelsman et al. [2023], Radford et al. [2021]. Sparse autoencoders have since been widely applied to further disentangle CLIP’s internal representations Rao et al. [2024], Ro et al. [2026], Joseph et al. [2025], while causal tracing tools originally developed for LLMs have been extended to vision-language models Palit et al. [2023], Basu et al. [2024], Neo et al. [2024] and, more recently, video models Shi et al. [2026], typically to localize task-relevant subgraphs Rajaram et al. [2024] or via probing-based analysis Salin et al. [2022]. Extending this line of work to embodied settings, recent studies have begun steering vision-language-action models (VLAs) Häon et al. [2025], with a concurrent mechanistic study across five VLAs finding that these models process heterogeneous token sequences interleaving vision, language, and proprioception, and that mean-pooling activations across token positions destroys action-critical information despite high reconstruction quality Grant et al. [2026]. To the best of our knowledge, no prior study has systematically examined, at the level of internal model computation, how VLAs respond to different types of perturbations in the language space, or where this processing occurs within their action-decoding components. We address this gap by analysing the token-generation process in the action expert of π0.5 and the action decoder of GR00T N1.7 using attribution and activation patching alongside representational analyses.
+2.3 Circuit Discovery
+Mechanistic interpretability treats neural networks as computational graphs, with nodes corresponding to attention heads, MLPs, or individual neurons and features, and edges representing activation flow between them Heimersheim and Nanda [2024], a framing established by foundational work on transformer circuits Elhage et al. [2021], circuit-level case studies such as the IOI circuit Wang et al. [2022] and the greater-than arithmetic circuit Hanna et al. [2023], and formalized theoretically through causal abstraction Geiger et al. [2025]. Early circuit discovery relied on manual activation patching, that was later refined into path patching and automated via ACDC, which systematically searches a model’s computational graph for task-relevant subgraphs Conmy et al. [2023], alongside related causal techniques such as causal mediation analysis, interchange interventions, and causal tracing Basu et al. [2024]. Because these intervention-based methods scale poorly, attribution patching emerged as a more efficient alternative: Attribution Patching approximates activation-patching effects via gradients Nanda [2023], Kramár et al. [2024], and subsequent work has shown attribution patching can outperform automated circuit discovery empirically Syed et al. [2024]. More recently, sparse autoencoders have enabled higher-resolution circuit analysis by exposing individual features as causally
+3
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+implicated nodes Marks et al. [2025], though at the cost of vastly larger node counts that make direct intervention prohibitive; this has motivated frontier approaches combining cross-layer transcoders with backward Jacobian tracing to construct partial feature-level circuit maps Lindsey et al. [2025], including per-prompt attribution graphs over transcoder features in production-scale models.
+
+3 Background
+
+3.1 Vision-Language-Action Model Architecture
+
+Vision-Language-Action models comprise a Vision-Language model core to process the incoming observation consisting of an instruction in natural language and camera inputs. Specifically, we investigate the world understanding ability of the π0.5 and the GR00T N1.7 VLAs through the lens of language grounding. Both models consist of a VLM backbone and a specific action expert module. The π0.5 backbone is realized as SigLIP (400M) Zhai et al. [2023] and Gemma (2.6B) Gemma Team et al. [2025], while the action expert is itself a 300M parameter transformer module. The action expert shares the transformer stack with the backbone VLM and interacts with it via block-wise, causally masked joint self-attention. On the other hand, GR00T N1.7 uses a Cosmos-Reason2-2B VLM1 NVIDIA et al. [2025b] backbone to encode the observation into visuolinguistic embeddings, which are infused into the action generation module via cross-attention. The action generation module is a transformer-based diffusion model with 32 alternating cross- and self-attention layers.
+
+Both action generation modules are diffusion-transformer architectures trained with a conditional flow-matching objective. Given a ground-truth action chunk x1 and a noise sample x0 ∼ N (0, I), a noisy intermediate action representation is constructed via linear interpolation
+
+xt = (1 − t) x0 + t x1, t ∼ U [0, 1],
+
+(1)
+
+with corresponding target velocity vt⋆ = x1 − x0. The action expert is trained to predict this velocity conditioned on the current noisy action, the timestep, and the visuolinguistic embeddings produced by the VLM backbone, o:
+
+LFM(θ) = Et, x0, x1 vθ(xt, t, o) − (x1 − x0) 2 .
+
+(2)
+
+Crucially, the two architectures diverge on the conditioning term o: GR00T N1.7 injects o via alternating cross-attention layers, while the action expert of π0.5 attends to o through shared, block-wise causally-masked self-attention described above. GR00T N1.7 additionally applies a masking scheme to its cross-attention layers, so that the model only cross-attends to linguistic tokens every n-th layer (by default,n = 4).
+
+Because the action expert has access to the observation exclusively through the conditioning embeddings o, the grounding quality is entirely inherited from the VLM backbone. Neither model employs a dedicated grounding module at inference time; hence, grounding instead emerges implicitly from the visuolinguistic representations the backbone acquired during pretraining and any subsequent VLA fine-tuning. This makes the backbone’s world understanding a direct bottleneck on downstream action quality, motivating our investigation into how sensitive the action outputs of π0.5 and GR00T N1.7 are to controlled perturbations of the language instruction.
+
+3.2 Activation Patching
+
+Activation patching Meng et al. [2022] measures the causal importance of a model component by directly intervening
+
+on its activations during a forward pass. Given a clean input and a corrupted input that differ in a targeted way, a
+
+forward pass is first run on each input, and the resulting activations are cached. A second forward pass is then run on the corrupted input, except that at a chosen layer ℓ and position, the cached corrupted activation aℓcorrupt is replaced with the corresponding clean activation aℓclean:
+
+AcP(ℓ) = M aℓ ← acℓlean − M acℓorrupt ,
+
+(3)
+
+where M is a scalar metric evaluated on the resulting output, and M(aℓ ← acℓlean) denotes the metric obtained after substituting the clean activation at layer ℓ into the otherwise-corrupted run. A large change in M indicates that the
+patched component carries information causally relevant to the behaviour under study. In our case M is the standard flow matching L2 loss between the target velocities vt⋆ and the predicted velocities vtcorrupt of the corrupted run.
+
+The downside of activation patching is that this substitution must be performed separately for each layer and position of interest, requiring a full additional forward pass per measurement. For large models with many components, this makes exhaustive, fine-grained patching computationally expensive.
+
+1https://www.jetson-ai-lab.com/models/cosmos-reason2-2b/
+
+4
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+3.3 Attribution Patching
+
+Attribution patching Nanda [2023] reduces the computational cost of activation patching by approximating the effect of a change in input using two forward passes and a single backward pass. It then approximates the causal effect of an activation a at layer ℓ using a first-order Taylor expansion involving the gradients of the corrupted run:
+
+AP(ℓ) ≈ (aℓclean − aℓcorrupt)⊤ · ∇ M acℓorrupt
+
+(4)
+
+This requires only two forward passes and one backward pass, making it tractable for the VLAs investigated in this study. Attribution patching has the tendency to over- or underestimate the importance of different model layers, which is why we run additional activation patching trials on the layers identified using the results of the attribution patching runs.
+
+4 Method
+We investigate the inner workings of Vision-Language-Action models using mechanistic interpretability techniques applied to the action expert modules of the VLAs π0.5 and GR00T N1.7. Since the action expert’s only access to the observation is through the VLM backbone’s conditioning embeddings, any weaknesses in the backbone’s language grounding should be directly observable in how the action expert responds to controlled changes in the language input. We therefore focus on the influence of systematically perturbed language instructions, using them as a probe for the robustness of the model’s language understanding as it propagates through to action generation. Using attribution patching and verifying the resulting candidate components with exact activation patching, we identify which layers of the VLA action expert are particularly reactive to changes in the language domain, thereby localising where and how strongly linguistic grounding influences downstream action prediction.
+4.1 Dataset
+We perform all our experiments using data extracted from the LIBERO benchmark Liu et al. [2023], as it is a common benchmark used for training and evaluating VLAs. Specifically, we use a publicly available subset of offline demonstrations, LIBERO-102, which we select for its long-horizon, compositional task instructions. The dataset contains 378 episodes, accumulating approximately 101,000 steps across 10 different tasks. From this pool, we randomly sample a subset of 10,000 steps. For each sampled step, we use both available camera views (a wrist camera and a table-view camera) together with the robot’s vectorized proprioceptive state and the task instruction as model inputs.
+4.2 Type-based Perturbation
+We generate the corrupt samples required for attribution patching by applying different perturbations exclusively to the language input, e.g., the task instruction. When a perturbation is not applicable to a given instruction, we exclude the corresponding sample from the corresponding experiment. This occurs, for example, when Directional Corruption is applied to an instruction containing no directional term. In principle, both Synonym Replacement and Semantic Scaling can be applied to almost any word in an instruction. In practice, we target noun and verb phrases specifically, as these most directly encode what should be done and which object should be interacted with. We define five perturbation types, ranging from minimal single-word substitutions to complete removal of the instruction, to probe language robustness at increasing levels of severity:
+Synonym Replacement. This perturbation investigates the robustness of the semantic representations in the chosen VLAs. We expect replacing one synonym with another to have little to no effect on the outcome, especially in the later layers. In practice, a target word is replaced with a semantically equivalent synonym. Candidate synonyms for each verb and noun in the LIBERO-10 instructions were generated using Claude Opus 4.6 and verified against ConceptNet Speer et al. [2018] and WordNet Miller [1994] to ensure semantic validity.
+Semantic Scaling. This perturbation investigates the capacity for abstract language understanding of the VLAs by replacing target words with more abstract hypernyms. For instance, “apple” would become “fruit”. As with Synonym Replacement, candidate hypernyms were generated using Claude Opus 4.6 and verified against ConceptNet and WordNet. Since hypernym substitution reduces referential specificity, we expect an effect stronger than under Synonym Replacement but weaker than under Random Object Replacement. This tests whether model performance degrades gracefully as abstraction increases.
+2https://huggingface.co/datasets/lerobot/libero_10_image
+
+5
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+Directional Corruption. This perturbation investigates where the model processes directional information. To this end, we invert the directions given in the input prompt. For instance, “up” becomes “down” and “left” becomes “right”. Note that this excludes directional particles in phrasal verbs such as “pick up”. Instead, only stand-alone directional modifiers, as in “the left plate”, are inverted. We expect this to produce a large, clearly visible effect in the models’ layer attributions. This effect should be visible starting from the early layers, as directional information directly determines the trajectory of the output action.
+Random Object Replacement. We generate a list of 50 object words using Claude Opus 4.6, none of which are present in any LIBERO scene. For each noun in the task description, we randomly select one of these objects to replace the original. This tests model behaviour when the instruction references an object absent from the scene, rendering the task unsolvable by design. Accordingly, we expect this to produce a large effect in the layer attributions of the VLAs, as the instruction now references information absent from the visual observation.
+Empty String. This perturbation replaces the task instruction entirely with an empty string. As the most drastic manipulation, this condition mirrors the counterfactual null prompt of Grant et al. [2026], and lets us test whether the model falls back on purely visual grounding in the absence of language input, revealing where language processing occurs during action generation.
+4.3 Attribution and activation patching
+For both π0.5 and GR00T N1.7, we intervene on the residual stream of each transformer layer in the action expert, immediately after the output projection (o_proj) of the self-attention block. This intervention point allows us to isolate the causal contribution of each layer’s self-attention output to the downstream action prediction, independent of the subsequent MLP block. As the language conditioning in both models enters the action expert through attention (via cross-attention for GR00T N1.7 and joint self-attention for π0.5), patching directly after o_proj lets us localize, layer by layer, where perturbed language information first begins to diverge from the clean run.
+The reported effect at each layer and token corresponds to the attribution patching approximation of the change in LFM induced by substituting the corrupted activation at that location. We report attribution patching effects per layer and token as heatmaps. Additionally, we report Centered Kernel Alignment (CKA) Kornblith et al. [2019] plots per layer and perturbation type. Given two representation matrices over the same set of inputs, CKA measures the similarity of their pairwise similarity structures after centering.
+5 Experimental Setup
+To ensure we investigate strong-performing VLAs, we use LIBERO-10 fine-tuned checkpoints for both models. For π0.5, we use the checkpoint publicly available on HuggingFace3. For GR00T N1.7, we similarly use a LIBERO-10 fine-tuned checkpoint, also available on HuggingFace4. We extract clean activations, corrupted activations, and gradients using 10,000 samples from the LIBERO-10 offline dataset subset described previously. All experiments are run on a single NVIDIA A100 GPU, using each checkpoint at its default precision as released, which may vary by component (i.e., mixed precision). Results are aggregated across the randomly selected sample population.
+6 Results
+6.1 Attribution Patching Results
+Directional perturbations elicit the largest attribution effects in the early layers of both π0.5 and GR00T N1.7. We report the attribution patching effect per layer in Figure 2. In both models, we find that the magnitude and layer-wise distribution of attribution effects differ by linguistic category. Directional perturbations elicit substantially larger attribution patching effects than object-referring perturbations. Particularly, layer 1 for π0.5 and layers 3, 5, and 7 for GR00T N1.7 stand out as eliciting a strong reaction to directional changes. In π0.5, verb perturbations produce slightly stronger attribution effects than noun perturbations, suggesting the action expert is more sensitive to changes that alter the described action (verb, directional) than to changes in the referenced object (noun). The higher attribution of action-altering perturbations is highlighted especially when replacing nouns with random objects, where referencing non-visible objects affects the model less than perturbations on the verb phrases.
+3https://huggingface.co/lerobot/pi05_libero_finetuned_v044 4https://huggingface.co/nvidia/gr00t17-lerobot-libero_10-640
+6
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+(a) π0.5
+
+(b) GR00T N1.7
+
+Figure 2: Attribution effect per layer and perturbation type. Positive attribution indicates that the perturbation decreased the metric relative to the clean run, while negative attribution indicates an increase; larger magnitudes reflect a stronger causal effect of that layer on the model’s output.
+
+GR00T N1.7 reacts generally strongest to directional perturbations in the early layers. In contrast, the effect of other perturbation types remains almost identical in layers 1-7, and mainly diverges in the early middle layers (9-17). In late layers, passing an empty string elicits the strongest reaction. Contrary to π0.5, GR00T N1.7 is more reactive to changes with respect to perturbations of the noun phrases than to verb phrases. The actual existence of an object that the corresponding noun phrase describes is not of much importance, as the random object substitution has almost the same attribution effect as replacing a noun with a synonym or hypernym.
+Overall, GR00T N1.7 is more sensitive to linguistic perturbations than π0.5, as highlighted by the overall magnitude of the attribution effects.
+Language conditioning is concentrated in the early layers. For π0.5 across all perturbation types, attribution concentrates most strongly in the very early layers, around layer 6, and toward the final layers of the action expert (past layer 12), while GR00T’s language conditioning is concentrated primarily in layers 0-10, with the effect diminishing past the centre of the model. The importance of GR00T N1.7’s cross-attention language conditioning is directly visible as an alternating pattern of elevated attribution across the token sequence following each cross-attention layer, i.e. every 2nd layer offset by one (1, 3, 5, ...). GR00T N1.7 applies a masking operation during the cross-attention layers, leaving only every 4th layer (0, 4, 8, ...) tasked with incorporating additional linguistic information from the backbone into the residual stream. We hypothesise that this masking causes the additional spike in attribution at layer 5, followed by continuous decay toward the later layers, where the effects become more stable. We observe that ingested language conditioning affects the self-attention layers more clearly, where the injected information might become elevated.
+Late-layer attribution can turn negative. For both π0.5 and GR00T N1.7, a subset of the final layers exhibit negative attribution to language corruption, despite the models’ overall reliance on early-layer conditioning. A possible explanation could be a self-repair (“Hydra effect”) dynamic documented in language-model transformers [McGrath et al., 2023], whereby downstream components partially compensate for perturbed upstream signals, such that corrupting conditioning information can occasionally align the residual stream more closely with the training-time target than the unperturbed forward pass.
+6.2 Representational Analysis
+Embedding space could correspond to semantics. We utilise CKA on the residual stream after the attribution patching interventions. Figure 3 highlights the changes in CKA per layer for both VLAs. We find that π0.5’s CKA remains overall robust and only elicits visible differences on perturbation types empty string and directional. Again, inserting non-existing objects does not affect the model much. GR00T N1.7 is much more reactive in the embedding space to language perturbations. The spiking pattern repeating every 4 layers further highlights the importance of the cross-attention mechanism that incorporates linguistic information. While directional perturbations yielded the highest attribution effect, the embedding space remains largely unaffected. We hypothesise that this is due to directional modifiers being very close in semantic word embedding spaces due to being the same word type, of similar length and associated with similar contexts. Otherwise, specific perturbations change the embedding space much more, closely following our proposed perturbation severity ranking, with synonyms having the least effect and empty strings having the largest effect.
+7
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+(a) π0.5
+
+(b) GR00T N1.7
+
+Figure 3: Per-layer CKA between clean and perturbed representations, computed for each perturbation type. Lower CKA indicates greater representational divergence from the clean run.
+
+Table 1: Correlation between attribution patching and activation patching effects.
+
+Model
+
+Pearson r Pearson p
+
+GR00T N1.7 π0.5 π0.5 w/o Directional
+
+0.946 0.089 0.097
+
+8.26 × 10−49 4.90 × 10−1 4.86 × 10−1
+
+Model
+
+Spearman ρ Spearman p
+
+GR00T N1.7 π0.5 π0.5 w/o Directional
+
+0.972 0.097 0.2508
+
+2.48 × 10−62 4.48 × 10−1 6.73 × 10−2
+
+Attribution patching underestimates causal effect relative to activation patching We ran additional experiments on a subset of available model layers using activation patching. Comparing the attribution patching effect against ground-truth activation patching in Figure 5, we find that attribution patching systematically underestimates the causal effect of most layers in π0.5. This divergence is most pronounced in early layers (e.g., layers 0-1, 5), which are at times substantially less reactive under attribution patching than under activation patching. This is consistent with the linear (first-order gradient) approximation of attribution patching breaking down further from the output, where non-linear interactions accumulate across more downstream layers. Additionally, attribution patching underestimates the effects of patching, as shown by the difference in magnitude between the activation patching and the attribution patching effects. In several layers (2, 3, 5, 14) of π0.5 under directional perturbation, the discrepancy is more severe than elsewhere: attribution patching (x-axis) estimates a near-zero to slightly positive effect ( 0.0002-0.0013), while activation patching (y-axis) finds a strongly negative effect ( -0.05-0.35). This suggests the directional perturbation induces a qualitatively different, non-linear response at layers (2, 3, 5, 14), potentially reflecting a threshold or saturation effect that only manifests under directional shifts. However, the trends we observed using attribution patching remain: Early layers are most affected by language perturbations, with the effect being prominently visible for GR00T N1.7 (Figure 5b right half).
+6.3 Comparing Activation and Attribution Patching
+To quantify agreement between attribution and activation patching beyond visual inspection, we compute Pearson and Spearman rank correlations between the two sets of effects for each model, and report them in Table 1. For GR00T N1.7, we observe a strong positive correlation (Pearson r = 0.946, p = 8.26 × 10−49; Spearman ρ = 0.972, p = 2.48 × 10−62), indicating that attribution patching closely approximates both the magnitude and rank-ordering of ground-truth activation patching effects. In contrast, for π0.5 we find no significant correlation (Pearson r = 0.089, p = 0.490; Spearman ρ = 0.097, p = 0.448), suggesting that the linear approximation underlying attribution patching fails to capture the true causal effects in this model. This discrepancy highlights that attribution patching’s reliability as a proxy for activation patching is model-dependent and should not be assumed to generalise across architectures.
+8
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+(a) π0.5
+
+(b) GR00T N1.7
+
+Figure 4: Per-layer activation patching effect of selected layers.
+
+Figure 4 displays the activation patching effects of selected layers in both VLAs. Activation patching follows a trajectory broadly similar to the reported attribution patching effects. For π0.5, however, a notable discrepancy arises for directional perturbations: activation patching yields a negative effect, whereas attribution patching predicts the largest positive effect among all perturbation types. For the remaining perturbations, attribution patching tracks activation patching reasonably well in the early layers but increasingly underestimates the effect magnitude in later layers.
+Excluding directional perturbations improves the correlation between the two methods (Pearson r = 0.097, p = 4.86 × 10−1; Spearman ρ = 0.251, p = 6.73 × 10−2). The Spearman correlation increases roughly 2.5-fold with a corresponding drop in p-value, suggesting improved agreement in the rank ordering of layer effects, while the near-unchanged Pearson correlation indicates that attribution patching still fails to capture the correct magnitude of activation patching effects for π0.5.
+7 Discussion
+Our finding that π0.5’s internal representations remain stable under different perturbation types, including null prompts, is in accordance with Grant et al. [2026], who report that fine-tuned VLA policies are effectively vision-only, with injected visual activations alone recovering near-identical behaviour under null prompts. We see our results as confirmatory while digging deeper into where language is actually processed and extending beyond the null prompt to more fine-grained perturbations. As such, Grant et al.’s intervention (null-prompt / cross-task activation injection) probes whether language is necessary for the specific behaviours they measure at the level of task success, whereas our perturbations probe whether altering language content changes the internal computation and its causal footprint on the predicted action, without requiring that this sensitivity be sufficient to flip task success outcomes. A model can be internally sensitive to language perturbation while still substantially recovering behaviour from vision alone when language is entirely absent. Second, this distinction mirrors the attribution effect/CKA dissociation we observe when comparing Figures 2 and 3: representational change under perturbation does not imply that the change is behaviourally load-bearing. Additionally, our activation-patching verification indicates that even where the attribution patching effect is small, the true causal effect can be larger. Fully reconciling representational sensitivity with behavioural outcome, however, would require causal verification that neither study completes on its own. We view our finding and theirs as complementary: language pathways may contribute little under coarse manipulations like theirs, yet remain mechanistically active in ways only fine-grained, meaning-preserving perturbations like ours reveal.
+Regarding COAST [Miao et al., 2026], our results are complementary, too: COAST finds that VLA policies retain substantial task-relevant knowledge in low-rank latent subspaces that outcome-driven steering can unlock, implying that these models often encode more task-relevant information than they act on by default. Again, this resonates with our own layer-wise dissociations between representational change and causal effect (Figures 2 and 3). In both cases, information present in the residual stream is not fully reflected in the model’s default behaviour. COAST demonstrates this at the level of task success/failure subspaces via steering, while we demonstrate it at the level of layer-wise attribution under targeted language perturbation.
+8 Future Work
+Our study suggests several directions for future work. For instance, our perturbations are synthetic (directional swaps, synonym and semantic-scale substitution) and do not capture real-world variation such as ambiguity or compositional
+
+9
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+(a) π0.5
+
+(b) GR00T N1.7
+
+Figure 5: Activation Patching effect plotted against attribution patching effect
+
+phrasing. LIBERO instructions are also short, templated, and object-centric, and their constrained scene layouts may let visual context compensate for linguistic ambiguity, likely understating language sensitivity in less visually redundant settings. Extending the analysis to benchmarks with richer instruction diversity or real-world deployment logs would help establish the generalisability of our findings. Since all perturbed predictions are evaluated against the original demonstration, our results show that language influences the action, so closed-loop rollouts or counterfactual targets for meaning-changing perturbations would test whether the observed sensitivity reflects appropriate use of the instruction. Additionally, applying our perturbation framework to vision would test whether the vision pathway shows analogous causal/representational dissociations.
+9 Conclusion
+We investigated how VLAs ground actions in language using a combined causal and representational pipeline: attribution patching, verified against ground-truth activation patching, alongside CKA to track representational change. Applied to π0.5 and GR00T N1.7, we find language conditioning is model-specific in both sensitivity and locus, and that causal and representational effects can dissociate. We observe this most clearly for directional language in GR00T N1.7, which drives large attribution effects with little representational change. Additionally, we find that the reliability of attribution patching is model-dependent: it closely tracks activation patching for GR00T N1.7 but not for π0.5, especially in early layers. These findings offer a methodological caution for interpretability work on VLAs and evidence that action experts depend on language non-uniformly, shaped by their conditioning architecture.
+References
+Kevin Ro Wang, Alexandre Variengien, Arthur Conmy, Buck Shlegeris, and Jacob Steinhardt. Interpretability in the Wild: A Circuit for Indirect Object Identification in GPT-2 Small. In The Eleventh International Conference on Learning Representations, September 2022.
+Gabriel Goh, Cammarata Nick, Voss Chelsea, Shan Carter, Michael Petrov, Ludwig Schubert, Alec Radford, and Chris Olah. Multimodal Neurons in Artificial Neural Networks. Distill, 6(3):e30, March 2021. ISSN 2476-0757. doi:10.23915/distill.00030.
+Bryce Grant, Xijia Zhao, and Peng Wang. Not All Features Are Created Equal: A Mechanistic Study of VisionLanguage-Action Models, March 2026.
+Miranda Muqing Miao, Subin Kim, Brandon Yang, and Lyle Ungar. Contrastive Conceptor Activation Steering (COAST): Unlocking Vision-Language-Action Models through Hidden States, May 2026.
+Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Robert Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Galliker, Dibya Ghosh, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj
+10
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. π0.5: A Vision-Language-Action Model with Open-World Generalization. In 9th Annual Conference on Robot Learning, September 2025.
+NVIDIA, Johan Bjorck, Nikita Cherniadev Fernando Castañeda, Xingye Da, Runyu Ding, Linxi "Jim" Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, Joel Jang, Zhenyu Jiang, Jan Kautz, Kaushil Kundalia, Lawrence Lao, Zhiqi Li, Zongyu Lin, Kevin Lin, Guilin Liu, Edith Llontop, Loic Magne, Ajay Mandlekar, Avnish Narayan, Soroush Nasiriany, Scott Reed, You Liang Tan, Guanzhi Wang, Zu Wang, Jing Wang, Qi Wang, Jiannan Xiang, Yuqi Xie, Yinzhen Xu, Zhenjia Xu, Seonghyeon Ye, Zhiding Yu, Ao Zhang, Hao Zhang, Yizhou Zhao, Ruijie Zheng, and Yuke Zhu. GR00T N1: An open foundation model for generalist humanoid robots, March 2025a.
+OpenAI, Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, et al. GPT-4 Technical Report. Technical Report arXiv:2303.08774, OpenAI, March 2023.
+Abhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, et al. The Llama 3 Herd of Models, July 2024.
+James Betker, Gabriel Goh, Li Jing, Tim Brooks, Jianfeng Wang, Linjie Li, Long Ouyang, Juntang Zhuang, Joyce Lee, Yufei Guo, Wesam Manassra, Prafulla Dhariwal, Casey Chu, Yunxin Jiao, and Aditya Ramesh. Improving image generation with better captions. Technical report, OpenAI, 2023. URL https://cdn.openai.com/papers/ dall-e-3.pdf.
+Robin Rombach, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Bjorn Ommer. High-Resolution Image Synthesis with Latent Diffusion Models. In 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 10674–10685, New Orleans, LA, USA, June 2022. IEEE. ISBN 978-1-6654-6946-3. doi:10.1109/CVPR52688.2022.01042.
+Songming Liu, Lingxuan Wu, Bangguo Li, Hengkai Tan, Huayu Chen, Zhengyi Wang, Ke Xu, Hang Su, and Jun Zhu. RDT-1B: A Diffusion Foundation Model for Bimanual Manipulation. In The Thirteenth International Conference on Learning Representations, October 2024.
+Gemini Robotics Team, Saminda Abeyruwan, Joshua Ainslie, Jean-Baptiste Alayrac, Montserrat Gonzalez Arenas, Travis Armstrong, Ashwin Balakrishna, et al. Gemini Robotics: Bringing AI into the Physical World. Technical Report arXiv:2503.20020, Google Deepmind, March 2025.
+Delin Qu, Haoming Song, Qizhi Chen, Yuanqi Yao, Xinyi Ye, Jiayuan Gu, Zhigang Wang, Yan Ding, Bin Zhao, Dong Wang, and Xuelong Li. SpatialVLA: Exploring Spatial Representations for Visual-Language-Action Models. In Proceedings of Robotics: Science and Systems, LosAngeles, CA, USA, June 2025. doi:10.15607/RSS.2025.XXI.011.
+Suneel Belkhale, Tianli Ding, Ted Xiao, Pierre Sermanet, Quan Vuong, Jonathan Tompson, Yevgen Chebotar, Debidatta Dwibedi, and Dorsa Sadigh. RT-H: Action Hierarchies using Language. In Robotics: Science and Systems XX. Robotics: Science and Systems Foundation, July 2024. ISBN 979-8-9902848-0-7. doi:10.15607/RSS.2024.XX.049.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan P Foster, Pannag R Sanketi, Quan Vuong, Thomas Kollar, Benjamin Burchfiel, Russ Tedrake, Dorsa Sadigh, Sergey Levine, Percy Liang, and Chelsea Finn. Openvla: An open-source vision-language-action model. In Pulkit Agrawal, Oliver Kroemer, and Wolfram Burgard, editors, Proceedings of The 8th Conference on Robot Learning, volume 270 of Proceedings of Machine Learning Research, pages 2679–2713. PMLR, 06–09 Nov 2025. URL https://proceedings.mlr.press/v270/kim25c.html.
+Cheng Chi, Zhenjia Xu, Siyuan Feng, Eric Cousineau, Yilun Du, Benjamin Burchfiel, Russ Tedrake, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. The International Journal of Robotics Research, page 02783649241273668, October 2024. ISSN 0278-3649. doi:10.1177/02783649241273668.
+Yossi Gandelsman, Alexei A. Efros, and Jacob Steinhardt. Interpreting CLIP’s Image Representation via Text-Based Decomposition. In The Twelfth International Conference on Learning Representations, October 2023.
+Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. Learning Transferable Visual Models From Natural Language Supervision. In Proceedings of the 38th International Conference on Machine Learning, pages 8748–8763. PMLR, July 2021.
+Sukrut Rao, Sweta Mahajan, Moritz Böhle, and Bernt Schiele. Discover-then-Name: Task-Agnostic Concept Bottlenecks via Automated Concept Discovery. In Aleš Leonardis, Elisa Ricci, Stefan Roth, Olga Russakovsky, Torsten Sattler, and Gül Varol, editors, Computer Vision – ECCV 2024, volume 15135, pages 444–461. Springer Nature Switzerland, Cham, 2024. ISBN 978-3-031-72979-9 978-3-031-72980-5. doi:10.1007/978-3-031-72980-5_26.
+11
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+Yusung Ro, Jaehyun Choi, and Junmo Kim. Beyond Semantics: Disentangling Information Scope in Sparse Autoencoders for CLIP. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 3252–3261, 2026.
+Sonia Joseph, Praneet Suresh, Ethan Goldfarb, Lorenz Hufe, Yossi Gandelsman, Robert Graham, Danilo Bzdok, Wojciech Samek, and Blake Aaron Richards. Steering CLIP’s vision transformer with sparse autoencoders. In Mechanistic Interpretability for Vision at CVPR 2025 (Non-proceedings Track), March 2025.
+Vedant Palit, Rohan Pandey, Aryaman Arora, and Paul Pu Liang. Towards Vision-Language Mechanistic Interpretability: A Causal Tracing Tool for BLIP. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 2856–2861, 2023.
+Samyadeep Basu, Martin Grayson, Cecily Morrison, Besmira Nushi, Soheil Feizi, and Daniela Massiceti. Understanding information storage and transfer in multi-modal large language models. In Proceedings of the 38th International Conference on Neural Information Processing Systems, volume 37 of NIPS ’24, pages 7400–7426, Red Hook, NY, USA, December 2024. Curran Associates Inc. ISBN 979-8-3313-1438-5.
+Clement Neo, Luke Ong, Philip Torr, Mor Geva, David Krueger, and Fazl Barez. Towards Interpreting Visual Information Processing in Vision-Language Models. In The Thirteenth International Conference on Learning Representations, October 2024.
+Yumeng Shi, Quanyu Long, Yin Wu, and Wenya Wang. Causality Matters: How Temporal Information Emerges in Video Language Models. Proceedings of the AAAI Conference on Artificial Intelligence, 40(11):9006–9014, March 2026. ISSN 2374-3468. doi:10.1609/aaai.v40i11.37856.
+Achyuta Rajaram, Neil Chowdhury, Antonio Torralba, Jacob Andreas, and Sarah Schwettmann. Automatic discovery of visual circuits. CoRR, abs/2404.14349, 2024. doi:10.48550/ARXIV.2404.14349. URL https://doi.org/10. 48550/arXiv.2404.14349.
+Emmanuelle Salin, Badreddine Farah, Stéphane Ayache, and Benoit Favre. Are Vision-Language Transformers Learning Multimodal Representations? A Probing Perspective. Proceedings of the AAAI Conference on Artificial Intelligence, 36(10):11248–11257, June 2022. ISSN 2374-3468, 2159-5399. doi:10.1609/aaai.v36i10.21375.
+Bear Häon, Kaylene Caswell Stocking, Ian Chuang, and Claire Tomlin. Mechanistic Interpretability for Steering Vision-Language-Action Models. In 9th Annual Conference on Robot Learning, September 2025.
+Stefan Heimersheim and Neel Nanda. How to use and interpret activation patching, April 2024.
+Nelson Elhage, Neel Nanda, Catherine Olsson, Tom Henighan, Nicholas Joseph, Ben Mann, et al. A mathematical framework for transformer circuits. Transformer Circuits Thread, 2021. https://transformercircuits.pub/2021/framework/index.html.
+Michael Hanna, Ollie Liu, and Alexandre Variengien. How does GPT-2 compute greater-than?: Interpreting mathematical abilities in a pre-trained language model. https://arxiv.org/abs/2305.00586v5, April 2023.
+Atticus Geiger, Duligur Ibeling, Amir Zur, Maheep Chaudhary, Sonakshi Chauhan, Jing Huang, Aryaman Arora, Zhengxuan Wu, Noah Goodman, Christopher Potts, and Thomas Icard. Causal Abstraction: A Theoretical Foundation for Mechanistic Interpretability. Journal of Machine Learning Research, 26(83):1–64, 2025. ISSN 1533-7928.
+Arthur Conmy, Augustine Mavor-Parker, Aengus Lynch, Stefan Heimersheim, and Adrià Garriga-Alonso. Towards Automated Circuit Discovery for Mechanistic Interpretability. Advances in Neural Information Processing Systems, 36:16318–16352, December 2023.
+Neel Nanda. Attribution Patching: Activation Patching At Industrial Scale. https://www.neelnanda.io/mechanisticinterpretability/attribution-patching, 2023.
+János Kramár, Tom Lieberum, Rohin Shah, and Neel Nanda. AtP*: An efficient and scalable method for localizing LLM behaviour to components. https://arxiv.org/abs/2403.00745v1, March 2024.
+Aaquib Syed, Can Rager, and Arthur Conmy. Attribution Patching Outperforms Automated Circuit Discovery. In Yonatan Belinkov, Najoung Kim, Jaap Jumelet, Hosein Mohebbi, Aaron Mueller, and Hanjie Chen, editors, Proceedings of the 7th BlackboxNLP Workshop: Analyzing and Interpreting Neural Networks for NLP, pages 407–416, Miami, Florida, US, November 2024. Association for Computational Linguistics. doi:10.18653/v1/2024.blackboxnlp1.25.
+Samuel Marks, Can Rager, Eric J. Michaud, Yonatan Belinkov, David Bau, and Aaron Mueller. Sparse Feature Circuits: Discovering and Editing Interpretable Causal Graphs in Language Models, March 2025.
+Jack Lindsey, Wes Gurnee, Emmanuel Ameisen, Brian Chen, Adam Pearce, Nicholas L. Turner, et al. On the biology of a large language model. Transformer Circuits Thread, 2025. URL https://transformer-circuits.pub/ 2025/attribution-graphs/biology.html.
+12
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+Xiaohua Zhai, Basil Mustafa, Alexander Kolesnikov, and Lucas Beyer. Sigmoid Loss for Language Image Pre-Training. In 2023 IEEE/CVF International Conference on Computer Vision (ICCV), pages 11941–11952, Paris, France, October 2023. IEEE. ISBN 979-8-3503-0718-4. doi:10.1109/ICCV51070.2023.01100.
+Gemma Team, Aishwarya Kamath, Johan Ferret, Shreya Pathak, Nino Vieillard, et al. Gemma 3 Technical Report. Technical Report arXiv:2503.19786, Google Deepmind, March 2025.
+NVIDIA, Alisson Azzolini, Junjie Bai, Hannah Brandon, Jiaxin Cao, Prithvijit Chattopadhyay, Huayu Chen, Jinju Chu, Yin Cui, Jenna Diamond, Yifan Ding, Liang Feng, Francesco Ferroni, Rama Govindaraju, Jinwei Gu, Siddharth Gururani, Imad El Hanafi, Zekun Hao, Jacob Huffman, Jingyi Jin, Brendan Johnson, Rizwan Khan, George Kurian, Elena Lantz, Nayeon Lee, Zhaoshuo Li, Xuan Li, Maosheng Liao, Tsung-Yi Lin, Yen-Chen Lin, Ming-Yu Liu, Xiangyu Lu, Alice Luo, Andrew Mathau, Yun Ni, Lindsey Pavao, Wei Ping, David W. Romero, Misha Smelyanskiy, Shuran Song, Lyne Tchapmi, Andrew Z. Wang, Boxin Wang, Haoxiang Wang, Fangyin Wei, Jiashu Xu, Yao Xu, Dinghao Yang, Xiaodong Yang, Zhuolin Yang, Jingxu Zhang, Xiaohui Zeng, and Zhe Zhang. Cosmos-Reason1: From Physical Common Sense To Embodied Reasoning, May 2025b.
+Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and Editing Factual Associations in GPT. Advances in Neural Information Processing Systems, 35:17359–17372, December 2022.
+Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning. Advances in Neural Information Processing Systems, 36:44776– 44791, December 2023.
+Robyn Speer, Joshua Chin, and Catherine Havasi. ConceptNet 5.5: An Open Multilingual Graph of General Knowledge, December 2018.
+George A. Miller. WordNet: A Lexical Database for English. In Human Language Technology: Proceedings of a Workshop Held at Plainsboro, New Jersey, March 8-11, 1994, 1994.
+Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. Similarity of Neural Network Representations Revisited. In Proceedings of the 36th International Conference on Machine Learning, pages 3519–3529. PMLR, May 2019.
+Thomas McGrath, Matthew Rahtz, Janos Kramar, Vladimir Mikulik, and Shane Legg. The Hydra Effect: Emergent Self-repair in Language Model Computations, July 2023.
+A Implementation Details
+We use nnsight to batch clean and corrupted runs within a single tracing context. A model wrapper encapsulates all architecture-specific details (layer paths, activation targets, metric definition), keeping the tracing loop model-agnostic. To ensure comparability across experiments, we initialise all randomisers with seed = 42. This also ensures that our LIBERO-10 subset of 10,000 samples remains comparable across runs. Code will be released.
+B Random Object List
+Listing 1 displays the full list of objects for substituting the nouns in the task instruction with a non-present object.
+Listing 1: Random object list
+toaster, umbrella, bicycle, lantern, spatula, anchor, trombone, cactus, typewriter, kayak, chandelier, harmonica, wheelbarrow, telescope, pillow, compass, violin, helmet, briefcase, shovel, kettle, backpack, microscope, hammock, flashlight, bathtub, clarinet, pinecone, suitcase, sundial, mailbox, accordion, ladder, thermos, pretzel, windmill, snowglobe, stapler, canoe, chalkboard, pocketwatch, birdcage, wrench, trampoline, candlestick, binoculars, wagon, tambourine, scarecrow, periscope
+
+13
+
+Do VLAs Understand Instructions?
+
+PREPRINT
+
+Word
+Nouns
+mug plate chocolate pudding microwave stove moka pot alphabet soup tomato sauce cream cheese basket butter bowl drawer cabinet book compartment caddy
+Verbs
+put place close pick up
+
+Table 2: Word list with synonyms and hypernyms
+Synonyms
+cup, jug, tankard platter chocolate mousse, chocolate custard cooker, boiler, kiln, heater stovetop coffee maker letter soup, pasta soup marinara, passata soft cheese, spreadable cheese, cheese spread hamper, crate dairy spread dish, basin cabinet, compartment case, commode volume, tome cell, slot canister, crate
+place, position position, put, set shut lift up, gather up
+
+Hypernym
+drinking vessel flatware chocolate dessert kitchen appliance kitchen appliance kitchen appliance dish pasta sauce cheese container dairy product vessel storage space furniture publication space can
+move move secure elevate
+
+C Synonyms and Hypernyms
+Table 2 provides the full list of configured synonyms and hypernyms used to perturb the instructions in the LIBERO-10 benchmark. When multiple synonyms are available, we randomly select one of them; when no synonym is available, the word remains unchanged.
+
+14
+
+

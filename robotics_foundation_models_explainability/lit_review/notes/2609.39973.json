@@ -1,0 +1,44 @@
+{
+  "id": "2609.39973",
+  "title": "EWAM: Emergent Depth-Wise Specialization in a Unified Embodied Model -- From Semantic Understanding through Visual Foresight to Action",
+  "first_author": "Wang",
+  "year": 2026,
+  "venue": "arXiv technical report (Yinwang Intelligent Technology)",
+  "tier": "core",
+  "models": ["EWAM (Qwen3-VL vision-language expert + video expert + action expert, 30 unified blocks, asymmetric joint attention)", "pi0.5, FastWAM, Motus (attention-map comparison only)"],
+  "action_head": "flow/diffusion action expert (joint flow matching of video and actions); EWAM is a world-action model hybrid",
+  "methods": ["action-query attention allocation by source (VL text, VL image, current frame, predicted future frames, action) per layer", "checkpoint tracking of routing across 12 checkpoints (50 to 40,000 steps)", "training-time structural ablations (masking access by layer band)", "inference-time key masking by layer band and source on a fixed checkpoint", "counterfactual future-feature injection from a donor rollout", "comparison of asymmetric vs bidirectional masks"],
+  "question": "In a model where action tokens can read semantic, current-visual and predicted-future features at every layer, does an ordered division of labor emerge across depth, and does action generation causally depend on it?",
+  "key_findings": [
+    "Depth-wise handoff: action queries attend mostly to VL tokens in shallow layers (75.38% of shallow attention), become distributed in the middle (36.55% VL, 24.31% video, 39.14% action), and to action tokens in deep layers; future-frame attention overtakes current-image attention at median layer 13 (IQR 12-13) across all 50 RoboTwin tasks; stable across denoising steps (mean pairwise correlation 0.998).",
+    "Emergence: at 50 training steps no layer division is visible; by 150 steps a coarse organization appears; the full handoff is established by 40,000 steps (one run, one representative sequence per checkpoint).",
+    "Inference-time masking on a fixed pretrained checkpoint (RoboTwin Randomized, 50 tasks x 100 episodes, matched seeds): baseline 92.80%; mask all video in layers 0-9 -> 91.98%; mask VL in layers 0-9 -> 76.53%; mask condition frames in 10-19 -> 81.40%; mask predicted-future features in 10-19 -> 3.55%; mask all video in 10-19 -> 0.25%; in 20-29 -> 65.82%.",
+    "Counterfactual injection of donor future-frame keys/values at layers 10-19 for the first three policy calls: success 25/25 -> 4/25 across five tasks; on Adjust Bottle, injected rollouts copy the donor's right-arm choice, failing when the left arm is needed.",
+    "Training-time ablations (no pretraining): full 83%, symmetric attention 81%, no VL in layers 0-9 or no video in 10-19 78%, action-only layers 24-29 83%.",
+    "Attention maps suggest pi0.5 concentrates action attention on VLM tokens, FastWAM on video tokens, and Motus on its understanding expert, i.e. one dominant source each.",
+    "Under a bidirectional mask the coarse three-stage profile reappears (85.6% VL in shallow layers) but the image-to-future visual handoff does not survive."
+  ],
+  "evidence": {
+    "setting": "both (RoboTwin 2.0 and LIBERO simulation; Franka, Dobot and Unitree G1-D real robots for policy performance)",
+    "benchmarks": ["RoboTwin 2.0 (50 tasks, clean and randomized)", "LIBERO", "real-robot tasks (stack bowls, object into box, pour water, tidy desk, towel, kettle pouring, pour beans)"],
+    "scale": "inference interventions: 50 tasks x 100 episodes with matched seeds; injection: 5 tasks x 5 seeds; real robot: 10 trials per task per method",
+    "statistics": "no CIs or tests on success rates; descriptive statistics (median, IQR, correlations) for attention profiles",
+    "baselines": "pi0.5, 4D-WAM, GigaBrain-0.7, LingBot-VA, WLA-0, ACE-Ego-0 for performance; masked variants for interventions"
+  },
+  "causal_validation": "Yes: inference-time masking by layer band and source on a fixed checkpoint, plus counterfactual content injection, which addresses the objection that masking only causes distribution shift. Training-time ablations are separately reported and correctly labeled as weaker evidence.",
+  "closed_loop": "Yes, interventions are evaluated by closed-loop success in simulation; attention profiles are measured on single sequences.",
+  "limitations_stated": [
+    "Analysis characterizes information routing, not representation content; probing, activation patching and cross-layer mediation are future work.",
+    "Attention to video keys does not show that semantic content is displaced, because residual connections carry earlier information.",
+    "Three large experts are computationally expensive."
+  ],
+  "critique": [
+    "This is a model paper with an interpretability section; the specialization is a property of the authors' own architecture and training, so it does not show how existing VLAs compute, though the pi0.5/FastWAM/Motus attention contrast is suggestive.",
+    "Strong intervention design for the field (masking by source and depth on a fixed checkpoint with matched seeds, plus content injection), much better than attention-only claims.",
+    "Masking a whole pathway (3.55%) mixes 'needs this content' with 'breaks without this input'; the injection test addresses this but only on 5 tasks x 5 seeds.",
+    "Emergence over training is shown on one run and one representative sequence per checkpoint.",
+    "Attention-mass shares depend on token counts; the authors report token-normalized versions, which mostly agree (49 of 50 tasks)."
+  ],
+  "code": "project page https://wanghao00pro.github.io/EWAM-project (code status not stated)",
+  "one_line": "In a unified VL + video + action model, action tokens read semantics in shallow layers, predicted future frames in middle layers and their own tokens in deep layers, and masking or swapping the middle-layer future features collapses or redirects behavior."
+}

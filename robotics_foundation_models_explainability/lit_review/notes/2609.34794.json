@@ -1,0 +1,45 @@
+{
+  "id": "2609.34794",
+  "title": "Where Do Embodied Decisions Come From? Rethinking Latent and Explicit Reasoning",
+  "first_author": "Lin",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["in-house driving VLA: SigLIP + Qwen2.5-7B + MLP projector, three training stages (pre-aligned, AD-general, object-specific)", "OpenVLA fine-tuned on LIBERO-90 with ECoT-Lite CoT annotations", "Qwen2.5-VL-7B and Video-R1 (zero-shot video QA, supplementary)"],
+  "action_head": "discrete tokens / text outputs (driving decisions and waypoints generated autoregressively; OpenVLA discrete action tokens)",
+  "methods": ["inference-time CoT intervention (fixed mismatched trace; own trace with direction tokens inverted)", "think-then-act (TTA) vs decide-then-explain (DTE) generation order, including TTA-trained/DTE-inference", "Visual Conditional Contribution (log-prob drop when image replaced by a black frame) and Reasoning Conditional Contribution (log-prob drop when CoT content replaced by padding)", "layer- and head-averaged attention ratios to visual / prompt / generated tokens", "CoT quality comparison (original vs refined CoT)"],
+  "question": "Is an explicit chain of thought placed before the action actually driving an embodied model's decision, and is that the best place for it?",
+  "key_findings": [
+    "CoT helps weak models and slightly hurts stronger ones (Table 1): navigation F1 63.73 -> 68.89 with CoT for the pre-aligned model, but 73.49 -> 72.14 for the object-specific model and 70.40 -> 69.13 for AD-general.",
+    "Intervening on the CoT under TTA collapses navigation F1 from 72.14% to 11.84% (fixed mismatched trace) and to 16.80% (own trace with direction tokens inverted); path ADE degrades only 1.83 -> 2.00 / 1.88 m (Table 2).",
+    "Decide-then-explain improves navigation F1 from 72.14 to 74.50 (hybrid training 71.71 -> 74.04) and path ADE 1.83 -> 1.80; mean VCC rises (navigation 0.25 -> 1.27; path 0.48 -> 0.62) and attention to visual tokens rises (17.96% -> 30.15%) (Tables 4-5).",
+    "A refined, more concise CoT recovers the strong model's performance under TTA (F1 73.85, ADE 1.74 vs 72.14 / 1.83 with original CoT) (Table 3).",
+    "On OpenVLA LIBERO-90: no CoT 62.0%, TTA 67.1%, DTE 69.2% success (std < 0.5%) (Table 6).",
+    "Zero-shot reordering also helps general video VLMs (e.g. Qwen2.5-VL-7B VideoMME 50.93 -> 54.51) (Table 7)."
+  ],
+  "evidence": {
+    "setting": "both kinds of data: offline proprietary driving logs (open-loop) and LIBERO-90 simulation (closed-loop)",
+    "benchmarks": ["Li Auto Navigation Decision and Target Path Generation (proprietary)", "LIBERO-90 with 3,917 ECoT-Lite CoT-annotated demos", "MMVU, VSI-Bench, VideoMME"],
+    "scale": "held-out driving test splits (sizes in appendix, not extracted); LIBERO-90 trial counts not stated in main text; reported std: +/-0.10 F1, +/-0.01 ADE/FDE, <0.5% LIBERO",
+    "statistics": "partial: single std figures, no per-condition variance or tests",
+    "baselines": "no-CoT, TTA, DTE, hybrid training; random/irrelevant CoT controls in appendix"
+  },
+  "causal_validation": "Yes at the text level: replacing or inverting the CoT under TTA collapses decisions, showing CoT is on the causal path when placed before the action. VCC and RCC are input-ablation (black image, padded CoT) log-probability measures. The TTA vs DTE comparison changes training as well as inference, which the authors explicitly say is not a clean causal identification.",
+  "closed_loop": "Mixed: driving results are open-loop on logged data; LIBERO-90 results are closed-loop success rates.",
+  "limitations_stated": [
+    "Short-horizon tasks only.",
+    "'Latent reasoning' is defined only as absence of CoT tokens, ignoring other internal representations.",
+    "Proprietary driving data limits reproducibility.",
+    "TTA vs DTE differ in training and inference factorization, so the comparison is a structural probe."
+  ],
+  "critique": [
+    "Agrees with 2603.12717 that text reasoning placed before the action is causally load-bearing, and adds that this can be a liability for strong models; together they show CoT is a control surface, not a passive explanation.",
+    "RCC = 0.00 under DTE is true by construction (the action precedes the CoT), so presenting it as a finding overstates the evidence; the informative result is the VCC and accuracy change.",
+    "Performance differences are small (1-2 F1 points, 0.03 m ADE, 2.1 points on LIBERO-90) and rest on a single model per domain with unspecified seeds; 'std +/-0.10' is not explained.",
+    "Under DTE the post-hoc explanation is by design a rationalization of a committed decision, which undercuts the interpretability motivation for CoT; the paper does not evaluate whether DTE explanations are faithful.",
+    "Attention ratios averaged over all layers and heads are descriptive only (the appendix notes their limits).",
+    "Mechanistic language ('latent reasoning dominates') goes beyond what input ablations and generation-order changes can show; no activation-level analysis."
+  ],
+  "code": "https://github.com/ocean-luna/openvla-decide-then-explain",
+  "one_line": "Corrupting a driving VLA's chain of thought collapses its decisions (F1 72% to 12%), yet generating the action first and the explanation afterwards makes the model rely more on vision and perform slightly better in driving and on OpenVLA LIBERO-90, suggesting CoT works best as a training signal rather than an inference-time step."
+}

@@ -1,0 +1,1062 @@
+arXiv:2607.03372v1 [cs.CV] 3 Jul 2026
+
+Preprint.
+PRESENT BUT NOT REMEMBERED: AUDITING HOW FROZEN VLAS ENCODE, DEPLOY, AND STEER VISUAL HISTORY
+Chih-Ting Liao∗ Xin Cao University of New South Wales
+ABSTRACT
+A frozen vision-language-action model (VLA) is handed the recent past at every step, yet the literature rushes to add memory without first asking what the model already does with the history it has. We supply that missing diagnosis on the time axis: how a policy encodes and deploys observations across timesteps. This is precisely the axis held fixed by the only prior cross-architecture mechanistic study of VLAs, which localizes the vision-language fusion axis within a single frame (vision dominates, architecture-independently); we localize the orthogonal temporal coordinate and reach the opposite structural verdict. Using layer-resolved linear probing and interchange interventions, we find a three-layer dissociation. (i) Past-frame content is linearly decodable at every depth. (ii) Yet the information unique to history, beyond the current frame, is essentially zero, a ceiling established over an 81-configuration probe sweep in three models and both architecture families: the stored history is a redundant copy of the present. (iii) History is causally deployed into the action only under near-total loss of the current frame, and the readout severs its dependence on history by the middle of the network, confirmed by a second, orthogonal intervention. Across architectures the encoding is identical (A4 ≈ 0 in both) but the deployment regime flips: under the same occlusion one model’s reliance on history rises (fallback) while the other’s falls (standing use). We cast the four measurements as a reusable, training-free temporal-deployment audit (Algorithm 1), and its injection leg adds a third, causal architecture-conditional axis: in the fallback regime, re-supplying history is content-blind (it neither repairs occlusion nor disambiguates), causally confirming the redundancy; in the standing regime the same injection steers the action toward the donor. Whether history is steerable thus tracks the deployment regime, not whether the architecture encodes history: a single fallback-vs-standing axis organizes all three of what is encoded, when it is deployed, and whether it can be steered. VLAs do not forget the past; they were never built to treat it as separate from the present. The diagnosis hands the memory-augmentation literature a concrete lesson: inject information that is unique to the past, not more of it.
+1 INTRODUCTION
+A growing body of work equips vision-language-action models (VLAs) with explicit memory modules, retrieval buffers, recurrent latents, trajectory overlays, learned summaries, and benchmarks whether the augmented policy can use the past [15, 19, 30, 32, 34, 43]. Every such effort presupposes a diagnosis that, to our knowledge, no one has performed: on a frozen multi-frame policy, is the past stored as an independent memory or merely as a redundant copy of the present, and is it ever causally read into the action? Without that baseline, add memory is a fix in search of a characterized fault. The answer is architecture-conditional and counter-intuitive: under the same occlusion one policy leans harder on history while another leans less, and whether injected history can steer the action flips with it, though both encode the past identically.
+∗Corresponding author and project lead. mill.liao@unsw.edu.au
+1
+
+Preprint.
+We provide the missing diagnosis on the time axis. This is deliberately orthogonal to the closest mechanistic work. Grant et al. [12], the first cross-architecture mechanistic study of VLAs, localizes which modality drives the action, finding vision dominates language, independently of architecture, a question about space within a single timestep. We ask how temporal history across timesteps is encoded and deployed. The two are complementary halves of a single mechanistic picture; we show below that where Grant’s fusion axis is architecture-independent, the time axis is architecturedependent.
+Our method has two legs on a frozen, open-loop policy: a linear decode probe that asks whether past-frame content is present in the representation, and an interchange intervention that transplants a donor’s history activations and measures the resulting shift in the action, a direct, layer-resolved test of causal deployment. Open-loop evaluation on a small, frozen, hashed stimulus set is a deliberate choice: it is what enables interchange at every block, a localization that closed-loop rollout cannot provide. The unit of evidence is a controlled stimulus pair under causal intervention, not a behavioral episode, and we lean on statistical rigor (multi-seed, permutation, bootstrap) rather than episode volume.
+We report a three-layer dissociation, summarized by the paper’s title. Present: past-frame content is linearly decodable at every depth, peaking mid-network. Redundant: the information unique to history, the part of t−1 not already in t, tops out at ≈ 0.02 over an 81-configuration probe sweep and is ≈ 0 across three models and both architecture families (A4/A1 ≲ 0.05), so the decodable history is almost entirely redundant with the present, which is the mechanistic answer to why history is not deployed: there is almost nothing unique to deploy. Not remembered (fallback-deployed): history is causally deployed only under near-total current-frame loss (gap significant only for full occlusion; milder degradations not significant), and the action readout no longer reads history past the middle of the network. Across architectures the encoding is identical, yet both the deployment and the content-steerability sign-flip with the fallback-vs-standing regime, the paper’s central surprise.
+Contributions. (1) The first mechanistic study of the time axis of VLA memory, with a historyunique decode metric (A4) that separates retained past information from current-frame redundancy, the temporal complement to the fusion-axis study of Grant et al. [12]. (2) A training-free, reusable temporal-deployment audit (Algorithm 1) that profiles any frozen VLA: whether the past is present (A1), unique (A4), deployed and where (∆ℓ, cutoff ℓ⋆), its regime (σ), and whether injection carries history content. (3) An architecture-conditional steerability law: encoding is identical across families (A4 ≈ 0 in both), yet both the deployment direction and content-steerability sign-flip with the fallback-vs-standing regime, established causally by injection (inert in the fallback regime, steering in the standing one). The design implication follows: useful memory must add information unique to the past, injected before the mid-network cutoff we localize.
+2 RELATED WORK
+Mechanistic interpretability of VLAs. The closest work localizes the within-frame modality axis: Grant et al. [12] show, across architectures, that vision dominates language in driving actions independently of architecture, with the time axis held fixed. Others steer within-frame motion features [8, 13] or decode a forward world model [24]; none addresses the causal deployment of the past frame. We localize that orthogonal time axis and reach the opposite structural verdict, deployment is architecture-dependent, so the two lines jointly say the VLA mechanism is shared on the modality axis but divergent on the time axis (Table 1).
+Benchmarks and memorization. Long-horizon manipulation benchmarks such as LIBERO [22] and SimplerEnv [21] evaluate whether policies can solve history-dependent tasks behaviorally; they do not localize whether or where native policies read the past. He et al. [14] show, complementarily, that diffusion policies often memorize training actions, a different sense in which the learned mapping leans on stored content. We provide the upstream mechanistic account: on a frozen multi-frame policy, what is retained about the past and whether it is causally deployed.
+Memory-augmented methods. A crowded line of work adds memory to improve performance [15, 30, 32, 34, 43]. These methods are our motivation, not our competition: they presuppose that native VLAs underuse history, and our diagnosis both confirms that and refines it into an actionable lesson (add unique information, not more history).
+2
+
+Preprint.
+
+Table 1: Positioning: VLA × mechanistic interpretability. Prior work localizes the within-frame modality axis, steers within-frame motion features, or adds memory without a diagnosis; we localize the orthogonal time axis and characterize how history is encoded, deployed, and steered, reaching an architecture-conditional verdict.
+
+Work
+
+Axis
+
+Method
+
+Scope
+
+Finding
+
+Grant 2026
+
+modality / SAE, injection, 6 models, vision dominates, arch.-
+
+fusion (within- probes
+
+closed-loop independent
+
+frame)
+
+Ha¨on 2025
+
+motion fea- activation steering 2 models, zero-shot behavioral
+
+tures (within-
+
+real robot steering
+
+frame)
+
+Buurmeijer 2026 feature
+
+probe + linear in- closed-loop feature
+
+observabil-
+
+obs./control terv.
+
+ity/control
+
+(within-frame) Memory VLAs† add memory new trained mod- closed-loop augmented policy can use
+
+(no diagnosis) ules
+
+past
+
+Ours
+
+time / history decode, inter- 2 regimes, present-but-redundant,
+
+across frames change, knockout, open-loop fallback-deployed (L6);
+
+inject (frozen)
+
+arch.-conditional;
+
+standing-only
+
+steer-
+
+able
+
+†MemoryVLA, MemER, TraceVLA, ContextVLA, CronusVLA [15, 19, 30, 32, 43].
+
+Interpretability tooling. We build on linear probing [1, 2], causal-mediation and interchange/activation-patching interventions [11, 23, 36, 38], dictionary-learning and sparseautoencoder analyses [6, 10, 33], the linear-representation and lens literatures [3, 27], and activation steering [35], applied here to the previously unexamined temporal substrate of action policies. Concurrent VLA-interpretability work observes and controls features in VLAs [8], again on the within-timestep axis.
+
+3 THE TEMPORAL-DEPLOYMENT AUDIT
+3.1 SETUP
+Models and regime. VLAs built on pretrained vision-language backbones now span discrete actiontoken policies [7, 17, 28], continuous-regression and diffusion/flow action heads [5, 9, 18, 20, 29], and efficient open models [4, 31], trained on large cross-embodiment corpora [16, 26]. All our experiments are on frozen public checkpoints, run open-loop (we read action distributions from (image, instruction) without environment rollout), on a single consumer GPU, with zero training. Our primary model is Octo-Small (27M, window of two frames, diffusion action head) [25]; we add Octo-Base (93M) for scale and CronusVLA-0.5B (a Qwen-class backbone with a diffusion transformer head, history carried as a per-frame cognition feature) [19] as a second architecture family. Stimuli are in-distribution Bridge [37] tuples (obst−1, obst, instruction).
+Markov vs. non-Markov. The policy is a window-2 conditional π(at | ot−1, ot, c) over the previous and current observations ot−1, ot and instruction c, with st the underlying scene state. Behaviorcloned demonstrations are near-Markov: the expert action depends almost only on the present, at⋆ ≈ f (st), so ot is a near-sufficient statistic and the history ot−1 is redundant. A step is nonMarkov when ot underdetermines a⋆t and ot−1 carries decision-relevant information not recoverable from ot (i.e. at⋆ = f (st, st−1) with the st−1 dependence not reconstructable from ot). We induce controlled non-Markovness by corrupting only the current frame: the markov condition leaves ot intact (present sufficient, history redundant), while occ black destroys ot (forcing any competent policy onto ot−1). The deploy gap ∆ℓ (Eq. 4) is exactly the extra causal reliance on history created by that induced non-Markovness, so a policy that fails to deploy history even here treats the past as redundant by construction.
+Frozen stimulus set. We build a frozen, content-hashed set of 250 matched pairs (hash bb4992ac8bbc6803, 213 unique instructions), recorded before any analysis to prevent post-hoc curation. The instruction is held fixed within each matched cell so that any change in the action is attributable to history rather than to the instruction.
+
+3
+
+Preprint.
+
+Readouts. The action is the mean over N diffusion samples of the predicted 7-DoF action chunk, de-normalized via the policy’s dataset statistics; we report sample dispersion alongside the mean. We write ∆action(A, B) for the mean per-dimension L2 distance between two de-normalized actions. Two derived quantities anchor the study: history-decode@ℓ (ridge-probe R2 of the t−1 scene from layer-ℓ history-token activations) and history-contribution@ℓ (the noise-corrected action shift from a layer-ℓ interchange, normalized so that 0 is no deployment and 1 is full deployment). The gap between this contribution under occlusion and under the clean condition is the deployment signal we track throughout; a large positive gap at a layer where decoding is high is the signature of present-but-not-remembered.
+
+3.2 MEASUREMENTS AND AUDIT PROCEDURE
+
+Decode leg: what is present versus what is unique. We separate two questions: is the past present in the representation, and is any of it unique to the past? Let ϕ(ℓ)(x) be the pooled history-token
+activations at layer ℓ and st−1 the previous-frame scene state. A ridge probe gℓ regresses st−1 on ϕ(ℓ), and we report its cross-validated coefficient of determination,
+
+A1(ℓ) = R2 gℓ(ϕ(ℓ)), st−1 ,
+
+(1)
+
+which answers present. To ask what is unique, we project the target onto what the current frame
+
+already explains (sˆt−1|t, a linear read of st−1 from a current-frame probe) and decode only the residual,
+
+A4(ℓ) = R2 gℓ(ϕ(ℓ)), st−1 − sˆt−1|t .
+
+(2)
+
+A4 is the load-bearing quantity: a large A1 with A4 ≈ 0 means the history tokens merely re-encode the present. We sweep 81 probe configurations (layer, pooling, target, regularization) to establish the ceiling of A4, and use a shuffled-label control to rule out overfitting.
+
+Deploy leg: noise-corrected interchange. Presence in the representation need not mean use in the action; the deploy leg measures use directly. At layer ℓ we overwrite the history-token activations of x with those of a donor episode d and read the change in the diffusion-averaged action a(·),
+
+Cℓraw(x, d) = a patchℓ(x; d) − a(x) .
+
+(3)
+
+Because the diffusion head is stochastic, a self-swap (d = x, whose true contribution is zero) leaves
+a non-zero null floor ≈ 0.15 (Figure 2); we subtract it to obtain the corrected contribution Cℓ = Cℓraw − Cℓnull with Cℓnull(x) = Cℓraw(x, x). The conditional signal is the deploy gap between a current-frame-degraded condition and the clean markov condition,
+
+∆ℓ = Cℓocc black − Cℓmarkov,
+
+(4)
+
+reported with paired bootstrap 95% CIs. History is deployed where ∆ℓ excludes zero (the early band) and its dependence is severed where ∆ℓ ≈ 0 (from L6): the dissociation is exactly A1 high while ∆ℓ → 0.
+
+Degradation ladder. Rather than a single occlusion, we read deployment as a dose-response over a graded ladder: partial occlusion (object region in t hidden but visible in t−1), heavy occlusion, Gaussian blur, and full occ black (current frame entirely blacked, forcing reliance on t−1). A temporally-shuffled cell (frame order swapped) serves as an order-blindness control. The ladder lets us distinguish a genuine conditional deployment from an artifact bound to one extreme stimulus.
+
+Second, orthogonal method: attention knockout. To confirm the deploy band without relying on representation interchange, we additionally mask the readout tokens’ attention to the historytoken keys at each layer and measure the resulting action shift. This is a mechanistically distinct intervention (removing access rather than substituting content); agreement between the two methods on the deploy band is strong evidence that the localization is not an artifact of either.
+
+Statistical protocol. Headline effects are hardened three ways: paired bootstrap CIs, multi-seed sign-consistency (5 seeds), and a sign-flip permutation test (5000 resamples) on pooled per-pair gaps. We report an effect as deployed only where all three agree.
+
+Why open-loop. Open-loop reading is what makes layer-resolved interchange possible: we can intervene at each block and observe the action shift, a causal localization that closed-loop rollout cannot deliver. The cost is that the unit of evidence is a controlled pair rather than an episode; we
+
+4
+
+Preprint.
+
+Algorithm 1 Temporal-Deployment Audit (TDA) of a frozen VLA
+
+Require: frozen VLA π; matched pairs S = {(ot−1, ot, instr)}; layers L; occlusion occ
+
+Ensure: profile (A1, A4, {∆ℓ}, ℓ⋆, σ, CONTENT-BEARING)
+
+1: for ℓ ∈ L do
+
+2: A1(ℓ), A4(ℓ) ← R2 of ϕ(ℓ) → st−1 and → (st−1 −sˆt−1|t)
+
+▷ present / unique (Eq. 1–2)
+
+3:
+
+∆ℓ ← (Craw −Cnull)ℓocc − (Craw −Cnull)mℓ arkov, paired CI
+
+▷ deploy gap (Eq. 3–4)
+
+4: ℓ⋆ ← first ℓ with ∆ℓ CI ∋ 0; σ ← sign ∆ℓ at early band
+
+▷ cutoff; fallback (+) / standing (−)
+
+5: inject own clean ot−1 at ℓ < ℓ⋆ under occ; r ← ∥aocc −afull∥ − ∥ainj −afull∥
+
+▷ injectability gate
+
+6: CONTENT-BEARING ← (r > 0, CI ∌ 0); return (A1, A4, {∆ℓ}, ℓ⋆, σ, CONTENT-BEARING)
+
+compensate with multi-seed replication, a permutation test, and bootstrap intervals, and we treat scale as orthogonal to the localization claim.
+Putting it together: a temporal-deployment audit. The four measurements compose into one reusable, training-free procedure (Algorithm 1) that takes any frozen multi-frame VLA and a matched stimulus set and returns a history-deployment profile: whether the past is present (A1), whether any of it is unique (A4), where and whether it is deployed (∆ℓ and the cutoff ℓ⋆), the deployment regime (σ: fallback vs standing), and whether the pre-cutoff pathway actually carries injected history into the action (the injectability gate, Appendix G). The audit needs no weight updates and runs open-loop on a single GPU; we use it below to profile three models and to causally validate the redundancy result.
+
+4 RESULTS
+4.1 PRESENT, BUT A REDUNDANT COPY OF THE CURRENT FRAME
+Past-frame content is linearly decodable from Octo-Small with a peak of R2 = 0.398 at L4, rising from ≈ 0 at the input edge (L0) and remaining above 0.30 through the final block (Figures 1a and 3a, teal). By the present criterion alone the model clearly registers history, at every depth past the first layer; the decode peak (L4) coincides with the layer that anchors the causal deploy gap (Section 4.2), so history is most decodable and most deployed at one layer, after which decoding persists but deployment is severed. The margin over a current-frame-only baseline is small (+0.014 to +0.025 per layer), which already hints at the redundancy we quantify next.
+But redundant: history carries almost no unique information. The decodable history is overwhelmingly a copy of the present. The history-unique quantity A4 tops out at +0.019 for Octo-Small across all 81 probe configurations, not a fragile single number but a ceiling, an order of magnitude below the raw decode (A4/A1 = 0.019/0.389 ≈ 0.05): the decodable history is almost entirely redundant with the current frame.1 The same holds across models and architectures: A4 = +0.019 (Octo-Small), +0.015 (Octo-Base), and −0.011 (CronusVLA), against A1 = 0.389/0.362/0.142 respectively (Figure 1b, Table 3); for CronusVLA, whose history lives in a different representational locus (a per-frame cognition feature), A1 is read cautiously and A4 is the comparable quantity (Appendix E). A shuffled-label control returns to ≈ 0, confirming the probe is healthy rather than overfitting. This pre-empts the natural objection that a decode of 0.39 merely reflects t−1 ≈ t: yes, and we measured exactly how much (almost all of it).
+Scope of the redundancy claim. Since A4 (Eq. 2) residualizes against the raw t−1 frame, the one history quantity with controllable ground truth, we cannot exclude that a policy stores some abstract history (task progress, intent) that is not a linear read of the previous frame. Two things bound this. First, A4 ≈ 0 is a ceiling over 81 probe configurations built to maximize it, so within the linear-frame hypothesis the redundancy is not an unlucky-probe artifact. Second, the central present-but-notdeployed conclusion does not rest on the decode target at all: the deploy legs measure the causal effect on the action directly, agnostic to what the activations encode, and that effect also vanishes by L6. A4 explains why (little unique frame content); the deploy legs establish that independently.
+1We read A4/A1 as a heuristic redundancy ratio of two R2 point estimates, not a formal variance decomposition; the qualitative claim (A4 ≈ 0 while A1 is large) does not depend on the ratio.
+5
+
+Preprint.
+
+decode R2(t 1)
+
+Present but not deployed: the two curves diverge after L6
+
+0.45
+
+0.20
+
+decode R2(t 1) (present)
+
+0.40
+
+deploy gap (occ-black markov)
+
+0.35
+
+0.15
+
+0.30
+
+0.25
+
+0.10
+
+L6 cliff:
+
+0.20
+
+decode stays,
+
+deploy 0
+
+0.05
+
+0.15
+
+0.10
+
+0.00
+
+0.05
+
+0.00
+
+0.05
+
+0 1 2 3 4 5 6 7 8 9 10 11
+
+transformer block (layer)
+
+causal deploy gap
+decode R2
+
+History is present but redundant: A4 0 in all models
+
+0.4
+
+0.389
+
+A1: history decodable
+
+0.362
+
+A4: history-UNIQUE (t 1 | t)
+
+0.3
+0.2
+0.1 +0.019
+0.0 Octo-Small
+
+historyAw4/iArteh1dpurne0ds.0ae5nn:tt 0.142
+
++0.015 Octo-Base
+
+-0.011 CronusVLA
+
+(a) Present, not deployed: decode stays, gap dies at L6.
+
+occ_half
+
+Only near-total occlusion deploys history (dose-response)
+
+occ_heavy
+
+blur
+
+occ_black 0.06
+
+sig 0.04 0.02 0.00 0.02 0.04 0.06 0.08
+deploy gap @L4 (occluded markov), 95% CI
+
+deploy gap (occ-black markov)
+
+(b) A1 vs. A4: present but redundant.
+
+Two orthogonal interventions, one deploy band
+
+0.35
+
+interchange gap (representation) attention-knockout gap (2nd method)
+
+0.30
+
+same L6 cutoff
+
+0.25
+
+(two methods agree)
+
+0.20
+
+0.15
+
+0.10
+
+0.05
+
+0.00
+
+0
+
+2
+
+4
+
+6
+
+8
+
+11
+
+transformer block (layer)
+
+(c) Deployed only as a fallback (dose-response).
+
+(d) Two interventions collapse at L6.
+CronusVLA: standing use, order-blind, and falling under occlusion (sign-flip) 0.06
+
+Same occlusion, opposite response: encoding identical (A4 0), deployment flips
+
+Octo fallback ( rises)
+
+0.16
+
+0.14
+
+0.138
+
+0.12
+
+0.10
+
+0.095
+
+0.08
+
+0.06 normal (markov)
+
+current frame blacked
+
+CronusVLA standing ( falls)
+
+0.06 0.050
+0.05
+0.04
+0.03
+0.02 normal (markov)
+
+0.036 current frame
+blacked
+
+0.05 0.04 0.03 0.02 0.01 0.00 0.01
+markov (standing)
+
+shuffle (order-blind)
+
+occ_black (falls)
+
+(e) Same occlusion, opposite response.
+
+(f) CronusVLA robustness (standing use).
+
+Figure 1: The temporal-deployment audit at a glance (Octo-Small unless noted [25], n=200). Rows group the story: encoding and the central dissociation (a,b), fallback deployment (c,d), cross-architecture (e,f). (a) Decode R2(t−1) (teal) stays above 0.30 at every depth while the causal deploy gap (rose, occ black − markov, 95% band) is significant only through L4 and collapses at L6. (b) History is decodable (A1) but its unique information (A4, gray) is ≈ 0 in every model and both families: a redundant copy of the present. (c) On the degradation ladder only near-total occlusion (occ black) deploys history; milder degradations are n.s. (d) Interchange (rose) and attention-knockout (plum) both collapse at L6, ruling out a method artifact. (e) Under the same occlusion Octo’s reliance on history rises (fallback) while CronusVLA’s falls (standing), encoding identical (A4 ≈ 0 in both). (f) CronusVLA’s contribution is positive when clean, ≈ 0 under temporal shuffling (order-blind), and falls under occlusion, over three seeds.
+
+4.2 NOT REMEMBERED: DEPLOYED ONLY AS A FALLBACK
+Causally, history is read into the action only when the present fails. On the degradation ladder, only full occlusion (occ black) produces a significant deploy gap at L4 (+0.043, 95% CI [0.016, 0.069]); partial occlusion, heavy occlusion, and blur are all not significant (Figure 1c). On
+
+6
+
+corrected history contribution
+corrected history contribution
+history contribution
+
+Preprint.
+
+Table 2: Layer-resolved causal deployment of history (Octo-Small [25], n=200). Corrected interchange contribution under the markov and occ black conditions, and their paired gap with bootstrap 95% CIs. The gap is significant only through L4 and collapses at L6, while decoding stays high at every depth (Fig. 1a): history is present but not deployed.
+
+layer cmarkov cocc black
+
+gap
+
+95% CI
+
+sig.
+
+0 0.356 0.481 +0.125 [0.085, 0.168] yes
+
+2 0.271 0.361 +0.090 [0.052, 0.129] yes
+
+4 0.087 0.141 +0.054 [0.028, 0.079] yes
+
+6 0.045 0.040 −0.005 [−0.023, 0.014] no
+
+8 0.019 0.027 +0.008 [−0.005, 0.020] no
+
+11 0.000 0.000 +0.003 [−0.010, 0.016] no
+
+Table 3: Cross-architecture summary: same encoding, opposite deployment, opposite steerability (Octo [25], CronusVLA [19]). History is linearly decodable (A1) but carries almost no information unique to the past (A4 ≈ 0) in every model and both architecture families; the architectures differ in when history is read into the action (fallback vs. standing) and in whether injected history steers the action (Steer: paired donor−random directional steer, Appendix G). Octo’s readout is content-blind across three battlefields (G3/G3b/G4; inert); CronusVLA’s standing channel is steerable (S3). Octo-Base steer not separately tested.
+
+model Octo-Small (27M) [25] Octo-Base (93M) [25] CronusVLA-0.5B [19]
+
+A1 (decodable) 0.389 0.362 0.142
+
+A4 (unique) +0.019 +0.015 −0.011
+
+deployment fallback fallback (replicates) standing
+
+steer inert
+– +0.167
+
+the unified n = 200 source that also drives Figure 1a, the gap is significant through L4 (+0.054 at L4, CI [0.028, 0.079]) and collapses at L6 (Table 2): the readout severs its dependence on history by the middle of the network even though decoding stays high there.2 The gap survives multi-seed replication and a permutation test (p = 0.0004 at L4, significant in 5/5 seeds), and an orthogonal attention-knockout intervention recovers the same L6 cutoff, with only a small residual past L6. Ecologically, the non-Markov steps that would force history use (Section 3.1) are rare: a model-free scan of the frozen set finds naturally occluded pairs in only 3 of 250 cases, so the fallback is seldom triggered in distribution (Section 4.4). We next confirm the L6 cutoff with a second, orthogonal intervention (Section 4.2), harden it statistically (Section 4.2), and characterize its scaling (Section 4.3). The per-layer contribution under both conditions (Figure 3b) makes the closure visible: the conditional gap (amber band) is wide early and pinches shut at L6.
+A second, orthogonal method confirms the L6 cutoff. Interchange substitutes the content of history; attention-knockout removes the readout’s access to it. The two interventions are mechanistically distinct, yet they agree on the deploy band (Figure 1d, Table 4): the knockout gap is large in the early layers (L0/L2 ≈ +0.32), large at L4 (+0.137), and drops roughly sevenfold at L6 (+0.045), the same cutoff interchange finds. Knockout leaves a small but significant residual past L6 (interchange falls to a statistical zero), which is expected and interpretable: under full occlusion the readout still perturbs whenever any history key is removed. That the divider is L6 under both methods is what matters (per-layer gaps in Table 4).
+The deployment gap is statistically hardened. The early-band gap survives all three hardenings (Table 9, Figure 3c). Across five seeds the L0 and L4 gaps are positive in 5/5 seeds; the permutation test gives p = 0.0000 (L0) and p = 0.0004 (L4). At L6 and L8 the gap is permutationindistinguishable from zero (p = 0.49, 0.34): the readout-band non-deployment is a statistical zero, not merely a small number. L4 is the clean mechanistic anchor (L0 sits at the input edge and may partly reflect un-mixed input). Three independent significance routes, bootstrap CI, multi-seed signconsistency, and permutation, agree.
+
+4.3 SCALING AND CROSS-ARCHITECTURE
+Inverse scaling. Octo-Base (93M) reproduces the entire pattern (history deployed only under full occlusion, gap significant at L0, severed by L6) but at a markedly lower rate. After normalizing each model by its own within-model full-swap denominators (to control for the wider model’s smaller relative perturbation), Octo-Base deploys history at ≈ 31% of Octo-Small’s rate, with the same ratio
+2The occ black gap@L4 varies slightly across sub-studies (different n and donor pools): +0.054 (n=200 main, Table 2), +0.043 (n=160 ladder, Table 8), +0.051 (Gate-0, Table 7); all CIs exclude zero and agree on the L6 collapse.
+
+7
+
+Preprint.
+
+Table 4: Attention-knockout gap by layer (Octo-Small [25], readout→history, all heads; gap = occ black − markov ∆). An orthogonal intervention recovers the same L6 cutoff as interchange, with a small significant residual past L6 (under full occlusion the readout still perturbs when any history key is removed).
+
+layer
+
+L0
+
+L2
+
+L4
+
+L6
+
+L8
+
+L11
+
+gap
+
++0.323 +0.313 +0.137 +0.045 +0.053 +0.041
+
+95% CI [.28,.37] [.28,.35] [.11,.17] [.03,.06] [.04,.07] [.03,.06]
+
+under two independent normalizers (Figure 3d, Table 10). The ∼ 11× absolute drop is therefore only partly dilution: the larger policy relies on history proportionally less. If anything, this strengthens the diagnosis at scale.
+Cross-architecture: encoding identical, deployment flips. The sharpest result is a single intervention with opposite signs. Both architectures encode ≈ 0 unique history (A4 above), yet under the same current-frame occlusion their reliance on history moves in opposite directions (Figure 1e). Octo’s history contribution rises under occlusion, history is an emergency backup invoked only when the present fails (fallback). CronusVLA’s contribution is high in the normal condition (+0.0498, CI [0.0479, 0.0534], 3/3 seeds) and falls under occlusion (+0.0357, CI [0.0354, 0.0359]; the intervals do not overlap), history is a routine, standing input that is not escalated by crisis (standing use). Frame-order shuffling drives the contribution to ≈ 0 in both architectures, so order-blindness is a shared invariant. The architecture difference is therefore purely in when history is read, not in how much unique history is stored, a dissociation that the encoding alone could never reveal.
+Because the two architectures operate at different contribution scales (CronusVLA’s single-locus cognition feature yields smaller absolute shifts than Octo’s token band), we read the sign-flip within each architecture, the direction of the markov→occlusion change relative to that model’s own baseline, rather than comparing absolute magnitudes across families. The claim is thus robust to the scale mismatch: Octo’s ratio is > 1 (rises), CronusVLA’s is < 1 (falls), and each is established against its own seeds and bootstrap CIs (Appendix H, Table 17).
+
+4.4 POPULATION: HOW OFTEN IS THE FALLBACK EVEN TRIGGERED?
+A fallback matters only if the triggering condition occurs. A model-free scan of the frozen set for naturally occluded pairs (large inter-frame difference together with object loss or darkening) finds only 3 of 250 candidates at the loosest threshold and none at stricter ones; the 90th-percentile lostfraction is just 0.055 (Figure 4b). Genuinely non-Markov situations, in the ot-insufficient sense of Section 3.1, are thus rare in distribution, consistent with a policy that can afford to treat history as a last-resort backup, and with the observation that adding memory helps mainly on the curated, history-dependent tasks that long-horizon benchmarks such as LIBERO [22] construct. Behaviorally, the small history dependence that does exist is not confined to one output channel: swapping t − 1 perturbs every continuous pose dimension, and the gripper accounts for only ≈ 9% of the summed effect (Figure 4a).
+
+4.5 SYNTHESIS AND IMPLICATIONS
+The three layers interlock into one statement: for a frozen VLA, history is not an independently encoded working memory but a redundant residual of the current frame, deployed into the action only as a fallback when the present fails. This reframes the common claim that VLAs are memoryless. They are not memory-incapable; they store a copy of the present labeled as the past, and they read it only under duress. That is why such policies fail on genuinely non-Markov tasks: not because history cannot be stored, but because what is stored duplicates the very frame that has been lost.
+The design implication is direct: because the native substrate already encodes the present-as-history, adding more history (longer windows, richer overlays) adds mostly redundancy; the payoff is in mechanisms that inject information unique to the past and make the readout attend to it before the mid-network cutoff where the native dependence is severed.
+Causal validation, and an architecture-conditional steerability flip. The A4 ≈ 0 result predicts that in the fallback regime the stored history, a copy of the present, is causally inert: re-supplying it cannot add what was never encoded. The audit’s injectability gate confirms this on Octo (Appendix G): injection at a pre-cutoff layer is localized and donor-specific, yet across three independent battlefields it is sub-behavioral, it neither repairs occlusion, nor disambiguates state-aliasing,
+
+8
+
+Preprint.
+
+Table 5: Injectability gate across two architectures (frozen, open-loop, training-free; injection at a pre-cutoff layer, L4 for Octo). In the fallback regime (Octo) injection is localized and donor-specific but content-blind on three independent battlefields (G3/G3b/G4), causally confirming A4 ≈ 0; in the standing regime (CronusVLA) the same injection steers the action (S3). Steerability tracks the deployment regime. Octo: full 250-pair set, three seeds; S3: three seeds and three donors on a held-out stimulus subset.
+
+check G0a G0b G2 G3 G3b G4 S3
+
+model (regime) Octo (fallback) Octo Octo Octo Octo Octo CronusVLA (standing)
+
+question injectable pre-cutoff? donor-specific info? steers to donor action? repairs occlusion? disambiguates aliasing? flips identity gate? steers to donor action?
+
+statistic L4 contrib. 7–9× L8 sep−null +11.0 [9.6, 12.5] pre−null +0.069 [.043, .094] recovered −0.010 [−.42, +.41] paired +0.004 [−.12, +.11] paired −0.040 [−.071, −.009] paired +0.167 [.106, .227]
+
+verdict
+localized specific yes, modest no no no yes
+
+nor opens the fallback gate via the (perfectly decodable, probe acc 1.0) temporal-identity direction. Octo’s pathway is content-blind: it registers that something was injected, not what. This is not universal. On the standing-use architecture, whose history channel feeds the action continuously rather than being severed at a cutoff, the same injection does steer the action toward the donor (paired steer − random +0.167, CI [0.106, 0.227]; a reliable directional effect). Content-steerability therefore tracks the deployment regime, a third architecture-conditional dissociation on the same axis (encoding identical, deployment sign-flipped, steerability sign-flipped), and the reading is causal: injection is inert exactly where the readout severs history and effective exactly where it does not. The lesson sharpens: a fallback model’s native window cannot be unlocked by injection, so external memory must add present-irreducible information through an engineered pathway, whereas a standing-use channel is directly writable.
+A combined mechanistic picture. Read alongside the fusion-axis result of Grant et al. [12], our findings complete a two-axis description of the VLA action mechanism. On the modality axis the mechanism is shared across architectures (vision dominates, architecture-independently); on the time axis it is shared in what is encoded (history-unique information ≈ 0 in both families) but divergent in when it is deployed (fallback vs. standing). The two studies are not competing increments but orthogonal coordinates: one localizes space within a timestep, the other information across timesteps. A reader who accepts Grant’s diagnosis should find ours the necessary other half, and should be surprised by the same-encoding/opposite-deployment dissociation, which the fusion axis cannot surface.
+Why the substrate is redundant. The redundancy is not specific to one checkpoint; it recurs across 27M, 93M, and a 0.5B model spanning two families, and deepens with scale (Section 4.3). A policy trained to imitate near-Markov demonstrations is never pressured to store anything about t−1 not already legible in t, so the window-of-two history becomes a near-copy of the current frame and the readout learns to consult it only when the present is uninformative. This predicts that memory modules trained on the same data inherit the redundancy unless their objective explicitly rewards present-irreducible information, a testable hypothesis our diagnosis hands the memory line.
+What the result does not claim. We do not claim VLAs cannot remember, nor that memory modules are useless. The claim is sharper and survives its own strongest objection: history is present as redundancy and deployed as a fallback, and the decode-vs-deploy and A1-vs-A4 gaps quantify exactly how much. The precision is the point, an over-broad memoryless slogan would be both wrong and unfalsifiable, whereas the three-layer statement is falsifiable and was, in one of its subhypotheses (standing use encodes more history), cleanly falsified by our own data.
+Future work. Three extensions follow directly: (i) a feature-level A4 via dictionary learning [6], turning the redundancy result from a population statistic into a per-feature target to amplify; (ii) a closed-loop study measuring whether injecting present-irreducible information at the readout band improves non-Markov task success; and (iii) more architecture members (Appendix D) to turn the fallback-vs-standing dissociation into a taxonomy.
+
+5 CONCLUSION
+VLAs do not forget the past so much as they were never built to treat it as separate from the present. History is present in the representation, but largely as a redundant copy of the current frame, and it
+
+9
+
+Preprint.
+is deployed into the action only as a fallback when the present fails, with the deployment regime, but not the encoding, depending on architecture. The diagnosis the memory-augmentation literature presupposes turns out to recommend a specific fix: add what is unique, not what is more.
+Limitations. Two design choices are deliberate, not concessions. Open-loop evaluation on ∼ 250 controlled pairs is what makes layer-resolved causal localization possible: interchange and attentionknockout at every block require a fixed, repeatable input that closed-loop rollout cannot provide, and a purely behavioral study can inject activations but cannot read the per-layer severance we localize; a closed-loop, real-robot extension is complementary future work that does not bear on the localization claim. Two architecture families suffice to establish the fallback-vs-standing dissociation, which needs only the two regime endpoints; a systematic search for a third frozen, open, multi-frame, consumer-GPU-runnable family returned none (Appendix D), and further members would populate the axis rather than prove it. Finally, a single consumer GPU bounds model size, though the inversescaling tendency (Section 4.3) suggests larger policies rely on history even less, strengthening the diagnosis.
+REPRODUCIBILITY STATEMENT
+All experiments use frozen, publicly available checkpoints (Octo-Small/Base [25], CronusVLA0.5B [19]) with zero training, run open-loop on a single consumer GPU. The stimulus set is a content-hashed, frozen collection of 250 matched pairs (hash bb4992ac8bbc6803, 213 unique instructions) drawn from BridgeData V2 [37]; the build script plus the hash are released in lieu of the raw corpus. Every headline number is bound to a specific run and reported with its sample size and paired bootstrap CI (Appendix A); the probe, interchange, and attention-knockout procedures, the self-swap noise calibration, and the pinned software environments (two conda specifications, exact checkpoint identifiers) are documented in Appendices B–C. The per-leg reproduction map (Table 16) lists each module and its expected headline value, and the harness is certified by a backbone-parity check (Appendix J). Statistical claims are made only where bootstrap CI, five-seed sign-consistency, and a permutation test agree (Section 4.2).
+ETHICS STATEMENT
+This work is a mechanistic analysis of existing, publicly released robot-learning checkpoints and datasets; it introduces no new human-subjects data and no new model release. The stimuli are frames from BridgeData V2, an established academic manipulation dataset, used under its terms and distributed only as a content hash plus a build script. Because our findings characterize when a policy does or does not rely on visual history, they carry a dual-use consideration: the same diagnosis that guides safer memory design could inform an adversary constructing occlusion conditions under which a deployed policy silently falls back on stale history. We judge this risk low relative to the transparency benefit, since the failure mode (near-total current-frame loss) is already visible to any operator and the analysis operates open-loop on frozen weights. We use no proprietary data, report negative and null results faithfully, and flag the open-loop scope as a limitation rather than overstating real-robot safety implications.
+REFERENCES
+[1] Guillaume Alain and Yoshua Bengio. Understanding intermediate layers using linear classifier probes. International Conference on Learning Representations (Workshop); arXiv:1610.01644, 2017.
+[2] Yonatan Belinkov. Probing classifiers: Promises, shortcomings, and advances. Computational Linguistics, 48(1), 2022.
+[3] Nora Belrose, Zach Furman, Logan Smith, Danny Halawi, Igor Ostrovsky, Lev McKinney, Stella Biderman, and Jacob Steinhardt. Eliciting latent predictions from transformers with the tuned lens. arXiv preprint arXiv:2303.08112, 2023.
+10
+
+Preprint.
+[4] Johan Bjorck, Fernando Castan˜eda, Nikita Cherniadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, et al. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025.
+[5] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. π0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+[6] Trenton Bricken, Adly Templeton, Joshua Batson, Brian Chen, Adam Jermyn, Tom Conerly, et al. Towards monosemanticity: Decomposing language models with dictionary learning. Transformer Circuits Thread, 2023.
+[7] Anthony Brohan, Noah Brown, Justice Carbajal, et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning (CoRL), 2023. arXiv:2307.15818.
+[8] Huub Buurmeijer, Carmen Amo Alonso, Aaron Swann, and Marco Pavone. Observing and controlling features in vision-language-action models. arXiv preprint arXiv:2603.05487, 2026.
+[9] Cheng Chi, Siyuan Feng, Yilun Du, Zhenjia Xu, Eric Cousineau, Benjamin Burchfiel, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. In Robotics: Science and Systems (RSS), 2023.
+[10] Hoagy Cunningham, Aidan Ewart, Logan Riggs, Robert Huben, and Lee Sharkey. Sparse autoencoders find highly interpretable features in language models. In International Conference on Learning Representations (ICLR), 2024. arXiv:2309.08600.
+[11] Atticus Geiger, Hanson Lu, Thomas Icard, and Christopher Potts. Causal abstractions of neural networks. In Advances in Neural Information Processing Systems (NeurIPS), 2021.
+[12] Bryce Grant, Xijia Zhao, and Peng Wang. Not all features are created equal: A mechanistic study of vision-language-action models. arXiv preprint arXiv:2603.19233, 2026.
+[13] Bear Ha¨on, Kaylene Stocking, Ian Chuang, and Claire Tomlin. Mechanistic interpretability for steering vision-language-action models. In Conference on Robot Learning (CoRL), 2025. arXiv:2509.00328.
+[14] Chi He, Xin Liu, Gemma M.S. Camps, John Bruno, Guillaume A. Sartoretti, and Mac Schwager. Demystifying robot diffusion policies: Action memorization and a simple lookup table alternative. In International Conference on Learning Representations (ICLR), 2026.
+[15] Huiwon Jang, Sihyun Yu, Heeseung Kwon, Hojin Jeon, Younggyo Seo, and Jinwoo Shin. ContextVLA: Vision-language-action model with amortized multi-frame context. arXiv preprint arXiv:2510.04246, 2025.
+[16] Alexander Khazatsky, Karl Pertsch, Suraj Nair, Ashwin Balakrishna, Sudeep Dasari, Siddharth Karamcheti, et al. DROID: A large-scale in-the-wild robot manipulation dataset. arXiv preprint arXiv:2403.12945, 2024.
+[17] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. OpenVLA: An open-source vision-language-action model. In Conference on Robot Learning (CoRL), 2024. arXiv:2406.09246.
+[18] Moo Jin Kim, Chelsea Finn, and Percy Liang. Fine-tuning vision-language-action models: Optimizing speed and success. arXiv preprint arXiv:2502.19645, 2025.
+[19] Hao Li, Shiyu Yang, Yang Chen, Yonghao Tian, Xuanyu Yang, Xifeng Chen, Hanqing Wang, Tai Wang, Feng Zhao, and Dahua Lin. CronusVLA: Towards efficient and robust manipulation via multi-frame vision-language-action modeling. In AAAI Conference on Artificial Intelligence, 2026. arXiv:2506.19816.
+11
+
+Preprint.
+[20] Qixiu Li, Yaobo Liang, Zeyu Wang, Lin Luo, Xi Chen, Mozheng Liao, Fangyun Wei, Yu Deng, Sicheng Xu, Yizhong Zhang, et al. CogACT: A foundational vision-language-action model for synergizing cognition and action in robotic manipulation. arXiv preprint arXiv:2411.19650, 2024.
+[21] Xuanlin Li, Kyle Hsu, Jiayuan Gu, Oier Mees, Karl Pertsch, Homer Walke, et al. Evaluating real-world robot manipulation policies in simulation. arXiv preprint arXiv:2405.05941, 2024.
+[22] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. LIBERO: Benchmarking knowledge transfer for lifelong robot learning. In Advances in Neural Information Processing Systems (NeurIPS), 2023.
+[23] Kevin Meng, David Bau, Alex Andonian, and Yonatan Belinkov. Locating and editing factual associations in GPT. In Advances in Neural Information Processing Systems (NeurIPS), 2022.
+[24] Marco Molinari, Leonardo Nevali, Saharsha Navani, and Omar G. Younis. Emergent world representations in OpenVLA. arXiv preprint arXiv:2509.24559, 2025.
+[25] Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, et al. Octo: An open-source generalist robot policy. In Robotics: Science and Systems (RSS), 2024.
+[26] Open X-Embodiment Collaboration. Open x-embodiment: Robotic learning datasets and RT-X models. arXiv preprint arXiv:2310.08864, 2023.
+[27] Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geometry of large language models. In International Conference on Machine Learning (ICML), 2024.
+[28] Karl Pertsch, Kyle Stachowicz, Brian Ichter, Danny Driess, Suraj Nair, Quan Vuong, Oier Mees, Chelsea Finn, and Sergey Levine. FAST: Efficient action tokenization for visionlanguage-action models. arXiv preprint arXiv:2501.09747, 2025.
+[29] Physical Intelligence, Kevin Black, Noah Brown, Danny Driess, et al. π0.5: A vision-languageaction model with open-world generalization. In Conference on Robot Learning (CoRL), 2025. arXiv:2504.16054.
+[30] Hao Shi, Bin Xie, Yingfei Liu, Lin Sun, Fengrong Liu, Tiancai Wang, Erjin Zhou, Haoqiang Fan, Xiangyu Zhang, and Gao Huang. MemoryVLA: Perceptual-cognitive memory in visionlanguage-action models for robotic manipulation. arXiv preprint arXiv:2508.19236, 2025.
+[31] Mustafa Shukor, Dana Aubakirova, Francesco Capuano, Pepijn Kooijmans, Steven Palma, Adil Zouitine, Michel Aractingi, Caroline Pascal, Martino Russi, Andres Marafioti, et al. SmolVLA: A vision-language-action model for affordable and efficient robotics. arXiv preprint arXiv:2506.01844, 2025.
+[32] Ajay Sridhar, Jennifer Pan, Satvik Sharma, and Chelsea Finn. MemER: Scaling up memory for robot control via experience retrieval. arXiv preprint, 2025.
+[33] Adly Templeton, Tom Conerly, Jonathan Marcus, Jack Lindsey, Trenton Bricken, Brian Chen, et al. Scaling monosemanticity: Extracting interpretable features from Claude 3 Sonnet. Transformer Circuits Thread, 2024.
+[34] Marcel Torne, Andy Tang, Yuejiang Liu, and Chelsea Finn. Learning long-context diffusion policies via past-token prediction. arXiv preprint arXiv:2505.09561, 2025.
+[35] Alexander Matt Turner, Lisa Thiergart, Gavin Leech, David Udell, Juan J. Vazquez, Ulisse Mini, and Monte MacDiarmid. Activation addition: Steering language models without optimization. arXiv preprint arXiv:2308.10248, 2023.
+[36] Jesse Vig, Sebastian Gehrmann, Yonatan Belinkov, Sharon Qian, Daniel Nevo, Yaron Singer, and Stuart Shieber. Investigating gender bias in language models using causal mediation analysis. In Advances in Neural Information Processing Systems (NeurIPS), 2020.
+12
+
+Preprint.
+
+[37] Homer Walke, Kevin Black, Abraham Lee, Moo Jin Kim, Max Du, Chongyi Zheng, Tony Zhao, Philippe Hansen-Estruch, Quan Vuong, Andre He, et al. BridgeData V2: A dataset for robot learning at scale. In Conference on Robot Learning (CoRL), 2023.
+[38] Kevin Wang, Alexandre Variengien, Arthur Conmy, Buck Shlegeris, and Jacob Steinhardt. Interpretability in the wild: A circuit for indirect object identification in GPT-2 small. In International Conference on Learning Representations (ICLR), 2023.
+[39] Jiahui Zhang, Yurui Chen, Yueming Xu, Ze Huang, Yanpeng Zhou, Yu-Jie Yuan, Xinyue Cai, Guowei Huang, Xingyue Quan, Hang Xu, et al. 4D-VLA: Spatiotemporal vision-languageaction pretraining with cross-scene calibration. In Advances in Neural Information Processing Systems (NeurIPS), 2025.
+[40] Tony Z. Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. In Robotics: Science and Systems (RSS), 2023.
+[41] Haoyu Zhen, Xiaowen Qiu, Peihao Chen, Jianzhe Yang, Xin Yan, Yilun Du, Yining Hong, and Chuang Gan. 3D-VLA: A 3d vision-language-action generative world model. In International Conference on Machine Learning (ICML), 2024. arXiv:2403.09631.
+[42] Jinliang Zheng et al. X-VLA: Soft-prompted transformer as scalable cross-embodiment visionlanguage-action model. arXiv preprint arXiv:2510.10274, 2025.
+[43] Ruijie Zheng, Yongyuan Liang, Shuaiyi Huang, Jianfeng Gao, Hal Daume´ III, Andrey Kolobov, Furong Huang, and Jianwei Yang. TraceVLA: Visual trace prompting enhances spatial-temporal awareness for generalist robotic policies. arXiv preprint arXiv:2412.10345, 2024.
+
+A VERIFIED NUMBERS
+
+All headline values are drawn from a single verified results log. Decode R2(t−1) by layer (L0–L11): 0.022, 0.278, 0.365, 0.370, 0.398, 0.371, 0.367, 0.352, 0.332, 0.325, 0.320, 0.305; the per-layer deploy gap, with paired bootstrap 95% CIs, is in Table 2. The remaining verified tables, Gate-0 decode/deploy arms, the full dose-response, statistical hardening, the attention-knockout, the normalized cross-scale, and the behavioral per-DoF breakdown, are collected below.
+
+Table 6: Gate-0 decode arm (Octo-Small [25], ridge probe, n=200, 5-fold). Past-frame content is decodable from L2 with a small margin over a current-frame-only baseline.
+
+layer 0 2 4 6
+
+R2(t−1) 0.022 0.362 0.388 0.338
+
+R2(t) baseline 0.027 0.347 0.374 0.342
+
+margin −0.005 +0.015 +0.014 −0.004
+
+Table 7: Gate-0 deploy arm (Octo-Small [25], corrected interchange contribution, n=200). The gap over markov is significant for occ black but not occ partial at L4.
+
+cell
+
+L0 L2 L4 L6 L8
+
+L11
+
+markov 0.344 0.254 0.088 0.051 0.015
+
+0.002
+
+occ partial 0.385 0.279 0.099 0.043 0.012
+
+0.004
+
+occ black 0.472 0.367 0.139 0.049 0.015
+
+0.000
+
+gap@L4: occ partial +0.010 [−0.008, 0.028] n.s.; occ black +0.051 [0.026, 0.074] sig.
+
+Natural-occlusion scan (population leg). On the frozen set (n=250, model-free): candidates at the loosest bar = 3/250, at stricter bars = 0. Frame-difference percentiles (50/90/95) = 5.08/9.99/12.52; lost-fraction percentiles = 0.020/0.055/0.070.
+Interchange noise calibration. Raw donor-swap vs. self-swap null (layers 0/4/6/8/11): raw markov 0.666/0.299/0.221/0.177/0.162, null markov 0.151/0.150/0.166/0.161/0.158; the null floor (≈ 0.15) is subtracted to obtain the corrected contribution. Stimulus hash bb4992ac8bbc6803.
+
+13
+
+Preprint.
+
+Table 8: Stimulus-strength dose-response (Octo-Small [25], gate0b, n=160). Corrected contribution at L2/L4 and the L4 gap vs markov. Only occ black is significant; shuffle (temporal-order destruction) is reported as the order-blindness control.
+
+cell markov occ half occ heavy blur occ black shuffle
+
+c@L2 0.257 0.334 0.324 0.310 0.376 0.000
+
+c@L4 0.095 0.110 0.114 0.085 0.138 0.000
+
+gap@L4
+, +0.015 +0.019 −0.010 +0.043 −0.098
+
+95% CI
+(baseline) [−0.006, 0.039] [−0.003, 0.043] [−0.032, 0.011] [0.016, 0.069] [−0.116, −0.080]
+
+sig. , no no no
+yes order-blind
+
+Table 9: Statistical hardening (Octo-Small [25], 5 seeds × 60 pairs; permutation, 5000 resamples on n=300 pooled per-pair gaps). The deploy gap is sign-consistent across all 5 seeds and permutation-significant at L0/L4; at L6/L8 it is permutation-indistinguishable from zero.
+
+layer 0 4 6 8
+
+per-seed gap (s0–s4)
+.142/.119/.040/.096/.141 .037/.009/.023/.047/.054 −.001/.005/.013/−.008/−.008 .018/.000/.024/−.012/−.016
+
+mean +0.108 +0.034 +0.000 +0.003
+
+std 0.038 0.016 0.008 0.016
+
++seeds 5/5 5/5 2/5 3/5
+
+perm p 0.0000 0.0004 0.4882 0.3376
+
+B PROBE AND INTERVENTION DETAILS
+
+Decode probe. Ridge regression on history-token activations (mean+max pooling, RGB16
+frame target), layer-swept, 5-fold; the A4 residual decodes t − 1 after projecting out a current-frame (t) probe. The A4 ceiling is established by an 81-configuration sweep over {layer}×{pooling}×{target}×{regularization}; the best A4 is +0.019 (Octo-Small), +0.015 (Octo-Base), and within the standardized CronusVLA arm −0.011. A shuffled-label control returns A2 ≈ 0, ruling out overfitting. Interchange. A forward pre-hook on encoder blocks.ℓ overwrites the 256 history-token positions (a 16 × 16 patch grid, located empirically and sta-
+ble across pairs) with a donor’s layer-ℓ representation; the current frame and readout are untouched. Token layout. [task lang][t0: primary(256), wrist, readout][t1: primary, wrist, readout], total 690 tokens at width 384 (Octo-Small).
+
+Noise calibration: subtracting the self-swap null
+
+0.7
+
+corrected contribution
+
+0.6
+
+raw donor-swap self-swap null floor ( 0.15)
+
+0.5
+
+interchange shift
+
+0.4
+
+0.3
+
+0.2
+
+0.1
+
+0.0 0
+
+4
+
+6
+
+8
+
+11
+
+transformer block (layer)
+
+Figure 2: Interchange noise calibration (Octo-Small [25]). The raw donor-swap shift (teal) minus the self-swap null floor (slate, ≈ 0.15, whose true contribution is zero) gives the corrected contribution (shaded). Every deploy-leg number is this corrected quantity.
+
+C ENVIRONMENT AND REPRODUCIBILITY
+Experiments use two pinned conda environments. The Octo path pins torch 2.6.0+cu124, transformers 4.34.1 (Flax-capable), a CPU JAX 0.4.20 used only for weight loading, tensorflow-cpu 2.15.0, and numpy 1.26.4; interpretation uses the PyTorch port (JAX is weight-loading only). The CronusVLA path pins torch 2.2.0+cu121, transformers 4.40.1 (load-bearing), numpy 1.26.4, tokenizers 0.19.1, timm 0.9.10, and draccus; scikit-learn is pinned so it does not upgrade numpy. Models are loaded frozen from public checkpoints (Octo-Small/Base 1.5; CronusVLA-0.5B Bridge/RT-1 post-trained checkpoint step-042500-epoch-07-loss=0.0587.pt). The harness is certified by a backbone parity check (readout mean|∆| = 2.4×10−4) and a deterministic
+
+14
+
+Preprint.
+
+Table 10: Normalized cross-scale (Octo [25], inverse scaling; within-model full-swap denominators). After normalization Octo-Base still deploys history at ≈ 31% of Octo-Small’s rate.
+
+model Octo-Small [25] (27M) Octo-Base [25] (93M) base/small
+
+contrib (markov L0) 0.339 0.029 0.09
+
+norm/hist 0.637 0.199 0.31
+
+norm/cur 0.555 0.172 0.31
+
+abs. ratio , , ,
+
+Table 11: Behavioral per-DoF |∆| (Octo-Small [25], markov cell, n=48 × 32 samples). History affects the whole 7-DoF action vector, not just the discrete gripper (gripper = 9.3% of summed mask ∆). Scalar behavioral sensitivity is weak (occ black/markov ratio 1.22×), motivating a mechanistic rather than behavioral study.
+
+condition wx wy wz
+
+rx
+
+ry
+
+rz grip
+
+mask t−1 0.463 0.294 0.429 0.348 0.365 0.376 0.233
+
+swap t−1 0.720 0.477 0.538 0.409 0.392 0.553 0.260
+
+readout-parity tightening. Everything runs on a single 24GB consumer GPU with no quantization and no training; the 387GB Bridge corpus is subsampled to the hashed 250-pair set, distributed as the build script plus the hash rather than the raw data.
+
+D THIRD-ARCHITECTURE EXCLUSION SURVEY
+A frozen public checkpoint that is open, history-aware (multi-frame at inference), and runnable on a consumer GPU is rare. We surveyed the candidate pool and excluded each member for a principled reason: multi-view (not multi-frame) fine-tuned policies (e.g. OpenVLA-OFT [18]); flow-matching policies that default to a single frame (π0/π0.5 [5, 29], X-VLA [42], the CVAE-based ACT [40]); a joint-embedding predictive model whose leakage-free student reduces to a single frame at inference (its environment was built and weights loaded, ∼ 6GB, before exclusion); and a spatio-temporal RGB-D model with a mandatory depth input absent from our stimulus set (3D-/4D-VLA [39, 41]). The two families we study, Octo-class and Qwen-DiT (CronusVLA), are the rare members meeting all four constraints, which is why the architecture axis has two points rather than more. We frame this as scope, not omission: the fallback-vs-standing dissociation is established on the two members that the constraints admit.
+
+E CROSS-ARCHITECTURE DECODE: A STANDARDIZATION FIX
+CronusVLA’s history is a per-frame cognition feature (896-d, the VLM’s last-layer last token). A first decode attempt produced R2 ≪ 0 with the shuffled-label control more negative than the real label (−0.463 vs. −0.004), a numerical breakdown from ridge-overfitting an unnormalized, largescale, high-dimensional feature (p ≫ n). The corrected probe z-scores the features, widens the regularization sweep (102–105), and adds a PCA-50 variant; the shuffle control then returns to ≈ 0 (−0.032) and the results become trustworthy: A1 = 0.142, A4 = −0.011, stable across the full and PCA-50 parameterizations. We report A1 for CronusVLA cautiously (the cognition feature is a different representational locus than Octo’s mid-transformer tokens); the comparable quantity is A4, and both architectures sit at ≈ 0.
+
+F SUPPORTING LAYER-RESOLVED AND ROBUSTNESS PANELS
+Figure 3 collects four panels that the main figure summarizes: (a) history-decode A1 across all 12 layers, decodable at every depth and peaking at L4; (b) per-layer corrected interchange contribution under markov and occ black, both riding the same decreasing curve with the conditional gap closing at L6; (c) the deploy gap across five seeds with permutation p, significant at L0/L4 and a statistical zero at L6/L8; (d) Octo-Base deploys history at ≈ 31% of Octo-Small’s rate under both normalizers. Interchange was evaluated at the canonical layer set {0, 2, 4, 6, 8, 11} for cost; the 12layer decode curve shows the representation stays decodable in the same range where the deploy gap has already vanished.
+15
+
+Preprint.
+
+decode R2
+
+deploy gap (occ-black markov)
+
+History is decodable at every depth (present)
+peak 0.398 @L4 0.4
+0.3
+0.2
+
+Per-layer interchange contribution by condition 0.5
+markov (clean present) occ\_black (present blacked) 0.4
+
+0.3
+
+gap closes at L6
+
+0.2
+
+correcctoentdriibntuetircohnange
+
+0.1
+
+alredaedpylogyongeaphere
+
+0.1
+
+0.0
+
+A1: decode R2(t 1)
+
+0.0
+
+0 1 2 3 4 5 6 7 8 9 10 11 transformer block (layer)
+
+0
+
+2
+
+4
+
+6
+
+8
+
+11
+
+transformer block (layer)
+
+(a) Decode A1 at every depth.
+
+5-seed hardening + permutation test
+
+0.14
+
+0.12
+
+0.10
+
+p = 0.0000
+
+0.08
+
+0.06
+
+0.04
+
+p = 0.0004
+
+0.02
+
+0.00
+
+n.s.
+
+0.02 L0
+
+L4
+
+L6
+
+layer
+
+n.s. L8
+
+normalized history utilization (markov peak)
+
+(b) Per-layer contribution; gap closes at L6.
+
+Inverse scaling: bigger VLA relies on history less
+
+0.7 0.64
+
+0.6
+
+0.56
+
+0.5
+
+×0.31
+
+norm. by history-swap norm. by current-swap
+
+0.4
+
+0.3
+
+0.2
+
+0.20
+
+0.17
+
+0.1
+
+0.0 Octo-Small 27M
+
+Octo-Base 93M
+
+(c) 5-seed hardening + permutation.
+
+(d) Inverse scaling across model size.
+
+Figure 3: Supporting panels (Octo-Small unless noted [25]): (a) decode by depth, (b) per-layer interchange contribution, (c) five-seed deploy-gap hardening with a permutation test, (d) inverse scaling across model size. These expand the summary panels of Figure 1.
+
+History perturbs the whole action vector, not just the gripper
+
+0.7
+
+mask t 1
+
+swap t 1
+
+0.6
+
+0.5
+
+Natural occlusion is rare in distribution
+occlusion needed to deploy history
+
+0.4 0.3
+
+05.00t2h0
+
+09.00t5h509.50t7h0
+
+0.2
+
+0.1
+
+0.0
+
+wx
+
+wy
+
+wz
+
+rx
+
+ry
+
+rz
+
+grip
+
+action dimension (6-DoF pose + gripper)
+
+only 3/250 pairs naturally occluded
+
+0.00
+
+0.05
+
+0.10
+
+0.15
+
+0.20
+
+0.25
+
+0.30
+
+per-pair lost fraction of the frame
+
+(a) Behavioral per-DoF sensitivity.
+
+(b) Natural occlusion is rare.
+
+Figure 4: Population and behavioral evidence (Octo-Small [25]). (a) Mean per-DoF |∆| under masking vs. swapping t−1: history influences the continuous pose dimensions throughout, not just the gripper. (b) Per-pair lost fraction of the frame across the frozen set; the distribution sits far below the near-total-occlusion band that triggers deployment, so only 3/250 pairs are naturally occluded, the fallback is seldom triggered in distribution.
+
+G INJECTABILITY GATE: CAN THE PRE-CUTOFF PATHWAY CARRY HISTORY CONTENT?
+
+The audit’s final leg (Algorithm 1, and the causal validation in Section 4.5) tests whether the pathway that reads history can be driven to use injected history content. Six checks across two architectures reuse the noise-corrected interchange engine (Eq. 3), are training-free, and run open-loop; Octo checks use the frozen 250-pair set with three seeds; the CronusVLA check (S3) uses three donors over a held-out stimulus subset. The chain is designed so a negative is as informative as a positive:
+
+16
+
+mean per-DoF | |
+
+Preprint.
+
+the fallback-regime negatives are the causal counterpart of A4 ≈ 0, and the standing-regime positive shows content-blindness is architecture-conditional, not universal.
+Reading. G0a/G0b/G2 establish that injecting a clean donor’s history at a pre-cutoff layer of Octo is localized (L4 moves the action 7–9× more than L8), writes donor-specific information (separation over the self-swap null excludes zero), and imposes a modest directional bias. The three decisive Octo checks are negative. G3 injects the stimulus’s own pre-occlusion history under occ black: recovery toward the unoccluded action is a clean zero, while a mismatched injection harms (own−random +4.9, CI [3.1, 6.9]), so the hook is causally live but the model’s own redundant history fills nothing. G3b moves to state-aliasing (current frame clear but ambiguous): the aliased partner’s history fails to switch the branch once the common drift is removed by a paired contrast, and an unrelated history moves the action as much. G4 pushes the current tokens along the temporal-identity direction, which a linear probe decodes at accuracy 1.0; it opens the fallback gate no more than a norm-matched random push, so identity, like content, is decodable but not deployable. Three battlefields agree: Octo’s pathway is content-blind and severed by L6. S3 then breaks the universality: on CronusVLA, whose cognition-feature history channel feeds the action’s crossattention continuously (standing use, no cutoff), injecting a donor’s history steers the action toward that donor (paired +0.167; a large non-specific drift remains). The contrast is clean, injection is inert exactly where the readout severs history and effective exactly where it does not, so we report a causal law, steerability tracks the deployment regime, rather than a control method: a fallback model’s native window cannot be unlocked by injection, whereas a standing-use channel is directly writable.
+
+H NOTATION, DESIGN SWEEPS, AND REPRODUCTION
+
+Table 12 fixes notation. Tables 13–14 give the decode design sweep that establishes the A4 ceiling at two scales; Table 15 gives the behavioral history-sensitivity that motivates a mechanistic measure; Table 16 maps each leg to its module and expected headline number; and Table 17 reports the CronusVLA hardening (standing use robust over seeds, order-blind, and falling rather than rising under occlusion; Figure 1f). Figure 4a shows that history perturbs the whole 7-DoF action vector, not just the discrete gripper, so the deploy signal is not an artifact of a single output dimension.
+
+symbol t, t−1 ℓ
+A1 A4 A2 c@ℓ gap markov occ black shuffle
+
+Table 12: Notation.
+meaning current / previous timestep (observation) transformer block index (L0–L11 for Octo-Small) decode R2 of t−1 from history-token activations (is history present?) decode of t−1 residualized against t (history-unique info) shuffled-label decode control (≈ 0 when the probe is healthy) noise-corrected interchange contribution at layer ℓ cocc black − cmarkov (conditional deployment signal) clean current frame (history nominally unnecessary) current frame fully blacked (forces reliance on t−1) temporal order destroyed (order-blindness control)
+
+Table 13: Decode design sweep, Octo-Small [25] (top-8 by A4 over 81 configs). The history-unique ceiling is A4 = +0.019; the best raw decode is A1 = 0.389 (meanmax, RGB16, L2, α=10, not in this A4-sorted view).
+
+layer pool
+
+target α A1
+
+A4
+
+L2 meanmax rgb16 100 0.248 +0.019
+
+L4 meanmax rgb16 100 0.250 +0.017
+
+L6 meanmax rgb16 100 0.223 +0.014
+
+L2 max
+
+rgb16 100 0.179 +0.012
+
+L4 max
+
+rgb16 100 0.178 +0.012
+
+L4 mean
+
+rgb16 100 0.174 +0.009
+
+L2 mean
+
+rgb16 100 0.165 +0.009
+
+L6 max
+
+rgb16 100 0.155 +0.008
+
+17
+
+Preprint.
+
+Table 14: Decode design sweep, Octo-Base [25] (top-8 by A4). Ceiling A4 = +0.015; best raw A1 = 0.362. The A4 ≈ 0 ceiling replicates the Octo-Small result at a second scale.
+
+layer pool
+
+target α A1
+
+A4
+
+L4 meanmax rgb16 100 0.285 +0.015
+
+L4 max
+
+rgb16 100 0.243 +0.014
+
+L6 meanmax rgb16 100 0.272 +0.011
+
+L4 mean
+
+rgb16 100 0.202 +0.008
+
+L6 max
+
+rgb16 100 0.233 +0.007
+
+L6 mean
+
+rgb16 100 0.189 +0.004
+
+L2 mean
+
+rgb16 100 0.200 +0.003
+
+L2 max
+
+rgb16 100 0.254 +0.003
+
+Table 15: Behavioral history-sensitivity (Octo-Small [25], M0b; mean per-DoF |∆| over the frozen set). Masking or swapping t−1 perturbs the action, but the scalar effect is weak (occ black / markov ratio 1.22×), which is precisely why a behavioral measure under-reports deployment and a mechanistic, layer-resolved measure is required.
+
+condition mean |∆| std
+
+mask t−1 0.425 0.20
+
+swap t−1
+
+0.527
+
+0.27
+
+I EXTENDED RELATED WORK
+
+Mechanistic interpretability of policies. Beyond Grant et al. [12] on the fusion axis, Ha¨on et al. [13] demonstrate layer-localized FFN value-vector steering on real-robot policies, and Molinari et al. [24] report a decodable forward world model inside VLA representations. Both concern content available at or projected from the current step; neither measures the causal deployment of the past frame, nor separates retained history from current-frame redundancy, which is the contribution here. Our A1/A4 split is a temporal analogue of probing work that distinguishes decodable from used [1], and our interchange leg follows the causal-abstraction and activation-patching tradition [11, 23] applied to action outputs rather than token logits.
+Memory in sequence models, more broadly. The redundancy we measure echoes a familiar observation in autoregressive models, that adjacent frames/tokens are highly mutually predictive, but its consequence for action policies is specific: because the policy is trained on near-Markov demonstrations, the readout has no incentive to consult a past it can reconstruct, and we show it does not (past L6). Dictionary-learning analyses [6] suggest a route to a feature-level version of A4 (a history-unique feature), which we leave to future work.
+Benchmarks and augmentation, expanded. Behavioral benchmarks [21, 22] and the memoryaugmented methods [15, 30, 32, 34, 43] form a measure-then-fix loop that our diagnosis sits upstream of: it predicts that augmentation trained on the same near-Markov data inherits the redundancy unless its objective explicitly rewards present-irreducible information, and it identifies where (past the mid-network readout cutoff) a memory signal must be made to matter.
+
+J HARNESS CERTIFICATION
+Mechanistic claims are only as good as the measurement harness. We certify the Octo harness in a short lineage: an NHWC→NCHW image-pipeline fix and a backbone-isolating hook map (readoutparity mean |∆| = 2.4 × 10−4 against the reference forward pass); a deterministic readout-parity tightening; a real-Bridge history-condition test (full/mask/swap) establishing that history matters only sometimes; and a noise-corrected interchange engine (self-swap null subtraction) that is reused unchanged across every downstream leg. The CronusVLA harness is certified analogously, with the additional version-pinning described in Appendix C and the cognition-feature wiring self-check in Appendix E. Superseded scaffolds (pre-freeze data plumbing, hook-debugging pilots, an un-noisecorrected interchange v1) are retained for provenance but excluded from the released artifact.
+18
+
+Preprint.
+
+Table 16: Per-leg reproduction map (expected headline numbers). All legs read the same frozen, hashed stimulus set; runs are on one consumer GPU with frozen public checkpoints.
+
+leg stimuli decode deploy dose 2nd method hardening cross-scale cross-arch population
+
+module build stimuli decode deploy gate deploy gate knockout stats cross scale octobase cronus decode/deploy natural occlusion
+
+expected headline
+hash bb4992ac8bbc6803, 250 pairs A1 = 0.389, A4 = 0.019 (ceiling) occ black gap@L4 +0.054 [0.028, 0.079] only occ black sig.; +0.043 (gate0b) same L6 cutoff; residual past L6 perm p = 0.0004 @L4 (5/5) A4 = 0.015; norm. rate 0.31 A1 = 0.142, A4 = −0.011; markov 0.0498, occ black deploy 0.0357 3/250 candidates
+
+Table 17: CronusVLA [19] hardening (3 seeds × 80 pairs). History-contribution under the clean condition is robustly positive (standing use); temporal-order shuffling drives it to ≈ 0 (order-blind, like Octo); and under occlusion it falls rather than rises (the sign-flip vs. Octo). The markov and occ black deploy CIs do not overlap.
+
+seed 0 1 2 mean±sd 95% CI verdict
+
+markov +0.0479 +0.0482 +0.0534 +0.0498 ± 0.0025 [0.0479, 0.0534] standing
+
+shuffle −0.0000 +0.0004 −0.0010 −0.0002 ± 0.0006
+, order-blind
+
+occ black deploy +0.0354 +0.0358 +0.0359
++0.0357 ± 0.0002 [0.0354, 0.0359] falls (standing)
+
+K THREATS TO VALIDITY
+
+Is A4 ≈ 0 a probe-power artifact? No: the 81-config sweep is designed to maximize A4, and its ceiling is still ≤ 0.02; the same probe recovers A1 up to 0.39, so it is not underpowered. Is the deploy gap a stochastic-readout artifact? No: the self-swap null is subtracted, the effect is sign-consistent over five seeds, and the permutation test is significant where claimed and null where claimed. Is the L6 cutoff method-specific? No: interchange and attention-knockout, two mechanistically distinct interventions, agree on it. Does open-loop misrepresent a closed-loop policy? It bounds scope, not the localization: the claim is about where and whether history enters the action distribution, which open-loop reads directly; closed-loop behavior is downstream of exactly this quantity. Is two architectures enough for an architecture-dependence claim? The claim is existential, deployment regime is not architecture-invariant, and a single opposite-signed pair (with identical encoding) suffices to establish it; Appendix D documents why more frozen, open, multiframe members were not available.
+
+19
+
+

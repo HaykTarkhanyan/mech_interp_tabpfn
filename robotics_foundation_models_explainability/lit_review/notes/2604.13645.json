@@ -1,0 +1,43 @@
+{
+  "id": "2604.13645",
+  "title": "A Mechanistic Analysis of Sim-and-Real Co-Training in Generative Robot Policies",
+  "first_author": "Lei",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["encoder-decoder transformer diffusion policy with vision, state and language stems (main)", "decoder-only transformer diffusion policy and CNN U-Net diffusion policy (robustness check)", "toy diffusion models"],
+  "action_head": "diffusion policy",
+  "methods": ["analysis of the optimal score of a mixed-domain diffusion objective (kernel-weighted mixture of source and target)", "UMAP of vision-stem and encoder-trunk features", "Gromov-Wasserstein (local) and Wasserstein (global) distances between sim and real features", "correlation of alignment with success (Pearson, Spearman)", "2-layer MLP domain-classifier probe", "ablation: domain classifier without gradient reversal to push features apart", "benchmark of OT, ADDA, classifier-free guidance and proposed CFG-ADDA"],
+  "question": "What happens inside a diffusion policy when it is co-trained on abundant simulation and scarce real data, and which representational properties make co-training work?",
+  "key_findings": [
+    "Theory: the optimal mixed-domain score is a kernel-weighted mix of source and target scores, so behavior depends on whether sim and real representations are disjoint (no transfer), 'structured aligned' (transfer with adaptation) or overlapping (bimodal actions, negative transfer).",
+    "In balanced mixing ratios (about 0.016 to 0.3 real fraction), visual features align locally in shallow layers and observation features align globally in deeper layers (UMAP, GW and W distances).",
+    "Alignment correlates with success: |Pearson| and |Spearman| between log Wasserstein distance and success are about 0.6-0.8 with p < 0.04 in all settings except physics-only sim-and-sim, where the relation reverses (e.g. Pearson -0.70 vs. expected sign; Fig. 7).",
+    "Despite alignment in low dimensions, a 2-layer MLP classifies sim vs real from encoder-trunk features at about 100% validation accuracy: domain information is retained ('discernibility').",
+    "Pushing features apart (domain classifier without gradient reversal, w = 0.1) lowers average sim-and-sim success from 0.52 to 0.47 (Table 1).",
+    "Real-world average success over 30 trials (Table 2): real-only 8.6/30, plain co-training 15.3/30, other techniques 14.3-18.6/30, proposed CFG-ADDA 21/30; negative CFG scale (lambda = -0.5) helps transfer."
+  ],
+  "evidence": {
+    "setting": "both (robosuite sim-and-sim with MimicGen data; sim-and-real)",
+    "benchmarks": ["robosuite NutAssembly, MugHang, MugCleanup", "corresponding real-world tasks"],
+    "scale": "sim: 3 policy checkpoints x 200 trials per data point; real: 30 trials per checkpoint/condition; mixing ratio sweep w in {0, 0.005, 0.016, 0.1, 0.3, 0.5, 0.8, 1}",
+    "statistics": "partial: correlation coefficients with p-values; success rates without CIs",
+    "baselines": "real-only, sim-pretrain + real fine-tune, plain co-training, OT feature regularization, ADDA, classifier-free guidance"
+  },
+  "causal_validation": "Partial: an ablation that actively discourages alignment lowers success (0.52 to 0.47), and adding alignment/discernibility objectives raises it; the main alignment-success link is correlational across mixing ratios, which also change other factors (importance reweighting).",
+  "closed_loop": "Yes: success rates from closed-loop sim and real rollouts; representation measurements are offline.",
+  "limitations_stated": [
+    "Mainly sim-and-sim and sim-and-real; other co-training settings (human-robot) not validated.",
+    "Does not characterize how the two effects interact over training dynamics, or effects of practical factors like batch size.",
+    "Studies relative relationships between representations, not what the representations encode."
+  ],
+  "critique": [
+    "Not a VLA paper (task-specific diffusion policies), but one of the few representation-level studies of generative robot policies with a theory-backed prediction tested by intervention-style ablations.",
+    "The 'mechanism' is at the level of feature-distribution geometry (alignment vs discernibility), not circuits; UMAP pictures are illustrative only, the GW/W distances carry the quantitative claim.",
+    "Alignment and success are both driven by the mixing ratio, so the correlation across mixing ratios is confounded; the anti-alignment ablation is the stronger evidence but shows a small drop.",
+    "Domain discernibility at ~100% from a 2-layer MLP is a useful caution for the review: 'aligned' in low-dimensional projections does not mean domain information is gone, echoing probe-vs-geometry disagreements elsewhere.",
+    "Real-world numbers are 30 trials per condition without intervals."
+  ],
+  "code": "https://science-of-co-training.github.io/ (project page)",
+  "one_line": "When a diffusion policy is co-trained on simulation and scarce real data, success tracks how well sim and real features align while staying linearly separable by domain, and a method that explicitly enforces both raises real-robot success from about 15 to 21 of 30."
+}

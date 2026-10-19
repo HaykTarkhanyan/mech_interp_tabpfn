@@ -1,0 +1,43 @@
+{
+  "id": "2607.04681",
+  "title": "Do Vision-Language-Action Models Mean What They Say? On the Role of Faithfulness in Embodied Reasoning",
+  "first_author": "Foutter",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["Alpamayo family (SFT vs RL checkpoints, human study; Alpamayo-1.5-10B as baseline)", "own VLM-based driving planner with structured CoT (scene, justification, meta-action, waypoints), SFT then GRPO; base VLM not identified in the parts read", "Pinocchio critic: Qwen3-VL-4B-Instruct fine-tuned on Gemini 3.1 Pro labels"],
+  "action_head": "n/a for the analysis (driving waypoints generated after a text reasoning trace; exact output head not identified in the parts read)",
+  "methods": ["human evaluation of RL vs SFT reasoning quality vs ADE win rate", "formal definition of mechanistic faithfulness as causal mediation by trace variables, and a behavioral surrogate (pairwise semantic consistency along observation -> scene -> justification -> meta-action -> waypoints)", "learned VLM consistency critic used as dense GRPO reward", "Gemini-as-judge validated against 4 human annotators", "inpainted counterfactual hazard benchmark"],
+  "question": "Does embodied chain-of-thought in a driving VLA actually reflect the decision process, and does rewarding trace consistency during RL make reasoning more faithful and responses to rare hazards better?",
+  "key_findings": [
+    "Human study on 200 Alpamayo validation samples: RL post-training improves trajectory error (ADE) even when the reasoning is unchanged or judged worse/ungrounded, i.e. weak coupling between reasoning quality and action improvement (Fig. 2).",
+    "Gemini agrees with the human majority on 87-95% of edge labels across five edges (kappa 0.385-0.720); Pinocchio critic balanced accuracy 0.78-0.94 per edge, 0.87 overall on 250 held-out labels (Tables 1-2).",
+    "On ~20,000 held-out German scenes (Table 3), full-trace consistency: SFT 27.7%, ADE-only RL 43.4%, VLM-Judge 57.5%, Pinocchio-rewarded 61.4%; ADE 6.117 / 4.169 / 4.282 / 4.324 (about 5% ADE cost vs ADE-only).",
+    "ADE-only RL raises trace consistency by about 15 points over SFT, so trajectory optimization alone does partly improve consistency; ADE-Reason (reward traces predictive of the answer) is worse than SFT (25.0%).",
+    "VLM-Judge beats Pinocchio on the visual-grounding edges E1/E2 (76.9 / 89.9 vs 69.2 / 86.4); Pinocchio wins on action-support edges E4/E5 (82.5 / 71.1 vs 78.3 / 64.8).",
+    "On 66 inpainted hazard scenes, joint reasoning-and-waypoint hazard response ('Overall') is 7.6% for the Pinocchio planner vs 4.6% for Alpamayo-1.5-10B and 4.5% for the ADE and judge baselines (the paper's '1.6x')."
+  ],
+  "evidence": {
+    "setting": "offline dataset only (open-loop driving logs; synthetic inpainted images)",
+    "benchmarks": ["Alpamayo public validation split (200 samples, human study)", "~100,000 US training scenarios", "~20,000 held-out DE and ~15,000 held-out US scenarios", "66-scene inpainted hazard benchmark"],
+    "scale": "ADE averaged over 3 sampling trials; consistency judged by Gemini on the first trial only; 66 counterfactual scenes",
+    "statistics": "partial: +/- on ADE over 3 trials; none on consistency or hazard rates",
+    "baselines": "SFT, GRPO with ADE reward, VLM-Judge reward, ADE-Reason, ADE-Swap (counterfactual trace swap), Alpamayo-1.5-10B"
+  },
+  "causal_validation": "Defined but not tested on internals. The paper formalizes mechanistic faithfulness as do-interventions on trace variables but explicitly uses a behavioral consistency surrogate instead; the hazard inpainting is an input-level counterfactual evaluated by a Gemini judge. One baseline (ADE-Swap) uses trace swaps as a training signal.",
+  "closed_loop": "No. All evaluation is open-loop on logged driving data; authors list closed-loop validation as future work.",
+  "limitations_stated": [
+    "Pairwise semantic consistency is necessary but not sufficient for mechanistic faithfulness; actions may still bypass the trace.",
+    "Critic inherits Gemini's labeling errors; edge E2 is hard for both humans and models.",
+    "Open-loop benchmarks do not capture compounding errors or reactive behavior."
+  ],
+  "critique": [
+    "Clear conceptual contribution for the review: it separates functional from faithful reasoning and states that consistency checks cannot certify faithfulness, which is exactly the gap the review should flag in reasoning-VLA papers.",
+    "But the method optimizes what an LLM judge considers consistent, measured by the same family of judge (Gemini) used to make the critic's training labels, so the evaluation is partly circular.",
+    "The long-tail claim rests on 66 synthetic scenes where all models score below 8%; 7.6% vs 4.6% is about 5 vs 3 scenes, far too small for the '1.6x' framing.",
+    "The human study is one annotator on 200 samples, described in the paper as 'inconclusive'; it motivates but does not establish decoupling.",
+    "Driving, not manipulation, and no access to activations; useful as a faithfulness-definition reference rather than mechanistic evidence."
+  ],
+  "code": "https://mjf-su.github.io/pinocchio/ (project page)",
+  "one_line": "Distinguishes reasoning that helps from reasoning that actually drives the action, shows RL can improve driving without improving the stated reasoning, and trains a VLM critic whose consistency reward makes a driving planner's reasoning more self-consistent at about 5% trajectory cost, all evaluated open-loop by LLM judges."
+}

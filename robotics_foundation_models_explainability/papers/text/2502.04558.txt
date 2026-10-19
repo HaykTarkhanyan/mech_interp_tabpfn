@@ -1,0 +1,203 @@
+Probing a Vision-Language-Action Model for Symbolic States and Integration into a Cognitive
+Architecture
+
+Hong Lu* Department of Computer Science
+Tufts University Medford, MA, USA
+Hlu07@tufts.edu
+
+Hengxu Li* Department of Computer Science
+Tufts University Medford, MA, USA Hengxu.Li@tufts.edu
+
+Prithviraj Singh Shahani* Department of Computer Science
+Tufts University Medford, MA, USA Prithviraj Singh.Shahani@tufts.edu
+
+Stephanie Herbers Department of Computer Science
+Tufts University Medford, MA, USA Stephanie.Herbers@tufts.edu
+
+Matthias Scheutz Department of Computer Science
+Tufts University Medford, MA, USA Matthias.Scheutz@tufts.edu
+
+arXiv:2502.04558v1 [cs.RO] 6 Feb 2025
+
+Abstract—Vision-language-action (VLA) models hold promise as generalist robotics solutions by translating visual and linguistic inputs into robot actions, yet they lack reliability due to their black-box nature and sensitivity to environmental changes. In contrast, cognitive architectures (CA) excel in symbolic reasoning and state monitoring but are constrained by rigid predefined execution. This work bridges these approaches by probing OpenVLA’s hidden layers to uncover symbolic representations of object properties, relations, and action states, enabling integration with a CA for enhanced interpretability and robustness. Through experiments on LIBERO-spatial pick-and-place tasks, we analyze the encoding of symbolic states across different layers of OpenVLA’s Llama backbone. Our probing results show consistently high accuracies (> 0.90) for both object and action states across most layers, though contrary to our hypotheses, we did not observe the expected pattern of object states being encoded earlier than action states. We demonstrate an integrated DIARCOpenVLA system that leverages these symbolic representations for real-time state monitoring, laying the foundation for more interpretable and reliable robotic manipulation.
+Index Terms—Vision Language Action Model, Symbolic States, Cognitive Architectures, Robotics
+*These authors contributed equally.
+I. INTRODUCTION
+A vision-language-action (VLA) model is a type of foundation model for robotics that takes in images and language commands as input and directly outputs robot actions [1], [2]. VLAs show promise in providing generalist robot policies across different scenarios and robotic platforms [1]. Recently, OpenVLA has emerged as a significant open-source VLA model, built on a Llama 2 language model backbone combined with a visual encoder that fuses pretrained features. Despite using only 7B parameters (7x fewer than comparable models), OpenVLA has demonstrated strong generalization capabilities
+
+across diverse manipulation tasks through its training on nearly one million real-world robot demonstrations [2].
+However, recent evaluation of VLAs shows that they struggle with changes in environmental factors such as camera poses, lighting conditions, and the presence of unseen objects [3]. VLAs also lack reliability, particularly because of their opaque, black-box nature, which makes their internal workings challenging to interpret.
+On the other hand, traditional Cognitive Architectures (CA), also known as symbolic architectures, excel in dependable, symbol-based reasoning but are constrained by their reliance on predefined rules and coded policy execution [4], [5]. Ideally, a CA could harness the versatility of generalist robotic policies and the multimodal capabilities offered by VLAs while maintaining vigilance over dynamic environmental changes during execution in safety-critical applications such as robotic manipulations.
+In this work, we investigate whether and how OpenVLA encodes symbolic representations in its activation space through probing experiments. Our investigation aims to answer the following research questions:
+• RQ1: To what extent can we decode object properties and relations (e.g., spatial relationships between objects) from OpenVLA’s hidden layer activations?
+• RQ2: Can we extract action-related concepts (e.g., grasp states, movement targets) from the model’s activation patterns, and how do these compare to object-level representations?
+To answer these questions, we train linear probes on different layers of OpenVLA to predict symbolic states during manipulation tasks. Based on prior work in language model probing [6] [7], we hypothesize that:
+
+• H1: Object states are primarily encoded in earlier layers, as these may encode basic visual and spatial properties.
+• H2: Action-related concepts are encoded in later layers, where visual and language information has been integrated for action planning
+To test these hypotheses, we conduct a probing experiment in which we examine all 33 hidden layers of OpenVLA for their capacity to predict object and action states. Figure 1 shows how we integrate the best-performing layers (for object vs. action states) into DIARC for real-time symbolic monitoring of the model’s internal state.
+II. RELATED WORK
+A. Cognitive Architecture - Foundational Model Integration
+Existing works typically explore how CAs can be integrated with large language models (LLMs). For example, Wu et al. investigate whether the Llama-2 13B model encodes features that can predict expert decisions in a decision making task by training a linear classifier on the Llama model’s last contextual embeddings to predict ACT-R’s expert decision when the model is given ACT-R’s strings of decision making traces as input; they further examine whether ACT-R’s knowledge can be injected into the Llama model by fine-tuning a Llamaclassifier system on ACT-R’s expert decisions [8]. Bajaj et al. enhance ACT-R’s analogical reasoning capabilities by building a natural language processing pipeline to automatically extract key entities, relationships, and attributes [9]. Once these key elements have been extracted from unstructured text, an LLM is prompted to convert the unstructured text into a structured format based on its key elements. ACT-R can utilize the structured knowledge for reasoning tasks downstream, significantly reducing the need for manual knowledge engineering. While Bajaj et al. propose to use LLMs to transform unstructured text into structured knowledge, Kirk et al. explore ways in which LLMs can be leveraged as a knowledge source for the task knowledge needed for successful task planning downstream [10]. They propose three approaches to knowledge extraction: indirect extraction in which the LLM’s reponses are placed in a knowledge store that the cognitive agent accesses, direct extraction in which the agent directly queries the LLM and parses its output for structured knowledge, and direct knowledge encoding in which the LLM creates programs that are run as part of the cognitive agent’s task pipeline.
+To the best of our knowledge, no existing work has explored the integration of a CA with a VLA model. Realizing such an integration requires a method to “probe” the VLA’s hidden representations for symbolic content. We next discuss relevant literature on foundational model probing, which informs our approach in extracting object and action states from OpenVLA.
+
+encode. One commonly used approach to evaluate LLMs is prompt-based probing in which an LLM is prompted to fill in the blanks in the prompt [12]. For example, Alivanistos et al. combine various prompting techniques to probe LLMs for possible objects of a triple where the subject and the relation are given [13], Wang et al. develop a method to automatically search sentences to construct optimal and readable prompts for probing certain knowledge [14], and Qi et al. propose a probing framework for multimodal LLMs that includes visual prompting, textual prompting, and extra knowledge prompting [15]. While prompt-based probing is intuitive and easy to execute, it lacks the layer-specific precision offered by linear probing. Furthermore, prompt-based probing is not applicable to vision-language-action models as they do not output language tokens. Linear probing on the other hand involves training a linear classifier on top of each frozen layer of a foundational model. Each classifier is tasked with predicting specific knowledge based on the output features of the corresponding frozen layer. For example, Li et al. train semantic probes to predict object properties and relations as they evolve throughout a discourse [16]. Similarly, Chen et al. use linear probes to evaluate the Llama model family’s performance on higher-order tasks such as reasoning and calculation, comparing probe performance across layers and model sizes [6]. In our work, we extract symbolic representations of state changes similar to the approach described in Li et al [16] and we evaluate probing accuracies across hidden layers similar to the approach used by Chen et al [6].
+III. INTEGRATED VISION-LANGUAGE-ACTION MODEL COGNITIVE ARCHITECTURE OVERVIEW
+Figure 1 illustrates the high-level architecture of our DIARC–OpenVLA system. DIARC provides a cognitive architecture that manages symbolic reasoning and user interaction, while OpenVLA is a continuous policy that takes in images and language instructions to produce a 7D robot action. Internally, OpenVLA uses a Llama 2 7B backbone [7], which consists of 32 transformer blocks (often referred to as “layers”) plus an initial embedding layer, yielding 33 distinct hidden states when indexed from 0 to 32 at runtime. Each hidden state is a 4096-dimensional vector. At a conceptual level, we combine these by: (1) routing user commands through DIARC to OpenVLA, (2) running OpenVLA in a LIBERO simulation environment to generate actions and extract hiddenlayer embeddings, and (3) mapping those embeddings to symbolic states for DIARC’s belief store. This pipeline leverages the expressiveness of a vision-language-action model while maintaining the reliability of a symbolic architecture. Subsection III-A details our real-time implementation, including the WebSocket interface and a React-based UI for visualization.
+
+B. Foundational Model Probing
+Foundational models encode extensive knowledge derived from their internet-scale training data [11]. The increasing popularity of these models has drawn significant attention to the challenges of extracting and evaluating the knowledge they
+
+A. DIARC–OpenVLA Integration
+The DIARC–OpenVLA integration bridges OpenVLA’s continuous policy outputs and hidden-layer embeddings with DIARC’s symbolic reasoning modules. Our approach requires minimal modification to OpenVLA itself: we intercept each
+
+pick up the black bowl between the plate and the ramekin and
+place it on the plate
+
+DIARC
+
+GUI
+
+Knowledge
+
+Base
+
+utterance beliefs
+
+Simulation image
+
+action
+
+VLAComponent
+
+predicted object states Object States Probe
+
+Vision Projector
+
+OpenVLA
+
+Action De-tokenizer
+
+Llama 2 7B
+
+Llama Tokenizer
+
+best object state layer's output
+
+predicted action
+
+Action States Probe best action state
+
+states
+
+layer's output
+
+NL: " In: what should the robot do to {task}? Out: "
+
+Fig. 1. The DIARC - VLA - Probe System. The user selects a natural language command in DIARC’s Graphical User Interface (GUI). The VLAComponent in DIARC sends this command to OpenVLA. The probes receive two hidden layers’ activations in OpenVLA’s Llama backbone that encode the most object state and action state information respectively. The two best hidden layers are identified through the probing experiment described in Section IV. The probes predict the object state and the action state based on the hidden layers’ activations at each timestep. The VLAComponent in DIARC updates DIARC’s beliefs based on the predicted object state and action state.
+
+inference call to extract the relevant hidden-layer activations and feed them to trained linear probes for symbolic state prediction, then pass those states back to DIARC in an automated fashion. Figure 1 provides a broad schematic, and Figure 2 shows the user interface in action.
+a) VLAComponent and Symbolic Predicates.: At every timestep, OpenVLA predicts a 7D action ∆x, ∆θ, ∆Grip given the current camera image and the user’s natural-language instruction. In parallel, we run linear probes on the extracted hidden-layer embeddings to output arrays of 0/1 labels for object relations and action subgoals (e.g., on(bowl, plate) = 1, grasped(bowl) = 0). These arrays are sent to DIARC’s VLAComponent, which converts them into DIARC’s symbolic predicate format: relation(object1, object2), property(object) for object states, and action(object) for action states. For example, a 1 in grasped(bowl 1) becomes grasped(bowl 1) in DIARC’s knowledge store. DIARC can then leverage these discrete predicates to detect inconsistencies (e.g., a bowl cannot be both on(bowl 1, plate 1) and inside(bowl 1, drawer 1) at the same time), verify subgoals, or track overall task progress.
+b) WebSocket Server and Real-Time Flow.: We implement a lightweight WebSocket server to provide real-time communication among OpenVLA, the LIBERO simulator, DIARC, and a React UI:
+1) User Task. The user selects a pick-and-place command in DIARC’s GUI (e.g., “pick up the black bowl between
+
+the plate and the ramekin...”). DIARC sends this instruction via WebSocket to our server. 2) Environment Step. The server runs the LIBERO-spatial simulator, retrieving the latest camera frame for input to OpenVLA’s policy. OpenVLA returns a 7D action, which the simulator executes. 3) Probe Inference. Simultaneously, the server extracts the hidden-layer embedding from OpenVLA, feeds it to our linear probes, and obtains predicted symbolic states (object relations, subgoals, etc.). 4) Streaming Back. Finally, the server encodes the current camera image in base64 and bundles it with the predicted symbolic states plus the timestep index. This data is streamed back over the WebSocket to DIARC and the React UI.
+c) React UI and Timeline Scrubbing.: Figure 2 shows our React-based interface. While the task runs, the UI continuously displays:
+• A live camera feed (at ∼5 Hz) pinned at the top-left, showing the robot’s current manipulation.
+• A symbolic states panel on the right, color-coding newly activated or deactivated predicates (e.g., green if ontable(bowl 1) flips from 0 to 1).
+• A timeline slider becomes available once the task completes, letting the user “scrub” back through each timestep’s image and states to analyze the model’s evo-
+
+Fig. 2. DIARC–OpenVLA GUI. The left-hand pane displays the real-time camera feed (updated at 5–10 Hz), showing the robot’s manipulation progress. The right-hand pane color-codes each predicted symbolic state (green for newly activated, red for deactivated), letting users quickly verify whether OpenVLA’s internal representation matches the environment. After task completion, a timeline slider appears, allowing the user to revisit earlier steps’ images and states for deeper analysis.
+
+lution over time.
+This design allows operators or domain experts to confirm that the predicted states mirror actual environment changes (e.g., verifying on(bowl,plate)=1 precisely when the bowl is placed). Meanwhile, DIARC receives the same 0/1 states as symbolic predicates, enabling high-level logic or safety checks without manually altering the VLA policy. By decoupling the raw policy (OpenVLA) from DIARC’s symbolic reasoning through a WebSocket-based design, we maintain modularity while allowing step-by-step monitoring of the policy’s internal states. We thus leverage the generalist capabilities of a VLA model and the reliability of a symbolic architecture. This opens the door for future enhancements where DIARC might intervene upon contradictory states (e.g., an object can’t be both “on the plate” and “in the cabinet”) or respond to user queries midtask. In short, our integration unites robust low-level action generation with high-level interpretability and control.
+B. Simulated Pick-and-Place Tasks
+LIBERO-spatial is a suite of 10 pick-and-place tasks in the LIBERO simulation environment [17]. We choose LIBEROspatial for our OpenVLA evaluation as a LIBERO-spatial finetuned OpenVLA checkpoint is readily available for download. The LIBERO-spatial task suite consists of 10 pick-andplace tasks of the form “pick up the black bowl {spatial relations identifier} and place it on the plate” where the “spatial relations identifier” is filled with a natural language
+
+description of the target black bowl’s spatial relations to its surrounding objects. For example, Figure 3 shows 4 frames of the OpenVLA performing the “pick up the black bowl between the plate and the ramekin and place it on the plate” task. Other LIBERO-spatial pick-and-place tasks include “pick up the black bowl next to the ramekin and place it on the plate” and “pick up the black bowl in the top drawer of the wooden cabinet and place it on the plate”. Since the 10 pick-and-place tasks involve the same objects and the object initial placements remain the same across tasks except for the two black bowls, the natural language description of the target black bowl’s spatial relations serves as an identifier.
+IV. PROBING EXPERIMENT
+To test our hypotheses, we extract activations from the 33 hidden layers of OpenVLA’s Llama 2 7B backbone. Each hidden-layer embedding is a 4096-dimensional vector. We then train two probes on each layer’s activations to predict object states and action states. In total, we train 2 × 33 = 66 probes.
+An object state involves the following relation predicates: behind(tabletop-object1, tabletop-object2), in-frontof(tabletop-object1, tabletop-object2), inside(tabletopobject, container), left-of(tabletop-object1, tabletop-object2), on(tabletop-object1, tabletop-object2), on-table(tabletopobject), and right-of(tabletop-object1, tabletop-object2), as well as unary object property predicates: open(container) and turned-on(on-off-object).
+
+...
+
+? on-table(bowl_1) = 1 on(bowl_1, plate_1) = 0 grasped(bowl_1) = 0 should-move-towards(bowl_1) = 1 should-move-towards(plate_1) = 0 ?
+? on-table(bowl_1) = 1 on(bowl_1, plate_1) = 0 grasped(bowl_1) = 1 should-move-towards(bowl_1) = 0 should-move-towards(plate_1) = 1 ?
+? on-table(bowl_1) = 0 on(bowl_1, plate_1) = 0 grasped(bowl_1) = 1 should-move-towards(bowl_1) = 0 should-move-towards(plate_1) = 1 ?
+? on-table(bowl_1) = 0 on(bowl_1, plate_1) = 1 grasped(bowl_1) = 1 should-move-towards(bowl_1) = 0 should-move-towards(plate_1) = 0 ?
+
+...
+
+and action subgoals in the 10 LIBERO-spatial tasks. Figure 3 shows 4 frames of the OpenVLA performing the “pick up the black bowl between the plate and the ramekin and place it on the plate” task with their object state (green) and action state (blue) labeled by the detector functions where a label of 1 represents true and a label of 0 represents false. The 4 frames are points at which critical state changes happen. The first frame (top) is taken at the beginning of an episode where the target black bowl (which happens to be the bowl 1 object) is still directly on the table and the robot needs to pick it up. As expected, the on-table(bowl 1) object relation and the should-move-towards(bowl 1) action subgoal are detected to be true. Once the robot arm closes its grippers on the target black bowl in frame 2, the grasped(bowl 1) action status is detected to be true. In frame 3, the on-table(bowl 1) object relation becomes false as the bowl is lifted off the tabletop. Finally, in frame 4, the on(bowl 1, plate 1) object relation becomes true, indicating that the task has been successfully completed.
+We collect 5 successful episodes per LIBERO-spatial task by repeatedly querying OpenVLA until 5 completed episodes are obtained. While the model is queried to predict the next robot action at each frame, we also extract and record the activations from each hidden layer ℓ ∈ {0, . . . , 32}. Importantly, at timestep t, we pair the hidden-layer embedding ht with the ground-truth symbolic state yt at the same time, ensuring no temporal mismatch (e.g., not using t + 1 states to label time t). We then store each pair as (ht, object statet) or (ht, action statet).
+B. Probe Training Data Preprocessing
+
+Fig. 3. Example Labeled Object States and Action States in a Pickand-Place Trajectory. Object states are shown in green and action states are shown in blue.
+An action state captures the action status predicate grasped(pickupable-object) and the action subgoal predicate should-move-towards(tabletop-object). Examples of object states and action states are provided in the Probe Training Data Collection section below. We find combinations of grounded objects to which a predicate is applicable, and we define the object relation atoms as the object relation predicates applied to all combinations of their grounded objects. We define an object state as a complete truth assignment to the object relation atoms and object property atoms. Similarly, we define an action state as a complete truth assignment to the action status atoms and action subgoal atoms. In total, an object state has 224 atoms and an action state has 12 atoms.
+A. Probe Training Data Collection
+To train the probes, we need to collect (hidden layer activation, ground truth state) pairs as training data. To do this, we implement detector functions that detect the truth values for object relations, object properties, action statuses,
+
+To produce a reliable dataset for training our linear probes, we collect (1) per-timestep embeddings from OpenVLA’s hidden layers and (2) corresponding ground-truth symbolic states (e.g., object relations and action subgoals) from a LIBERO environment. We then apply the following preprocessing steps to ensure that the resulting dataset reflects meaningful, fluctuating states and avoids overfitting or misleading evaluations:
+1) Episode-Level Splitting for Train/Test: We first gather a dataset of entire episodes (trajectories) from the environment, storing (embedding, symbolic state) pairs at each timestep. To prevent temporal leakage—where the model might “see” future frames from the same trajectory during training—we split the dataset by episode. Specifically, we assign each entire episode to either the training or the test set. This ensures that no frames from the same trajectory end up in both sets, so the probe’s evaluation genuinely measures out-of-episode generalization.
+2) Filtering Near-Constant Labels: Some symbolic states never change (or change only once) across our collected episodes, offering little to no discriminative signal. They can also artificially inflate accuracy if trivially predicted (e.g., always zero). We measure each label’s frequency of being ‘1’ across all training frames and remove any label whose frequency is below 1% or above 99%. This pruning discards
+
+Fig. 4. Probing Results. The first seven columns are object state symbols and the last two columns are action state symbols.
+
+near-constant labels, ensuring that the remaining labels reflect genuinely variable states that are amenable to learning.
+3) No Class Balancing: While class imbalance is a concern for certain tasks, we do not perform synthetic oversampling or under-sampling in this work. In practice, removing nearconstant labels already eliminates the most extreme forms of imbalance, so we find that further balancing is not strictly necessary. Nevertheless, class balancing remains an option for future improvements if highly skewed distributions re-emerge with other data.
+4) No Feature Standardization: We load the embeddings as raw floating-point vectors from OpenVLA’s hidden layers and do not apply z-score normalization or any other scaling. Although standardizing embeddings can help in some contexts, we observe that the linear probe converges well without it—likely because the embeddings remain within moderate numeric ranges. We thus preserve a simpler pipeline, though we note that feature standardization remains a viable tweak for additional robustness.
+5) Resulting Training/Testing Dataset: After these steps, we obtain a final dataset whose labels reflect genuinely changing states, each entire episode is restricted to one split (train or test), and no artificially inflated metrics arise from trivial or constant conditions. We train the linear probe on the processed training subset and evaluate it on disjoint test episodes, confident that the reported performance tracks the probe’s capacity to decode meaningful state information from the model’s representations.
+6) Summary: By removing near-constant labels, splitting entire episodes for train/test, and keeping the embeddings unmodified, we produce a dataset that highlights OpenVLA’s genuine internal representations of symbolic states. This pipeline avoids temporal leakage and trivial labels, thereby enabling a fair and interpretable evaluation of the probe’s performance.
+C. Probe Training and Evaluation
+Our probing methodology builds on recent work investigating internal representations in language models [16] and multimodal embeddings [18]. Inspired by these approaches, we implement a linear probe that maps from the model’s internal representations to ground truth environment states. However, rather than using single-label classification which would face combinatorial explosion with growing numbers of states, we extend this to multi-label classification where each state variable can be predicted independently.
+Formally, for a given layer’s activation vector h ∈ Rd, our probe learns a mapping to binary predictions yˆ ∈ [0, 1]n where n is the number of tracked symbolic states:
+
+yˆ = σ(Wh + b)
+
+(1)
+
+where W ∈ Rn×d and b ∈ Rn are learned parameters and σ is the sigmoid activation function. Each element of yˆ corresponds to a binary prediction about a specific ground atom (e.g., “on(bowl 1, plate 1)” or “in(bowl 1, top drawer”). We train using binary cross-entropy loss with the Adam optimizer.
+
+For evaluation, we compute averaged accuracies per predicate type. For a predicate like “on”, we average the accuracies across all specific instances of that predicate that we track - for example, if we track both “on(bowl 1, plate 1)” and “on(plate 1, table 1)”, we would average their individual prediction accuracies to get the overall accuracy for the “on” predicate:
+
+1 Npred
+
+acc(pred) =
+
+acc(i)
+
+(2)
+
+Npred i=1
+
+where Npred is the number of tracked instances of that predicate, and acc(i) is the binary prediction accuracy for the ith instance.
+The probe results, visualized as a heatmap across layers and predicates, reveal consistently high accuracies across later layers suggesting robust encoding of symbolic state information. However, the first layer shows notably lower performance, aligning with its expected role in encoding lower-level features rather than high-level semantic relationships.
+
+V. RESULTS AND DISCUSSION
+Figure 4 shows a heatmap of the object state probes’ accuracies and the action state probes’ accuracies across all 33 layers. The first 7 categories are object relations and properties whereas the last two categories are action status and subgoal. Note that the object relation on-table(tabletop-object) and the object property turned-on(on-off-object) are dropped from training due to low variance in the training data-most objects remain on-table and the stove 1 object (the only on-off-object) remains off, therefore their corresponding atoms never change truth values.
+The accuracies are above 0.90 for most layers, indicating that the OpenVLA indeed encodes some object relation, object property, action status, and action subgoal features. The layer 0 probes perform significantly worse across all categories. This is not surprising as the first Llama layer probably only encodes very low-level semantic features such as syntactic relations and not the high level visual-semantic features such as object relations. We do not observe the hypothesized pattern of higher object state accuracies in earlier layer probes versus that of later layer probes. This does not support our hypothesis 1 and hypothesis 2. We recognize that the training data we use are not diverse enough in terms of the variation in object states and action states. Specifically, the objects in the 10 simulated LIBERO-spatial tasks have the same placements across tasks except for the two black bowls. As a result, most of the object relations remain unchanged across tasks, significantly reducing the variation in object states. Furthermore, the robot always picks one of the two black bowls, and the place target is always the plate, significantly reducing the variation in action states. These two factors combined significantly reduce the difficulty of the linear classification task that the probes are trained to do, leading to high accuracies across layers and categories, potentially washing out the layer-wise object state
+
+versus action state difference we expected to observe. More and better data is needed to test our hypotheses.
+As future work, we plan to scale the probing experiment up by collecting more diverse data from tasks that involve variable objects, variable object layouts, and variable goals. We believe that extracting symbolic information from VLAs opens the door to the integration of CA and VLA and we demonstrate an integrated CA-VLA system with this work. In the future, we hope to explore how the reasoning capabilities of the CA can enhance or monitor the performance of the VLA.
+REFERENCES
+[1] O. M. Team, D. Ghosh, H. Walke, K. Pertsch, K. Black, O. Mees, S. Dasari, J. Hejna, T. Kreiman, C. Xu, J. Luo, Y. L. Tan, L. Y. Chen, P. Sanketi, Q. Vuong, T. Xiao, D. Sadigh, C. Finn, and S. Levine. Octo: An open-source generalist robot policy. [Online]. Available: https://arxiv.org/abs/2405.12213v2
+[2] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn. OpenVLA: An open-source vision-language-action model. [Online]. Available: https://arxiv.org/abs/2406.09246v3
+[3] Z. Wang, Z. Zhou, J. Song, Y. Huang, Z. Shu, and L. Ma, “Towards testing and evaluating vision-language-action models for robotic manipulation: An empirical study.” [Online]. Available: http://arxiv.org/abs/2409.12894
+[4] V. N. Gudivada, “Chapter 1 - cognitive computing: Concepts, architectures, systems, and applications,” in Handbook of Statistics, ser. Cognitive Computing: Theory and Applications, V. N. Gudivada, V. V. Raghavan, V. Govindaraju, and C. R. Rao, Eds. Elsevier, vol. 35, pp. 3–38. [Online]. Available: https://www.sciencedirect.com/science/ article/pii/S0169716116300451
+[5] M. Scheutz, T. Williams, E. Krause, B. Oosterveld, V. Sarathy, and T. Frasca, “An overview of the distributed integrated cognition affect and reflection DIARC architecture,” in Cognitive Architectures, M. I. Aldinhas Ferreira, J. Silva Sequeira, and R. Ventura, Eds. Springer International Publishing, vol. 94, pp. 165–193, series Title: Intelligent Systems, Control and Automation: Science and Engineering. [Online]. Available: http://link.springer.com/10.1007/978-3-319-97550-4 11
+[6] N. Chen, N. Wu, S. Liang, M. Gong, L. Shou, D. Zhang, and J. Li, “Is bigger and deeper always better? probing LLaMA across scales and layers.” [Online]. Available: http://arxiv.org/abs/2312.04333
+[7] H. Touvron, L. Martin, K. Stone, P. Albert, A. Almahairi, Y. Babaei, N. Bashlykov, S. Batra, P. Bhargava, S. Bhosale, D. Bikel, L. Blecher, C. C. Ferrer, M. Chen, G. Cucurull, D. Esiobu, J. Fernandes, J. Fu, W. Fu, B. Fuller, C. Gao, V. Goswami, N. Goyal, A. Hartshorn, S. Hosseini, R. Hou, H. Inan, M. Kardas, V. Kerkez, M. Khabsa, I. Kloumann, A. Korenev, P. S. Koura, M.-A. Lachaux, T. Lavril, J. Lee, D. Liskovich, Y. Lu, Y. Mao, X. Martinet, T. Mihaylov, P. Mishra, I. Molybog, Y. Nie, A. Poulton, J. Reizenstein, R. Rungta, K. Saladi, A. Schelten, R. Silva, E. M. Smith, R. Subramanian, X. E. Tan, B. Tang, R. Taylor, A. Williams, J. X. Kuan, P. Xu, Z. Yan, I. Zarov, Y. Zhang, A. Fan, M. Kambadur, S. Narang, A. Rodriguez, R. Stojnic, S. Edunov, and T. Scialom, “Llama 2: Open foundation and fine-tuned chat models.” [Online]. Available: http://arxiv.org/abs/2307.09288
+[8] S. Wu, A. Oltramari, J. Francis, C. L. Giles, and F. E. Ritter, “Cognitive LLMs: Towards integrating cognitive architectures and large language models for manufacturing decision-making.” [Online]. Available: http://arxiv.org/abs/2408.09176
+[9] G. Bajaj, K. Pearce, S. Kennedy, O. Larue, A. Hough, J. King, C. Myers, and S. Parthasarathy, “Generating chunks for cognitive architectures,” vol. 2, no. 1, pp. 246–252, number: 1. [Online]. Available: https://ojs.aaai.org/index.php/AAAI-SS/article/view/27683
+[10] J. R. Kirk, R. E. Wray, and J. E. Laird, “Exploiting language models as a source of knowledge for cognitive agents.” [Online]. Available: http://arxiv.org/abs/2310.06846
+
+[11] R. Bommasani, D. A. Hudson, E. Adeli, R. Altman, S. Arora, S. v. Arx, M. S. Bernstein, J. Bohg, A. Bosselut, E. Brunskill, E. Brynjolfsson, S. Buch, D. Card, R. Castellon, N. Chatterji, A. Chen, K. Creel, J. Q. Davis, D. Demszky, C. Donahue, M. Doumbouya, E. Durmus, S. Ermon, J. Etchemendy, K. Ethayarajh, L. Fei-Fei, C. Finn, T. Gale, L. Gillespie, K. Goel, N. Goodman, S. Grossman, N. Guha, T. Hashimoto, P. Henderson, J. Hewitt, D. E. Ho, J. Hong, K. Hsu, J. Huang, T. Icard, S. Jain, D. Jurafsky, P. Kalluri, S. Karamcheti, G. Keeling, F. Khani, O. Khattab, P. W. Koh, M. Krass, R. Krishna, R. Kuditipudi, A. Kumar, F. Ladhak, M. Lee, T. Lee, J. Leskovec, I. Levent, X. L. Li, X. Li, T. Ma, A. Malik, C. D. Manning, S. Mirchandani, E. Mitchell, Z. Munyikwa, S. Nair, A. Narayan, D. Narayanan, B. Newman, A. Nie, J. C. Niebles, H. Nilforoshan, J. Nyarko, G. Ogut, L. Orr, I. Papadimitriou, J. S. Park, C. Piech, E. Portelance, C. Potts, A. Raghunathan, R. Reich, H. Ren, F. Rong, Y. Roohani, C. Ruiz, J. Ryan, C. Re´, D. Sadigh, S. Sagawa, K. Santhanam, A. Shih, K. Srinivasan, A. Tamkin, R. Taori, A. W. Thomas, F. Trame`r, R. E. Wang, W. Wang, B. Wu, J. Wu, Y. Wu, S. M. Xie, M. Yasunaga, J. You, M. Zaharia, M. Zhang, T. Zhang, X. Zhang, Y. Zhang, L. Zheng, K. Zhou, and P. Liang, “On the opportunities and risks of foundation models.” [Online]. Available: http://arxiv.org/abs/2108.07258
+[12] F. Petroni, T. Rockta¨schel, P. Lewis, A. Bakhtin, Y. Wu, A. H. Miller, and S. Riedel, “Language models as knowledge bases?” [Online]. Available: http://arxiv.org/abs/1909.01066
+[13] D. Alivanistos, S. B. Santamar´ıa, M. Cochez, J.-C. Kalo, E. v. Krieken, and T. Thanapalasingam, “Prompting as probing: Using language models for knowledge base construction.” [Online]. Available: http://arxiv.org/abs/2208.11057
+[14] Z. Wang, L. Ye, H. Wang, W.-C. Kwan, D. Ho, and K.-F. Wong, “ReadPrompt: A readable prompting method for reliable knowledge probing,” in Findings of the Association for Computational Linguistics: EMNLP 2023. Association for Computational Linguistics, pp. 7468– 7479. [Online]. Available: https://aclanthology.org/2023.findings-emnlp. 501
+[15] S. Qi, Z. Cao, J. Rao, L. Wang, J. Xiao, and X. Wang, “What is the limitation of multimodal LLMs? a deeper look into multimodal LLMs through prompt probing,” vol. 60, no. 6, p. 103510. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0306457323002479
+[16] B. Z. Li, M. Nye, and J. Andreas, “Implicit representations of meaning in neural language models,” in Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), C. Zong, F. Xia, W. Li, and R. Navigli, Eds. Association for Computational Linguistics, pp. 1813–1827. [Online]. Available: https://aclanthology.org/2021.acl-long.143
+[17] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone, “LIBERO: Benchmarking knowledge transfer for lifelong robot learning.” [Online]. Available: http://arxiv.org/abs/2306.03310
+[18] A. D. Lindstro¨m, S. Bensch, J. Bjo¨rklund, and F. Drewes, “Probing multimodal embeddings for linguistic properties: the visualsemantic case,” in Proceedings of the 28th International Conference on Computational Linguistics, pp. 730–744. [Online]. Available: http://arxiv.org/abs/2102.11115
+
+

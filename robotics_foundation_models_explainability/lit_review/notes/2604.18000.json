@@ -1,0 +1,43 @@
+{
+  "id": "2604.18000",
+  "title": "Unmasking the Illusion of Embodied Reasoning in Vision-Language-Action Models",
+  "first_author": "Xu",
+  "year": 2026,
+  "venue": "arXiv preprint (Peking University, Tsinghua, BeingBeyond)",
+  "tier": "core",
+  "models": ["pi0.5", "GR00T-N1.6", "Being-H0.5", "InternVL-3.5 (8B/2B) ablations for the representational analysis", "pi0.5 on SO101 real robot"],
+  "action_head": "flow/diffusion action expert (pi0.5, GR00T); Being-H0.5 head type not described in the text read",
+  "methods": ["BeTTER diagnostic benchmark: template-generated tasks with Objaverse assets, MimicGen-amplified demos, privileged state logging", "four intervention axes: spatial layout shift, primitive recomposition, adversarial object perturbation, temporal extrapolation", "kinematic isolation (targets kept in reachable, trained configurations)", "static VQA benchmark ablations (EgoPlan, RefSpatial, EmbSpatial) of InternVL-3.5 for capacity, co-training and input resolution", "pre-training recipe comparison on LIBERO vs CALVIN ABC->D", "real-robot diagnostic matrices"],
+  "question": "Do high VLA benchmark scores reflect embodied reasoning, or shortcut correlations that break under controlled task interventions, and what architectural factors cause the gap?",
+  "key_findings": [
+    "Counterfactual instruction-layout pairings (Morning Coffee, chance 50%): GR00T-N1.6 100% on spatial 'top/bottom' but 5% on semantic 'red/blue' (lexical-kinematic shortcut); Being-H0.5 100% 'top' but 30% 'bottom' and 45% 'blue' (layout bias); pi0.5 near chance (65/50/70/35%) with early halting, hypothesized as conflicting conditioning cancelling to near-zero velocity.",
+    "Novel subgoal composition (B -> C after training A -> B, A -> C) drops sharply; models default to the most frequent first primitive ('behavioral inertia'); seen-sequence success 60/45 (pi0.5), 75/40 (GR00T), 65/40 (Being-H0.5) as parsed from Table 2.",
+    "State tracking: starting with one burger instead of two makes models skip the first subgoal, treating a visual cue as task progress.",
+    "Adversarial object swap (red apple -> red block): pi0.5 rejects the distractor in 85% of trials; in cluttered novel layouts all models show substantial distractor grasp rates.",
+    "Static VLM ablations (InternVL-3.5): 8B -> 2B drops EgoPlan 40.80 -> 33.38 and RefSpatial 27.50 -> 6.00; co-training restores RefSpatial to 29.5 but EgoPlan stays 31.95; forcing a single 224x224 input drops RefSpatial back to 7.50.",
+    "Pre-training recipes all saturate LIBERO near 97%, while on CALVIN ABC->D 'VLA + VLM' beats 'VLA only' (avg length 3.860 -> 4.086).",
+    "Real SO101 robot (pi0.5, 100 demos, 25 per variation): spatial overfitting (grasping memorized coordinates), air grasps at the location of absent second targets, and freezing when visual state and proprioception disagree."
+  ],
+  "evidence": {
+    "setting": "both (simulation benchmark plus SO101 real robot)",
+    "benchmarks": ["BeTTER (10 base tasks, 60 variations)", "EgoPlan-Bench2, RefSpatial, EmbSpatial (static VQA)", "LIBERO", "CALVIN ABC->D", "SO101 fruit-basket tasks"],
+    "scale": "trials per condition not reported in the text read (percentages are multiples of 5, suggesting about 20); real robot results given as qualitative diagnostic matrices",
+    "statistics": "no: single success percentages without CIs or tests",
+    "baselines": "random guess (50%) for binary choice; three VLAs compared to each other; VLM upper bounds for static benchmarks"
+  },
+  "causal_validation": "Behavioral interventions on inputs and task structure only. The 'mechanistic analysis' is a set of static VQA ablations on a separate VLM (InternVL-3.5), not interventions on the internals of the evaluated VLAs, so the link from capacity/resolution bottlenecks to the observed VLA failures is argued rather than tested.",
+  "closed_loop": "Yes for the BeTTER and real-robot diagnostics (closed-loop rollouts); the representational analysis is static VQA.",
+  "limitations_stated": [
+    "Short-horizon diagnostics cannot reveal deep reasoning deficits because reactive heuristics suffice; target-absent failures violate the task premise.",
+    "Real-world diagnostics require kinematic isolation to separate reasoning from execution failures."
+  ],
+  "critique": [
+    "Useful behavioral evidence of shortcut learning with clean counterfactual designs (layout x instruction, recomposition, state-cue manipulation), but trial counts and statistics are not given, so per-cell percentages are hard to weigh.",
+    "Training sets are deliberately confounded (e.g. 'red' always at bottom, burger always first); failure under deconfounding is expected for any imitation learner and shows data-induced shortcuts more than architectural limits.",
+    "The architectural explanation (capacity compression, myopic 224x224 inputs) is inferred from VQA scores of a different model family, not from probing or intervening on pi0.5, GR00T or Being-H0.5; calling it mechanistic overstates the evidence.",
+    "Being-H0.5 and the pre-training recipes are the authors' own (BeingBeyond), a potential conflict when comparing models.",
+    "The pi0.5 'conflicting signals cancel to zero velocity' account is a plausible hypothesis for flow-matching heads but untested internally."
+  ],
+  "code": "project page https://research.beingbeyond.com/better (code status not stated)",
+  "one_line": "A diagnostic benchmark with counterfactual layouts, recomposed subgoals and manipulated state cues shows pi0.5, GR00T-N1.6 and Being-H0.5 follow learned shortcuts rather than grounding instructions, attributed (via VLM-side ablations, not VLA internals) to capacity and resolution bottlenecks."
+}

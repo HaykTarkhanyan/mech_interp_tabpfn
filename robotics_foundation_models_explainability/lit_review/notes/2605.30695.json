@@ -1,0 +1,48 @@
+{
+  "id": "2605.30695",
+  "title": "Primitive Subspaces Mediate Few-Shot Transfer in VLAs",
+  "first_author": "Singh",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["OpenVLA-7B (LoRA, flat vs primitive-segmented training)", "pi0.5 (LoRA, flat vs primitive)", "Octo-Small (demo-conditioned baseline)", "Diffusion Policy (CNN baseline)"],
+  "action_head": "mixed: discrete action tokens (OpenVLA) and flow/diffusion action expert (pi0.5, 16-step chunks as described)",
+  "methods": ["2x2 training design (flat vs primitive-segmented data) x 2 architectures x 3 seeds", "demo-conditioned few-shot transfer by prepending mean-pooled vision features of m demos to the prompt", "linear probes for primitive identity at layers 8/16/24/final", "4-dim probe-subspace ablation (orthogonal projection, Ravfogel/Belrose style) vs random-subspace control", "RSA", "corrected chunk-aware action-range gate"],
+  "question": "Does training VLAs on primitive-segmented episodes create a primitive subspace that is causally necessary for few-shot composition of held-out tasks?",
+  "key_findings": [
+    "REASSEMBLE, 6 held-out tasks, m = 3 demos: primitive-trained 0.62 +/- 0.04 (OpenVLA) and 0.66 +/- 0.04 (pi0.5) vs flat 0.34 +/- 0.06 and 0.31 +/- 0.05; at m = 10 flat reaches 0.61 / 0.58; fine-tuned upper bound (50 demos) 0.79 / 0.82 (Table 2).",
+    "LIBERO-Long replication at m = 3: primitive 0.71 / 0.74 vs flat 0.42 / 0.45 (ratio 1.66x).",
+    "Out-of-vocabulary primitive (rotate-to-engage): primitive training hurts, 0.08 +/- 0.03 vs flat 0.14 +/- 0.04 at m = 5 (OpenVLA).",
+    "Probe macro-F1 for primitive identity (layers 16-24): 0.79-0.81 primitive-trained vs 0.48-0.52 flat-trained; decodability correlates with few-shot success at r = 0.73.",
+    "Ablating the 4-dim probe subspace at layer 24: 0.62 -> 0.30 (OpenVLA) and 0.66 -> 0.34 (pi0.5); a random 4-dim subspace: 0.62 -> 0.60 and 0.66 -> 0.64 (Table 4, 10 random samples). On training-distribution tasks the same ablation only drops 0.84 -> 0.79.",
+    "Octo-style demo-conditioned baseline 0.41 (OpenVLA comparison) / 0.44 vs primitive few-shot 0.62 / 0.66 at m = 3.",
+    "Single-step 3-sigma action gates applied element-wise fail 42% of ground-truth pi0.5-format 16-step chunks vs 2.0% for OpenVLA format, a family-wise inflation artifact."
+  ],
+  "evidence": {
+    "setting": "simulation (as stated by the authors; the REASSEMBLE rollout environment is not described)",
+    "benchmarks": ["REASSEMBLE (NIST Task Board 1), 6 held-out object-task combinations plus an out-of-vocabulary task", "LIBERO-Long (replication)"],
+    "scale": "50 rollouts per cell, 3 training seeds per cell; probes trained on 2,000 held-out demos",
+    "statistics": "partial: mean +/- SD across 3 seeds and 95% bootstrap CIs mentioned; no formal tests for the main contrasts",
+    "baselines": "flat-trained few-shot, zero-shot primitive sequencing with external planner (0.04 alone), Octo-Small demo-conditioned, CNN Diffusion Policy, 50-demo LoRA fine-tuning upper bound"
+  },
+  "causal_validation": "Claimed yes: probe-subspace ablation with a random-subspace control and a specificity check on in-distribution tasks. However, the paper's own figure captions describe the numbers as 'illustrative pending verification', so the causal evidence cannot be taken at face value.",
+  "closed_loop": "Reported as closed-loop success rates, but the environment for REASSEMBLE rollouts is never specified.",
+  "limitations_stated": [
+    "Three seeds give wide per-cell variance (SD 0.03-0.06).",
+    "Simulation only; sim-to-real not tested.",
+    "Only two architectures.",
+    "Held-out tasks reuse existing objects.",
+    "External task-to-primitive planner because openpi does not expose text generation.",
+    "Ablation shows necessity of the subspace, not that primitive supervision is the only way to create it."
+  ],
+  "critique": [
+    "Credibility red flag: the captions of Figure 2 and Figure 3 (main results and the causal ablation) say 'Numbers are illustrative pending verification'. Until a verified version exists, these results should not be cited as evidence.",
+    "The paper never names a simulator for REASSEMBLE, yet reports 50 rollouts per cell with millimetre-level success criteria; how REASSEMBLE tasks were executed is unclear.",
+    "A 'layer-24' probe and ablation is reported for both models, but other papers in this batch describe pi0/pi0.5's PaliGemma backbone as having 18 layers (2509.00328, 2511.22697), so the pi0.5 intervention site is unclear.",
+    "How mean-pooled vision features are 'prepended to the language prompt' of models never trained to accept them is not explained; few-shot gains without any training of this pathway are surprising.",
+    "Results are unusually clean and symmetric across architectures, datasets and seeds; with no released code ('upon publication') and no funding disclosure, treat as unverified.",
+    "If verified, the design (random-subspace control, in-distribution specificity check, negative OOV result) would be among the better causal designs in the batch."
+  ],
+  "code": "not released (promised upon publication)",
+  "one_line": "Claims that training OpenVLA and pi0.5 on primitive-segmented data creates a linearly decodable primitive subspace that is causally needed for few-shot composition of new assembly tasks, but the paper labels its own key figures as illustrative and unverified."
+}

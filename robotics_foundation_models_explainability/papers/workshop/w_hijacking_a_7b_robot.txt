@@ -1,0 +1,135 @@
+URL: https://www.lesswrong.com/posts/fKBkAWZXEGArc9kyB/hijacking-a-7b-robot-policy-s-actions-it-reacts-to-what-it-1
+OpenReview: []
+
+x
+LESSWRONG
+LW
+Login
+Hijacking a 7B robot policy's actions: it reacts to what it sees, not to what it did — LessWrong
+1
+Hijacking a 7B robot policy's actions: it reacts to what it sees, not to what it
+did
+by
+Waxmell114514
+5th Sep 2026
+8
+min read
+0
+1
+Rejected for the following reason(s):
+This is an automated rejection. No LLM generated, assisted/co-written, or edited work.
+Read full explanation
+Epistemic status: a small, careful negative result from a time-boxed (~20h) project. One model, one benchmark suite, linear probes only, per-instance detection floor ≈ 0.04 balanced accuracy. Confident in the measurements; the interpretation is scoped accordingly.
+TL;DR
+I causally hijack OpenVLA-OFT's action chunks on LIBERO-Goal and ask whether anything inside the policy distinguishes self-caused from hijacked transitions.
+The answer is no. Every hidden-state probe, whether post-hijack state alone, the commanded chunk, or the pre-action state, sits at or below a selection-aware shuffled-label floor, in all four experimental arms.
+The null is not that the task is too hard. The comparison features of command and outcome decode the same label at between 0.69 and 0.875, and the commanded plan itself reads out of the hidden state at R² = 0.64. It is that the ingredients present while the comparison is not.
+The policy
+does
+react: next-call entropy up, confidence down (episode-level p ≈ 1e-3). But the reaction appears only where the outcome is visually novel (swap), and is flat for freeze — the transform whose command–outcome mismatch is the
+most
+decodable.
+Interpretation: The phenomenon , which is called the "compensates but doesn't encode" dissociation, previously shown in toy agents (Ye, arXiv 2606.05605) holds in a real 7B policy. You will see that the compensation is visual servoing, not self-monitoring.
+(a) Best-cell balanced accuracy per arm. The mechanics oracle (P2r: comparison features of commanded chunk vs. observed state change) decodes the hijack label increasingly well as the transform breaks the command→outcome link, while the best hidden-state probe stays at its arm's shuffled-label floor. (b) Mean next-call entropy shift after a hijack vs. phase-matched self transitions (±1 SE over episodes, episode-level Wilcoxon p). The reaction is significant only for swap — visually novel but mechanically the stealthiest — and flat for freeze, the most mechanically blatant.
+Why this question?
+Biological motor systems are often described as using an
+efference copy
+: an internal copy of a motor command that helps distinguish changes caused by my own action from changes caused by the outside world. As an analogy, we wonder that in robotics, if a policy commands one action but the environment executes another, does the policy represent that mismatch as something like “the result is not what I did”?
+However, after investigating into relevant researches, there is an interesting tension here. Some works suggest that learned policies can contain surprisingly rich internal models of the world, while recent work on
+action-blind latents
+argues that useful predictive representations need not explicitly encode the agent’s own causal contribution. Ye’s toy-agent experiments sharpen the point further. It is observed that an agent can compensate behaviorally for an intervention without internally encoding the distinction between self-caused and externally caused outcomes (arXiv 2606.05605).
+Moreover, this distinction has a alignment-related interpretation. That's another reason why it is interesting, as noticing that one’s actions have been overridden is not situational awareness in any strong sense, but it is plausibly one minimal prerequisite for attributing outcomes to oneself vs. to an external intervention.
+Setup
+To make the question clean, we choose OpenVLA-OFT because this checkpoint is
+memoryless at inference time
+. It has no history of its previous command and no proprioceptive record of what was actually executed across calls, thus itself cannot explicitly compare “what I commanded” with “what happened”.
+Therefore, the question is broken down into three narrower ones:
+After a hijacked action, does the next hidden state contain a linearly readable trace that the transition was externally imposed?
+If I give the probe the missing efference information explicitly — the commanded action, or both pre- and post-action representations — does attribution become easy?
+Even if attribution is not readable, does the policy nevertheless react behaviorally to the intervention?
+The rest of the experiment separates these three questions.
+Methodology
+Intervention
+OpenVLA-OFT emits an 8 × 7 action chunk on each policy call. I intervene causally on those chunks during LIBERO-Goal rollouts. After a four-call warm-up, each eligible call is hijacked independently with probability p=0.25, while enforcing at least two clean calls after every hijack. Twenty percent of episodes are left entirely clean.
+There are three interventions:
+Swap
+(the main one): instead of executing the policy’s commanded chunk, I execute a chunk taken from another episode of the
+same task
+. This matters because it keeps the replacement actions relatively natural. A probe should not be able to win merely by noticing that the executed action has obviously impossible statistics.
+Mirror
+: It negates the x/y translation components of the commanded chunk.
+Freeze
+: It replaces motion with zeros. Together, these interventions vary how strongly the causal link between command and observed outcome is broken.
+The intervention loop. The frozen policy emits an 8×7 action chunk from one third-person image + the instruction (no proprioception, no history). With p = 0.25 (4-call warm-up, ≥2 clean calls after each hijack) the executed chunk is replaced: swap = another same-task episode's chunk, mirror = negated x/y translation, freeze = zero motion. Hidden states are captured at 9 layers × 3 token pools every call.
+Attribute Probe
+Positives are post-hijack transitions. Negatives are self-caused transitions from the same episode, matched by episode phase. Evaluation uses 5-fold cross-validation grouped by episode.
+The main hidden-state probes ask three increasingly generous questions.
+Can the post-action state alone reveal a hijack (P1)?
+Does adding the commanded action help (P3)?
+And does giving the probe both the pre- and post-action hidden states help (P4)?
+A key statistical detail is that each probe is evaluated at its best of 27 layer × token-pool cells. So the relevant null is not 0.5. I run shuffled-label probes through the same 27-way selection procedure; in the main run, the resulting selection-aware floor is 0.536 balanced accuracy.
+Finally, I use an explicit command–outcome comparison probe (P2r) as a positive control: if the intervention is mechanically detectable from what was commanded and what happened, P2r should be able to decode it even if the policy’s own hidden states do not.
+The main run contains 300 episodes and 1,716 balanced probe samples.
+The policy reacts, but I cannot read out attribution
+The main result is a dissociation.
+First, I investigated inside the policy's hidden states, whether hijacked transitions is linearly distinguishable from matched self-caused transitions. The result show that it's not the case. Whether using the post-action state only, or simultaneously providing the probe with both the pre- and post-action hidden states, all methods only achieve a best-in-class unit accuracy of 0.53, at or below the 0.536 selection-aware shuffled-label floor.
+Main run (swap, all 10 tasks, n = 1,716 balanced samples); each probe at its best of 27 layer×pool cells (± fold sd). P1 = post-hijack state h(t+1) alone; P3 = h(t+1) ⊕ commanded chunk; P4 = h(t) ⊕ h(t+1). Controls: command alone / state-delta alone / phase alone. P2 (open) concatenates command and state delta — bilinear-blind by construction; P2r uses explicit comparison features. Dashed line: max of a shuffled-label probe over the same 27 cells.
+This null is more informative than it initially appears, because the relevant information is not missing from the experiment.
+If I explicitly construct features to compare the policy instructions with what actually happens, the same hijack labels become decodable: in the main swap run balanced accuracy is 0.69 , while for the more mechanically disruptive mirror and freeze interventions, it rises to 0.81-0.88. What's more, the 56-dimensional action chunk anticipated by the policy can be linearly read from the pre-action hidden state, with cross-validated R2≈0.64.
+So the ingredients are there: the pre-action representation contains the plan, and the outcome contains enough information to detect when that plan was not executed. What I do not find is a linearly accessible representation that has already performed the comparison.
+Ridge readout of the policy's own commanded 56-dim chunk from the pre-action state h(t) (5-fold CV R², per layer and pool). The plan is linearly present (plateau 0.62–0.64 at layers 16–28; the two layer-0 pools at R² ≈ 0 are structurally degenerate). This is what makes the null of P4 informative.
+Yet the policy is not behaviorally indifferent to being perturbed.
+After a
+swap
+intervention, the next policy call becomes slightly less certain: mean entropy rises by about
+0.010
+, while the log-probability assigned to the chosen action chunk falls by about
+1.12
+. Both effects are significant at the episode level (p=2.4×10−3p=2.4\times10^{-3} and 6.0×10−46.0\times10^{-4}, respectively), and reproduce in the matched analysis.
+Reaction on the call after a hijack: paired difference (hijack  phase-matched self) in next-call entropy (a) and chosen-chunk log-probability (b). Points: pair-level means; error bars: ±1 SE across episodes (the Wilcoxon unit). Swap reacts on both metrics in both analyses; freeze is flat with both point estimates on the wrong side; mirror trends with swap but is underpowered (n = 44 episodes).
+The comparison arms are the more revealing part.
+Freeze
+creates the clearest command–outcome mismatch — it is the easiest intervention for the explicit comparison features to detect — but produces essentially
+no behavioral reaction
+. Both point estimates are near zero and in the opposite direction.
+Mirror
+trends in the same direction as swap, but the arm is small (n=44n=44 episodes) and underpowered.
+This pattern is more consistent with a response to
+visual novelty
+than with a response to “my action was overridden.” Swap and mirror visibly move the scene in ways that differ from the commanded trajectory; freeze often leaves the image comparatively unsurprising. The intervention that is mechanically most obvious is therefore behaviorally the quietest.
+Two further checks point the same way. Task success barely changes under the main intervention, suggesting that the closed-loop policy usually absorbs the perturbation. And after freeze interventions, the next command tends to reassert the blocked motion even after correcting for ordinary action autocorrelation — exactly what ordinary visual feedback control would predict.
+So my narrow reading is not that this policy has no efference-related information anywhere. It is that, in this SFT checkpoint, I do not find a
+linearly readable attribution signal
+, even though the policy can compensate for perturbations. The compensation looks more like visual servoing than explicit self-monitoring.
+Limitations & how to prove me wrong
+The largest limitation is that these are
+linear probes
+. A negative result here does not imply that attribution information is absent; it may simply be encoded nonlinearly. The cheapest way to challenge this result is therefore straightforward: freeze the same representations and train a small nonlinear probe, such as a two-layer MLP. I did not run this final check because the compute environment was torn down before the hidden states were preserved, so it would require recollecting them.
+Second, the experiment has limited power for weak effects. In the main run, the selection-aware floor is
+0.536 balanced accuracy
+, so signals only a few points above chance could remain invisible. This matters because the behavioral analysis does detect small distribution-level effects: weak internal signals are entirely compatible with my results.
+Third, the comparison arms are small. Each contains only about forty episodes. In those arms, some hidden-state probe scores drift as high as roughly
+0.58
+, although they remain within the corresponding shuffled-label nulls, and the mirror intervention shows a same-direction behavioral trend without reaching significance. Expanding these arms would be my first replication priority.
+There are also narrower design limitations: phase matching is imperfect, the experiments cover a single checkpoint and benchmark suite, and rollouts are capped at 320 steps.
+The strongest next test is probably not another variant of the same SFT model. The same pipeline could be run on a
+GRPO-trained sister checkpoint
+. Because RL trains the policy on the consequences of its own generated actions, it is plausible that such training could produce an attribution-relevant representation that is absent — or at least not linearly readable — in this SFT checkpoint.
+So the claim here is deliberately narrow: I failed to find a
+linearly readable
+self-vs.-external attribution signal under these interventions. A nonlinear probe, a larger comparison-arm replication, or a differently trained checkpoint could prove that conclusion incomplete.
+Code, data, and AI use
+Code (isolated under `experiments/efference_probe/` in an RLinf fork):
+[REPO LINK]
+. LLM agents implemented and executed the experiments under my specification and produced the figures.
+0
+Comments
+0
+1
+New Comment
+Submit
+Moderation Log
+More from
+Waxmell114514
+View more
+Curated and popular this week

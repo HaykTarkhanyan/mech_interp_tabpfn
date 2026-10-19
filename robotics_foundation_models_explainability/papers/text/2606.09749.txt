@@ -1,0 +1,500 @@
+arXiv:2606.09749v1 [cs.RO] 8 Jun 2026
+
+Your Model Already Knows: Attention-Guided Safety Filter for Vision-Language-Action Models
+Seongbin Park, Fan Zhang, Baharan Mirzasoleiman, Shahriar Talebi, Nader Sehatbakhsh University of California Los Angeles United States parkseongbin@ucla.edu
+Abstract: Vision-Language-Action (VLA) models have demonstrated impressive end-to-end performance across a variety of robotic manipulation tasks. However, these policies offer no guarantees against collisions with task-irrelevant objects in the scene. Existing safety filters sidestep this problem by querying a visionlanguage model (VLM) to identify obstacles and their locations. This, however, is too slow to run in the control loop and can only be invoked at episode initialization, leaving the filter unable to track moving obstacles. We discover that a small number of attention heads within a VLA model reliably localize the object the policy intends to approach. These heads can be exploited within a training-free safety framework that obtains the active target from the attention heads at every step, treats the remainder of the scene as obstacles, and feeds these into a Control Barrier Function (CBF) filter. Together with a lightweight real-time object tracker, this allows for collision avoidance for non-static obstacles. We evaluate our framework on SAFELIBERO, which we extend with moving obstacles. On the original static benchmark, our method performs comparably to an oracle that uses privileged simulator state to identify the target, emulating a VLM-based identification step run once at episode initialization. On the dynamic variant, where the oracle’s init-time target assignment becomes stale, our method substantially outperforms it by 43%, on average. Our findings suggest that the perceptual signals needed for real-time safety filtering are already present within VLA policies and can be exploited without additional training or heavy auxiliary models.
+Keywords: Vision-Language-Action (VLA), Manipulation Obstacle Avoidance, Safety Filter
+1 Introduction
+Following the success of large language models (LLMs) and vision-language models (VLMs), vision-language-action models (VLAs) have emerged as a framework for end-to-end robotic control. By directly mapping vision-language input to motor commands, these models have the potential to execute previously unseen instructions and effectively generalize behaviors across a diverse range of robot embodiments, scenes, skills, and objects. Recent works, such as π0, π0.5 [1, 2] and OpenVLA [3, 4], have made substantial progress in task execution performance; however, these models often function as unconstrained black-box policies, lacking formal safety guarantees required for deployment in real-world environments.
+Before deploying such policies around fragile objects, people, and shared workspaces, we must ensure that they satisfy strict safety requirements, especially for collision avoidance. One approach is to incorporate safety constraints during training through reinforcement learning [5, 6]. However, these methods require carefully curated safety-labeled data, substantial retraining costs, and often treat safety as a soft optimization objective rather than a hard constraint, providing limited formal guarantees [7, 8].
+xx xx (xx 2026), xx.
+
+Inputs at step
+
+Set of Obstacles
+
+pick up the bowl and place it on the cabinet
+
+Perception Module Frozen VLA Policy
+
+Attention-based Target Identification
+Accumulate over sliding window
+Select Target
+...
+
+attention map
+
+Attention Density per Object
+
+candidate action
+
+All other objects are obstacles
+...
+
+safe action
+
+CBF QP Filter
+
+obstacle set
+
+(a)
+
+(b)
+
+Figure 1: (a) To detect objects and avoid collisions using a CBF filter, our approach leverages a lightweight intra-VLA attention-based method for target identification, which eliminates the need for an expensive vision model (e.g., a VLM) for scene understanding. (b) Compared to state-of-theart [9, 10], our approach has lower overhead and reduces collision rates by up to 43%.
+
+More recently, researchers have proposed inference-time safety filters [9, 10, 11, 12] that avoid retraining and instead enforce formal collision-avoidance guarantees during execution. However, existing approaches rely on expensive VLM-based scene understanding pipelines to identify safetyrelevant objects. Because these perception modules are computationally heavy, they are typically executed only once at episode initialization rather than continuously throughout the rollout. This assumption is problematic in realistic robotic settings where environments are dynamic: objects may move, humans may enter the workspace, and the robot itself continuously changes its spatial relationship to surrounding obstacles. As a result, initialization-only safety filters quickly become stale and can fail to provide reliable protection under changing scene conditions.
+In this work, we observe that the information needed to identify safety-relevant objects is already encoded inside the VLA policy itself and can be extracted at negligible computational cost. Specifically, we find that a small number of attention heads in a frozen VLA consistently attend to the object the policy is currently acting toward. Rather than repeatedly querying an external VLM, we leverage these attention maps to dynamically exclude the target object from the obstacle set while treating all other objects as potential obstacles. Combined with a lightweight real-time object tracker and a control barrier function (CBF) [13, 14, 15] based quadratic programming (QP) solver, this yields KNOWS1, a training-free safety wrapper that operates alongside a frozen VLA directly at the control rate. Unlike prior approaches, KNOWS continuously updates its safety constraints online, enabling robust collision avoidance even in dynamic environments with moving obstacles and changing scene configurations. An overview of our approach is shown in Figure 1.
+We evaluate on SAFELIBERO [9], a safety-augmented version of LIBERO [16]. To highlight the real-time capabilities of our method, we add an additional difficulty level to SafeLIBERO, where a dynamic obstacle moves adversarially during the episode. Results show that KNOWS reduces the collision rate by more than 43% on average in dynamic scenarios compared to the state-of-the-art latency-heavy naive method, which can analyze the scene only once. In summary:
+• We identify a small set of attention heads in a frozen VLA policy that act as reliable per-step indicators of the policy’s current target object, requiring no additional training or supervision.
+• We propose KNOWS, a training-free safety framework that combines these target heads with a lightweight object tracker to maintain a per-step target/obstacle decomposition, which is fed into a CBF-QP filter for collision avoidance at the control rate.
+• We extend SafeLIBERO with moving obstacles and show that KNOWS performs on par with a privileged-state oracle on static scenes and substantially outperforms it on dynamic scenes — where init-only safety filters fail.
+1Knowledge-driven, No-retraining, Online Wrapper for Safety
+2
+
+2 Related Works
+2.1 Vision-Language-Action Models
+Following the success of VLMs [17, 18, 19], VLA models, which extend pretrained VLMs to generate low-level robot actions, have emerged as a promising generalist robot policy. The RT series [20, 21] introduced action tokenization, demonstrating that scaling VL pretraining with robot datasets enables generalization across diverse manipulation tasks. Subsequent works have improved upon this end-to-end approach, including OpenVLA [4], which uses autoregressive decoding, and OpenVLA-OFT [3], which uses parallel decoding. Another class of models utilize diffusion-based decoding, such as CogACT [22], TinyVLA [23] and the π series [2, 1].
+2.2 Control Barrier Functions
+Control barrier functions (CBFs) [13, 14] have emerged as a computationally fast and minimally invasive way of enforcing safety for non-linear systems. They have been successfully implemented on a wide range of systems, including manipulators [24, 25, 26, 27, 28] and discrete systems [15].
+More recently, CBF-based safety filters have been integrated with VLA policies for robotic manipulation. Hu et al. [9] introduces a geometric safety layer that enforces collision avoidance constraints on VLA-generated actions at runtime. Brunke et al. [10] similarly employs CBF-based shielding for semantic safety constraints to ensure safe execution without modifying the underlying policy.
+2.3 Internal Representations of Foundation Models
+Many recent works have focused on extracting spatial, semantic, and structural signals directly from the attention maps of specific heads in large foundation models [29, 30, 31]. Kang et al. [32] discovered that frozen VLMs have a small subset of text-to-image attention heads, termed localization heads, that implicitly capture exact object boundaries zero-shot. Transitioning this paradigm to VLA navigators, Jeong et al. [33] identified specialized navigation heads, whose spatiotemporal attention distributions provide a lightweight, training-free method for real-time path deviation and anomaly detection. In this work, we similarly identify grounding-related attention heads in manipulation VLAs and leverage their attention maps as a training-free signal for downstream safety filtering.
+3 Methodology
+Our overall pipeline (as shown in Figure 1a) consists of four main components: (1) A frozen VLA policy πθ produces a candidate action at at every control step (2) A perception module localizes every manipulable object in the scene: at episode initialization, we use a fine-tuned segmentation model to segment all movable objects and fit an ellipsoid over each; at runtime, the model tracks each mask to update the corresponding ellipsoid pose. (3) A target identification module reads a single attention head from πθ, accumulates its vision-token attention over a sliding window of recent steps, and dynamically selects the object that receives the highest accumulated attention density; the remaining objects constitute the obstacle set. (4) A CBF-QP filter takes the candidate action at and the per-step obstacle set, and projects at onto the safe set, yielding the final command aˆt executed on the robot.
+We briefly discuss the VLA policy and problem setup in §3.1. The details of the SAM-based ellipsoid fitting and tracking are provided in §3.2. In §3.3 and §3.4, we characterize the attention heads and how we extract a target estimate from them. §3.5 formulates the CBF-QP problem and the safety constraint we impose.
+3.1 Problem Setup
+Policy. A pretrained VLA policy πθ maps an observation ot (third-person RGB, wrist RGB, and proprioceptive state) and a language instruction ℓ to a chunk of H actions at:t+H , where each action
+3
+
+is an end-effector delta pose (∆x, ∆θ) ∈ R6 together with a gripper command. In this work, we treat πθ as a black box; the model itself is neither fine-tuned nor modified.
+
+Scene Representation. The scene contains a set of rigid objects O = {1, . . . , N }. We represent the end-effector (EEF) and each object as a 3D ellipsoid. These ellipsoids {Ej}j∈O are fit once at the beginning of each rollout episode and tracked online, as outlined in §3.2. We denote the endeffector ellipsoid as ER = (cR, QR), where pose (cR, RR) is read from the proprioceptive state at each timestep and the semi-axes are calibrated offline.
+
+Objective. We build a safety filter that modifies the policy’s nominal action at as little as possible to a safe action aˆt, ensuring the end-effector ellipsoid is separated from every obstacle ellipsoid:
+
+ER ∩ Ej = ∅ ∀ j ∈ Otobs.
+
+(1)
+
+If no such aˆt exists, the filter falls back to an emergency stop.
+
+3.2 Low-Latency Obstacle Tracking
+At episode start, an instance segmentation model [34] produces a binary mask per object; we backproject the masked depth into 3D through the known camera intrinsics and extrinsics, fuse it across the available camera views into a single point cloud, and fit a minimum-volume enclosing ellipsoid (MVEE) [35] to obtain Ei.
+Crucially, all ellipsoid shape matrices Q1,2...N are fixed at t = 0. At each subsequent step, we recompute only the centroid pi from the updated segmentation mask, which avoids the cost of refitting an MVEE each frame. Tracks are kept stable under (i) arm occlusion, by freezing a track at its last position when the arm intervenes, and (ii) identity swaps, by re-associating tracks through an HSV color-histogram (Bhattacharyya) match. The per-step geometry update is itself a lightweight centroid recompute; the dominant per-step cost is the segmentation model’s forward pass (see §4.3).
+
+3.3 Attention-Based Target Identification
+
+To obtain the real-time target signals without breaking the efficiency of the policy’s control rate, we extract the attention grid At ∈ Rg×g by caching the layer inputs via lightweight hidden-state
+hooks during the ot√herwise unmodified forward pass, then manually recompute the matrix product softmax(QactKv⊤is/ d) exclusively for the target layer’s action-query and vision-key blocks.
+
+After extracting the attention matrix At, each ellipsoid is projected onto the image plane and its convex hull rasterized into a mask Mi with unoccluded pixel area αi,t = |Mi|. We then assign attention mass to objects proportional to image-space coverage: for every patch (r, c), object i
+
+receives
+
+mi,t =
+
+A¯t[r, c] ci(r, c),
+
+ci(r, c)
+
+=
+
+|Mi ∩ patch(r, c)| , |patch(r, c)|
+
+(2)
+
+(r,c)
+
+where ci(r, c) ∈ [0, 1] is the fraction of the patch covered by Mi. Because masks may overlap, a partially occluded but attended object still earns its share of the mass rather than losing the whole
+
+patch to whatever sits in front of it. Because a single frame of attention is noisy, so we accumulate
+
+over a sliding window of the last K frames and score each object by an attention density:
+
+β
+
+di =
+
+K mi,t
+
+K αi,t
+
+(3)
+
+which is the accumulated mass divided by accumulated projected area. Normalizing by area (β=−1) prevents a large or nearby object from winning merely because it occupies more patches. We confirm a target only when the top object’s lead is decisive:
+
+τt = arg max di if d(1) − d(2) ≥ δ, else τt = ∅,
+
+(4)
+
+i
+
+where d(1) ≥ d(2) are the two largest densities and δ is a gap threshold. When the gap is too small
+
+to trust, no object is excluded, and the filter conservatively treats the whole scene as obstacles. The
+
+values of K, β, and δ used for evaluation in section 4 were determined empirically; details are in the
+
+Appendix.
+
+4
+
+3.4 Layer/head selection
+
+0.5
+
+per-layer mean
+
+7 6
+
+Mean attention mass head h
+
+0.4
+
+5
+
+0.3
+
+4
+
+0.2
+
+3
+
+2
+
+0.1
+
+1
+
+0.0 0 1 2 3 4 5Tr6ans7for8me9r l1a0ye1r1 12 13 14 15 16 17
+
+0 1 2 3 4 5Tr6ans7for8me9r l1a0ye1r1 12 13 14 15 16 17
+
+0
+
+Figure 2: Per-head attention scores with policy π0.5. Agent view (left) and wrist view (right).
+
+We run four episodes with policy π0.5, one from each task in the SPATIAL I suite (see section 4.1 for details), while logging attention for every transformer head. To isolate the grounding signal from failure mode confounds, we deploy a ground-truth ellipsoid safety filter to guarantee collision-free trajectories during the profiling runs. For each (layer, head) unit, we compute the mean per-step attention mass on the phase-appropriate object (the target object during the reach phase and the destination during the placement phase). We plot the score distributions for both camera views (agent and wrist) used in our experiments in Figure 2. We select the top-scoring unit (layer 12, head 3) for all suites in our main experiments.
+
+The distributions indicate that only a small subset of heads carry strong target-identification signals, consistent with prior interpretability studies of VLMs [32]. Additionally, layer-wise averages for the agent camera peak at layer 12, followed by layer 8. The wrist camera follows the same trend, though at lower magnitudes. A possible explanation is that both camera streams are processed by the same transformer backbone and jointly trained to support action prediction, and the subset of heads for identifying task-relevant objects work regardless of viewpoint. The wrist view provides a weaker signal, likely because target objects are often outside the field of view when the end effector is distant from them.
+
+3.5 CBF-QP Safety Filter
+Given the set of obstacle ellipsoids from the previous sections, we filter the policy’s commanded action through a discrete-time CBF-QP. We adapt the separating-hyperplane CBF of Wu and Liu [36] to the case of a single controlled ellipsoid and discrete-time control. For this paper, we only consider the collision avoidance problem between the end effector ellipsoid and other obstacle ellipsoids; other components of the robot arm are not considered. See Appendix for details.
+
+4 Experimental Results
+We evaluate whether attention-based target exclusion produces collision-free behavior without sacrificing task success, and whether it does so at a cost compatible with real-time control. We organize the study around three questions: (Q1) can attention-based target exclusion keep collisions low without sacrificing the task success of the unfiltered policy? (Q2) what is the runtime overhead of reading intent from attention and filtering with the CBF? (Q3) what other information can be extracted from the model’s attention?
+4.1 Setup
+Benchmark. We use SAFELIBERO [9], a safety-augmented variant of LIBERO [16] in which each task is populated with collision-relevant obstacles. We report on four suites, SPATIAL, OBJECT, GOAL, and LONG, spanning tabletop, floor, and living-room arenas. Each suite is evaluated at three safety levels: I (a single static obstacle close to the target object), II (a single static obstacle in
+
+5
+
+Table 1: Main results on SAFELIBERO (%). SR = success, CR = collision, SSR = safe-success (higher SR/SSR better, lower CR better). Best value in each metric column (per suite/level) in bold.
+
+Level I
+
+Level II
+
+Level III
+
+Suite Method SR↑ CR↓ SSR↑ SR↑ CR↓ SSR↑ SR↑ CR↓ SSR↑
+
+No CBF 67.5 86.5 13.5 49.0 88.0 11.0 86.5 84.5 14.5 SPATIAL Naive 69.0 26.0 61.0 80.5 34.5 63.5 79.5 62.0 34.0
+KNOWS 63.0 32.5 53.0 87.5 27.0 70.0 66.5 29.0 54.5
+
+No CBF 43.0 83.0 14.0 69.0 72.0 25.5 48.5 48.5 44.0 OBJECT Naive 73.0 4.0 73.0 87.5 11.0 80.0 51.0 50.0 40.0
+KNOWS 71.0 6.5 70.5 79.5 17.5 69.0 78.5 14.0 70.5
+
+GOAL
+
+No CBF 51.0 95.0 5.0 66.0 64.5 29.0 79.0 90.0 9.0 Naive 89.5 9.0 82.0 55.0 36.0 36.5 79.0 90.5 9.5 KNOWS 87.0 10.0 81.0 82.5 41.0 52.0 86.0 30.5 63.5
+
+LONG
+
+No CBF 58.5 86.0 13.5 47.0 83.5 14.5 63.5 82.0 18.0 Naive 60.5 32.0 36.5 48.0 14.0 42.5 44.5 80.5 18.5 KNOWS 49.0 45.5 35.0 35.0 39.5 24.0 45.5 34.0 34.5
+
+path of movement), and III, our addition to the benchmark, which has dynamic obstacles that move adversarially during the episode.
+Each dynamic obstacle moves between two waypoints along a linear trajectory over 30 control steps, then stops. At our 20 Hz control rate this corresponds to a 1.5 s traversal. We selected this speed to be slow enough that a competent safety filter should succeed (arm motion is faster than obstacle motion), but fast enough that obstacle pose must be updated every step to avoid collisions. We run 50 episodes per task with a step budget of 300 (SPATIAL/OBJECT/GOAL) and 550 (LONG) per episode.
+Policies. Our primary policy is π0.5 [1], but our safety filter is model-agnostic; the method is unchanged across policies since it reads a single attention layer/head from whatever forward pass the policy already runs. We select π0.5 because it is a state-of-the-art VLA policy that exhibits strong inherent robustness to visual perturbations, which adding obstacles to a LIBERO scene inherently introduce.
+Object Tracker. We finetune YOLOE [34] to segment manipulable objects in the scene.
+Metrics. For each condition we report success rate (SR; task completed), collision rate (CR; the episode contacted any non-target obstacle), and safe-success rate (SSR; completed and collisionfree). SSR is the primary metric, as it jointly captures the safety/competence trade-off that motivates target-aware filtering.
+Hardware. All evaluations and latency measurements were run on a single workstation with two NVIDIA RTX PRO 6000 (Blackwell, Max-Q Workstation Edition, 96 GB each), an Intel Xeon w5-3425 (12 cores / 24 threads), and ∼ 755 GB of DDR5 memory, running Ubuntu 22.04. The per-step latency breakdown in §4.3 is measured with the policy server on one GPU and the client (environment rendering and safety filter) on the other.
+Baselines. We consider three scenarios: (i) No CBF. πθ executed unfiltered, with no safety layer. (ii) Naive. To isolate the cost of init-only obstacle estimation, we construct a naive baseline reflecting the design of VLSA Hu et al. [9]: a single fixed obstacle ellipsoid is placed using ground-truth segmentation at t = 0 and never updated. This is a strong stand-in for prior init-only filters and isolates the contribution of per-step updates. (iii) KNOWS (ours). The full target-aware filter: every tracked object is a candidate obstacle, the policy’s attention identifies the intended target at every step, the target is excluded from the CBF obstacle set, and all objects are re-localized per step.
+4.2 Main Results
+Table 1 reports SR / CR / SSR across suites and safety levels. In static obstacle scenarios (Level I and II) KNOWS sharply reduces collisions relative to the unfiltered policy (No CBF) while keeping success comparable to the Naive version. In Level III, obstacle pre-episode no longer suffices, and KNOWS attains a higher SSR than the Naive version.
+6
+
+4.3 Real-Time Overhead
+
+Target-aware safety adds little on top of the pol- Table 2: Per-step latency breakdown (mean
+
+icy at runtime. Table 2 decomposes the per-step over 200 control steps). The attention is com-
+
+wall-clock cost, measured against a π0.5 server puted during the existing forward pass; action
+over 200 control steps with the agentview ren- chunking (H=8) amortizes the policy forward dered at 640×640. Reading the target from atten- to ∼ 30 ms/step.
+
+tion is effectively free—0.8 ms per query, since it Component
+
+Latency (ms)
+
+reuses the existing forward pass rather than ma- VLA Policy inference (one chunk)
+
+243
+
+terializing the full attention map—and the safety attention extraction
+
+0.8
+
+QP, with one constraint per non-target obstacle, YOLOe-11m-seg
+
+19.3
+
+solves in 11 ms. The per-step budget is dominated Depth + centroid
+
+9.1
+
+by the off-the-shelf segmentation detector (19 ms) Target identification
+
+9.4
+
+and the masked-depth backprojection (9 ms); be- Safety QP (OSQP)
+
+11.4
+
+cause the MVEE shape is fit only at initialization, Wrapper overhead per-step tracking is just a centroid update. The Control rate
+
+49.3 20 Hz
+
+full wrapper totals 49 ms—within the 50 ms bud-
+
+get of LIBERO’s 20 Hz control rate—and action chunking (H=8) amortizes the policy forward to
+
+∼ 30 ms/step, so the system holds control rate. Perception is the only term near budget and is readily
+
+reduced with a lighter detector, lower input resolution, or a compute optimization.
+
+attention density (×10 5) true positive rate
+attention density (×10 5)
+
+4.4 Attention Focus as a Confidence Signal
+
+(a) early vs. whole episode
+
+AUC 0.70 4
+
+AUC 0.89
+
+1.0 (b) ROC across statistics
+0.8
+
+3
+
+0.6
+
+2
+1
+0 whole episode
+
+early window
+
+0.4
+
+early-ep. mass (0.93)
+
+0.2
+
+early-ep. density (0.89) whole-ep. mass (0.78)
+
+whole-ep. density (0.70)
+
+whole-ep. entropy (0.76)
+
+0.00.0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1.0
+
+false positive rate
+
+success
+
+failure
+
+(c) specificity: target vs. destination
+
+4
+
+AUC 0.89
+
+AUC 0.55
+
+3
+
+2
+
+1
+
+0 o(nreTleAvRaGnEt)T
+
+on (DirEreSlTeIvNaAnTtI)ON
+
+Figure 3: Attention separates successful from failed episodes. At the evaluation head (agent camera, layer 12, head 3) over 80 LONG episodes (44 success / 36 failure) in the analysis condition, where attention is recorded but not used for control. (a) Whole episode vs. early window. Density on the phase-relevant target, restricted to the early phase, sharpens the separation from AUC 0.70 to 0.89 (b) ROC across statistics. Five successful metrics overlaid: early target mass (AUC 0.93) and density (0.89); whole-episode mass (0.78) and density (0.70); and attention entropy (0.76). All sit well above chance. (c) Specificity. In the early window, density on the target predicts success (AUC 0.89) while density on the currently-irrelevant destination is at chance (AUC 0.55)
+
+We find that another useful property of the attention signal is that it is an inference-time correlate of task outcome—readable from the same forward pass that produces the action, at no extra supervision. Figure 3 outlines the results of analyzing the properties of the identified evaluation head (layer 12, head 3) across 80 LONG I episodes comprising 44 successful and 36 failed trials. In these trials, attention signatures are recorded passively without being utilized for active control loop filtering; the Naive safety filter (see section 4.1) was used instead.
+If the signal is aggregated across the entire episode (fig. 3a, left), the metric yields an AUC of 0.70. However, restricting our observation to before the first object is picked up or the first third of the episode, whichever is earlier (fig. 3a, right), substantially sharpens the classification boundary, boosting the predictive power to an AUC of 0.89. Additionally, we evaluate five distinct internal attention statistics to determine the most robust marker for downstream safety filtering. As illustrated by the Receiver Operating Characteristic (ROC) curve in fig. 3b, all five statistics perform substantially above chance (AUC=0.50).
+
+7
+
+Finally, we check whether this signal reflects semantic target alignment or just generic attention concentration. Figure 3c compares early-window density on the task-relevant target against the (currently task-irrelevant) destination: the former remains strongly predictive of success (AUC=0.89) while the latter collapses to chance (AUC=0.55). The evaluation head is therefore semantically specific to the commanded object, not a generic saliency cue.
+These results suggest a possible positive reinforcement cycle: since a more robust and capable base policy yields more informative attention maps, improving the policy backbone could translates into a more robust safety filter without requiring additional training.
+5 Limitations
+Our approach has several limitations that cause collisions despite the safety filter. We discuss them in this section and point to future work.
+End-effector-only safety. The CBF protects a single ellipsoid approximating the end-effector; the rest of the arm is unmodeled. Collisions involving links upstream of the wrist are therefore not accounted for, leading to occasional upper-arm and elbow collisions. Extending the filter to cover the whole kinematic chain is the natural next step; however, our safety filter assumes control of only the end effector position and pose, leaving the rest of the joints for a downstream controller. Faithfully protecting the whole arm would require either modeling that controller’s behavior or moving the safety layer to a lower level.
+Perception error. Our obstacle geometry is only as good as the perception module that produces it. Point-cloud noise can yield ellipsoids that over- or under-approximate an object, and the tracker can mis-associate under heavy occlusion, despite our counter-measures. These errors translate directly into either overly conservative behavior or collisions.
+Reduced-order safety. The CBF is defined over the EEF pose, since EEF deltas are the only control authority the VLA exposes. The joint trajectories that realize these commands are produced by a downstream OSC we treat as a black box. In the language of reduced-order safety-critical control [37, 38], the EEF is the ROM and the full joint-space system is the full-order model; safety on the ROM transfers to the full system only modulo the OSC’s tracking error, which we validate empirically in Section 4.
+6 Conclusion
+In this paper, we presented a minimally invasive safety filter for VLA policies utilizing the policy’s own internal attention to decide which objects in the scene are obstacles. Our key finding is that even a single attention head in a frozen VLA reliably localizes the object the policy is acting towards, providing a per-step target estimate at negligible cost and without finetuning. We then treat the remainder of the tracked scene as obstacles, then utilize a CBF-QP filter to prevent collisions at a rate fast enough to run alongside the policy at control rate (20 Hz). When all objects in the scene are static, our method performs comparably to prior methods that generate and fix the obstacles prior to runtime, but outperforms then in situations where obstacles move during the episode.
+Because our approach relies entirely on the structural routing properties inherent to multi-head selfattention, this method can readily generalize to other transformer-based policies without architectural modification, though its ultimate efficacy remains tethered to the underlying model’s quality; We hypothesize that a weaker backbone may produce diffuse or erratic attention maps under noise, while a robust policy like π0.5 gitves useful information for filtering.
+We further observed that the same attention density our filter uses as a target signal is an inferencetime correlate of eventual task success, suggesting that the policy’s internal attention carries usable information well beyond the safety setting we study here. More broadly, our results indicate that the perceptual grounding needed to make a VLA safe is, to a large extent, already latent in the policy.
+8
+
+Acknowledgments
+If a paper is accepted, the final camera-ready version will (and probably should) include acknowledgments. All acknowledgments go at the end of the paper, including thanks to reviewers who gave useful comments, to colleagues who contributed to the ideas, and to funding agencies and corporate sponsors that provided financial support.
+References
+[1] K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. R. Equi, C. Finn, N. Fusai, M. Y. Galliker, D. Ghosh, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, D. LeBlanc, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, A. Z. Ren, L. X. Shi, L. Smith, J. T. Springenberg, K. Stachowicz, J. Tanner, Q. Vuong, H. Walke, A. Walling, H. Wang, L. Yu, and U. Zhilinsky. $\pi {0.5}$: A Vision-Language-Action Model with OpenWorld Generalization. . URL https://openreview.net/forum.
+[2] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, L. X. Shi, J. Tanner, Q. Vuong, A. Walling, H. Wang, and U. Zhilinsky. $pi 0$: A Vision-Language-Action Flow Model for General Robot Control. . doi: 10.48550/arXiv.2410.24164. URL http://arxiv.org/abs/2410.24164.
+[3] M. J. Kim, C. Finn, and P. Liang. Fine-Tuning Vision-Language-Action Models: Optimizing Speed and Success, . URL http://arxiv.org/abs/2502.19645.
+[4] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. P. Foster, P. R. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn. OpenVLA: An Open-Source Vision-Language-Action Model. In Proceedings of The 8th Conference on Robot Learning, pages 2679–2713. PMLR, . URL https://proceedings.mlr.press/v270/kim25c.html.
+[5] S. Gu, L. Yang, Y. Du, G. Chen, F. Walter, J. Wang, and A. Knoll. A Review of Safe Reinforcement Learning: Methods, Theories, and Applications. IEEE Transactions on Pattern Analysis and Machine Intelligence, 46(12):11216–11235, Dec. 2024. ISSN 1939-3539. doi: 10.1109/TPAMI.2024.3457538.
+[6] B. Zhang, Y. Zhang, J. Ji, Y. Lei, J. Dai, Y. Chen, and Y. Yang. SafeVLA: Towards Safety Alignment of Vision-Language-Action Model via Constrained Learning. Advances in Neural Information Processing Systems, 38:153335–153373, Apr. 2026.
+[7] A. HasanzadeZonuzy, A. Bura, D. Kalathil, and S. Shakkottai. Learning with Safety Constraints: Sample Complexity of Reinforcement Learning for Constrained MDPs. Proceedings of the AAAI Conference on Artificial Intelligence, 35(9):7667–7674, May 2021. ISSN 23743468. doi:10.1609/aaai.v35i9.16937.
+[8] Y. Wang, S. S. Zhan, R. Jiao, Z. Wang, W. Jin, Z. Yang, Z. Wang, C. Huang, and Q. Zhu. Enforcing Hard Constraints with Soft Barriers: Safe Reinforcement Learning in Unknown Stochastic Environments. In Proceedings of the 40th International Conference on Machine Learning, pages 36593–36604. PMLR, July 2023.
+[9] S. Hu, Z. Liu, S. Liu, J. Cen, Z. Meng, and X. He. VLSA: Vision-Language-Action Models with Plug-and-Play Safety Constraint Layer. URL http://arxiv.org/abs/2512.11891.
+[10] L. Brunke, Y. Zhang, R. Ro¨mer, J. Naimer, N. Staykov, S. Zhou, and A. P. Schoellig. Semantically Safe Robot Manipulation: From Semantic Scene Understanding to Motion Safeguards. 10(5):4810–4817. ISSN 2377-3766. doi:10.1109/LRA.2025.3553046. URL https: //ieeexplore.ieee.org/document/10933541/.
+9
+
+[11] M. Ganai, R. Sinha, C. Agia, D. Morton, L. Di Lillo, and M. Pavone. Real-time out-ofdistribution failure prevention via multi-modal reasoning. In Conference on Robot Learning, pages 283–308. PMLR, 2025.
+[12] L. Santos, Z. Li, L. Peters, S. Bansal, and A. Bajcsy. Updating robot safety representations online from natural language feedback. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 7778–7785. IEEE, 2025.
+[13] A. D. Ames, X. Xu, J. W. Grizzle, and P. Tabuada. Control Barrier Function Based Quadratic Programs for Safety Critical Systems. 62(8):3861–3876, . ISSN 1558-2523. doi:10.1109/TAC. 2016.2638961. URL https://ieeexplore.ieee.org/abstract/document/7782377.
+[14] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada. Control Barrier Functions: Theory and Applications. In 2019 18th European Control Conference (ECC), pages 3420–3431, . doi:10.23919/ECC.2019.8796030. URL https://ieeexplore.ieee. org/abstract/document/8796030.
+[15] A. Agrawal and K. Sreenath. Discrete Control Barrier Functions for Safety-Critical Control of Discrete Systems with Application to Bipedal Robot Navigation. In Robotics: Science and Systems XIII. Robotics: Science and Systems Foundation. ISBN 978-0-9923747-3-0. doi:10.15607/RSS.2017.XIII.073. URL http://www.roboticsproceedings.org/rss13/ p73.pdf.
+[16] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone. LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning. In Thirty-Seventh Conference on Neural Information Processing Systems Datasets and Benchmarks Track, Nov. 2023.
+[17] S. Karamcheti, S. Nair, A. Balakrishna, P. Liang, T. Kollar, and D. Sadigh. Prismatic VLMs: Investigating the design space of visually-conditioned language models. In Proceedings of the 41st International Conference on Machine Learning, volume 235 of ICML’24, pages 23123– 23144, Vienna, Austria, July 2024. JMLR.org.
+[18] X. Chen, J. Djolonga, P. Padlewski, B. Mustafa, S. Changpinyo, J. Wu, C. R. Ruiz, S. Goodman, X. Wang, Y. Tay, et al. Pali-x: On scaling up a multilingual vision and language model. arXiv preprint arXiv:2305.18565, 2023.
+[19] L. Beyer, A. Steiner, A. S. Pinto, A. Kolesnikov, X. Wang, D. Salz, M. Neumann, I. Alabdulmohsin, M. Tschannen, E. Bugliarello, et al. Paligemma: A versatile 3b vlm for transfer. arXiv preprint arXiv:2407.07726, 2024.
+[20] A. Brohan, N. Brown, J. Carbajal, Y. Chebotar, J. Dabis, C. Finn, K. Gopalakrishnan, K. Hausman, A. Herzog, J. Hsu, J. Ibarz, B. Ichter, A. Irpan, T. Jackson, S. Jesmonth, N. Joshi, R. Julian, D. Kalashnikov, Y. Kuang, I. Leal, K.-H. Lee, S. Levine, Y. Lu, U. Malla, D. Manjunath, I. Mordatch, O. Nachum, C. Parada, J. Peralta, E. Perez, K. Pertsch, J. Quiambao, K. Rao, M. Ryoo, G. Salazar, P. Sanketi, K. Sayed, J. Singh, S. Sontakke, A. Stone, C. Tan, H. Tran, V. Vanhoucke, S. Vega, Q. Vuong, F. Xia, T. Xiao, P. Xu, S. Xu, T. Yu, and B. Zitkovich. RT-1: Robotics Transformer for Real-World Control at Scale. In Robotics: Science and Systems XIX. Robotics: Science and Systems Foundation, July 2023. ISBN 978-0-9923747-9-2. doi:10.15607/RSS.2023.XIX.025.
+[21] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid, Q. Vuong, V. Vanhoucke, H. Tran, R. Soricut, A. Singh, J. Singh, P. Sermanet, P. R. Sanketi, G. Salazar, M. S. Ryoo, K. Reymann, K. Rao, K. Pertsch, I. Mordatch, H. Michalewski, Y. Lu, S. Levine, L. Lee, T.-W. E. Lee, I. Leal, Y. Kuang, D. Kalashnikov, R. Julian, N. J. Joshi, A. Irpan, B. Ichter, J. Hsu, A. Herzog, K. Hausman, K. Gopalakrishnan, C. Fu, P. Florence, C. Finn, K. A. Dubey, D. Driess, T. Ding, K. M. Choromanski, X. Chen, Y. Chebotar, J. Carbajal, N. Brown, A. Brohan, M. G. Arenas, and K. Han. RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control. In Proceedings of The 7th Conference on Robot Learning, pages 2165–2183. PMLR, Dec. 2023.
+10
+
+[22] Q. Li, Y. Liang, Z. Wang, L. Luo, X. Chen, M. Liao, F. Wei, Y. Deng, S. Xu, Y. Zhang, X. Wang, B. Liu, J. Fu, J. Bao, D. Chen, Y. Shi, J. Yang, and B. Guo. CogACT: A Foundational Vision-Language-Action Model for Synergizing Cognition and Action in Robotic Manipulation. Nov. 2024. doi:10.48550/arXiv.2411.19650.
+[23] J. Wen, Y. Zhu, J. Li, M. Zhu, Z. Tang, K. Wu, Z. Xu, N. Liu, R. Cheng, C. Shen, Y. Peng, F. Feng, and J. Tang. TinyVLA: Toward Fast, Data-Efficient Vision-Language-Action Models for Robotic Manipulation. IEEE Robotics and Automation Letters, 10(4):3988–3995, Apr. 2025. ISSN 2377-3766. doi:10.1109/LRA.2025.3544909.
+[24] A. Singletary, P. Nilsson, T. Gurriet, and A. D. Ames. Online active safety for robotic manipulators. In 2019 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 173–178. IEEE, 2019.
+[25] A. Singletary, W. Guffey, T. G. Molnar, R. Sinnet, and A. D. Ames. Safety-critical manipulation for collision-free food preparation. IEEE Robotics and Automation Letters, 7(4):10954– 10961, 2022.
+[26] M. A. Murtaza, S. Aguilera, V. Azimi, and S. Hutchinson. Real-time safety and control of robotic manipulators with torque saturation in operational space. In 2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 702–708. IEEE, 2021.
+[27] X. Ding, H. Wang, Y. Ren, Y. Zheng, C. Chen, and J. He. Online control barrier function construction for safety-critical motion control of manipulators. IEEE Transactions on Systems, Man, and Cybernetics: Systems, 54(8):4761–4771, 2024.
+[28] D. Morton and M. Pavone. Safe, task-consistent manipulation with operational space control barrier functions. In 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 187–194. IEEE, 2025.
+[29] K. Clark, U. Khandelwal, O. Levy, and C. D. Manning. What does bert look at? an analysis of bert’s attention. In Proceedings of the 2019 ACL workshop BlackboxNLP: analyzing and interpreting neural networks for NLP, pages 276–286, 2019.
+[30] E. Voita, D. Talbot, F. Moiseev, R. Sennrich, and I. Titov. Analyzing multi-head self-attention: Specialized heads do the heavy lifting, the rest can be pruned. In Proceedings of the 57th annual meeting of the association for computational linguistics, pages 5797–5808, 2019.
+[31] P. Michel, O. Levy, and G. Neubig. Are sixteen heads really better than one? Advances in neural information processing systems, 32, 2019.
+[32] S. Kang, J. Kim, J. Kim, and S. J. Hwang. Your Large Vision-Language Model Only Needs A Few Attention Heads For Visual Grounding. In 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 9339–9350, June 2025. doi: 10.1109/CVPR52734.2025.00872.
+[33] J. Jeong, E. Zhu, J. Lin, E. Jaimes, T.-A. Vu, J. Joo, S. Kim, and M. K. Jawed. Your VisionLanguage-Action Model Already Has Attention Heads For Path Deviation Detection. URL http://arxiv.org/abs/2603.13782.
+[34] A. Wang, L. Liu, H. Chen, Z. Lin, J. Han, and G. Ding. Yoloe: Real-time seeing anything. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 24591– 24602, 2025.
+[35] L. G. Khachiyan and M. J. Todd. On the complexity of approximating the maximal inscribed ellipsoid for a polytope. Technical report, Cornell University Operations Research and Industrial Engineering, 1990.
+11
+
+[36] Z. Wu and L. Liu. Collision-free Control Barrier Functions for General Ellipsoids via Separating Hyperplane. In 2025 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 19637–19644, Oct. 2025. doi:10.1109/IROS60139.2025.11247279.
+[37] M. H. Cohen, N. Csomay-Shanklin, W. D. Compton, T. G. Molnar, and A. D. Ames. Safety-Critical Controller Synthesis with Reduced-Order Models. In 2025 American Control Conference (ACC), pages 5216–5221. doi:10.23919/ACC63710.2025.11108063. URL https://ieeexplore.ieee.org/abstract/document/11108063.
+[38] T. G. Molnar and A. D. Ames. Safety-Critical Control with Bounded Inputs via Reduced Order Models. In 2023 American Control Conference (ACC), pages 1414–1421, May 2023. doi:10.23919/ACC55779.2023.10155871.
+[39] B. Stellato, G. Banjac, P. Goulart, A. Bemporad, and S. Boyd. OSQP: An Operator Splitting Solver for Quadratic Programs. In 2018 UKACC 12th International Conference on Control (CONTROL), pages 339–339, Sept. 2018. doi:10.1109/CONTROL.2018.8516834.
+[40] T. Dao. FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning. International Conference on Learning Representations, 2024:35549–35562, May 2024.
+[41] T. Dao, D. Fu, S. Ermon, A. Rudra, and C. Re´. FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness. Advances in Neural Information Processing Systems, 35: 16344–16359, Dec. 2022.
+12
+
+7 Appendix
+
+7.1 CBF-QP Safety Filter
+
+Separating-hyperplane CBF For two general ellipsoids ER and EO in R3, Wu and Liu [36] characterize the existence of a separating hyperplane {y | n⊤y = γ} through two functions,
+
+hR(n, γ) = n⊤cR − γ − n⊤QR n, hO(n, γ) = −n⊤cO + γ − n⊤QO n, (5)
+where the square-root terms are the support functions of the two ellipsoids along n. The conditions hR ≥ 0 and hO ≥ 0 jointly certify that ER and EO lie on opposite sides of the hyperplane, and hence that ER ∩ EO = ∅. The hyperplane parameters (n, γ) are treated as virtual states, with ∥n∥ = 1 enforced throughout.
+Because the obstacle ellipsoid EO is uncontrolled in our setting, we eliminate the hyperplane offset γ by summing the two functions, yielding a single combined function
+
+h(n) = n⊤(cR − cO) − n⊤QR n − n⊤QO n.
+
+(6)
+
+We retain the hyperplane normal n as a per-obstacle virtual state, initialized along the center-tocenter direction cR − cO and updated incrementally within the QP below. We note that enforcing h ≥ 0 is a relaxation of the joint condition hR ≥ 0∧hO ≥ 0 used in [36] to certify collision-freeness; the two coincide when the hyperplane is well-positioned between the two ellipsoids, which the center-to-center initialization and the bounded per-step normal update below encourage in practice. We therefore treat eq. (6) as a practical safety margin rather than a formal collision-free certificate, and validate its effectiveness empirically (section 4).
+
+Discrete-time CBF constraint At each control step we enforce the discrete-time CBF condi-
+
+tion [15]
+
+∆hj ≥ −γh hj, γh ∈ (0, 1],
+
+(7)
+
+for every obstacle j ∈ Otobs, where hj is eq. (6) evaluated for the pair (ER, Ej) with the current virtual normal n(j). This condition keeps hj from decreasing faster than the rate γh, i.e. hj(t+1) ≥ (1 − γh) hj(t). Linearizing hj about the current state gives the affine constraint
+
+∇cR hj · δcR + ∇RR hj · δθ + ∇n(j) hj · δn(j) ≥ −γh hj ,
+
+(8)
+
+where δcR ∈ R3 and δθ ∈ R3 are the translational and rotational increments to the end-effector pose, and δn(j) ∈ R3 is the increment to the virtual hyperplane normal. The gradients admit closed
+forms:
+
+∇cR hj = n(j), ∇RR hj = n(j) × QR n(j) ,
+n(j)⊤QR n(j)
+
+(9) (10)
+
+∇n(j) hj = (cR − cj ) −
+
+QR n(j)
+
+−
+
+n(j)⊤QR n(j)
+
+Qj n(j)
+
+.
+
+n(j)⊤Qj n(j)
+
+(11)
+
+The rotational gradient arises from the dependence of QR on the end-effector orientation and corresponds to the d = 3 form of Wu and Liu [36, eq. 26].
+
+QP Let (δcnRom, δθnom) denote the policy’s nominal action scaled to physical units. The safety filter solves
+
+min
+δcR, δθ, {δn(j)}
+
+∥δcR − δcRnom∥2 + W ∥δθ − δθnom∥2
+
+s.t. ∇cR hj · δcR + ∇RR hj · δθ + ∇n(j) hj · δn(j) ≥ −γh hj , ∀j ∈ Otobs, (12)
+
+∥δn(j)∥∞ ≤ ϵ,
+
+∀j ∈ Otobs,
+
+13
+
+where W trades off rotational against translational tracking and ϵ bounds the per-step change in each virtual normal, keeping the hyperplane estimates smooth across steps. eq. (12) is a convex QP, which we solve with OSQP [39]. After solving, we renormalize each virtual normal, n(j) ← (n(j) + δn(j))/∥n(j) + δn(j)∥, apply (δcR, δθ) to the policy’s commanded action (the gripper command passes through unmodified), and execute the result. If the QP is infeasible, we fall back to an emergency stop with zero translational and rotational deltas.
+Reduced-order safety The CBF in eq. (6) is defined over the end-effector pose (cR, RR), which we treat as a kinematic state directly commanded by the filtered action (δcR, δθ); the underlying robot dynamics are abstracted by a downstream operational-space controller (OSC) that tracks these commands. This layering is a standard reduced-order model (ROM) approach to safety-critical control [37, 38]: the CBF-QP enforces the safety condition on the ROM, and the guarantee transfers to the full system modulo the OSC’s tracking error. We do not characterize this error analytically; instead, we validate end-to-end safety through the collision-rate measurements in section 4.
+7.2 Extracting attention under fused kernels During each policy query we obtain an attention grid At ∈ Rg×g over the g2 vision tokens of the third-person image, from a single transformer layer ℓ and head h. This grid measures how strongly the action tokens the policy uses to decode at:t+H attend to each image patch, and it is obtained without an extra model evaluation, a backward pass, or any retraining, allowing for real-time control. However, obtaining this grid is not straightforward, as modern√VLAs run attention with fused kernels (via FlashAttention [40, 41]) that evaluate softmax(QK⊤/ d)V without ever materializing the T × T attention matrix in memory. Disabling FlashAttention so that the transformer returns its attention maps incurs too big of a cost for real-time applications. We instead leave the fused forward pass untouched and recompute only the single map we need:
+1. We attach lightweight forward hooks to each attention module that cache its input hidden states: the vision/language tokens in the VLM prefix stack and the action tokens in the action-expert suffix stack. Caching layer inputs is negligible relative to the forward pass and leaves the fused kernel unchanged.
+2. Once the policy has returned its actions, for the chosen layer ℓ we re-project the queries from the cached action tokens and the keys from the cached vision tokens of the selected camera, re-apply rotary position embeddings at their absolute sequence positions, expand the key hea√ds to match the query heads (grouped-query attention), and evaluate softmax(QactKv⊤is/ d) manually.
+This reconstructs attention for exactly one layer and only the action-query × vision-key block (H × g2 entries), instead of the full T × T map across all L layers, so the added work is one small matrix multiply and softmax. This is negligible in comparison to the policy’s full inference pass.
+14
+
+

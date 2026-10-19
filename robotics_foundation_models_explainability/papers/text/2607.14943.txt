@@ -1,0 +1,5421 @@
+Steering Robustness into World Action Models via Mechanistic Interpretability and Optimal Control
+
+Jihoon Hong‚ãÜ, Julian Skifstad‚ãÜ, Qiyue Dai, Alice Chan, Glen Chou
+Georgia Institute of Technology
+{jhong392, jskifstad3, qdai41, ichan30, chou}@gatech.edu ‚ãÜEqual contribution
+
+Website
+
+Code
+
+Video
+
+Abstract: World Action Models (WAMs) enable semantically- and physicallyinformed control but are brittle under distribution shift. In this work, we use mechanistic interpretability to study how robustness-relevant perturbations are represented in WAM activation space. Comparing activations across successful and unsuccessful rollouts, we find some WAM architectures exhibit low-dimensional linear separability for robustness-critical features, while others do not. This motivates the use of contrastive activation directions for training-free WAM steering. We also show that local linearity in WAM activation dynamics enables efficient feedback steering via model-based optimal control, yielding World-Action Linear Quadratic Regulator (WA-LQR), a minimally-invasive reduced-order LQR controller. Via mechanistic evaluations, we predict strong steerability in the CosmosPolicy and DiT4DiT models but weak steerability in LingBot-VA, consistent with steering intervention results. On Cosmos-Policy and DiT4DiT, WA-LQR generalizes contrastive directions to new tasks and improves robustness to camera, gripper, and visual-noise perturbations over unsteered and prompt steering baselines.
+Keywords: mechanistic interpretability, world action models, optimal control
+Ì†µÌ∞ÜÌ†µÌ∞´Ì†µÌ∞¢Ì†µÌ∞©Ì†µÌ∞©Ì†µÌ∞ûÌ†µÌ∞´ Ì†µÌ∞èÌ†µÌ∞®Ì†µÌ∞¨Ì†µÌ∞¢Ì†µÌ∞≠Ì†µÌ∞¢Ì†µÌ∞®Ì†µÌ∞ß Ì†µÌ∞ÇÌ†µÌ∞öÌ†µÌ∞¶Ì†µÌ∞ûÌ†µÌ∞´Ì†µÌ∞ö Ì†µÌ∞éÌ†µÌ∞´Ì†µÌ∞¢Ì†µÌ∞ûÌ†µÌ∞ßÌ†µÌ∞≠Ì†µÌ∞öÌ†µÌ∞≠Ì†µÌ∞¢Ì†µÌ∞®Ì†µÌ∞ß Ì†µÌ∞ÜÌ†µÌ∞öÌ†µÌ∞ÆÌ†µÌ∞¨Ì†µÌ∞¨Ì†µÌ∞¢Ì†µÌ∞öÌ†µÌ∞ß Ì†µÌ∞çÌ†µÌ∞®Ì†µÌ∞¢Ì†µÌ∞¨Ì†µÌ∞û
+
+arXiv:2607.14943v1 [cs.RO] 16 Jul 2026
+
+Ì†µÌ∞íÌ†µÌ∞ÆÌ†µÌ∞úÌ†µÌ∞úÌ†µÌ∞ûÌ†µÌ∞¨Ì†µÌ∞¨ Ì†µÌ∞ÖÌ†µÌ∞öÌ†µÌ∞¢Ì†µÌ∞•Ì†µÌ∞ÆÌ†µÌ∞´Ì†µÌ∞û
+
+Ì†µÌ∞çÌ†µÌ∞®Ì†µÌ∞≠ Ì†µÌ∞íÌ†µÌ∞≠Ì†µÌ∞ûÌ†µÌ∞ûÌ†µÌ∞´Ì†µÌ∞ûÌ†µÌ∞ù
+
+Ì†µÌ∞ñÌ†µÌ∞Ä-Ì†µÌ∞ãÌ†µÌ∞êÌ†µÌ∞ë
+
+Figure 1: WA-LQR makes World Action Models more robust to perturbations including gripperposition changes, camera-orientation shifts, and Gaussian sensor noise. In these Cosmos-Policy examples from LIBERO-10, the yellow and green boxes mark the two objects that must be placed in the basket. Without steering, the WAM fails; with WA-LQR, it succeeds.
+1 Introduction
+Foundation models have advanced robot learning through policies that generalize across objects, tasks, and environments. While VLA models map observations and instructions directly to actions, World Action Models (WAMs) additionally couple action prediction with future-state mod-
+
+eling through video-generative backbones [1‚Äì5]. This makes WAMs a promising route toward dynamically-coherent robot policies. However, they remain brittle under out-of-distribution shifts, including camera changes, robot initial-state perturbations, and visual corruption [5]. Because such nuisance factors are unavoidable in deployment and cannot be exhaustively covered with training data, it is essential to improve robustness without extensive new data collection or slow retraining.
+In this paper, we ask if the internal activations of WAMs reveal why they fail under such perturbations, and if these representations can be used to improve robustness without finetuning. We study perturbations to camera position, initial gripper position, and Gaussian image noise. Using mechanistic interpretability (MI), we compare activations from nominal and perturbed rollouts to test for simple linear geometric activation space structure. By evaluating the degree of linear separability across models, we find this structure is perturbation- and architecture-dependent, suggesting that some WAMs contain steerable representations of robustness-critical features, while others may not.
+By leveraging the degree of linear separability as a predictor of steerability, we can identify models that are well suited to training-free WAM activation steering, in which contrastive examples are used to construct directions that distinguish nominal from perturbed behavior. We use these directions for open-loop and closed-loop robustness interventions. In particular, we introduce World-Action Linear Quadratic Regulator (WA-LQR), a reduced-order optimal-control method that projects activations into a low-dimensional contrastive subspace and uses local linear dynamics to synthesize a closed-loop LQR steering controller. Unlike open-loop activation addition, WA-LQR adapts online, steering only when activations deviate from the target feature strength while penalizing large perturbations. We evaluate our mechanistic predictions and steering method on Cosmos-Policy [2], DiT4DiT [6], and LingBot-VA [7]. Our low-dimensional linear separability analysis predicts strong steerability for Cosmos-Policy and DiT4DiT and weak steerability for LingBot-VA, which empirical intervention results validate. On Cosmos-Policy, contrastive directions transfer across LIBERO tasks, and WA-LQR improves robustness to camera, gripper, and visual-noise perturbations over non-steered, prompt-steering, and several open-loop steering baselines. These results show that MI can diagnose WAM robustness and guide inference-time interventions. Our contributions are:
+‚Ä¢ We conduct a mechanistic analysis of WAM activations under robustness-relevant perturbations, identifying when nuisance features exhibit low-dimensional linear separability.
+‚Ä¢ We show that steerability is architecture-dependent: Cosmos-Policy [2] and DiT4DiT [6] exhibit clear linear structure across multiple perturbations, whereas LingBot-VA [7] exhibits substantially weaker separability. Moreover, we show that separability is strongly correlated with steerability, making it a useful diagnostic for identifying models that are amenable to activation steering.
+‚Ä¢ We leverage these insights to construct contrastive activation directions for training-free WAM steering. First, we adapt open-loop activation addition techniques from the LLM literature to WAMs. We then show that the local linearity of the diffusion transformer dynamics in a reduced WAM activation space enables the efficient closed-form synthesis of closed-loop steering controllers via WA-LQR. To the best of our knowledge, these are the first open- and closed-loop activation steering methods for WAMs.
+‚Ä¢ We evaluate WA-LQR on robustness benchmarks, showing that MI-based steerability predictions strongly correlate with intervention outcomes and that WA-LQR improves robustness on CosmosPolicy across multiple perturbation types.
+2 Related Work
+WAMs. Foundation models have enabled general-purpose robotic policies that map observations to actions [1, 8‚Äì14]. VLA models are often reactive action predictors and do not explicitly model how the world evolves under robot interventions, limiting long-horizon reasoning and robustness under distribution shift [5, 15]. WAMs address this by coupling action generation with future-state prediction, often adapting video generative backbones to robotic data [2‚Äì4, 16]. Existing WAMs include inverse-dynamics-style models, where predicted futures are decoded into actions [17‚Äì21], and unified video-action models, where future states and actions are generated jointly [2‚Äì4]. We study both families and show that steerable, robot-relevant activation structure is architecture-dependent.
+2
+
+Robustness of Action Models. Despite progress in general-purpose robot policies, robustness remains a major deployment obstacle. Benchmarks such as VLATest, COLOSSEUM, and LIBEROPlus expose brittleness to camera viewpoint, robot initial state, object layout, lighting, background texture, sensor noise, and language phrasing [22‚Äì26]. Prior studies suggest that robustness gains often require data diversity, wrist-camera observations, RL post-training, or robustness-oriented finetuning rather than arising from inherently stable representations [27‚Äì30]. WAMs aim to improve robustness with future-state modeling and video-based priors [2‚Äì4, 19, 21, 31], but still fail under shifts such as camera viewpoint and robot initial-state changes [5]. This motivates inference-time methods that improve robustness without exhaustive perturbation data or costly retraining.
+MI and Activation Steering. MI identifies internal representations that modulate model behavior [32, 33]. In LLMs, many semantic features appear approximately linear in activation space, motivating activation steering: inference-time hidden-state modifications that change behavior without retraining [34‚Äì38]. Most methods compute contrastive directions from examples with and without a target concept, then add or transform activations to steer behaviors [39‚Äì46]. Because these interventions are often layer-local and open-loop, recent work models activations as dynamical systems and uses feedback for more targeted steering [47‚Äì51]. Activation steering has also begun to extend to image and video generators [52‚Äì55], where semantics are distributed across text, spatial, temporal, timestep, and layer representations. WAMs add a further challenge: their activations affect not only generated visual content, but also action-relevant predictions that determine robot behavior.
+Relatively little work applies MI to robotic foundation models, and existing studies focus on VLAs. Prior work identifies steerable VLA activation directions [56], formalizes feature observability and controllability [57], finetunes task-relevant attention heads [58], discovers SAE-based motion primitives [59], measures causal reliance on visual regions [60], and uses activation injection, probes, sparse latents, or conceptor subspaces to analyze and steer VLA behavior [61‚Äì63]. In contrast, we study WAMs, whose DiT-style video backbones jointly encode future visual states, action dynamics, and control outputs. We show that WAM steerability is architecture-dependent and develop feedback-based steering that treats WAM inference as a reduced-order dynamical system.
+
+3 Preliminaries and Problem Statement
+
+Linear Quadratic Regulator (LQR) The LQR problem (1) [64] seeks a controller that minimizes a quadratic state-control cost (1) for linear time-varying dynamics (1b)
+
+min
+{uk }kH=‚àí11
+
+H ‚àí1
+
+L :=
+
+zk‚ä§Qkzk + uk‚ä§Rkuk + zH‚ä§ QH zH
+
+k=1
+
+(1a)
+
+subject to zk+1 = Akzk + Bkuk, ‚àÄk = 1, . . . , H ‚àí 1.
+
+(1b)
+
+where Qk ‚™∞ 0 penalizes state error and Rk ‚âª 0 penalizes control effort. The optimal policy has closed form uk‚àó = ‚àíKkzk, where Kk is obtained efficiently via Riccati recursions. Given a set of nominal setpoints {(z¬Øk, u¬Øk)}k=1,¬∑¬∑¬∑ ,H , (1) can be generalized to penalize deviations Œ¥zk := zk ‚àí z¬Øk
+and Œ¥uk := uk ‚àí u¬Øk from the setpoints. By modifying (1) to
+
+H ‚àí1
+
+min
+{Œ¥uk }H k=‚àí11
+
+Œ¥zk‚ä§QkŒ¥zk + Œ¥u‚ä§k RkŒ¥uk + Œ¥zH‚ä§ QH Œ¥zH
+k=1
+
+(2a)
+
+subject to Œ¥zk+1 = AkŒ¥zk + BkŒ¥uk, k = 1, . . . , H ‚àí 1,
+
+(2b)
+
+the solution admits a closed-form tracking controller uk‚àó := u¬Øk ‚àí KkŒ¥zk. When the dynamics zk+1 = f (zk, uk) are non-linear, similar formulations to (2) are possible by letting Ak =
+‚àázk f (zk, uk) and Bk = ‚àáuk f (zk, uk), and approximating Œ¥zk+1 ‚âà AkŒ¥zk + BkŒ¥uk assuming local linearity.
+
+WAM Architectures While the two types of WAMs vary in architecture, they both build on Dif-
+
+fusion Transformer (DiT) based video generation models [65]. Starting from a random latent action
+
+representation xÀÜT ‚àº N (0, I), these models are used to gradually denoise it to a clean xout by
+
+xÀÜt‚àí1 = STEP(xÀÜt, t, M (xÀÜt, t, h)), xout = DEC(xÀÜ1),
+
+(3)
+
+3
+
+Cosmos-Policy
+
+First
+Condition positive negative
+
+PC3
+
+Best
+PC3
+
+Last
+PC3
+
+PC1
+
+PC2 Block 0
+
+avg loss: 0.0000
+
+PC1
+
+PC2 Block 2
+
+avg loss: 0.0000
+
+PC1
+
+PC2 Block 27
+
+avg loss: 0.1645
+
+First
+
+Best
+
+Last
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 Block 0
+
+avg loss: 0.5501
+
+PC1
+
+PC2 Block 21
+
+avg loss: 0.0854
+
+PC1
+
+PC2 Block 27
+
+avg loss: 0.3930
+
+DiT4DiT
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 Block 0
+
+avg loss: 0.8877
+(a)
+
+PC1
+
+PC2 Block 4
+
+avg loss: 0.0000
+
+PC1
+
+PC2 Block 15
+
+avg loss: 0.0000
+
+PC1
+
+PC2 Block 0
+
+avg loss: 0.2626
+(b)
+
+PC1
+
+PC2 Block 8
+
+avg loss: 0.2626
+
+PC1
+
+PC2 Block 15
+
+avg loss: 0.2626
+
+Figure 2: On Task 0 of LIBERO-10 [22], we evaluate (a) activations corresponding to noiseperturbed and clean inputs on the first, best intermediate, and final DiT block residual stream for Cosmos-Policy 2B and DiT4DiT [2, 6]. Activations are projected onto the top three principal components, with the reported SVM (gray) and hinge loss. (b) Repeated for camera perturbations.
+
+where h is the embedding of the task prompt p, M is the model, STEP is a choice of ODE solver, and DEC decodes latent actions. Typically, M is a sequence of L DiT layers œï(l) for l = 0, ¬∑ ¬∑ ¬∑ , L ‚àí 1:
+
+x0,t := Tok(xÀÜt),
+
+xl+1,t = œï(l)(xl,t, t, h),
+
+M (xÀÜt, t, h) := Detok(xL,t).
+
+(4)
+
+After block L, the WAM output is detokenized and passed to the model scheduler (3). We treat the scheduler transition in (3) as the mechanism that chains together T independent L-horizon withindenoising-timestep controllers. In this work, we will perform activation steering by adding control inputs inside the DiT blocks. Let ul,t denote these perturbations. The steered WAM block is
+
+xl+1,t = fl,t(xl,t, ul,t) := œï(l)(xl,t, t, h) + ul,t.
+
+(5)
+
+Problem Statement In this paper, we use MI to identify robustness-relevant features in WAM activation space and use these features for training-free robustness improvement via activation steering.
+Problem 1: Linear feature discovery in WAM activation space (Sec. 4). Given a WAM, determine whether a target nuisance feature is represented by approximately linear directions in WAM activation space. Concretely, for each layer l and denoising timestep t, we seek low-dimensional projections Pl,t and linear directions vl,t such that the projected activations of Œæ+ and Œæ‚àí are separable.
+Problem 2: Training-free robustness steering (Sec. 5). Given a WAM, synthesize an open- or closedloop inference-time steering policy that modifies activations and modulates the features discovered in Problem 1.
+
+4 A Mechanistic Study for Interpreting WAMs
+A central assumption in the activation steering literature is that model activation spaces exhibit simple, interpretable geometric structure, across domains including LLMs, VLAs, and video generation models [41, 42, 51, 55, 56]. Specifically, most steering algorithms assume linear semantic feature directions, as determined by the emergent linear separability of activations corresponding to semantically contrastive inputs [43, 66]. However, the existence of this structure in WAMs is not guaranteed, despite the steerable foundation model backbone. Indeed, prior work has shown that such representations are fragile to the finetuning process undergone by robotics foundation models [56, 67].
+Setup We study the emergent geometry in robustness features for WAMs, specifically CosmosPolicy 2B, DiT4DiT, and LingBot-VA [2, 6, 7]. We consider contrastive datasets related to three key sources of sensitivity in WAM manipulation tasks: perturbation to initial gripper position, initial camera position, and corruption of camera inputs with Gaussian noise. We collect activations corresponding to each dataset through a full model forward pass. That is, for prompts p+ ‚àà D+,
+
+4
+
+p‚àí ‚àà D‚àí where, e.g., D+ = {Clean inputs}, D‚àí = {Noised inputs}, we collect DiT activations xpt,+‚Ñì and xpt,‚àí‚Ñì for all t, ‚Ñì. Typically, DiT activations have a shape of (F, H, W, D), for some token frame, height, width and hidden dimension F < H ‚â§ W ‚â™ D, making direct storage in-
+tractable for a substantial sample size. Thus, for this section, we consider an average pooling over the token position, resulting in a summarized activation x¬Ø ‚àà RD for all sampled activations. We
+also perform an average pooling over robot action chunk timesteps; see Sec. 5.1 for details.
+
+Given contrastive sets of activations {x¬Ø+k }k and {x¬Ø‚àík }k, we define a contrastive direction
+
+dk = x¬Øk+ ‚àí x¬Ø‚àík .
+
+(6)
+
+Inspired by [66], we consider a simple geometric evaluation of the separability of contrastive datasets
+
+via principal component analysis (PCA) conducted on the set of contrastive directions, {dk}k. With the objective of enabling linear feature-based steering, we seek to identify linear separability of
+
+contrastive datasets. Note that in the high dimensionality of the original mean-pooled system, N
+
+samples with N ‚â™ D are trivially linearly separable, rendering analysis in the full-dimensional
+
+space uninformative. Hence, we consider a low-dimensional approximation of the data. In fact, we
+
+find in a later section (Sec. 6.1) that the contrastive directions are well summarized by as few as
+
+three principal components.
+
+Projecting the contrastive activations x¬Ø+ and x¬Ø‚àí onto the top three PCs, we construct a quantitative metric for the linear separability of the pairs of contrastive datasets. In particular, we fit a linear support vector machine (SVM) to the contrastive activations in three dimensions, and measure the classification loss as the average hinge loss per sample [68],
+
+1 loss(D+, D‚àí) = N
+
+max(0, 1 ‚àí yi(wT x¬Øi + b)),
+
+(7)
+
+i‚àà[N ]
+
+where {x | wT x + b = 0} denotes the SVM hyperplane and yi ‚àà {‚àí1, 1}. Intuitively, this measures how well the three-dimensional linear SVM distinguishes the two datasets, where perfect
+
+classification yields a loss of 0, and random classification yields a loss of 1.
+
+Results We perform this analysis across the perturbations for all 10 tasks of the LIBERO-10 dataset [22], and visualize the results for Cosmos-
+
+First
+
+Cond. / Task
+
+task 6 positive
+
+task 6 negative
+
+task 0 positive task 0 negative
+
+PC3
+
+Best
+PC3
+
+Last
+PC3
+
+Tasks 6&0
+
+Policy in Fig. 2 (further evaluations are provided in App. E, including for
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k000
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k001
+
+PC1
+
+avg
+
+PC2 lossB: l0o.c1k06287
+
+DiT4DiT [6]). Notably, we find that
+
+Tasks 6&1
+
+the separability of different features is highly task-dependent, indicating that
+
+PC3
+
+PC3
+
+PC3
+
+the latent representation corresponding to the same perturbation is not always shared across different scenes
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k000
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k001
+
+PC1
+
+avg
+
+PC2 lossB: l0o.c1k01227
+
+and tasks. A key observation of
+
+Tasks 6&4
+
+this study is that certain combinations
+
+PC3
+
+PC3
+
+PC3
+
+of tasks share feature representations
+
+corresponding to the same input perturbation ‚Äì see Fig. 3 for an exam-
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k000
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k002
+
+PC1
+
+avg
+
+PC2 lossB: l0o.c1k82297
+
+ple with Cosmos-Policy. Using these
+
+Tasks 6&7
+
+clustered features, we are able to construct steering objectives which gener-
+
+PC3
+
+PC3
+
+PC3
+
+alize across tasks, as discussed in the following sections. This observation enables the activation steering formulation in Sec. 5.
+Applying the same analysis to the action inference activations for LingBot-
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k000
+
+PC1
+
+avg
+
+PC2 loss:B0l.o0c0k001
+
+PC1
+
+avg
+
+PC2 lossB: l0o.c0k30297
+
+Figure 3: Pairwise separability for Cosmos-Policy under Gaussian noise corruption. Across task pairs, high linear separability and shared feature clusters suggest reusable representations that can be exploited for activation steering.
+
+5
+
+Figure 4: Activations from camera-perturbed and clean LingBot-VA inputs at the first, best intermediate, and final transformer block residual streams. We observe much weaker separability than in the Cosmos-Policy setting.
+
+VA yields substantially milder results. Across tasks and perturbations, we observe little to no separability as reported by the SVM loss, as well as qualitatively by inspection (see Fig. 4).
+
+5 Activation Steering for Robustifying WAMs
+
+Motivated by the MI results of Sec. 4, we give an overview of our steering method. We first construct contrastive vectors isolating the desired robustness feature and discuss a simple open-loop method for steering WAMs with the contrastive vectors (Sec. 5.1). We also propose a reduced-order LQR-based steering approach (Sec. 5.2) to enable scalable control-theoretic steering for WAMs.
+
+5.1 Open-Loop Activation Addition from Contrastive Vectors Given paired inputs (Œæn+, Œæn‚àí) that differ primarily in a desired feature, e.g., nominal versus perturbed camera pose or clean versus corrupted observations, we compute contrastive activation directions by subtracting hidden states from the two forward passes (App. A). For layer l, denoising timestep t, and action-chunk timestep œÑ ‚àà [Ha], this gives
+
+d(l,nt,)œÑ := x(l,Œætn+,œÑ) ‚àí x(l,Œætn‚àí,œÑ).
+
+(8)
+
+We thus describe the simplest contrastive steering method: activation addition (ActAdd) [41]. Ac-
+
+tAdd assumes that the target feature is roughly linear in activation space. A steering vector is formed
+
+by averaging contrastive directions (8) over pairs/action-chunk positions
+
+al,t
+
+:=
+
+1 N Ha
+
+N Ha
+d(l,nt,)œÑ .
+n=1 œÑ =1
+
+(9)
+
+At inference time, ActAdd steers by adding al,t with strength Œ≥:
+
+xl,t,œÑ ‚Üê xl,t,œÑ + Œ≥al,t,
+
+‚àÄœÑ ‚àà [Ha].
+
+(10)
+
+The same direction is applied across all action-chunk timesteps, with Œ≥ setting steering strength: positive values push toward Œæ+, while negative values reverse the effect. ActAdd is training-free and weight-preserving, but open-loop: it ignores the current activation, WAM dynamics, and whether the feature is already at the desired strength, which can cause oversteering and action degradation.
+
+5.2 Steering Latent World Activation Dynamics via WA-LQR
+WA-LQR generalizes ActAdd with feedback control, adapting the T2V steering method of [55] to WAMs. Instead of adding a fixed Œ≥al,t, it projects contrastive vectors into a latent feature space, measures deviation from a latent setpoint, and computes a minimum-cost LQR intervention. Thus, it preserves ActAdd‚Äôs training-free nature while adapting interventions to the realized WAM activation.
+
+Dimensionality Reduction As in T2V models [55], full activation-space LQR is infeasible due to the high dimensionality of WAM activations. We instead assume (and validate in Sec. 6) that robustness-relevant factors lie largely in a low-dimensional contrastive subspace. For each layerdenoising pair (l, t), we construct this subspace by pooling contrastive directions (8) over prompt pairs and action-chunk timesteps, then applying streaming randomized singular value decomposition (SVD) [69] to the matrix whose rows are {d(l,nt,)œÑ : n ‚àà [N ], œÑ ‚àà [Ha]}. This yields a compact
+
+6
+
+orthonormal basis Vl,t ‚àà Rdx√ódz with dz ‚â™ dx. Define the projection matrix Pl,t := Vl‚ä§,t ‚àà
+
+Rdz√ódx , which is shared across robot action-chunk timesteps œÑ ‚àà [Ha]. For each (l, t, œÑ ), define
+
+the latent activation zl,t,œÑ := Pl,txl,t,œÑ ‚àà Rdz . Let Al,t and Bl,t denote the raw Jacobians of
+
+the controlled block dynamics in (5) along a nominal trajectory:
+
+Al,t
+
+:=
+
+‚àÇ fl,t ‚àÇx
+
+, B x¬Øl,t,u¬Øl,t
+
+l,t
+
+:=
+
+‚àÇ fl,t ‚àÇu
+
+. x¬Øl,t,u¬Øl,t The reduced latent dynamics are
+
+Œ¥zl+1,t,œÑ ‚âà Al,tŒ¥zl,t,œÑ + Bl,tŒ¥ul,t,œÑ ,
+
+l = 0, . . . , L ‚àí 1,
+
+(11)
+
+where Al,t := Pl+1,tAl,tPl‚ä§,t ‚àà Rdz√ódz and Bl,t := Pl+1,tBl,t ‚àà Rdz√ódu . Neither Al,t nor Bl,t is materialized explicitly; products with Al,t and Bl,t are computed efficiently using Jacobian-vector products (JVPs) or vector-Jacobian products (VJPs).
+
+Defining Feature Setpoints We define feature setpoints in the latent space for robustness-relevant WAM features. We first compute a latent contrastive direction averaged over action chunk indices
+
+ezl,t
+
+:=
+
+1 N Ha
+
+N Ha Pl,t(x(l,Œætn+,œÑ)
+n=1 œÑ =1
+
+‚àí xl(,Œætn‚àí,œÑ)),
+
+vlz,t
+
+:=
+
+elz,t ‚à•ezl,t‚à•2
+
+.
+
+(12)
+
+For a realized latent activation zl,t,œÑ , the feature strength is Œ≤lz,t,œÑ := (vlz,t)‚ä§zl,t,œÑ . We set the desired feature strength as Œ≤lz,,t‚àó := Œª‚à•elz,t‚à•2, where Œª controls steering strength. The feature tracking error for action-chunk timestep œÑ is Œ±l,t,œÑ := Œ≤lz,,t‚àó ‚àí (vlz,t)‚ä§zl,t,œÑ , with Œ¥zl,t,œÑ := ‚àíŒ±l,t,œÑ vlz,t. Thus, Œ¥zl,t,œÑ is the latent tracking error that, if corrected, would bring the chunk-œÑ activation to the desired feature
+setpoint along the contrastive direction.
+
+Reaching Feature Setpoints via WA-LQR Using the latent dynamics in (11), we compute LQR controllers that steer WAM activations toward the feature setpoints. Unlike the T2V setting [55], we do not solve one T √óL-step LQR over both transformer blocks and scheduler transitions. Instead, for each chunk index œÑ and denoising timestep t, we solve an independent L-step LQR over the transformer blocks:
+
+min
+{Œ¥ ul,t }Ll=‚àí01
+
+L‚àí1
+Œ¥zl‚ä§,tQl,tŒ¥zl,t + Œ¥u‚ä§l,tRlc,htunk(œÑ )Œ¥ul,t + Œ¥zL‚ä§,tQL,tŒ¥zL,t
+l=0
+
+(13)
+
+s.t. Œ¥zl+1,t = Al,tŒ¥zl,t + Bl,tŒ¥ul,t, l = 0, . . . , L ‚àí 1.
+
+The control penalty incorporates an action-decay schedule over robot action chunk indices. Let œÑ ‚àà {0, . . . , Ha ‚àí 1} index the action chunks executed over time. For chunk œÑ , we set r(œÑ ) := min(Rfinal, Rinit exp(œÑ /œÑR)), where Rinit is the initial steering penalty, Rfinal is a large saturation value, and œÑR controls the decay rate. The LQR control-cost matrix at chunk œÑ is then Rlc,htunk(œÑ ) := r(œÑ )Idu , which is directly used in LQR (13). Since r(œÑ ) increases with œÑ and saturates at Rfinal, steering is strongest for early chunks and gradually decays as the robot proceeds. A larger œÑR slows this growth, causing more chunks to be steered before saturation. In our experiments, Rfinal is chosen large enough that saturated chunks receive negligible steering. Notably, (13) can be efficiently solved in O(Ld3z) time [70] on the CPU or O(log L ¬∑ log2 dz) on the GPU [71].
+For each action chunk index œÑ and denoising timestep t, solving (13) yields gains Kl,t,œÑ ‚àà Rdu√ódz , which are used only within the corresponding denoising pass. At inference time, the controller is
+
+ul‚àó,t,œÑ := u¬Øl,t,œÑ ‚àí Kl,t,œÑ Œ¥zl,t,œÑ = u¬Øl,t,œÑ + Kl,t,œÑ Œ±l,t,œÑ vlz,t.
+
+(14)
+
+When u¬Øl,t,œÑ = 0, the intervention magnitude is proportional to the online feature-tracking error for robot action chunk œÑ . The chunk-specific policy Kl,t,œÑ is then applied to the activation at the corresponding action-chunk index. The full WA-LQR procedure chains the T per-timestep controllers through WAM inference. For action chunk index œÑ and denoising timestep t, we apply the L feedback gains {K0,t,œÑ , . . . , KL‚àí1,t,œÑ } inside the DiT blocks, as in (5). At each chunk index œÑ , the steered block output xL,t is then passed to the scheduler, which produces xÀÜt‚àí1 and initializes the
+
+7
+
+next denoising pass, yielding T chained L-step LQR controllers. Compared with open-loop ActAdd, WA-LQR adapts to the realized latent activation at each layer and denoising timestep, steering only when the WAM deviates from the desired robustness feature setpoint.
+
+6 Results
+In this section, we evaluate whether the mechanistic structure identified above can be used to improve WAM robustness through activation steering. We first assess the validity of the assumptions made by WA-LQR to justify its applicability to WAM steering (Sec. 6.1). Next, we compare openloop activation addition (ActAdd) and closed-loop WA-LQR across Cosmos-Policy, DiT4DiT, and LingBot-VA under OOD perturbations to camera orientation, initial gripper position, and camera noise (Sec. 6.2). Overall, the results show that steering is effective when feature-relevant activations are linearly separable, improving success rates by up to 41%. WA-LQR further improves robustness while helping avoid oversteering in settings where open-loop control is less reliable. See App. D for further experimental details.
+
+6.1 Activation Properties
+
+We first empirically verify the assump-
+
+Ì†µÌøè.Ì†µÌøé
+
+Ì†µÌ∞ÑÌ†µÌ∞±Ì†µÌ∞©Ì†µÌ∞•Ì†µÌ∞öÌ†µÌ∞¢Ì†µÌ∞ßÌ†µÌ∞ûÌ†µÌ∞ù Ì†µÌ∞ïÌ†µÌ∞öÌ†µÌ∞´Ì†µÌ∞¢Ì†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞úÌ†µÌ∞û
+Ì†µÌøé.Ì†µÌøì@Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞§ = Ì†µÌøë Ì†µÌøé.Ì†µÌøó@Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞§ = Ì†µÌøî Ì†µÌøé.Ì†µÌøóÌ†µÌøó@Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞§ = Ì†µÌøèÌ†µÌøó
+
+tions that enable LQR-based steering of
+
+Ì†µÌøé.Ì†µÌøñ
+
+latent activations: 1) preservation of the
+
+information in the contrastive vectors
+
+Ì†µÌøé.Ì†µÌøî
+
+in the latent subspace and 2) linearity
+
+Ì†µÌøé.Ì†µÌøí
+
+of the WAM dynamics within the sub-
+
+space. We first study contrastive infor-
+
+Ì†µÌøé.Ì†µÌøê
+
+mation preservation. In Fig. 6 we show
+that the variance of contrastive vectors
+projected to a 64-dimensional latent subspace, Pl,t(xl(,Œætn+,œÑ) ‚àíxl(,Œætn‚àí,œÑ)), is mostly captured by the top few dimensions.
+This is caused by rapid decay of singu-
+
+Ì†µÌøé.Ì†µÌøé
+
+Ì†µÌøèÌ†µÌøé Ì†µÌøêÌ†µÌøé Ì†µÌøëÌ†µÌøé Ì†µÌøíÌ†µÌøé Ì†µÌøìÌ†µÌøé Ì†µÌøîÌ†µÌøé
+
+Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞§
+
+Figure 6: Cumulative variance of latent contrastive vectors for camera orientation perturbation on Cosmos-Policy 2B [2] explained by the top-k singular vectors.
+
+lar values, which suggests that the influence of perturbations such as the change in camera orientation
+
+on activations manifests in a significantly lower dimensional subspace compared to raw activations.
+
+To assess dynamics linearity, we observe that WAMs are locally linear (aligned with recent discoveries in LLM [51] and T2V [55] models), which allows them to be effectively steered using LQR.
+
+Fig. 5(a) shows the cosine similarity and the magnitude ratio between Pl+1,tœï(l) xl,t + PlT,tœµ, t, h and Pl+1,tœï(l) (xl,t, t, h) + AÀúl,tœµ for random perturbation œµ whose norm is proportional to that of ‚à•xl,t‚à•. The cosine similarities and magnitude ratios remain close to 1 throughout inference, demon-
+
+Ì†µÌøè.Ì†µÌøé
+
+Ì†µÌøè.Ì†µÌøé
+
+Ì†µÌøé.Ì†µÌøóÌ†µÌøñ
+
+Ì†µÌøé.Ì†µÌøóÌ†µÌøî
+
+Ì†µÌøé.Ì†µÌøñ
+
+Ì†µÌøé.Ì†µÌøóÌ†µÌøí
+
+Ì†µÌøé.Ì†µÌøóÌ†µÌøê
+
+Ì†µÌ∞ìÌ†µÌ∞öÌ†µÌ∞¨Ì†µÌ∞§ Ì†µÌøé Ì†µÌ∞ìÌ†µÌ∞öÌ†µÌ∞¨Ì†µÌ∞§ Ì†µÌøê Ì†µÌ∞ìÌ†µÌ∞öÌ†µÌ∞¨Ì†µÌ∞§ Ì†µÌøí Ì†µÌ∞ìÌ†µÌ∞öÌ†µÌ∞¨Ì†µÌ∞§ Ì†µÌøì Ì†µÌ∞ìÌ†µÌ∞öÌ†µÌ∞¨Ì†µÌ∞§ Ì†µÌøó (Ì†µÌ∞•, Ì†µÌ∞≠)=(Ì†µÌøî,Ì†µÌøé)
+
+(Ì†µÌ∞•, Ì†µÌ∞≠)=(Ì†µÌøèÌ†µÌøí,Ì†µÌøê)
+
+Ì†µÌøé.Ì†µÌøî
+
+Ì†µÌøè.Ì†µÌøêÌ†µÌøé
+
+Ì†µÌøé.Ì†µÌøí
+
+Ì†µÌøè.Ì†µÌøèÌ†µÌøì
+
+Ì†µÌøè.Ì†µÌøèÌ†µÌøé
+
+Ì†µÌøè.Ì†µÌøéÌ†µÌøì
+
+Ì†µÌøé.Ì†µÌøê
+
+Ì†µÌøè.Ì†µÌøéÌ†µÌøé
+
+Ì†µÌøé.Ì†µÌøóÌ†µÌøì
+(Ì†µÌ∞•, Ì†µÌ∞≠)
+
+(Ì†µÌ∞•, Ì†µÌ∞≠)=(Ì†µÌøêÌ†µÌøì,Ì†µÌøí)
+
+Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞ßÌ†µÌ∞ùÌ†µÌ∞®Ì†µÌ∞¶
+
+Ì†µÌøé.Ì†µÌøé
+
+(Ì†µÌ∞ö)
+
+(Ì†µÌ∞õ)
+
+Figure 5: (a) The cosine similarity/magnitude ratio between the linear approximation using AÀúl,t and
+
+actual latent activation, under change in camera orientation. (b) Overlap between subspaces spanned
+
+by 16 top right singular vectors of AÀúl,t matrices, obtained from 25 random inputs across 5 tasks.
+
+Ì†µÌ∞åÌ†µÌ∞öÌ†µÌ∞†Ì†µÌ∞ßÌ†µÌ∞¢Ì†µÌ∞≠Ì†µÌ∞ÆÌ†µÌ∞ùÌ†µÌ∞û Ì†µÌ∞ëÌ†µÌ∞öÌ†µÌ∞≠Ì†µÌ∞¢Ì†µÌ∞® Ì†µÌ∞ÇÌ†µÌ∞®Ì†µÌ∞¨Ì†µÌ∞¢Ì†µÌ∞ßÌ†µÌ∞û Ì†µÌ∞íÌ†µÌ∞¢Ì†µÌ∞¶Ì†µÌ∞¢Ì†µÌ∞•Ì†µÌ∞öÌ†µÌ∞´Ì†µÌ∞¢Ì†µÌ∞≠Ì†µÌ∞≤
+
+8
+
+Table 1: LIBERO-10 [22] success rates on Cosmos-Policy 2B [2]. Task i ‚Üí Task j denotes all
+
+Pl,t, AÀúl,t, BÀúl,t matrices, elz,t vectors are computed with task i, and used to steer task j. 30 trials/task.
+
+Perturbation
+
+Tasks
+
+No
+
+Prompt
+
+ActAdd WA-LQR
+
+Steering Steering
+
+[41]
+
+[72]
+
+Camera Orientation
+
+Task 0 ‚Üí Task 0 Task 0 ‚Üí Task 2 Task 0 ‚Üí Task 4 Task 0 ‚Üí Task 5 Task 0 ‚Üí Task 9
+
+33.3%¬±8.6% 40.0%¬±8.9% 43.3%¬±9.0% 60.0%¬±8.9% 63.3%¬±8.8% 60.0%¬±8.9% 73.3%¬±8.1% 70.0%¬±8.4% 10.0%¬±5.5% 6.7%¬±4.6% 16.7%¬±6.8% 13.3%¬±6.2% 56.7%¬±9.0% 70.0%¬±8.4% 56.7%¬±9.0% 83.3%¬±6.8% 66.7%¬±8.6% 56.7%¬±9.0% 56.7%¬±9.0% 70.0%¬±8.4%
+
+Average
+
+46.0%¬±4.1% 46.7%¬±4.1% 49.3%¬±4.1% 59.3%¬±4.0%
+
+Initial Gripper Position
+
+Task 1 ‚Üí Task 1 Task 1 ‚Üí Task 2 Task 1 ‚Üí Task 3 Task 1 ‚Üí Task 7 Task 1 ‚Üí Task 9
+
+46.7%¬±9.1% 46.7%¬±9.1% 66.7%¬±8.6% 60.0%¬±8.9% 83.3%¬±6.8% 83.3%¬±6.8% 80.0%¬±7.3% 100.0%¬±0.0% 46.7%¬±9.1% 53.3%¬±9.1% 56.7%¬±9.0% 60.0%¬±8.9% 80.0%¬±7.3% 63.3%¬±8.8% 60.0%¬±8.9% 83.3%¬±6.8% 50.0%¬±9.1% 56.7%¬±9.0% 53.3%¬±9.1% 60.0%¬±8.9%
+
+Average
+
+61.3%¬±4.0% 60.7%¬±4.0% 63.3%¬±3.9% 72.7%¬±3.6%
+
+Camera Gaussian Noise
+
+Task 6 ‚Üí Task 0 Task 6 ‚Üí Task 1 Task 6 ‚Üí Task 4 Task 6 ‚Üí Task 6 Task 6 ‚Üí Task 7
+
+3.3%¬±3.3% 0.0%¬±0.0% 53.3%¬±9.1% 0.0%¬±0.0% 10.0%¬±5.5% 0.0%¬±0.0% 36.7%¬±8.8% 3.3%¬±3.3% 30.0%¬±8.4% 0.0%¬±0.0%
+
+43.3%¬±9.0% 33.3%¬±8.6% 70.0%¬±8.4% 73.3%¬±8.1% 80.0%¬±7.3% 53.3%¬±9.1% 76.7%¬±7.7% 73.3%¬±8.1% 66.7%¬±8.6% 60.0%¬±8.9%
+
+Average
+
+26.7%¬±3.6% 0.7%¬±0.7% 67.3%¬±3.8% 58.7%¬±4.0%
+
+strating that the latent dynamics are well captured by a first-order approximation. Furthermore, we find that the matrices AÀúl,t are highly similar across different inputs.
+Motivated by the concentration of variance on the top few singular vectors, we visualize in Fig. 5(b) the overlap between the subspaces spanned by the top 16 right singular vectors of AÀúl,t over 25 random inputs from 5 different tasks, measured by the mean squared cosine of principal angles (as
+inspired by a similar metric in [51]). While not shown here, the left singular vectors also demonstrate significant overlap, enabling the reuse of AÀúl,t computed from a single input for steering model behavior on other tasks.
+
+6.2 Steering to Improve Robustness
+
+Hinge Loss
+
+We leverage the mechanistic insights from
+
+1.0
+
+Sec. 4 to inform steering objectives designed
+
+0.8
+
+to improve robustness to OOD perturbations in Cosmos-Policy 2B [2], DiT4DiT [6], and
+
+0.6
+
+LingBot-VA [7], using WA-LQR (Sec. 5.2) and
+
+0.4
+
+a variant of simple activation addition adapted
+
+0.2
+
+rW=A-L0.Q63R ActAdd
+
+to WAMs (Sec. 5.1) [41]. Specifically, we seek to improve success rate under perturbations to initial gripper position, camera orientation, and Gaussian noise corruption in the image data, applied to LIBERO-10 evaluation tasks [22]. According to the mechanistic analysis, it is infeasible to construct linear feature directions that apply for all scenes and tasks (see App. E).
+
+0.0 0.2
+Succ2e0ss rat0e (St2e0ered 40Unste6e0red)
+Figure 7: Hinge loss vs. steering performance across tasks and models, with reported line of best fit (red) and correlation coefficient.
+
+Thus, we consider groups of activations which we empirically find have shared representation as
+
+suggested by our analysis in Sec. 4. For baselines that do not involve finetuning, we compare to the
+
+original model under perturbation and a baseline that decomposes the prompt into subtasks, inspired
+
+by [72].
+
+9
+
+Results The grouping and steering results for
+
+Table 2: Success rates on DiT4DiT [6].
+
+Cosmos-Policy are summarized in Tab. 1, and we provide qualitative examples of unsteered and steered trajectory rollouts in Fig. 1. We provide a full set of snapshots from quali-
+
+Initial Gripper Position
+
+Tasks
+T0‚ÜíT0 T0‚ÜíT1 T0‚ÜíT2 T0‚ÜíT3
+
+No Steer.
+53.3%¬±9.1% 69.6%
+70.0%¬±8.4% 70.0%¬±8.4%
+
+ActAdd
+
+WA-LQR
+
+60.0%¬±8.9% 76.7%¬±7.7% 63.3%¬±8.8% 63.3%¬±8.8%
+
+66.7%¬±8.6% 70.0%¬±8.4% 73.3%¬±8.1% 76.7%¬±7.7%
+
+tative unsteered and steered rollouts in Fig.
+
+Avg. 65.7%¬±4.3% 65.8%¬±4.3% 71.7%¬±4.1%
+
+8. WA-LQR is the most effective method in improving robustness to camera orientation and gripper position perturbations, with both steer-
+
+Camera Gaussian Noise
+
+T1‚ÜíT0 T1‚ÜíT1 T1‚ÜíT2
+Avg.
+
+16.7%¬±6.8% 20.0%¬±7.3% 10.0%¬±5.5%
+15.6%¬±3.8%
+
+40.0%¬±8.9% 73.3%¬±8.1% 63.3%¬±8.8% 43.3%¬±9.0% 26.7%¬±8.1% 30.0%¬±8.4%
+43.3%¬±5.2% 48.9%¬±5.3%
+
+ing methods outperforming the unsteered or prompt-steering baselines. As one exception, ActAdd is more effective than WA-LQR on camera Gaussian noise corruption, which we hypothesize results from the strong separability of this feature, enabling simple open-loop control directly in activation space to be viable. We also show in Sec. C that ActAdd is highly sensitive to the strength parameter Œ≥, highlighting the benefit of the closed-loop steering provided by WA-LQR, which adaptively modulates the steering magnitude based on alignment with the desired robustness feature direction. On DiT4DiT (Tab. 2), ActAdd yields substantial improvements on Gaussian noise but does not
+
+Table 3: LingBot-VA [7] success rates.
+
+Camera Orientation
+Initial Gripper Position
+Camera Gaussian Noise
+
+Tasks
+T0‚ÜíT0 T0‚ÜíT2 T0‚ÜíT4 T0‚ÜíT5 T0‚ÜíT9
+Avg.
+T1‚ÜíT1 T1‚ÜíT2 T1‚ÜíT3 T1‚ÜíT7 T1‚ÜíT9
+Avg.
+T6‚ÜíT0 T6‚ÜíT1 T6‚ÜíT4 T6‚ÜíT6 T6‚ÜíT7
+Avg.
+
+No Steer.
+
+ActAdd
+
+WA-LQR
+
+65.0%¬±10.7% 35.0%¬±10.7% 55.0%¬±11.1% 45.0%¬±11.1% 15.0%¬±8.0% 10.0%¬±6.7% 70.0%¬±10.2% 75.0%¬±9.7% 35.0%¬±10.7% 40.0%¬±11.0%
+
+70.0%¬±10.2% 45.0%¬±11.1% 30.0%¬±10.2% 60.0%¬±11.0% 50.0%¬±11.2%
+
+48.0%¬±5.0% 41.0%¬±4.9% 51.0%¬±5.0%
+
+65.0%¬±10.7% 70.0%¬±10.3% 70.0%¬±10.3% 80.0%¬±8.9% 75.0%¬±9.7%
+
+75.0%¬±9.7% 75.0%¬±9.7% 70.0%¬±10.3% 80.0%¬±8.9% 85.0%¬±8.0% 75.0%¬±9.7% 60.0%¬±11.0% 80.0%¬±8.9% 70.0%¬±10.3% 65.0%¬±10.7%
+
+72.0%¬±4.5% 72.0%¬±4.5% 75.0%¬±4.3%
+
+35.0%¬±10.7% 15.0%¬±8.0% 90.0%¬±6.7% 60.0%¬±11.0% 75.0%¬±9.7% 45.0%¬±11.1% 85.0%¬±8.0% 55.0%¬±11.1% 10.0%¬±6.7% 15.0%¬±8.0%
+
+20.0%¬±8.9% 95.0%¬±4.9% 75.0%¬±9.7% 70.0%¬±10.3% 20.0%¬±8.9%
+
+59.0%¬±4.9% 38.0%¬±4.9% 56.0%¬±5.0%
+
+change performance on initial gripper position, while WA-LQR outperforms all baselines and
+
+ActAdd on Gaussian noise and initial gripper position. Across evaluations, we find that prompt
+
+steering is ineffective, either matching unsteered performance or strongly degrading performance.
+
+Task groupings did not emerge on LingBot-VA due to the poor alignment results in Sec. 4, so we instead map the groups discovered for Cosmos-Policy onto LingBot-VA. The results are summarized in Tab. 3 (more results are in App. B). Consistent with Sec. 4, we do not observe major robustness improvements from steering for LingBot-VA. In fact, ActAdd often degrades performance due to over-steering, while WA-LQR avoids this because of its closed-loop modulation of steering magnitude. We summarize the relationship between separability and steering performance in Fig. 7, where we observe a negative correlation between hinge loss and robustness improvements through steering, supporting the use of hinge loss as a predictor for steering success. Overall, these results suggest that hinge loss is an effective predictor of steering success, that both open-loop and closedloop activation steering are effective in improving success rate across models with low separability loss, and that closed-loop steering can be more effective than open-loop perturbations.
+7 Discussion, Limitations, and Conclusion
+We investigate mechanistic interpretability and activation steering in WAMs. Our analysis reveals clear linear structure in feature-relevant activations under OOD perturbations for Cosmos-Policy [2] and DiT4DiT [6], but not for LingBot-VA [7]. We further find that linear separability loss is a strong predictor of steering performance. Motivated by these observations, we adapt activation addition to the WAM setting and introduce WA-LQR, a novel activation steering framework that exploits locally linear dynamics within a feature-relevant activation subspace to improve OOD robustness without finetuning, achieving success-rate improvements of up to 41%. Overall, our results suggest that mechanistic control of hidden model representations is promising for improving WAM robustness.
+
+Limitations. A key limitation of WA-LQR is its limited applicability across tasks and models. To our knowledge, there is currently no interpretable method for predicting when tasks or environments share transferable representations, requiring mechanistic analysis on a per-setting basis. We also observe strong dependence on model architecture. These results highlight the need to better understand how steerability emerges in robotics foundation models and motivate the design of WAMs that are both steerable and able to preserve representations from their base foundation models.
+
+10
+
+Gaussian pert. Camera pert.
+
+Cosmos-Policy
+
+Gripper pert.
+
+Gaussian pert.
+
+DiT4DiT
+
+Gripper pert.
+
+Unsteered WA-LQR
+‚Äúput both the alphabet soup and the tomato sauce in the basket‚Äù Unsteered WA-LQR
+‚Äúput the white mug on the plate and put the chocolate pudding to the right of the plate‚Äù
+Unsteered
+WA-LQR
+‚Äúput both the cream cheese box and the butter in the basket‚Äù Unsteered WA-LQR
+‚Äúturn on the stove and put the moka pot on it‚Äù
+Unsteered
+WA-LQR ‚Äúput the black bowl in the bottom drawer of the cabinet and close it‚Äù
+Unsteered WA-LQR
+‚Äúput both the alphabet soup and the tomato sauce in the basket‚Äù Unsteered WA-LQR
+‚Äúput both the alphabet soup and the tomato sauce in the basket‚Äù Unsteered WA-LQR
+‚Äúput both the cream cheese box and the butter in the basket‚Äù
+Figure 8: Snapshots from rollouts where steering enables task success despite unsteered failure, across perturbations, LIBERO-10 tasks, and WAM architectures. Each rollout shows six equally spaced snapshots, with time increasing from left to right.
+11
+
+Gripper pert. Gaussian pert. Camera pert.
+
+LingBot-VA
+
+References
+[1] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. Foster, G. Lam, P. Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+[2] M. J. Kim, Y. Gao, T.-Y. Lin, Y.-C. Lin, Y. Ge, G. Lam, P. Liang, S. Song, M.-Y. Liu, C. Finn, et al. Cosmos policy: Fine-tuning video models for visuomotor control and planning. arXiv preprint arXiv:2601.16163, 2026.
+[3] S. Ye, Y. Ge, K. Zheng, S. Gao, S. Yu, G. Kurian, S. Indupuru, Y. L. Tan, C. Zhu, J. Xiang, et al. World action models are zero-shot policies. arXiv preprint arXiv:2602.15922, 2026.
+[4] A. Ye, B. Wang, C. Ni, G. Huang, G. Zhao, H. Li, H. Li, J. Li, J. Lv, J. Liu, et al. Gigaworldpolicy: An efficient action-centered world‚Äìaction model. arXiv preprint arXiv:2603.17240, 2026.
+[5] Z. Zhang, Z. Li, B. Rahmati, R. H. Yang, Y. Ma, A. Rasouli, S. Pakdamansavoji, Y. Wu, L. Zhang, T. Cao, et al. Do world action models generalize better than vlas? a robustness study. arXiv preprint arXiv:2603.22078, 2026.
+[6] T. Ma, J. Zheng, Z. Wang, C. Jiang, A. Cui, J. Liang, and S. Yang. Dit4dit: Jointly modeling video dynamics and actions for generalizable robot control. arXiv preprint arXiv:2603.10448, 2026.
+[7] L. Li, Q. Zhang, Y. Luo, S. Yang, R. Wang, F. Han, M. Yu, Z. Gao, N. Xue, X. Zhu, Y. Shen, and Y. Xu. Causal world modeling for robot control. arXiv preprint arXiv:2601.21998, 2026.
+[8] A. Brohan, N. Brown, J. Carbajal, Y. Chebotar, J. Dabis, C. Finn, K. Gopalakrishnan, K. Hausman, A. Herzog, J. Hsu, et al. Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817, 2022.
+[9] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, pages 2165‚Äì2183. PMLR, 2023.
+[10] O. M. Team, D. Ghosh, H. Walke, K. Pertsch, K. Black, O. Mees, S. Dasari, J. Hejna, T. Kreiman, C. Xu, et al. Octo: An open-source generalist robot policy. arXiv preprint arXiv:2405.12213, 2024.
+[11] A. O‚ÄôNeill, A. Rehman, A. Maddukuri, A. Gupta, A. Padalkar, A. Lee, A. Pooley, A. Gupta, A. Mandlekar, A. Jain, et al. Open x-embodiment: Robotic learning datasets and rt-x models: Open x-embodiment collaboration 0. In 2024 IEEE International Conference on Robotics and Automation (ICRA), pages 6892‚Äì6903. IEEE, 2024.
+[12] K. Black, N. Brown, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, et al. œÄ0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+[13] M. J. Kim, C. Finn, and P. Liang. Fine-tuning vision-language-action models: Optimizing speed and success. arXiv preprint arXiv:2502.19645, 2025.
+[14] K. Pertsch, K. Stachowicz, B. Ichter, D. Driess, S. Nair, Q. Vuong, O. Mees, C. Finn, and S. Levine. Fast: Efficient action tokenization for vision-language-action models. arXiv preprint arXiv:2501.09747, 2025.
+[15] B. Hou, G. Li, J. Jia, T. An, X. Guo, S. Leng, H. Geng, Y. Ze, T. Harada, P. Torr, et al. World model for robot learning: A comprehensive survey. arXiv preprint arXiv:2605.00080, 2026.
+12
+
+[16] S. Wang, J. Shi, Z. Fu, X. He, F. Liu, C. Yang, Y. Zhou, Z. Fei, J. Gong, J. Fu, et al. World action models: The next frontier in embodied ai. arXiv preprint arXiv:2605.12090, 2026.
+[17] Y. Du, S. Yang, B. Dai, H. Dai, O. Nachum, J. Tenenbaum, D. Schuurmans, and P. Abbeel. Learning universal policies via text-guided video generation. Advances in neural information processing systems, 36:9156‚Äì9172, 2023.
+[18] Y. Wen, J. Lin, Y. Zhu, J. Han, H. Xu, S. Zhao, and X. Liang. Vidman: Exploiting implicit dynamics from video diffusion model for effective robot manipulation. Advances in Neural Information Processing Systems, 37:41051‚Äì41075, 2024.
+[19] Y. Hu, Y. Guo, P. Wang, X. Chen, Y.-J. Wang, J. Zhang, K. Sreenath, C. Lu, and J. Chen. Video prediction policy: A generalist robot policy with predictive visual representations. arXiv preprint arXiv:2412.14803, 2024.
+[20] Y. Jia, J. Liu, S. Liu, R. Zhou, W. Yu, Y. Yan, X. Chi, Y. Guo, B. Shi, and S. Zhang. Video2act: A dual-system video diffusion policy with robotic spatio-motional modeling. arXiv preprint arXiv:2512.03044, 2025.
+[21] L. Li, Q. Zhang, Y. Luo, S. Yang, R. Wang, F. Han, M. Yu, Z. Gao, N. Xue, X. Zhu, et al. Causal world modeling for robot control. arXiv preprint arXiv:2601.21998, 2026.
+[22] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. Advances in Neural Information Processing Systems, 36:44776‚Äì44791, 2023.
+[23] X. Li, K. Hsu, J. Gu, K. Pertsch, O. Mees, H. R. Walke, C. Fu, I. Lunawat, I. Sieh, S. Kirmani, et al. Evaluating real-world robot manipulation policies in simulation. arXiv preprint arXiv:2405.05941, 2024.
+[24] Z. Wang, Z. Zhou, J. Song, Y. Huang, Z. Shu, and L. Ma. Vlatest: Testing and evaluating vision-language-action models for robotic manipulation. Proceedings of the ACM on Software Engineering, 2(FSE):1615‚Äì1638, 2025.
+[25] W. Pumacay, I. Singh, J. Duan, R. Krishna, J. Thomason, and D. Fox. The colosseum: A benchmark for evaluating generalization for robotic manipulation. arXiv preprint arXiv:2402.08191, 2024.
+[26] S. Fei, S. Wang, J. Shi, Z. Dai, J. Cai, P. Qian, L. Ji, X. He, S. Zhang, Z. Fei, et al. Libero-plus: In-depth robustness analysis of vision-language-action models. arXiv preprint arXiv:2510.13626, 2025.
+[27] J. Zhou, K. Ye, J. Liu, T. Ma, Z. Wang, R. Qiu, K.-Y. Lin, Z. Zhao, and J. Liang. Exploring the limits of vision-language-action manipulations in cross-task generalization, 2025. URL https://arxiv.org/abs/2505.15660.
+[28] J. Liu, F. Gao, B. Wei, X. Chen, Q. Liao, Y. Wu, C. Yu, and Y. Wang. What can rl bring to vla generalization? an empirical study. Advances in Neural Information Processing Systems, 38: 97121‚Äì97151, 2026.
+[29] S. Tan, K. Dou, Y. Zhao, and P. Kra¬®henbu¬®hl. Interactive post-training for vision-languageaction models. arXiv preprint arXiv:2505.17016, 2025.
+[30] Y. Guo, J. Zhang, X. Chen, X. Ji, Y.-J. Wang, Y. Hu, and J. Chen. Improving vision-languageaction model with online reinforcement learning. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 15665‚Äì15672. IEEE, 2025.
+[31] T. Yuan, Z. Dong, Y. Liu, and H. Zhao. Fast-wam: Do world action models need test-time future imagination? arXiv preprint arXiv:2603.16666, 2026.
+13
+
+[32] L. Bereska and S. Gavves. Mechanistic interpretability for AI safety - a review. Transactions on Machine Learning Research, 2024. ISSN 2835-8856. URL https://openreview.net/ forum?id=ePUVetPKu6. Survey Certification, Expert Certification.
+[33] L. Sharkey, B. Chughtai, J. Batson, J. Lindsey, J. Wu, L. Bushnaq, N. Goldowsky-Dill, S. Heimersheim, A. Ortega, J. Bloom, et al. Open problems in mechanistic interpretability. arXiv preprint arXiv:2501.16496, 2025.
+[34] N. Elhage, T. Hume, C. Olsson, N. Schiefer, T. Henighan, S. Kravec, Z. Hatfield-Dodds, R. Lasenby, D. Drain, C. Chen, R. Grosse, S. McCandlish, J. Kaplan, D. Amodei, M. Wattenberg, and C. Olah. Toy models of superposition. (arXiv:2209.10652), 2022. doi:10.48550/ arXiv.2209.10652. URL http://arxiv.org/abs/2209.10652. arXiv:2209.10652.
+[35] K. Park, Y. J. Choe, and V. Veitch. The linear representation hypothesis and the geometry of large language models. arXiv preprint arXiv:2311.03658, 2023.
+[36] S. Marks and M. Tegmark. The geometry of truth: Emergent linear structure in large language model representations of true/false datasets. In First Conference on Language Modeling, 2024. URL https://openreview.net/forum?id=aajyHYjjsk.
+[37] A. Zou, L. Phan, S. Chen, J. Campbell, P. Guo, R. Ren, A. Pan, X. Yin, M. Mazeika, A.K. Dombrowski, et al. Representation engineering: A top-down approach to ai transparency. arXiv preprint arXiv:2310.01405, 2023.
+[38] B. W. Lee, I. Padhi, K. N. Ramamurthy, E. Miehling, P. Dognin, M. Nagireddy, and A. Dhurandhar. Programming refusal with conditional activation steering. In The Thirteenth International Conference on Learning Representations, 2025. URL https://openreview.net/ forum?id=Oi47wc10sm.
+[39] S. Dathathri, A. Madotto, J. Lan, J. Hung, E. Frank, P. Molino, J. Yosinski, and R. Liu. Plug and play language models: A simple approach to controlled text generation. In International Conference on Learning Representations, 2020. URL https://openreview.net/forum? id=H1edEyBKDS.
+[40] K. Li, O. Patel, F. Vie¬¥gas, H. Pfister, and M. Wattenberg. Inference-time intervention: Eliciting truthful answers from a language model. Advances in Neural Information Processing Systems, 36:41451‚Äì41530, 2023.
+[41] A. M. Turner, L. Thiergart, G. Leech, D. Udell, U. Mini, and M. MacDiarmid. Activation addition: Steering language models without optimization. 2024.
+[42] N. Rimsky, N. Gabrieli, J. Schulz, M. Tong, E. Hubinger, and A. Turner. Steering llama 2 via contrastive activation addition. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 15504‚Äì15522, 2024.
+[43] A. Arditi, O. Obeso, A. Syed, D. Paleka, N. Panickssery, W. Gurnee, and N. Nanda. Refusal in language models is mediated by a single direction. Advances in Neural Information Processing Systems, 37:136037‚Äì136083, 2024.
+[44] P. Rodriguez, A. Blaas, M. Klein, L. Zappella, N. Apostoloff, X. Suau, et al. Controlling language and diffusion models by transporting activations. In International Conference on Learning Representations, volume 2025, pages 89812‚Äì89855, 2025.
+[45] Z. Wu, A. Arora, Z. Wang, A. Geiger, D. Jurafsky, C. D. Manning, and C. Potts. Reft: Representation finetuning for language models. Advances in Neural Information Processing Systems, 37:63908‚Äì63962, 2024.
+[46] H. M. Vu and T. M. Nguyen. Angular steering: Behavior control via rotation in activation space. (arXiv:2510.26243), Oct. 2025. doi:10.48550/arXiv.2510.26243. URL http: //arxiv.org/abs/2510.26243. arXiv:2510.26243.
+14
+
+[47] A. Bhargava, C. Witkowski, S.-Z. Looi, and M. Thomson. What‚Äôs the magic word? a control theory of llm prompting. arXiv preprint arXiv:2310.04444, 2023.
+[48] L. Kong, H. Wang, W. Mu, Y. Du, Y. Zhuang, Y. Zhou, Y. Song, R. Zhang, K. Wang, and C. Zhang. Aligning large language models with representation editing: A control perspective. (arXiv:2406.05954), Nov. 2024. doi:10.48550/arXiv.2406.05954. URL http://arxiv.org/ abs/2406.05954. arXiv:2406.05954.
+[49] E. Cheng and C. A. Alonso. Linearly controlled language generation with performative guarantees. (arXiv:2405.15454), Sept. 2025. doi:10.48550/arXiv.2405.15454. URL http: //arxiv.org/abs/2405.15454. arXiv:2405.15454.
+[50] D. V. Nguyen, H. M. Vu, N. Y. Pham, L. Zhang, and T. M. Nguyen. Activation steering with a feedback controller. (arXiv:2510.04309), Oct. 2025. doi:10.48550/arXiv.2510.04309. URL http://arxiv.org/abs/2510.04309. arXiv:2510.04309.
+[51] J. Skifstad, X. A. Yang, and G. Chou. Local linearity of llms enables activation steering via model-based linear optimal control. arXiv preprint arXiv:2604.19018, 2026.
+[52] P. Rodriguez, M. Klein, E. Gualdoni, V. Maiorca, A. Blaas, L. Zappella, M. Cuturi, and X. Suau. Lineas: End-to-end learning of activation steering with a distributional loss. arXiv preprint arXiv:2503.10679, 2025.
+[53] S. Facchiano, S. Saravalle, M. Migliarini, E. De Matteis, A. Sampieri, A. Pilzer, E. Rodola`, I. Spinelli, L. Franco, and F. Galasso. Video unlearning via low-rank refusal vector. arXiv preprint arXiv:2506.07891, 2025.
+[54] Y. Ekin and Y. Gandelsman. The unreasonable effectiveness of text embedding interpolation for continuous image steering. arXiv preprint arXiv:2603.17998, 2026.
+[55] J. Hong, A. Chan, Q. Dai, J. Skifstad, and G. Chou. Activation steering of video generation models via reduced-order linear optimal control. 2026.
+[56] B. Ha¬®on, K. C. Stocking, I. Chuang, and C. Tomlin. Mechanistic interpretability for steering vision-language-action models. In J. Lim, S. Song, and H.-W. Park, editors, Proceedings of The 9th Conference on Robot Learning, volume 305 of Proceedings of Machine Learning Research, pages 2743‚Äì2762. PMLR, 27‚Äì30 Sep 2025. URL https://proceedings.mlr. press/v305/haon25a.html.
+[57] H. Buurmeijer, C. A. Alonso, A. Swann, and M. Pavone. Observing and controlling features in vision-language-action models. arXiv preprint arXiv:2603.05487, 2026.
+[58] C. Mitra, Y. Luo, R. Saravanan, D. Niu, A. Pai, J. Thomason, T. Darrell, A. Anwar, D. Ramanan, and R. Herzig. Mechanistic finetuning of vision-language-action models via few-shot demonstrations. arXiv preprint arXiv:2511.22697, 2025.
+[59] A. Swann, L. McGranahan, H. Buurmeijer, M. Kennedy III, and M. Schwager. Sparse autoencoders reveal interpretable and steerable features in vla models. arXiv preprint arXiv:2603.19183, 2026.
+[60] H. Zhang, M. Xu, A. Dhafer, S. Yue, H. Dong, and Z. D. Hao. Embodied interpretability: Linking causal understanding to generalization in vision-language-action models. arXiv preprint arXiv:2605.00321, 2026.
+[61] B. Grant, X. Zhao, and P. Wang. Not all features are created equal: A mechanistic study of vision-language-action models. arXiv preprint arXiv:2603.19233, 2026.
+[62] M. A. Khan, N. Boskov, F. M. Anwar, and M. A. Khan. Controlling vision‚Äìlanguage‚Äìaction policies through sparse latent directions. In Mechanistic Interpretability Workshop at NeurIPS 2025.
+15
+
+[63] M. M. Miao, S. Kim, B. Yang, and L. Ungar. Contrastive conceptor activation steering (coast): Unlocking vision-language-action models through hidden states. arXiv preprint arXiv:2605.17144, 2026.
+[64] J. P. Hespanha. Linear systems theory. Princeton university press, 2018. [65] W. Peebles and S. Xie. Scalable diffusion models with transformers. In Proceedings of the
+IEEE/CVF international conference on computer vision, pages 4195‚Äì4205, 2023. [66] S. Marks and M. Tegmark. The geometry of truth: Emergent linear structure in large language
+model representations of true/false datasets. arXiv preprint arXiv:2310.06824, Aug. 2024. doi:10.48550/arXiv.2310.06824. URL http://arxiv.org/abs/2310.06824. [67] C. Huang, M. M. Zhang, R. Azarcon, G. Chou, and Z. Kira. Maps: Preserving vision-language representations via module-wise proximity scheduling for better vision-language-action generalization. arXiv preprint arXiv:2511.19878, Nov. 2025. doi:10.48550/arXiv.2511.19878. URL http://arxiv.org/abs/2511.19878. [68] V. Kecman. Support Vector Machines ‚Äì An Introduction, page 1‚Äì47. Springer, Berlin, Heidelberg, 2005. ISBN 9783540323846. doi:10.1007/10984697 1. URL https://doi.org/10. 1007/10984697_1. [69] N. Halko, P.-G. Martinsson, and J. A. Tropp. Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions. SIAM review, 53(2):217‚Äì288, 2011. [70] J. B. Rawlings, D. Q. Mayne, M. Diehl, et al. Model predictive control: theory, computation, and design, volume 2. Nob Hill Publishing Madison, WI, 2020. [71] J. Fang and G. Chou. Safe large-scale robust nonlinear mpc in milliseconds via reachabilityconstrained system level synthesis on the gpu. arXiv preprint arXiv:2604.07644, 2026. [72] Z. Wang, Y. Chen, Y. Liu, J. Ye, P. Chen, C. Lu, S. Liu, B. Yu, and J. Jia. Vpvla: Visual prompting as an interface for vision-language-action models. arXiv preprint arXiv:2603.22003, May 2026. doi:10.48550/arXiv.2603.22003. URL http://arxiv.org/ abs/2603.22003. arXiv:2603.22003.
+16
+
+Appendices
+In the following, we provide an overview of our appendices. In App. A, we describe how contrastive vectors are constructed for Gaussian noise, camera perturbations, and gripper-position perturbations, including the definitions of the desirable and undesirable activation sets used for steering. In App. B, we provide supplemental experimental results for LingBot-VA, including additional WA-LQR evaluations on camera orientation, initial gripper-position, and Gaussian-noise perturbations in both the action and video modules. In App. C, we provide a parameter sensitivity analysis on ActAdd. In App. D, we provide additional experimental details for the mechanistic study and for the model evaluations, including activation collection, dimensionality reduction, SVM fitting, and LQR steering implementation details. In App. E, we provide the complete low-dimensional separability results across all LIBERO-10 tasks for all models, including both task-level and pairwise separability plots. In App. F, we provide full model separation plots across layers for Cosmos-Policy and DiT4DiT.
+A Contrastive Vectors
+To construct contrastive vectors we define a desirable or target set of inputs D+, with rollouts emblematic of behavior we seek to induce via steering, and undesirable set of inputs D‚àí, which are perturbed by some nuisance and result in failed rollouts. The definition of this set is consistent between models, for each perturbation.
+For Gaussian noise, we consider noised and clean camera images, i.e., D+ = {Clean inputs} and D‚àí = {Noised inputs}. For pairs of inputs in Œæ+ ‚àà D+ and Œæ‚àí ‚àà D‚àí, we perform a model forward pass on each input and collect their corresponding activations x+, x‚àí.
+Similarly, the camera perturbation contrastive input sets are defined as D+ = {No perturbation} and D‚àí = {Perturbed camera view}. The corresponding activations x+, x‚àí are collected from a forward pass of the model.
+For gripper position perturbation, the definition of D+ and D‚àí differs slightly. Rather than defining the sets as unperturbed and perturbed, respectively, we let D+ be inputs corresponding to successful rollouts and D‚àí be inputs corresponding to unsuccessful inputs, both under gripper perturbation. This is to account for an observed variable sensitivity to different perturbations, i.e., directly including perturbed inputs in the negative dataset would result in many successful rollouts in the negative activations, resulting intuitively in ‚Äústeering away‚Äù from desired behavior. Note, however, that we do not observe a meaningful difference in the mechanistic analysis when making the distinction between successful and unsuccessful rollouts in our dataset configuration (see App. D.1). Given sets of contrastive vectors {x+k } and {x‚àík }, we compute the contrastive direction simply as the difference between pairs of positive and negative activations, with different pooling and processing as described in Sec. 5.
+B Supplemental Experimental Results on LingBot-VA
+Although we show some results of WA-LQR on LingBot in Table 3, we conducted a more comprehensive evaluation of WA-LQR applied in both the action module and the video module separately. Specifically, relative to Table 3, we further evaluate on Gaussian noise perturbations, on more task transfers, and on steering in the video module (denoted ‚Äú(Video)‚Äù in Table 4). To allow a fair comparison with Cosmos, we evaluate our method on LingBot-VA on the same set of tasks and perturbations as shown in Table 4. We did not observe significant effectiveness of steering, and this is supported by the result of our mechanistic analysis on the extracted activations from LingBotVA‚Äôs action and video modules, where it is shown that there is poor linear separability (with high numerical classification losses, especially relative to Cosmos), as presented in Fig 15, 16, and 17.
+17
+
+Table 4: LIBERO-10 [22] success rates on LingBot-VA [7]. Task i ‚Üí Task j denotes all Pl,t, AÀúl,t, BÀúl,t matrices, ezl,t vectors are computed with task i, and used to steer task j. 20 trials/task.
+
+Perturbation
+
+Tasks
+
+No Steering
+
+ActAdd
+
+Ours (Action)
+
+Ours (Video)
+
+Camera Orientation
+
+Task 0 ‚Üí Task 0 Task 0 ‚Üí Task 2 Task 0 ‚Üí Task 4 Task 0 ‚Üí Task 5 Task 0 ‚Üí Task 9
+
+65.0%¬±10.7% 35.0%¬±10.7% 70.0%¬±10.3% 65.0%¬±10.7% 55.0%¬±11.1% 45.0%¬±11.1% 45.0%¬±11.1% 55.0%¬±11.1% 15.0%¬±8.0% 10.0%¬±6.7% 30.0%¬±10.3% 10.0%¬±6.7% 70.0%¬±10.3% 75.0%¬±9.7% 60.0%¬±11.0% 65.0%¬±10.7% 35.0%¬±10.7% 40.0%¬±11.0% 50.0%¬±11.2% 60.0%¬±11.0%
+
+Average
+
+48.0%¬±5.0% 41.0%¬±4.9% 51.0%¬±5.0% 51.0%¬±5.0%
+
+Initial Gripper Position
+
+Task 1 ‚Üí Task 1 Task 1 ‚Üí Task 2 Task 1 ‚Üí Task 3 Task 1 ‚Üí Task 7 Task 1 ‚Üí Task 9
+
+65.0%¬±10.7% 75.0%¬±9.7% 75.0%¬±9.7% 70.0%¬±10.3% 70.0%¬±10.3% 70.0%¬±10.3% 80.0%¬±8.9% 70.0%¬±10.3% 70.0%¬±10.3% 85.0%¬±8.0% 75.0%¬±9.7% 85.0%¬±8.0% 80.0%¬±8.9% 60.0%¬±11.0% 80.0%¬±8.9% 80.0%¬±8.9% 75.0%¬±9.7% 70.0%¬±10.3% 65.0%¬±10.7% 70.0%¬±10.3%
+
+Average
+
+72.0%¬±4.5% 72.0%¬±4.5% 75.0%¬±4.3% 75.0%¬±4.3%
+
+Camera Gaussian Noise
+
+Task 6 ‚Üí Task 0 Task 6 ‚Üí Task 1 Task 6 ‚Üí Task 4 Task 6 ‚Üí Task 6 Task 6 ‚Üí Task 7
+
+35.0%¬±10.7% 15.0%¬±8.0% 20.0%¬±8.9% 65.0%¬±10.7% 90.0%¬±6.7% 60.0%¬±11.0% 95.0%¬±4.9% 20.0%¬±8.9% 75.0%¬±9.7% 45.0%¬±11.1% 75.0%¬±9.7% 100.0%¬±0.0% 85.0%¬±8.0% 55.0%¬±11.1% 70.0%¬±10.3% 75.0%¬±9.7% 10.0%¬±6.7% 15.0%¬±8.0% 20.0%¬±8.9% 20.0%¬±8.9%
+
+Average
+
+59.0%¬±4.9% 38.0%¬±4.9% 56.0%¬±5.0% 56.0%¬±5.0%
+
+18
+
+C ActAdd Sensitivity Analysis
+We perform a sensitive analysis of the effectiveness of ActAdd on improving the performance of Cosmos-Policy 2B [2] under Gaussian noise perturbation in the sensor input. The steering vectors are acquired from Task06 and used to steer the model over 5 tasks. As shown in Tab. 5, ActAdd demonstrates a sharp peak in success rates at a specific hyperparameter (Œ≥ = 0.1), and this performance boost quickly vanishes with smaller or larger Œ≥.
+
+Table 5: Performance across different values of Œ≥ under sensor input perturbed with Gaussian noise.
+
+Œ≥
+
+Mean
+
+Task06
+
+Task00
+
+Task01
+
+Task04
+
+Task07
+
+0.0 26.6%
+
+37%
+
+3%
+
+53%
+
+10%
+
+30%
+
+0.02 36.2%
+
+37%
+
+17%
+
+67%
+
+13%
+
+47%
+
+0.05 50.8%
+
+57%
+
+37%
+
+73%
+
+27%
+
+60%
+
+0.075 52.6%
+
+70%
+
+37%
+
+70%
+
+43%
+
+43%
+
+0.1 67.4%
+
+77%
+
+43%
+
+70%
+
+80%
+
+67%
+
+0.15 32.6%
+
+13%
+
+10%
+
+17%
+
+80%
+
+43%
+
+0.2
+
+0.0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+0.25 0.0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+0.5
+
+0.0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+0%
+
+19
+
+D Experimental Details
+
+D.1 Mechanistic Study
+
+To analyze the geometry of each model‚Äôs latent activations, we operate directly in the full activation space, using mean-pooled activations across token positions as described in Sec. 4. For CosmosPolicy, which utilizes a unified single-backbone architecture, we consider the activations across all latent frames. For LingBot-VA and DiT4DiT, which adopt inverse-dynamics style architectures with distinct DiTs for different modalities, we consider the activations from the action-generation DiT. This is consistent with our steering formulation (App. D.2-D.3).
+
+To collect contrastive examples for each perturbation type, we conduct a similar procedure to the contrastive vector collection process in App. A. That is, we consider successful vs. unsuccessful rollout as D+ and D‚àí, respectively, under camera or gripper position perturbation. For Gaussian noise, we let D+ = {Clean inputs}, and D‚àí = {Noised inputs}. We also evaluated the gripper and camera perturbation in terms of D+ = {Without perturbation}, and D‚àí = {With perturbation}, but did not observe a meaningful difference.
+Given D+ and D‚àí, we compute contrastive directions, and conduct Principal Component Analysis on the set of contrastive directions, as described in Sec. 4. To fit the support vector machine (SVM), we initialize the separating {x|wÀÜT x + ÀÜb = 0} hyperplane as the zero vector and perform gradient descent with the loss function:
+
+lossSVM(wÀÜ, ÀÜb) = (1/2)wÀÜ‚ä§wÀÜ + C ¬∑
+
+max(0, 1 ‚àí yi(wÀÜT x¬Øi + ÀÜb)),
+
+(15)
+
+i‚àà[N ]
+
+where C is some constant (in our experiments, we set C = 10). Note the second term in Eq. 15 resembles the hinge loss in Eq. 7, evaluated on the intermediate hyperplane parameterized by wÀÜ, ÀÜb.
+The SVM is always computed in the three-dimensional subspace defined by the top three principal
+components of the contrastive directions.
+
+D.2 Cosmos-Policy Evaluations on LIBERO-10
+Cosmos-Policy is a diffusion-based world-action model with a diffusion transformer backbone, where it jointly denoises a robot action chunk and future state predictions (future proprioception, wrist image, and third-person image). In our method, steering is applied at all latent outputs except for the action chunks. To construct contrastive vectors, activations are collected from all 28 transformer blocks across 5 denoising timesteps for matched pairs of clean and perturbed observations of the same task and scene.
+For each layer and timestep, a randomized SVD is run on the paired matrix to produce a rank64 basis to reduce dimensionality. The compact subspace is used to find the linearized dynamics that approximates how activations propagate from one layer to the next. The LQR gains are precomputed via backward Riccati recursion, where the control cost grows exponentially with the action chunk index. An LQR hyperparameter search is conducted before settling on the best-performing parameters for all other tasks of the same scene. During inference time, the projected activation error relative to the nominal trajectory is used to inject a correction through the precomputed gains.
+
+D.3 LingBot-VA Evaluations on LIBERO-10
+LingBot-VA is a mixture-of-transformers (MoT) based world-action model. It first uses a video module to predict future visual frames, which are then passed to a lightweight action module with a smaller hidden dimension to generate robot actions. In our experiments, we apply our method to either the video module or the action module while keeping the other component unchanged.
+For both modules, we collect activations from the outputs of all 30 transformer blocks. Since the video and action modules use different denoising schedules, we select module-specific denoising timesteps. For the action module, we use timesteps (t ‚àà 0, 10, 20, 30, 40). For the video module, we
+
+20
+
+use timesteps (t ‚àà 0, 4, 9, 14, 19). These timesteps are chosen to cover the corresponding denoising trajectory of each module. To reduce dimensionality, we partition the 30 transformer layers into three groups: layers 0‚Äì9, 10‚Äì19, and 20‚Äì29. For each layer partition and denoising timestep, we pool activation differences of contrastive pairs from all layers within the corresponding partition and compute a shared rank64 SVD basis. The produced compact subspace for each layer group and timestep pair is used by our LQR injector during evaluation. At evaluation time, the LQR injector follows the same layer partitioning and timestep mapping. For each activation, we project it onto the corresponding low-dimensional SVD subspace, compute the LQR correction in this reduced space, and map the correction back to the full activation space before applying it to the model. D.4 DiT4DiT Evaluations on LIBERO-10 Similar to LingBot-VA, DiT4DiT is a mixture-of-transformers (MoT) based world-action model with distinct video and action modules. In our experiments, we apply our method to the action module, and do not intervene on the video generation module. Otherwise, our evaluation procedure structurally follows Cosmos-Policy on all token positions, intervening across all 4 diffusion timesteps and 16 model layers. The dimensionality reduction procedure also follows the other models, with action generation layers partitioned into three groups: layers 0-5, 6-10, and 11-15. For each layer pool and diffusion timestep, we pool contrastive vectors and analogously construct a 64-dimensional SVD basis, which defines the projection onto the low-dimensional latent space. Jacobian construction, LQR, and control synthesis follow the same procedure as the other two models.
+21
+
+E Complete Low-Dimensional Separability Results
+We report the feature separation for three considered robustness features: perturbation to initial gripper position, initial camera position, and corruption of camera inputs with Gaussian noise, for all tasks in the LIBERO-10 dataset [22]. The results are summarized in Figs. 9-14. As reported in Sec. 4, we observe linear separation across tasks and perturbations in Cosmos-Policy (Figs. 9-11), but do not observe such separation in LingBot-VA (Figs. 12-17). For Cosmos-Policy, where we observe meaningful separation, we also present pairwise separability plots (Fig. 18-20), generated by aggregating the activations for pairs of tasks and otherwise following the same procedure as before.
+22
+
+Task 0
+
+Task 1
+
+Task 2
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.0000
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1645
+
+Task 5
+
+First
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.0000
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.4458
+
+Task 6
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1715
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1190
+
+Task 7
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1712
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.0787
+
+Task 8
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.0702
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.0000
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.2411
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0000
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.0000
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.0183
+
+Figure 9: Cosmos-Policy noise corruption separation for all LIBERO-10 tasks
+
+Task 3
+
+Task 4
+
+Task 0
+
+Task 1
+
+Task 2
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8049
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 19
+
+avg loss: 0.0979
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.6671
+
+Task 5
+
+First
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.4680
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 12
+
+avg loss: 0.3881
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.6923
+
+Task 6
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7786
+
+PC3
+
+PC2
+
+PC1
+
+Block 17
+
+avg loss: 0.1119
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.5929
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6096
+
+PC3
+
+PC2
+
+PC1
+
+Block 20
+
+avg loss: 0.2609
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.5963
+
+Task 7
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6296
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.3670
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.7934
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7709
+
+PC3
+
+PC2
+
+PC1
+
+Block 12
+
+avg loss: 0.1952
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.4725
+
+Task 8
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6728
+
+PC3
+
+PC2
+
+PC1
+
+Block 21
+
+avg loss: 0.6263
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.8211
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6446
+
+PC3
+
+PC2
+
+PC1
+
+Block 10
+
+avg loss: 0.6777
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.7774
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6275
+
+PC2
+
+PC1
+
+Block 16
+
+avg loss: 0.1449
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.5281
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6799
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.4546
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.8781
+
+Figure 10: Cosmos-Policy camera perturbation separation for all LIBERO-10 tasks.
+
+23
+
+Task 3
+
+Task 4
+
+Task 0
+
+Task 1
+
+Task 2
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.3878
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 6
+
+avg loss: 0.2885
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.2864
+
+Task 5
+
+First
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.0829
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.0415
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.0616
+
+Task 6
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.1746
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.0998
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1084
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.2048
+
+PC3
+
+PC2
+
+PC1
+
+Block 26
+
+avg loss: 0.1345
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.2082
+
+Task 7
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.1679
+
+PC3
+
+PC2
+
+PC1
+
+Block 26
+
+avg loss: 0.1106
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1718
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.3548
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.2738
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.3276
+
+Task 8
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.1397
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.1365
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1351
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6899
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.6883
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.6973
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.3931
+
+PC2
+
+PC1
+
+Block 3
+
+avg loss: 0.3329
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.4239
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.1921
+
+PC2
+
+PC1
+
+Block 21
+
+avg loss: 0.1429
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.1595
+
+Figure 11: Cosmos-Policy gripper perturbation separation for all LIBERO-10 tasks.
+
+Task 3
+
+Task 4
+
+Task 0
+
+First
+Condition positive negative
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.8571
+
+Best
+PC3
+PC2 PC1
+Block 16 avg loss: 0.8550
+
+Last
+PC3
+PC2 PC1
+Block 29 avg loss: 0.8571
+
+Task 5
+
+First
+PC3
+PC2 PC1
+Block 0 avg loss: 0.9715
+
+Best
+PC3
+PC2 PC1
+Block 18 avg loss: 0.9612
+
+Last
+PC3
+PC2 PC1
+Block 29 avg loss: 0.9655
+
+Task 6
+
+Task 1
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 19
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9104
+
+PC3
+
+PC2
+
+PC1
+
+Block 3
+
+avg loss: 0.8889
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9200
+
+Task 7
+
+Task 2
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8770
+
+PC3
+
+PC2
+
+PC1
+
+Block 2
+
+avg loss: 0.8462
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8462
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7310
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.6923
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.6923
+
+Task 8
+
+Task 3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9271
+
+PC3
+
+PC2
+
+PC1
+
+Block 20
+
+avg loss: 0.9189
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9189
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9546
+
+PC3
+
+PC2
+
+PC1
+
+Block 13
+
+avg loss: 0.9372
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9478
+
+Task 9
+
+Task 4
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8859
+
+PC2
+
+PC1
+
+Block 6
+
+avg loss: 0.8571
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8571
+
+PC2
+
+PC1
+
+Block 11
+
+avg loss: 0.8571
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+Figure 12: LingBot-VA camera perturbation separation for all LIBERO-10 tasks (Action Module).
+
+24
+
+Task 0
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8597
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 10
+
+avg loss: 0.8530
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8777
+
+Task 5
+
+First
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8571
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.8213
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+Task 6
+
+Task 1
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 6
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9046
+
+PC3
+
+PC2
+
+PC1
+
+Block 16
+
+avg loss: 0.8778
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9012
+
+Task 7
+
+Task 2
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9303
+
+PC3
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.9288
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9300
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6856
+
+PC3
+
+PC2
+
+PC1
+
+Block 4
+
+avg loss: 0.6400
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.6400
+
+Task 8
+
+Task 3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8235
+
+PC3
+
+PC2
+
+PC1
+
+Block 12
+
+avg loss: 0.8235
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8235
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8767
+
+PC3
+
+PC2
+
+PC1
+
+Block 6
+
+avg loss: 0.8738
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9464
+
+Task 9
+
+Task 4
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9474
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.9474
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9474
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7746
+
+PC2
+
+PC1
+
+Block 1
+
+avg loss: 0.7753
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7843
+
+Figure 13: LingBot-VA gripper perturbation separation for all LIBERO-10 tasks (Action Module).
+
+Task 0
+
+Task 1
+
+Task 2
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9907
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 14
+
+avg loss: 0.9881
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9982
+
+Task 5
+
+First
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9470
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 25
+
+avg loss: 0.9375
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9375
+
+Task 6
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9441
+
+PC3
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.9189
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9189
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9072
+
+PC3
+
+PC2
+
+PC1
+
+Block 13
+
+avg loss: 0.8889
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8889
+
+Task 7
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 5
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8571
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9375
+
+PC3
+
+PC2
+
+PC1
+
+Block 21
+
+avg loss: 0.9375
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9375
+
+Task 8
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9911
+
+PC3
+
+PC2
+
+PC1
+
+Block 18
+
+avg loss: 0.9874
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9882
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9741
+
+PC3
+
+PC2
+
+PC1
+
+Block 7
+
+avg loss: 0.9697
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9804
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8235
+
+PC2
+
+PC1
+
+Block 6
+
+avg loss: 0.8235
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8235
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9015
+
+PC2
+
+PC1
+
+Block 27
+
+avg loss: 0.8889
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8889
+
+Figure 14: LingBot-VA noise corruption separation for all LIBERO-10 tasks (Action Module).
+
+25
+
+Task 3
+
+Task 4
+
+Task 0
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8168
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 14
+
+avg loss: 0.6073
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7372
+
+Task 2
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8549
+
+PC3
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.6008
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.6602
+
+Task 4
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8784
+
+PC3
+
+PC2
+
+PC1
+
+Block 21
+
+avg loss: 0.4518
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7223
+
+Task 5
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8876
+
+PC3
+
+PC2
+
+PC1
+
+Block 28
+
+avg loss: 0.7135
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7155
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8542
+
+PC2
+
+PC1
+
+Block 7
+
+avg loss: 0.7163
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7455
+
+Figure 15: LingBot-VA camera orientation perturbation separation for LIBERO-10 task 0, 2, 4, 5, 9 (Video Module).
+
+26
+
+Task 6
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7879
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 26
+
+avg loss: 0.7879
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.7879
+
+Task 0
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.9958
+
+PC3
+PC2 PC1
+Block 28 avg loss: 0.9820
+
+PC3
+PC2 PC1
+Block 29 avg loss: 0.9859
+
+Task 1
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8889
+
+PC3
+
+PC2
+
+PC1
+
+Block 5
+
+avg loss: 0.8889
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8889
+
+Task 4
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9773
+
+PC3
+
+PC2
+
+PC1
+
+Block 24
+
+avg loss: 0.9140
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9589
+
+Task 7
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8276
+
+PC2
+
+PC1
+
+Block 3
+
+avg loss: 0.8276
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8276
+
+Figure 16: LingBot-VA noise corruption separation for LIBERO-10 task 0, 1, 4, 6, 7 (Video Module).
+
+27
+
+Task 1
+
+First
+Condition positive negative
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.6207
+
+Best
+
+PC3
+
+PC2
+
+PC1
+
+Block 16
+
+avg loss: 0.6207
+
+Last
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.6207
+
+Task 2
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.9326
+
+PC3
+PC2 PC1
+Block 28 avg loss: 0.9134
+
+PC3
+PC2 PC1
+Block 29 avg loss: 0.9132
+
+Task 3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9249
+
+PC3
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.8848
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8960
+
+Task 7
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.9189
+
+PC3
+
+PC2
+
+PC1
+
+Block 21
+
+avg loss: 0.8584
+
+PC3
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.9032
+
+Task 9
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8815
+
+PC2
+
+PC1
+
+Block 10
+
+avg loss: 0.8211
+
+PC2
+
+PC1
+
+Block 29
+
+avg loss: 0.8425
+
+Figure 17: LingBot-VA gripper perturbation separation for LIBERO-10 task 1, 2, 3, 7, 9 (Video Module).
+
+28
+
+Tasks 6&0
+
+Tasks 6&1
+
+First
+Cond. / Task task 6 positive task 6 negative task 0 positive task 0 negative
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.0000
+
+Best
+PC3
+PC2 PC1
+Block 1 avg loss: 0.0000
+
+Last
+PC3
+PC2 PC1
+Block 27 avg loss: 0.1068
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.0000
+
+PC3
+PC2 PC1
+Block 1 avg loss: 0.0000
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.1012
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.0000
+
+PC3
+PC2 PC1
+Block 2 avg loss: 0.0000
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.1829
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.0000
+
+PC2 PC1
+Block 1 avg loss: 0.0000
+
+PC2 PC1
+Block 27 avg loss: 0.0309
+
+Figure 18: Pairwise separability for Cosmos-Policy with Gaussian noise corruption.
+
+Tasks 6&4
+
+Tasks 6&7
+
+29
+
+Tasks 1&2
+
+Tasks 1&3
+
+First
+Cond. / Task task 1 positive task 1 negative task 2 positive task 2 negative
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.1973
+
+Best
+PC3
+PC2 PC1
+Block 23 avg loss: 0.1275
+
+Last
+PC3
+PC2 PC1
+Block 27 avg loss: 0.2020
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.1471
+
+PC3
+PC2 PC1
+Block 25 avg loss: 0.1207
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.1379
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.2340
+
+PC3
+PC2 PC1
+Block 25 avg loss: 0.1592
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.1827
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.1836
+
+PC2 PC1
+Block 25 avg loss: 0.1498
+
+PC2 PC1
+Block 27 avg loss: 0.1799
+
+Figure 19: Pairwise separability for Cosmos-Policy with gripper position perturbation.
+
+Tasks 1&7
+
+Tasks 1&9
+
+30
+
+Tasks 0&2
+
+Tasks 0&4
+
+First
+Cond. / Task task 0 positive task 0 negative task 2 positive task 2 negative
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.6072
+
+Best
+PC3
+PC2 PC1
+Block 21 avg loss: 0.2191
+
+Last
+PC3
+PC2 PC1
+Block 27 avg loss: 0.3805
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.5156
+
+PC3
+PC2 PC1
+Block 22 avg loss: 0.1272
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.3306
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.6505
+
+PC3
+PC2 PC1
+Block 24 avg loss: 0.1662
+
+PC3
+PC2 PC1
+Block 27 avg loss: 0.4288
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.6539
+
+PC2 PC1
+Block 21 avg loss: 0.1858
+
+PC2 PC1
+Block 27 avg loss: 0.4459
+
+Figure 20: Pairwise separability for Cosmos-Policy with camera position perturbation.
+
+Tasks 0&5
+
+Tasks 0&9
+
+31
+
+F Full Model Separation
+For completeness, we report the full mechanistic separation plots across all layers in the following.
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 0 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+Block 3 PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 4
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 5
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 6
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 7
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 8
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 9
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 10
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 11
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 12
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 13
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 14
+
+PC1
+
+PC2 loss: 0.0469
+
+Block 15
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+PC1
+
+PC2 loss: 0.2298
+
+PC1
+
+PC2 loss: 0.1853
+
+Figure 21: Cosmos-Policy Task 0 noise corruption
+
+PC1
+
+PC2 loss: 0.0835
+
+32
+
+Block 16
+Condition positive negative
+
+PC3
+
+Task 0 DiT blocks 16 27
+
+Block 17
+
+Block 18
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0261
+
+Block 20
+
+PC1
+
+PC2 loss: 0.0348
+
+Block 21
+
+PC1
+
+PC2 loss: 0.0039
+
+Block 22
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0027
+
+Block 24
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 25
+
+PC1
+
+PC2 loss: 0.0200
+
+Block 26
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+PC1
+
+PC2 loss: 0.0063
+
+PC1
+
+PC2 loss: 0.1182
+
+Figure 22: Cosmos-Policy Task 0 noise corruption
+
+Block 19
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 23
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 27
+
+PC3
+
+PC1
+
+PC2 loss: 0.1645
+
+33
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 1 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 4
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 5
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 6
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 8
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 9
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 10
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 12
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 13
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 14
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+PC1
+
+PC2 loss: 0.1949
+
+PC1
+
+PC2 loss: 0.4516
+
+Figure 23: Cosmos-Policy Task 1 noise corruption
+
+Block 3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 7
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 11
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 15
+
+PC3
+
+PC1
+
+PC2 loss: 0.1000
+
+34
+
+Block 16
+Condition positive negative
+
+PC3
+
+Task 1 DiT blocks 16 27
+
+Block 17
+
+Block 18
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0002
+
+Block 20
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 21
+
+PC1
+
+PC2 loss: 0.0069
+
+Block 22
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 24
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 25
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 26
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0047
+
+PC1
+
+PC2 loss: 0.0492
+
+PC1
+
+PC2 loss: 0.2189
+
+Figure 24: Cosmos-Policy Task 1 noise corruption
+
+Block 19
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 23
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 27
+
+PC3
+
+PC1
+
+PC2 loss: 0.1715
+
+35
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 0 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+Block 3 PC3
+
+PC1
+
+PC2 loss: 0.8049
+
+Block 4
+
+PC1
+
+PC2 loss: 0.8044
+
+Block 5
+
+PC1
+
+PC2 loss: 0.7876
+
+Block 6
+
+PC1
+
+PC2 loss: 0.7814
+
+Block 7
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.7832
+
+Block 8
+
+PC1
+
+PC2 loss: 0.7485
+
+Block 9
+
+PC1
+
+PC2 loss: 0.7564
+
+Block 10
+
+PC1
+
+PC2 loss: 0.7584
+
+Block 11
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.7442
+
+Block 12
+
+PC1
+
+PC2 loss: 0.7763
+
+Block 13
+
+PC1
+
+PC2 loss: 0.7719
+
+Block 14
+
+PC1
+
+PC2 loss: 0.7869
+
+Block 15
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.3500
+
+PC1
+
+PC2 loss: 0.4208
+
+PC1
+
+PC2 loss: 0.4855
+
+Figure 25: Cosmos-Policy Task 0 camera perturbation
+
+PC1
+
+PC2 loss: 0.3126
+
+36
+
+Block 16
+Condition positive negative
+
+PC3
+
+Task 0 DiT blocks 16 27
+
+Block 17
+
+Block 18
+
+PC3
+
+PC3
+
+Block 19 PC3
+
+PC1
+
+PC2 loss: 0.1219
+
+Block 20
+
+PC1
+
+PC2 loss: 0.2819
+
+Block 21
+
+PC1
+
+PC2 loss: 0.1020
+
+Block 22
+
+PC1
+
+PC2 loss: 0.0980
+
+Block 23
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.1698
+
+Block 24
+
+PC1
+
+PC2 loss: 0.1166
+
+Block 25
+
+PC1
+
+PC2 loss: 0.1322
+
+Block 26
+
+PC1
+
+PC2 loss: 0.1455
+
+Block 27
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.1614
+
+PC1
+
+PC2 loss: 0.3327
+
+PC1
+
+PC2 loss: 0.9824
+
+Figure 26: Cosmos-Policy Task 0 camera perturbation
+
+PC1
+
+PC2 loss: 0.6671
+
+37
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 1 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+Block 3 PC3
+
+PC1
+
+PC2 loss: 0.7785
+
+Block 4
+
+PC1
+
+PC2 loss: 0.6822
+
+Block 5
+
+PC1
+
+PC2 loss: 0.7031
+
+Block 6
+
+PC1
+
+PC2 loss: 0.7157
+
+Block 7
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.7269
+
+Block 8
+
+PC1
+
+PC2 loss: 0.6185
+
+Block 9
+
+PC1
+
+PC2 loss: 0.6497
+
+Block 10
+
+PC1
+
+PC2 loss: 0.5879
+
+Block 11
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.6774
+
+Block 12
+
+PC1
+
+PC2 loss: 0.6694
+
+Block 13
+
+PC1
+
+PC2 loss: 0.7148
+
+Block 14
+
+PC1
+
+PC2 loss: 0.7620
+
+Block 15
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.3978
+
+PC1
+
+PC2 loss: 0.3679
+
+PC1
+
+PC2 loss: 0.6062
+
+Figure 27: Cosmos-Policy Task 1 camera perturbation
+
+PC1
+
+PC2 loss: 0.6071
+
+38
+
+Block 16
+Condition positive negative
+
+PC3
+
+Task 1 DiT blocks 16 27
+
+Block 17
+
+Block 18
+
+PC3
+
+PC3
+
+Block 19 PC3
+
+PC1
+
+PC2 loss: 0.1164
+
+Block 20
+
+PC1
+
+PC2 loss: 0.1119
+
+Block 21
+
+PC1
+
+PC2 loss: 0.1945
+
+Block 22
+
+PC1
+
+PC2 loss: 0.1451
+
+Block 23
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.2587
+
+Block 24
+
+PC1
+
+PC2 loss: 0.2586
+
+Block 25
+
+PC1
+
+PC2 loss: 0.2669
+
+Block 26
+
+PC1
+
+PC2 loss: 0.3127
+
+Block 27
+
+PC3
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.9066
+
+PC1
+
+PC2 loss: 0.9851
+
+PC1
+
+PC2 loss: 0.7562
+
+Figure 28: Cosmos-Policy Task 1 camera perturbation
+
+PC1
+
+PC2 loss: 0.5930
+
+39
+
+First
+
+Best
+
+Last
+
+Task 0
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.8877
+
+PC3
+
+PC2
+
+PC1
+
+Block 4
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.0000
+
+Task 1
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7908
+
+PC3
+
+PC2
+
+PC1
+
+Block 5
+
+avg loss: 0.0000
+
+PC3
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.4720
+
+Task 2
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.7742
+
+PC2
+
+PC1
+
+Block 4
+
+avg loss: 0.0000
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.0000
+
+Figure 29: Feature separability: DiT4DiT Gaussian noise corruption for tasks 0-2.
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.8395
+
+PC2 PC1
+Block 8 avg loss: 0.0000
+
+PC2 PC1
+Block 15 avg loss: 0.3054
+
+Task 3
+
+Task 4
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.8239
+PC3
+
+PC3
+PC2 PC1
+Block 14
+40 avg loss: 0.0240
+PC3
+
+PC3
+PC2 PC1
+Block 15 avg loss: 0.2146
+PC3
+
+k5
+
+Task 0
+
+First
+PC3
+PC2 PC1
+Block 0 avg loss: 0.7222
+
+Best
+PC3
+PC2 PC1
+Block 5 avg loss: 0.5830
+
+Last
+PC3
+PC2 PC1
+Block 15 avg loss: 0.6357
+
+Task 1
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.8488
+
+PC3
+PC2 PC1
+Block 3 avg loss: 0.3751
+
+PC3
+PC2 PC1
+Block 15 avg loss: 0.4193
+
+Task 2
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.7213
+
+PC3
+PC2 PC1
+Block 8 avg loss: 0.6472
+
+PC3
+PC2 PC1
+Block 15 avg loss: 0.6676
+
+Task 3
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.5951
+
+PC2 PC1
+Block 9 avg loss: 0.5951
+
+PC2 PC1
+Block 15 avg loss: 0.5951
+
+Figure 30: Feature separability: DiT4DiT gripper perturbation for tasks 0-3.
+
+PC3
+
+PC3
+
+PC3
+
+PC2
+
+PC1
+
+Block 0
+
+avg loss: 0.5197
+
+PC2
+
+PC1
+
+Block 14
+
+avg loss: 0.3090
+
+PC2
+
+PC1
+
+Block 15
+
+avg loss: 0.3284
+
+Task 4
+
+Task 5
+
+PC3
+
+PC1
+
+PC2 Block 0
+
+PC3
+41
+
+PC1
+
+PC2 Block 13
+
+PC3
+
+PC1
+
+PC2 Block 15
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 0 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.8877
+
+Block 4
+
+PC1
+
+PC2 loss: 0.8995
+
+Block 5
+
+PC1
+
+PC2 loss: 0.7761
+
+Block 6
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 8
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 9
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 10
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0006
+
+Block 12
+
+PC1
+
+PC2 loss: 0.0133
+
+Block 13
+
+PC1
+
+PC2 loss: 0.0203
+
+Block 14
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+PC1
+
+PC2 loss: 0.0000
+
+PC1
+
+PC2 loss: 0.0000
+
+Figure 31: DiT4DiT Task 0 noise corruption
+
+Block 3
+
+PC3
+
+PC1
+
+PC2 loss: 0.7490
+
+Block 7
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 11
+
+PC3
+
+PC1
+
+PC2 loss: 0.0124
+
+Block 15
+
+PC3
+
+PC1
+
+PC2 loss: 0.0000
+
+42
+
+Block 0
+Condition positive negative
+
+PC3
+
+Task 1 DiT blocks 0 15
+
+Block 1
+
+Block 2
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.7908
+
+Block 4
+
+PC1
+
+PC2 loss: 0.7985
+
+Block 5
+
+PC1
+
+PC2 loss: 0.7052
+
+Block 6
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.0033
+
+Block 8
+
+PC1
+
+PC2 loss: 0.0000
+
+Block 9
+
+PC1
+
+PC2 loss: 0.0563
+
+Block 10
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.1936
+
+Block 12
+
+PC1
+
+PC2 loss: 0.2992
+
+Block 13
+
+PC1
+
+PC2 loss: 0.3965
+
+Block 14
+
+PC3
+
+PC3
+
+PC3
+
+PC1
+
+PC2 loss: 0.3947
+
+PC1
+
+PC2 loss: 0.4285
+
+PC1
+
+PC2 loss: 0.3617
+
+Figure 32: DiT4DiT Task 1 noise corruption
+
+Block 3
+
+PC3
+
+PC1
+
+PC2 loss: 0.6874
+
+Block 7
+
+PC3
+
+PC1
+
+PC2 loss: 0.1486
+
+Block 11
+
+PC3
+
+PC1
+
+PC2 loss: 0.4297
+
+Block 15
+
+PC3
+
+PC1
+
+PC2 loss: 0.4720
+
+Tasks 1&2
+
+First
+Cond. / Task task 1 positive task 1 negative task 2 positive task 2 negative
+
+PC3
+
+Best
+PC3
+
+Last
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.8109
+
+PC2 PC1
+Block 5 avg loss: 0.0000
+
+PC2 PC1
+Block 15 avg loss: 0.0113
+
+Figure 33: Pairwise Gaussian noise corruption feature separation on DiT4DiT.
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.8542
+
+43
+PC2 PC1
+Block 4 avg loss: 0.0000
+
+PC2 PC1
+Block 15 avg loss: 0.0000
+
+Tasks 1&0
+
+Tasks 1&0
+
+Tasks 1&2
+
+First
+Cond. / Task task 1 positive task 1 negative task 0 positive task 0 negative
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.7503
+
+Best
+PC3
+PC2 PC1
+Block 13 avg loss: 0.3592
+
+Last
+PC3
+PC2 PC1
+Block 15 avg loss: 0.3732
+
+PC3
+PC2 PC1
+Block 0 avg loss: 0.7431
+
+PC3
+PC2 PC1
+Block 4 avg loss: 0.3167
+
+PC3
+PC2 PC1
+Block 15 avg loss: 0.4142
+
+PC3
+
+PC3
+
+PC3
+
+PC2 PC1
+Block 0 avg loss: 0.8160
+
+PC2 PC1
+Block 5 avg loss: 0.4485
+
+PC2 PC1
+Block 15 avg loss: 0.4959
+
+Figure 34: Pairwise gripper perturbation feature separation on DiT4DiT.
+
+Tasks 1&3
+
+44
+
+

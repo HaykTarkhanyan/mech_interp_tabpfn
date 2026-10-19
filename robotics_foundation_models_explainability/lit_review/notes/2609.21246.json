@@ -1,0 +1,44 @@
+{
+  "id": "2609.21246",
+  "title": "VLA-Scope: Shift-Aware Failure Prediction for Vision-Language-Action Models",
+  "first_author": "Zhu",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["OpenVLA (LIBERO-Spatial fine-tuned)"],
+  "action_head": "discrete action tokens",
+  "methods": ["logistic-regression OOD detector and 7-way shift-type classifier on mean-pooled image and text token embeddings of the first input", "logistic-regression failure-risk predictor on 14 hand-crafted action-prefix features + predicted shift type + PCA-32 of the cumulative mean of last-layer last-prompt-token hidden states", "leave-one-task-out cross-validation", "input ablations"],
+  "question": "Can combining the type of input shift, statistics of executed actions, and averaged hidden states predict whether an OpenVLA rollout under distribution shift will eventually fail?",
+  "key_findings": [
+    "OOD detection from initial pooled embeddings: ROC-AUC 0.9454, TPR 84.57%, FPR 6.20%; shift-type accuracy 91.00% (macro-F1 0.9123); an ID-only cosine 1-NN baseline gets 0.8176 (Table I).",
+    "Text-only features detect OOD poorly (ROC-AUC 0.5714) but are needed for language shifts (detected Language-OOD cases rise from 18 to 170 of 200 when text is added).",
+    "Failure rate under shift ranges from 27.5% (Layout) to 77.5% (Camera); every category has both outcomes, so shift type alone does not determine failure.",
+    "Failure-risk ROC-AUC on all 1,400 OOD rollouts rises with steps: 0.6852 (step 10), 0.7675 (step 30), 0.8497 (step 60) on an unchanged cohort (Table II).",
+    "Ablation at step 60 (Table VI): without the cumulative hidden-state representation 0.7906; without action features 0.8344; action features alone 0.7756; predicted type alone 0.6739.",
+    "Baselines retrained on the same splits (Table IV, step 30 / 60): ActProbe 0.7601 / 0.8132, SAFE-MLP 0.7294 / 0.8055, SAFE-LSTM 0.6867 / 0.7414, VLA-Scope 0.7675 / 0.8497.",
+    "By step 60, an 'ever alarmed' rule catches 83.51% of failures but fires on 50.73% of successes, showing the operational false-alarm problem."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Spatial (10 tasks) with LIBERO-Plus perturbation categories and assets"],
+    "scale": "50 ID + 20 OOD cases per category per task: 1,900 initial inputs, 1,400 OOD rollouts (751 successes, 649 failures); 10-fold leave-one-task-out CV; neural baselines averaged over 3 seeds",
+    "statistics": "no: pooled held-out point estimates, no CIs or tests",
+    "baselines": "ActProbe, SAFE-MLP, SAFE-LSTM retrained on same data; cosine 1-NN OOD baseline; action-only and instruction-context logistic variants"
+  },
+  "causal_validation": "None; logistic weights decompose score changes into feature contributions, which the authors explicitly say describe the predictor, not physical failure causes.",
+  "closed_loop": "Offline evaluation on recorded closed-loop rollouts; no intervention at runtime.",
+  "limitations_stated": [
+    "OOD characterizer runs only at initialization, so shifts arising later are missed.",
+    "The OOD gate excludes 216 cases including 45 eventual failures that get no risk score.",
+    "Feature contributions describe score changes, not causes of failure."
+  ],
+  "critique": [
+    "The hidden-state contribution is real but modest: removing the cumulative representation costs 0.059 ROC-AUC at step 60; most signal comes from simple action statistics (0.7756 alone).",
+    "The 'execution progress features' phrase in the abstract refers to averaged hidden states, not an explicit progress estimate; the naming is confusing.",
+    "Later-step and 'progress-based' results (ROC-AUC up to 0.98) are confounded by cohort change and episode length, since successes end early and failures run to the 220-action budget; the step-60 fixed-cohort number is the fair one, and the authors acknowledge the cohort issue.",
+    "The supervised OOD classifier is trained on the same seven perturbation families it is tested on (held-out task, not held-out perturbation), so 91% type accuracy says little about novel shifts.",
+    "Single model, single suite, simulation only, no seeds for the logistic models; comparisons to SAFE use retrained baselines on a different setting than SAFE's paper."
+  ],
+  "code": "not reported",
+  "one_line": "On 1,400 perturbed OpenVLA LIBERO rollouts, a logistic model combining a predicted shift type, simple action statistics and averaged last-layer hidden states predicts eventual failure (ROC-AUC 0.85 after 60 actions) better than SAFE and ActProbe, though hidden states add only about 0.06 over actions alone."
+}

@@ -1,0 +1,580 @@
+1
+Driving the Wrong Way: Leveraging Interpretability in End2End Autonomous Driving Models
+Franz Motzkus, Sebastian Bernhard
+
+arXiv:2607.06328v1 [cs.AI] 7 Jul 2026
+
+Abstract—The increasing adoption of end-to-end learning for autonomous driving introduces increased model complexity and opacity, raising the risk of learning undesired or erroneous behavior. In this work, we integrate unsupervised dictionary learning as a post hoc interpretability module within stateof-the-art driving models to decompose driving behavior into semantically meaningful concepts while demonstrating their causal influence on the model’s driving decisions. We propose a stepwise framework for extracting and interpreting meaningful concepts from the end-to-end model and connecting them to the multifaceted model outputs, thereby revealing the underlying decision-making logic for the prediction of future trajectories. Furthermore, targeted interventions at the concept level allow us to manipulate and correct driving decisions, resulting in measurable improvements in overall driving performance. We thus demonstrate how interpretability can effectively be used to reduce model opacity, uncover erroneous behavior, and enable targeted mitigation, ultimately boosting model performance.
+Index Terms—Artificial Intelligence, Autonomous Driving, End-to-End Learning, Interpretability.
+I. INTRODUCTION
+End-to-end learning has recently emerged as a prominent approach for autonomous driving systems. In contrast to conventional modular pipelines with explicitly separated perception, prediction, and planning components, modern approaches integrate multimodal inputs, including camera recordings and top-level commands, into unified transformer-based architectures [1]. These systems jointly learn perception, temporal reasoning, and decision-making, achieving state-of-the-art performance on open-loop benchmarks such as NAVSIM [2], [3].
+However, this architectural unification comes at the cost of reduced transparency, as the model complexity increases and clear interfaces that previously enabled module-level testing disappear. Consequently, internal decision-making becomes increasingly opaque, making the analysis of failure modes more difficult and resulting in expensive error debugging through repeated data curation and retraining cycles guided mainly by best guesses. Especially in terms of safety and interpretability, the field of end-to-end autonomous driving lacks generalizing solutions for holistically describing model behavior and offering comprehensive insights into failure modes [4], [5].
+In this work, we address this limitation by introducing a concept-based interpretability framework for end-to-end autonomous driving. Our approach reveals interpretable latentspace components and directly connects them to trajectorylevel decision scores. Specifically, we integrate dictionary learning via Sparse Autoencoders (SAEs) into the model’s
+Franz Motzkus is with AUMOVIO, Germany, and with the Department of Applied Computer Science, University of Bamberg, Germany.
+
+feature space, decomposing latent activations into sparse, human-interpretable concepts. Rather than treating the latent space as an opaque collection of convoluted features, this decomposition provides a more transparent representation in which individual concepts correspond to meaningful patterns learned by the model. Consequently, complex driving decisions can be expressed as a composition of semantically meaningful elements with causal influence on the predicted future trajectory. This concept-based perspective offers a more interpretable view of the model’s internal reasoning process while preserving the representational capacity required for autonomous driving.
+To validate our approach, we perform concept-level interventions by selectively suppressing individual latent components. We show that interventions on concepts associated with erroneous behavior lead to measurable improvements in downstream driving metrics, including collision-avoidance, drivable area and traffic light compliance. This indicates that the identified concepts are not merely correlational artifacts but functionally relevant components of the model’s decisionmaking. The results further demonstrate how increased interpretability can be leveraged for targeted model refinement and improved overall performance.
+Our contributions are the following:
+1) We present the first structured and generalized approach for interpreting driving decisions in end-to-end autonomous driving models, providing concept-level explanations for the scoring of individual candidate trajectories.
+2) We introduce a concept-based decomposition of latent representations that identifies the most influential factors within individual driving scenarios, enabling finegrained attribution of model decisions.
+3) We establish a direct correspondence between learned concepts and the predicted quality scores for trajectories, revealing which concepts are influencing the distinct driving behaviors such as collision avoidance, trafficlight compliance and progress.
+4) We demonstrate that the identified concepts can be leveraged for targeted model adaptation and manipulation, enabling improvements in downstream driving performance without the need for retraining.
+II. RELATED WORK
+A. End-to-End Autonomous Driving
+With the adoption of the end-to-end learning paradigm in autonomous driving AI models, multiple different approaches from imitation learning to reinforcement learning have been
+
+2
+
+E
+
+D
+
+Fig. 1. Framework Architecture for Integrating an Interpretability Layer into End-to-End Autonomous Driving Models
+
+introduced [1]. Imitation learning methods train from (human) demonstrations via behavior cloning, mimicking the ground truth expert’s driving decisions from real-life driving recordings. Popular state-of-the-art models using imitation learning are Hydra-MDP [6] scoring on a trajectory vocabulary, and Emma [7] incorporating a language model to build a multimodal predictor. Typically, they output trajectories with estimated quality scores and the training objective is to approximate the ground truth trajectory from a real-world recording.
+Reinforcement learning instead typically operates in a virtual environment such as a simulator, where the model’s interaction with the environment is optimized based on a reward function. However, the gap between autonomous driving simulation and real-world driving is still a foundational problem.
+A group of current approaches is referred to as offline reinforcement learning, where training is based on recordings with ground-truth driving behavior, but alternative trajectories generated by the model can also be evaluated and optimized [2]. By generating possible next steps of the scenario, the influence of the environment interaction is even enhanced [3]. These models typically predict trajectories with an estimated Predictive Driver Model (PDM) score that incorporates an imitation score and additional penalty scores, including collision, drivable area, and traffic light compliance, along with progress along the ground-truth trajectory.
+[8] introduces a probabilistic scoring over a predefined dictionary of trajectories. Later approaches adapt the PDM scoring for a quality assessment of trajectories.
+Hydra-MDP [6] trains multiple diverse trajectory heads and selects among them at inference time, explicitly addressing the multimodality of human driving behavior to improve robustness under the PDM evaluation protocol.
+GTRS [9] builds upon the Hydra-MDP model and introduces an additional trajectory generation step via a diffusion model. Instead of a fixed-trajectory dictionary, possible trajectories are generated iteratively.
+iPad [10] shifts from dense BEV grid features to an iterative proposal-centric paradigm. A set of sparse, learnable
+
+trajectory proposals serves as the central organising principle: its ProFormer encoder iteratively refines proposals and their associated BEV queries through proposal-anchored attention, concentrating feature extraction on planning-relevant regions. Lightweight proposal-centric auxiliary tasks for mapping and collision prediction further improve planning quality.
+B. Interpretability in End-to-End Autonomous Driving
+While the end-to-end training schema drastically increases the opacity of the presented models compared to classical approaches with AI-based perception and rule-based planning, multiple approaches seek to incorporate interpretability to (parts of) the model [5].
+Saliency-based methods [11], [12] inspect model predictions through saliency, and gradient-based attribution (e.g. GradCAM, Integrated Gradients). These methods are widely used due to their simplicity but are limited to identifying where the model focuses within the input, providing no account of what the model has learned to represent internally. Especially in autonomous driving, where multiple factors influence the driving decision, saliency maps are limited as they highlight only the most prominent aspect.
+Attention visualization methods use the models’ built-in attention mechanisms to highlight the most-attended information in the front camera view [13]–[16] or in an abstracted birdseye-view [17], [18]. Another work optimizes the model itself to yield diverse feature maps in input space [19].
+Latent space interpretability: While attention visualization reveals highly attended information, other latent space interpretability methods are rarely applied to end-to-end autonomous driving models. [20] uses latent space representations of an LSTM network as additional input for predicting driving actions in a policy network. [21] introduces a testing framework using neuron coverage, thereby testing the influence of input perturbations on intermediate representations. Neither method focuses on making the latent space more interpretable.
+In [22], an end-to-end autonomous driving model is specifically designed to have interpretable intermediate representa-
+
+3
+
+tions between perception, prediction and planning, yielding separate scene representations for drivable area, lane markings and traffic participants. However, the latent space representations are rather controlled with the necessity of using the specifically introduced architecture.
+Vision–language models and vision–language–action models (VLM/VLA) present an emerging research direction in autonomous driving [23], [24]. While these approaches open promising directions for leveraging interpretability in autonomous driving models, more in-depth analyses at the level of underlying concepts—through which the different aspects of driving decisions can be disentangled and examined—are still largely missing. To our knowledge, no other conceptbased latent space interpretability approach for end-to-end autonomous driving models exists.
+III. PRELIMINARIES
+A. Sparse Autoencoder Learning
+Sparse Autoencoders have first shown to extract interpretable feature directions in language models [25], but also proven useful in vision models [26], [27] or even trajectory prediction [28]. The latent space of AI models is typically highly entangled, with single neurons encoding multiple unrelated features, making them non-interpretable. This polysemanticity of neurons hinders a mechanistic understanding of individual features [29], in which the functioning of single network units is explored. As neural networks often learn more features than having dimensions, this superposition can be resolved with sparse autoencoders [30]. By expanding the latent space while enforcing sparse representations, they provide a principled approach to decomposing an entangled representation into linear directions corresponding to interpretable, monosemantic features, denoted as concepts.
+Formally, given model activations x ∈ Rd, an overcomplete dictionary D ∈ Rd×m with m > d is learned, such that x ≈ Dz with z ∈ Rm forming a sparse representation. SAEs jointly learn the dictionary D and a sparse encoder E : Rd → Rm by minimizing the reconstruction loss ∥x−DE(x)∥22 between the activation vector x and it’s reconstruction DE(x). To achieve sparse representations in the latent codes z, sparsity objectives like a ℓ1-regularization or a top-k activation retaining only the k highest values in z are applied [31], [32]. Multiple works adapt the standard SAE training scheme to achieve a different feature distribution.
+Matryoshka training [33] builds on the idea of nested representations, where subsets of latent dimensions define a sequence of progressively more expressive autoencoders. Given a latent code z ∈ Rm, whose coordinates correspond to m latent features, we consider prefixes z1:m1 , z1:m2 , . . . , z1:m with m1 < m2 < · · · < m. Each subset of latent features defines its own reconstruction, yielding a sequence of valid autoencoders with increasing reconstruction fidelity and inducing a hierarchy in which smaller subsets capture general features, while larger subsets include progressively more specific ones.
+Archetypal SAEs [34] introduce additional convexity constraints on the learned dictionary. Let X ∈ Rd×n denote a set of n ∈ N reference data points, where each column
+
+corresponds to an input in Rd. The dictionary is parameterized as D = XA, where A ∈ Rn×m satisfies A ≥ 0 and 1⊤A = 1⊤, such that each dictionary atom dj = Xaj is a convex combination of data points. Thus, in contrast to standard SAEs with unconstrained dictionaries, latent features correspond to archetypes that lie in the convex hull of the data. In practice, these archetypes can be compared to representative data prototypes and resemble cluster-like summaries of the dataset, with each dictionary atom capturing a convex combination of similar inputs.
+
+B. SAE Evaluation
+
+We evaluate SAEs in two categories, whereas the first one is
+
+the reconstruction fidelity of the learned representations, while
+
+the other rates the alignment with desirable features based on
+
+our use case.
+
+The reconstruction quality evaluates how well the SAE
+
+preserves the information contained in the original latent
+
+embeddings. The cosine similarity measures the alignment
+
+between the models latent space representation x and its
+
+reconstruction
+
+after
+
+the
+
+SAE
+
+xˆ
+
+as
+
+cos(x, xˆ)
+
+=
+
+x⊤ xˆ ∥x∥2 ∥xˆ∥2
+
+,
+
+It
+
+captures the preservation of directional information in latent
+
+space.
+
+The explained variance determines the fraction of variance
+
+in
+
+x
+
+explained
+
+by
+
+xˆ
+
+and
+
+is
+
+given
+
+by
+
+EV
+
+=
+
+1
+
+−
+
+Var(x−xˆ) Var(x)
+
+,
+
+where Var(·) denotes the empirical variance over the dataset.
+
+As the investigated end-to-end models include an ego status,
+
+consisting of values for velocity, acceleration and a top-level
+
+driving direction, into their computation, we assume it to be
+
+represented in the SAE with individual features. As a quality
+
+criteria, we can thus compute how well the ego status is
+
+represented in the SAE neurons. For each ego-status variable
+
+ej (velocity, acceleration, driving command), we compute the
+
+Pearson correlation rn,j between every alive SAE neuron i
+
+and ej across the dataset. The ego correlation score is defined
+
+as:
+
+1
+
+Scorr = |E |
+
+max |ri,j |
+i
+
+(1)
+
+j∈E
+
+where E is the set of non-constant ego features. A score of 1 indicates that every ego variable is perfectly linearly represented by at least one SAE neuron.
+In the ego probing, we train linear probes on the SAE codes to predict ego-status variables, using a log-based train/test split (entire driving logs are held out) to prevent temporal leakage. Three probes are evaluated: (1) a logistic regression classifier for the driving command (left/straight/right), yielding test macro-F1 Fcmd; (2) a Ridge regressor for continuous ego dynamics (velocity, acceleration), yielding joint test Re2go; and (3) a scenario-ID classifier measuring log memorization, with accuracy asc. The composite probing score is:
+
+Sprobe = 0.5 Fcmd + 0.5 Re2go − 0.2 max(0, asc − arandom) (2)
+
+The scenario penalty discourages representations that merely memorize log identity rather than encoding generalizable driving concepts.
+
+4
+
+C. Circuit Discovery
+
+Mechanistic interpretability [35] refers to the analysis of single parts of a frozen neural network to extract humanunderstandable components. In mechanistic interpretability, circuit analysis uncovers minimal computational subgraphs between neurons modeling specific model behavior. With the introduction of SAEs, circuits no longer operate on polysemantic neurons, but directly on the monosemantic concept level [36], amplifying their strength in revealing interpretable, human-auditable subgraphs.
+Multiple different algorithms for the computation of circuits exist varying in the trade-off between computation cost and accuracy. As a computation based on the removal of single neurons and a following full network evaluation is computationally not feasible, we apply a circuit computation based on neuron attributions. Given a set of SAE latent codes Z ∈ Rn×m and per-sample attribution scores αh,i, we identify a sparse circuit of SAE neurons causally mediating each planning head output through a four-stage pipeline.
+a) Attribution Patching.: For each sample latent z in Z and head h of the model’s H outputs, the influence of neuron i is estimated via the gradient-weighted activation difference:
+
+Ihat,tir = |αh,i| · sign(α¯h,i),
+
+αh,i =
+
+∂fh(z) ∂zi
+
+·
+
+(zi
+
+−
+
+z¯i)
+
+(3)
+
+where z¯i and α¯h,i denote averages over the dataset Z. This yields a signed influence matrix Iattr ∈ RH×m. This provides a fast, approximate estimate of the causal influence of all latent features on each head simultaneously.
+b) Activation Patching.: For the top-2q candidate features selected by attribution patching (where q denotes the target circuit size), we perform exact causal interventions. Each neuron i is individually patched to its dataset-mean baseline z¯i, and the causal effect on head h is measured as:
+
+Iha,cit = Ez fh(z) − fh z(i←z¯i)
+
+(4)
+
+where fh(z) denotes the output of head h as a function of the latent representation z.
+c) ACDC Pruning.: The influence matrix is sparsified by retaining only edges exceeding a relative threshold τ per head:
+
+E=
+
+(h, i)
+
+Iha,cit maxi′ Iha,cit′
+
+>τ
+
+(5)
+
+This yields the final sparse circuit E ⊆ {1, . . . , H} × {1, . . . , m}.
+d) Neuron Specificity.: Each neuron’s degree of headspecificity is quantified via the Gini coefficient over its normalized influence distribution across heads:
+
+2 H−1
+
+gi = 1 − H − 1
+
+Ck (i),
+
+k=1
+
+Ck(i) =
+
+j≤k I˜j,i j I˜j,i
+
+(6)
+
+where I˜j,i are the normalized influences sorted in ascending order. gi = 1 indicates a neuron exclusively influencing a single head; gi = 0 indicates uniform influence across all heads.
+
+IV. METHODOLOGY
+To uncover the factors driving high-stakes decisions in endto-end autonomous driving models, we propose a structured, multi-step interpretability framework. We begin by using SAEs to disentangle the latent space of an end-to-end model into separate, interpretable feature directions. This provides a lens into otherwise opaque internal representations without significantly altering the original predictive performance. Next, we systematically assign semantic meaning to these learned feature directions, establishing a connection between abstract model encodings and human-understandable concepts. Building on this, we analyze individual driving scenarios by decomposing model decisions into their underlying feature contributions. Additionally, feature activations are traced back into the input space, producing camera-based attribution maps that localize the corresponding features in each scene and provide another level of interpretability. In the subsequent step, we use circuit analysis to connect these semantic features to the model’s outputs. This enables us to directly quantify how individual features contribute to different driving properties, e.g. by inspecting which features are relevant for predicting the traffic light compliance. Finally, we leverage these insights to identify failure cases and undesired behaviors, enabling targeted mitigation strategies and improving the overall reliability of the system.
+
+A. Selecting an Expressive Latent Space
+As the first step of our framework, a reasonable latent space representation for injecting the SAE needs to be identified within the model. The criteria are as follows:
+• The latent space may encode a dense summary of the scene understanding, including all model inputs as observed by the model.
+• The model should base the prediction on the encoded scene understanding of this latent space, so that the trajectory scoring can be linked to the extracted SAE features.
+• The dimensionality of the latent space should ideally be of moderate size (i.e., d = 256) and allow for a 1D vector representation (per trajectory).
+In the chosen models, we choose the latent space representation directly preceding the scoring module, yielding a 1D representation per trajectory proposal. This representation is particularly suitable, as it contains the complete scene understanding while its features are directly inform the model scoring.
+
+B. Learning Interpretable Feature Directions
+
+In the second step, we train an SAE on the selected latent space to disentangle it into sparse, interpretable features. The SAE is trained on the frozen end-to-end model’s latent representations, minimizing the reconstruction error:
+
+1 Lrec = N
+
+N
+
+∥xp − xˆp∥22 .
+
+(7)
+
+p=1
+
+5
+
+Sparsity is enforced by a top-k activation function on the SAE latent space activation. To prevent inactive concepts, we introduce an additional reanimation term:
+
+Lreanim = −λr
+
+1 N
+
+N
+hppr,ei,
+
+(8)
+
+i∈D p=1
+
+where D denotes neurons inactive for a predefined number of steps and λr > 0 denotes the scaling factor. The term hppr,ei describes the pre-activation of latent feature i for sample p,
+i.e., the value before the application of the top-k sparsifying
+nonlinearity.
+
+C. Assigning Semantic Meaning to Features
+
+Having obtained disentangled, monosemantic feature directions with the SAE, the third step focuses on assigning semantic meaning to individual SAE neurons. In this context, semantic refers to a consistent, human-understandable concept that can be expressed in natural language. We use the following strategies for revealing neuron semantics.
+1) Activation/Attribution Maximization: Activation and attribution maximization [37], [38] are data-based approaches that extract samples from a reference dataset that maximally activate the specified neuron or produce the highest attribution, meaning the neuron is maximally used for the model’s prediction in that sample. Formally, given a neuron i and a reference dataset X, the top-k maximally activating samples are retrieved as:
+
+Si∗ = arg max
+
+zi(x)
+
+(9)
+
+S⊆X, |S|=k x∈S
+
+where zi(s) is the activation of neuron i on sample x. For attribution maximization, zi(x) is replaced by the neuron’s attribution score with respect to the model output. As explained in the next section, it captures not merely whether a neuron fires but whether it contributes to the prediction.
+2) SAE Neuron Attribution: Input attribution methods highlight input units based on their importance towards a model output objective. We employ Concept Relevance Propagation (CRP) [38], which builds on Layer-wise Relevance Propagation (LRP) [39]. LRP is a modified gradient backpropagation method, using specific rules to preserve the semantic signal from an output objective in the gradient backpropagation. CRP extends the gradient pass with an intermediate gradient masking to yield the gradient/attribution signal for a single neuron. The use of LRP is particularly advantageous in this context, as its relevance conservation property enables precise attribution of the prediction to individual latent features, while its robustness to gradient noise facilitates effective filtering of meaningful semantic signals compared to standard gradientbased methods.
+In our setting, the model assigns a scalar score f (xt) to the latent activation xt ∈ Rd of each trajectory proposal. The score of the selected trajectory is used to initialize the relevance propagation. Starting from this scalar output, relevance is propagated backward through the network to the SAE latent space with its representation zt = E(xt) ∈ Rm.
+
+During propagation, relevance is distributed at each layer proportionally to the contribution of each neuron:
+
+Ri =
+
+ziwi j zj wj
+
+Rout,
+
+(10)
+
+where wi denotes the contribution weight to the layer output, and Rout is the relevance from the subsequent layer. This yields relevance scores Ri at the level of SAE neurons, quantifying their contribution to the selected trajectory score. The SAE neurons are then ranked according to their relevance scores Ri, allowing us to identify the concepts most responsible for the selected trajectory.
+To isolate the contribution of a single neuron i, we apply concept masking at the SAE layer during relevance propagation: R(i) = R ⊙ ei, where ei is the unit vector. The masked relevance is then propagated back to the model inputs and reveals highly attributed visual patterns in the camera input or the ego status corresponding to that neuron.
+
+D. Linking Features to Model Outputs
+In the fourth step, we connect the SAE features to the model predictions using circuit analysis as described in Section III-C. For end-to-end autonomous driving models predicting the PDM subscores for a set of trajectory proposals, the individual components of the PDM score can be linked to the extracted features. Depending on the user’s interest, a subset of SAE neurons and/or a selection of PDM elements can be selected for the circuit computation. The resulting circuit represents a sparse mapping between latent features and model outputs, identifying which features causally influence specific components of the prediction. The user can thus comprehend how the interpretable features influence the component scores.
+
+E. Manipulating the Model Logic
+Finally, we leverage the established feature-to-output relationships to identify failure cases and enable targeted featurelevel interventions. Recalling that an SAE neuron encodes a distinct semantic feature direction, its activation can be easily controlled by globally amplifying or attenuating this feature across all samples. Suppose the model mistakenly learned a spurious feature that undesirably influences the trajectory scoring. Since the feature describes a distinct direction in the latent space, it is likely captured and encoded in an SAE neuron. The influence of this spurious feature can then be eliminated simply by zeroing the activation of that neuron, avoiding the need for costly dataset adjustments or retraining.
+For models that predict the individual components of the PDM score with separate heads, the relationship between SAE neurons and specific score components becomes directly accessible. Strategically placing the SAE module allows targeted interventions in the causal relations modifying which neurons influence which scoring heads. Note that the patterns learned from the data likely induce strong cross-associations between features and prediction heads that are driven by correlation rather than true causality.
+
+6
+
+Version
+
+#Neurons k Dead Neurons (%) ↓ Cosine Similarity ↑ Explained Variance ↑ Ego Corr ↑ Ego Probing ↑ EPDMS ↑
+
+TopK
+
+64
+
+16
+
+7.8
+
+TopK
+
+128
+
+32
+
+8.6
+
+TopK*
+
+256
+
+64
+
+0.0
+
+TopK
+
+1024
+
+64
+
+6.9
+
+TopK
+
+1024
+
+128
+
+4.5
+
+0.9824 0.9904 0.9975 0.9950 0.9962
+
+0.9651 0.9808 0.9951 0.99 0.9923
+
+0.7097 0.7568 0.8454 0.8010 0.7596
+
+0.8226 0.8451 0.9104 0.8932 0.9031
+
+0.485 0.418 0.497 0.51 0.552
+
+Matryoshka 64
+
+16
+
+0.0
+
+Matryoshka 128
+
+32
+
+19.5
+
+Matryoshka 256
+
+64
+
+23.8
+
+Matryoshka 1024
+
+64
+
+9.0
+
+Matryoshka 1024
+
+128
+
+16.
+
+0.0907 0.9904 0.9949 0.9952 0.9979
+
+0.0126 0.9809 0.9898 0.9903 0.9957
+
+0.4749 0.5602 0.6151 0.7214 0.7851
+
+0.7603 0.8409 0.8821 0.8977 0.9105
+
+0.08 0.441 0.494 0.508 0.524
+
+Archetypal 1024
+
+128
+
+16.3
+
+MatryArch 1024
+
+128
+
+22.1
+
+0.9392 0.9538
+
+0.8726 0.9054
+
+0.5318 0.5364
+
+0.4439 0.6402
+
+0.151 0.238
+
+TABLE I PERFORMANCE EVALUATION FOR MULTIPLE TRAINED SPARSE AUTOENCODERS WITH DIFFERING SETTINGS ON THE GTRS MODEL.
+
+V. RESULTS
+A. Selecting the right SAE Parametrization
+For the first two steps of our framework (Section IV), we train multiple SAEs with varying architectures and hyperparameters on latent representations of the GTRS and iPAD model and measure their performance across several metrics. The number of active SAE neurons (#neurons − #dead neurons, where dead neurons denote units that never activate across the dataset) determines the number of learned features. The reconstruction quality of the model-internal embeddings—i.e., how well the SAE can reproduce the original latent representations—is determined by the cosine similarity and explained variance.
+To evaluate interpretability with respect to problem-specific information, we introduce two metrics. Ego correlation measures the alignment of ego status features (velocity, acceleration, high-level direction) to the SAE neurons, while ego probing is a combined score testing the identifiability of ego status features in the SAE neurons while simultaneously penalizing the discriminability of individual scenarios (overfitting to scenarios). Finally, the Extended Predictive Driver Model Score (EPDMS) estimates the downstream performance with the SAE injected into the model. The performance results are summarized in Table I.
+While SAEs in language models typically require a high expansion factor, we experience substantially less required neurons for vision-based models. In this case, it needs to be considered, that the inputs are derived from a limited number of scenarios, so that a pure scenario learning might occur, when choosing the latent space expansion too high. The critical task is to find the right parametrization enabling a level of abstraction with meaningful features being encoded in the SAE neurons and with the performance not being degraded too much. At first, the best-fitting SAE architecture needs to be determined.
+In our experiments, archetypal-based SAEs substantially perform worse than the TopK and the Matryoshka version. Inspecting the ego correlation and ego probing, we assume that the archetypal training rather tends to strengthen memorization effects as the NAVSIM data naturally includes multiple scenes per scenario, recorded at different time steps, or even includes scenes in the same location at different dates. The data is thus
+
+strongly correlated, which easily reflects in the pre-computed clusterings that archetypal SAEs build upon. In particular, archetypal SAEs ground their representations in dominant patterns of the data distribution, similar to cluster centroids or archetypes, such that individual neurons correspond to prototypical feature combinations. This reliance on representative data modes can amplify scenario-specific correlations, as frequently co-occurring features within a scenario are captured jointly and reinforced in the learned archetypes.
+The TopK and Matryoshka SAEs perform significantly better, whereas several differences between both variants can be seen. The ratio of dead neurons is comparably low for allTopK variants, while Matryoshka rather under-utilizes the available dictionary size by producing more dead neurons, and thus provides less learned features.
+Interestingly, most of the other scores are quite similar between both variants and vary rather based on the latent size. Only the ego correlation hints at a better separation of features related to the ego status in the TopK variants, presenting them as the best-fitting version.
+Considering the optimal size for the SAE latent space, we observe the following. Larger latent spaces enable the model to better recreate the model embedding, as more details can be encoded with a higher number of neurons. Especially the downstream model performance is better with larger SAEs.
+However, when inspecting the other metrics, the reconstruction does not necessarily improve from a certain neuron number. Especially the medium sized TopK variant yields the best reconstruction. The difference in performance is most apparent in the ego correlation and ego probing scores. With a higher number of neurons, the relevant ego status features rather get distributed across neurons, hindering a consistent, disentangled encoding. With a higher number of neurons, the probability of (re-)learning memorization effects also increases.
+Compressing the SAE latent space too much lowers the reconstruction and ego feature scores, as the SAE might be able to extract the most important features, but considerably deteriorates in the feature disentanglement. For our selected SAE, we aim to choose the latent space dimensionality high enough that individually important features can develop into independent components, but low enough, so that memorization effects and too strong feature dispersion are prevented.
+
+7
+
+Fig. 2. Overview of the neuron clustering: The SAE neurons form a distribution of individual concept directions with semantically similar neurons assembling together (top). By visualizing the top-activating samples per cluster (bottom), semantic meaning can be assigned as described in Section V-B.
+
+B. Understanding Concepts of Driving Decisions
+A crucial part in using SAEs is the interpretation of neurons and feature directions, which is the third step of our framework from Section IV-C. While SAEs promise an increase of interpretability in the latent space, they do not guarantee that all neurons correspond to well-defined concepts. Consequently, constructing an exhaustive dictionary that assigns clear semantics to every neuron in the context of the application is generally not feasible. However, there are various strategies for extracting valuable insights into the latent space. We propose the following methodologies for assigning semantic meaning to neurons, that can be used interchangeably or in combination.
+By Neuron Maximization [37], [38] we are able to extract the samples in the reference data, which maximally activate a chosen SAE neuron in the prediction of a trajectory. Through this, we reveal patterns in the input data causing these extreme activations (Fig. 2 bottom) and, thus, we are able to relate these patterns to the concepts in the model’s feature space that correspond to the chosen SAE neuron. We directly combine the maximization with clustering neurons to group similar patterns and label them more efficiently.
+Neuron Clustering uses SAE activations on a reference dataset to compute similarities between the SAE neurons. Instead of clustering for the model understanding of the traffic scenes, the latent dimension of the SAE is clustered, thereby grouping neurons with similar activation behavior. This reveals shared characteristics between neurons and allows for assigning semantic meaning to neuron groups. We observe that multiple neurons activate for cars located in front of the ego vehicle, where the neurons differ in their sensitivity based on the distance to the vehicle, the type, and the color.
+Fig. 2 visualizes the clustering of SAE neurons together with the samples maximally activating the neurons assigned to the respective cluster. We observe distinct clusters corresponding to, for example, intersections and lane markings
+
+(cluster 0), following other traffic participants (cluster 4), and driving on straight roads (cluster 8). These clusters, together with their associated neuron encodings, provide a basis for further analysis of the model’s scene understanding—for instance, by monitoring neuron activations under controlled input variations. Moreover, they enable investigating how groups of neurons influence the prediction heads of the endto-end model, as will be explored in Section V-D.
+In the Neuron Attribution (Section IV-C2), we compute the relevance for a selected trajectory—typically the predicted one by the model—towards the input. Hereby, we condition the relevance propagation on one or multiple SAE neurons, as defined by CRP [38]. The resulting relevance in the camera input highlights which parts of the input were utilized by the selected neurons when scoring the trajectory, directly showing us the information exciting the respective neuron. We use the relevance maps, which are exemplary shown in Fig. 3, as additional evidence for assigning semantic concepts to neurons. However, the relevance maps may be deceptive due to multiple reasons. First, individual neurons may encode distributed features corresponding to scene composition rather than localized concepts. They may also encode concepts like hue, lighting or weather, which is difficult to display with heatmaps; or relate to ”elsewhere”, highlighting everything but a specific concept, given that the concept is present [40]. Finally, the neuron may rather relate to other inputs like the ego status, or the semantic signal from the neuron may be superimposed in the heatmap by network effects. Especially for the GTRS, the construction of the image backbone with the wide-range image input and the usage of convolutional layers facilitates the propagation of spurious features by amplifying overlaying stride signals in the backward pass, causing high attribution in the image center possibly superimposing the semantic signal.
+We use Input Perturbation to analyze how neuron ac-
+
+8
+
+Fig. 3. Composition of concepts in a single sample: The top row shows the camera input and, on the right side, the BEV visualization with ground truth (green) and predicted (red) trajectory. Below, the SAE neuron attribution towards the camera input is shown for the top-4 neurons. Red indicates positively contributing pixels and and blue indicates negatively contributing pixels, with black being neutral. An overview of the top-activating neurons with their attribution is depicted in the bar-chart on the right.
+
+tivations change when specific input signals are removed. In the end-to-end setting, systematically removing individual camera inputs or ego-state variables allows us to identify which neurons are most affected by each input modality. For the iPAD model, we observe that removing the backwardfacing camera does not alter neuron activations, calling its contribution to the overall prediction into question. Generally, we find no measurable gradient from the model prediction to the backward camera, suggesting that the camera is not required for optimizing the model on the given training data. Consequently, the backward-facing camera could either be omitted or requires explicit mechanisms during training to enforce its utilization. This behavior may extend more broadly to models trained on the NAVSIM dataset.
+C. Understanding the Composition of a Scenario
+With our proposed integration of an SAE into the model structure, single scenes and model decisions can be further analyzed based on what is present in a scene (feature activation) and why it matters for the driving decision (feature attribution). The framework thus provides a stronger level of interpretability not only for scenes in the dataset, but also for different trajectory proposals within a scene, as the SAEbased concept decomposition runs on each trajectory proposal individually.
+
+Fig. 3 shows the camera input of a single sample (top), the referring BEV visualization with prediction and ground truth (top right), the relevant SAE neuron activations and attributions (right), and the camera attribution for the four most important neurons according to a mixture of activation and attribution.
+In the shown example, the rankings of top-activating and top-attributed neurons differ significantly highlighting their differing purpose. A highly activated neuron may not necessarily be used for the prediction of the final trajectory. While the neuron activation refer to the presence or recognition of features in the scene, the attribution rather highlights positive and negative influence on the selected trajectory representing how the information has been used specifically. Other trajectories may induce considerably other attribution scores matching the relation between SAE features and the driving maneuver.
+For an even finer distinction, the prediction heads of the GTRS model can be individually addressed to compute the attribution of neurons for single PDM components. For the selected scene, we select the most important neurons by computing the product of activation and attribution and observe the following: Neurons 191 and 170 encode for traffic participants infront of the ego vehicle. Interestingly, they highlight the ahead-driving car at the two different time steps, which are joined in the camera input as the left and right side of the
+
+9
+
+image. The difference in the neurons and their attribution hints at a temporal distinction in the recognition of traffic participants. Neuron 38 generally describes the in-front-car on road layouts similar to the one in this example, while neuron 162 refers to yellow road markings at left turns. The high activation of this neuron suggests the general possibility of turning left as illustrated by the BEV visualization. However, the attribution for this neuron is logically negative for the predicted trajectory since going straight scores higher.
+
+D. Connecting Neurons with the Trajectory Scoring
+Having investigated the options for extracting and interpreting meaningful features from the latent space and decomposing a single sample into its concepts, we take a step further to gain an even deeper understanding of the model. In the fourth step (Section IV-D), we determine how the SAE neurons influence the individual prediction subscores of the PDM score. The PDM score is constructed from multiple attributes that are often predicted independently by the models. These attributes include progress along the ego vehicle’s future trajectory, lane keeping, and traffic light compliance, which improve the score, while collisions caused by the ego vehicle decrease it. Specifically, the GTRS model contains a dedicated head for each attribute, enabling a head-specific evaluation of the model’s functionality.
+Circuit analysis enables the extraction of subgraphs that describe specific functionalities of the model. We combine circuit analysis with SAEs [36] in order to connect the induced SAE directly to the predicted scoring heads, allowing us to explicitly evaluate the influence of SAE neurons on the prediction heads.
+From our neuron clustering in Section V-B, we select the cluster with neurons that broadly activate for scenarios in which a vehicle is positioned ahead of the ego vehicle. Fig. 4 shows the circuit visualization connecting these neurons to the prediction heads of the GTRS model. The 10 top-activating samples per neuron have been used for the circuit computation. While a car in front may naively just be associated with collision-based scores, the circuit clearly displays that all scoring heads are significantly triggered by the selected neurons. Naturally, the ego progress is affected by the lead vehicle being the biggest constraint on how far the ego vehicle can advance. The drivable area and lane keeping scores are accountable, as the front vehicle naturally shows a safe trajectory, or when lane changes for overtaking are considered. For the traffic light compliance, a learned correlation may associate a stopping lead vehicle with the appearance of red lights or intersections requiring the car to slow down.
+Interestingly, the SAE neurons related to ”car ahead” scenarios seem to differ in how they affect the scoring heads. We assume that there are differing conceptions of the situation following a leading vehicle in the model that encode partially redundant information, but are distinguishable in how they are used by the scoring heads. Each scoring head learns a partially distinct subgraph, with some SAE neurons shared across heads while others contribute to head-specific structures.
+As GTRS evaluates all trajectories in its predefined vocabulary, both prediction scores and corresponding SAE activations
+
+Fig. 4. Circuit Visualization from SAE Neurons associated with ”Following a Car Driving Ahead” to the Prediction Heads of the GTRS Model.
+can be computed for any candidate trajectory. In the previous analysis, we focused exclusively on the top-scoring trajectories, which naturally avoid collisions with the leading vehicle. However, recomputing the circuit for forward trajectories that are likely to result in a collision reveals substantially different influencing signals. In particular, potentially colliding trajectories induce stronger activations in the collision-related heads, reflecting a substantially increased influence of the ”car ahead” neurons. Specifically, when more risky trajectories that provoke collisions are selected, the ”car ahead” neurons exert a substantially stronger influence on the activation of the time-to-collision-within-bound and no-at-fault-collisions heads, validating the model’s intended behavior.
+The circuit analysis further reveals a limitation of the overall learning scheme, as influencing factors in the decision-making process are significantly shaped by correlations that, while intuitively plausible, are not causally grounded. For instance, the observed influence of the ”car ahead” neuron 58 from Fig. 4 on the traffic light compliance score reflects co-occurring patterns in the data. A vehicle closely located in front of the ego vehicle often indicates a traffic situation involving an
+
+10
+
+intersection or a traffic light where the ego vehicle closely approaches the preceding vehicle. Consequently, the model associates the presence of a close leading vehicle with traffic light compliance, exploiting a statistical correlation rather than only relying on the causal factor—the actual presence of a traffic light.
+E. A Remark on Model Construction and Interpretability
+The investigated models, iPAD and GTRS, are both predicting the PDM score on a set trajectories to select the best fitting one for the future. Interestingly, the PDM score covers multiple different characteristics of a valid trajectory incorporating the driving direction, traffic laws and collision avoidance. While the scoring function of the iPAD focuses on the overall PDM prediction, the GTRS model predicts the single subscores with individual heads. By design, splitting the subscores into separate parts allows for an individual inspection regarding the single characteristic, enabling a better interpretability. Especially in combination with our approach, the scoring of single heads can be attributed more easily to the SAE neurons, allowing for a more thorough inspection.
+When handling attributions from the scoring heads to the SAE neurons, an interesting contradiction arises. The GTRS heads directly reproduce the construction of the PDM score, providing one prediction head per subscore. While some heads like the ego progress are intuitively interpretable and contribute positively towards the score, other heads capture compliance with driving rules as traffic light compliance, drivable area compliance and time to collision within bound. These heads effectively predict the absence of a violation rather than the presence of clues. Interesting samples for inspection are in these cases not the top-activating samples, but the ones with the lowest scores. While vision-based AI models like object detection models are activation-based with e.g. convolutional filters activating on detected patterns, the scoring functionality of the penalty heads is rather unintuitive. A high score rather corresponds to the absence of evidence for a violation than the presence of evidence for compliance. For instance the traffic light compliance head currently yields a maximum score, if there exists no traffic light in the scene.
+This construction of the scoring heads collides with the principles of activation-based AI models impeding especially the use of attribution-based methods for interpretability, as they typically extract high-activating signals best. In the construction of future models, we suggest to incorporate our thoughts on interpretability and explore the activation-based approach of scoring violations and compensating for the inversion in the post-processing.
+F. Manipulating Driving Decisions
+Beyond a lense into the model’s functioning and single decision processes, integrating an SAE provides us the opportunity to modify the learned feature influence and thereby achieve an improved closed-loop behavior. As the last step of our framework (Section IV-E), we perform a targeted manipulation
+
+TABLE II EFFECT OF COMBINED ZERO-ABLATION OF SAE NEURONS {177, 59, 71} ON THE EPDMS SCORE AND ITS SUB-METRICS. “BASELINE” DENOTES
+THE MODEL WITH UNMODIFIED SAE, “ABLATED” THE MANIPULATED MODEL, AND ∆ THEIR DIFFERENCE. POSITIVE VALUES INDICATE IMPROVEMENT. ORIGINAL EPDMS WITHOUT SAE: 0.524
+
+Metric
+EPDMS score PDM score Ego progress Time-to-collision w/i bound No at-fault collisions Drivable area compliance Driving direction compliance Traffic light compliance
+
+Baseline
+0.4963 0.6047 0.6378 0.9004 0.9179 0.7457 0.8943 0.9987
+
+Ablated
+0.5926 0.6897 0.5378 0.9667 0.9722 0.8754 0.9645 0.9989
+
+∆
++0.0963 +0.0850 −0.1000 +0.0663 +0.0543 +0.1298 +0.0702 +0.0002
+
+by masking the activation of selected SAE neurons and reevaluate the predicted trajectory on the manipulated reconstructions. Note that the evaluation is based on the objective scoring instance, rather than the model’s predicted scores.
+Table II summarizes the aggregated scores on the NAVSIM evaluation dataset, when our manipulation is applied. We select three neurons based on our circuit-level analysis. In particular, neuron 177 is identified having a negative influence across multiple scoring heads, suggesting potentially malicious behavior. Both neurons 59 and 71 show a close correlation to neuron 177, while also having remarkable influence on multiple heads. By removing only the three selected neurons 59, 71 and 177, the overall EPDMS score of the model improves significantly by 0.096 points compared to the GTRS version with the unchanged SAE included. Since the injection of the SAE slightly decreases the performance, we additionally compare to the original baseline model without the SAE. Notably, the manipulated model surpasses the baseline, achieving an EPDMS of 0.5926 compared to 0.524. Investigating the individual components of the score, we measure improvements in nearly all driving metrics. Especially the scores for drivable area compliance and driving direction improve substantially. The collision-based scores improve slightly less, which may also relate to some extent to the manipulated model rather staying within the drivable area. The only score that is negatively affected is the ego progress hinting at the general behavior of the car to be more conservative and trade rapid progress for increased safety.
+Inspecting the comparative examples in Fig. 5, the assumed change of behavior in the model is affirmed, as risky trajectories with high progress are replaced by more moderate trajectories that favor the current driving lane instead of maximal progress.
+VI. CONCLUSION
+End-to-end autonomous driving models are increasingly approaching real-world deployment; however, their lack of interpretability remains a critical challenge for model validation, profound error analysis, and targeted improvement. In this work, we introduce a thorough, comprehensive framework for leveraging interpretability in such models by enabling access to their latent representations and explicitly linking
+
+11
+
+interpretability can support in model validation, debugging, and refinement, we believe this work represents a step toward more transparent, trustworthy, and controllable autonomous driving systems. Concurrently, our results highlight the need for further research into the discovery, characterization, and causal understanding of learned concepts in autonomous driving models. While the proposed framework provides a foundation for concept-based analysis and intervention, fully understanding the semantic concepts and their interaction in the decision-making process remains a largely open research problem.
+
+ACKNOWLEDGMENTS
+The research leading to these results is funded by the German Federal Ministry for Economic Affairs and Energy within the project “Safe AI Engineering–Sicherheitsargumentation befa¨higendes AI Engineering u¨ber den gesamten Lebenszyklus einer KI-Funktion”. The authors would like to thank the consortium for the successful cooperation.
+
+Fig. 5. Comparison of predictions from the original and the manipulated model in selected examples.
+learned concepts to prediction scores. We show how humanunderstandable concepts can be extracted, analyzed and how they interoperate with the different prediction heads for selecting future trajectories. Through this analysis, we provide a means to validate whether the model bases its decisions on meaningful semantic concepts and reasoning processes. We reveal how the predictions of end-to-end autonomous driving models are frequently affected by learned correlations that do not necessarily reflect causal coherence, thereby facilitating a deeper understanding or model failures and undesired behaviors. Finally, we show how to translate insights from the previous analyses into targeted interventions by providing an approach to easily adapt model inference at test time without retraining. The modified model exhibits a clear performance gain in the EPDMS, replacing risky progress-oriented behavior with safer and more compliant trajectories. Illustrating how
+
+REFERENCES
+[1] L. Chen, P. Wu, K. Chitta, B. Jaeger, A. Geiger, and H. Li, “End-to-end autonomous driving: Challenges and frontiers,” IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 46, no. 12, pp. 10 164– 10 183, 2024.
+[2] D. Dauner, M. Hallgarten, T. Li, X. Weng, Z. Huang, Z. Yang, H. Li, I. Gilitschenski, B. Ivanovic, M. Pavone, A. Geiger, and K. Chitta, “Navsim: Data-driven non-reactive autonomous vehicle simulation and benchmarking,” in Advances in Neural Information Processing Systems, vol. 37, 2024, pp. 28 706–28 719.
+[3] W. Cao, M. Hallgarten, T. Li, D. Dauner, X. Gu, C. Wang, Y. Miron, M. Aiello, H. Li, I. Gilitschenski, B. Ivanovic, M. Pavone, A. Geiger, and K. Chitta, “Pseudo-simulation for autonomous driving,” 2025.
+[4] A. Kuznietsov, B. Gyevnar, C. Wang, S. Peters, and S. V. Albrecht, “Explainable ai for safe and trustworthy autonomous driving: A systematic review,” IEEE Transactions on Intelligent Transportation Systems, vol. 25, no. 12, pp. 19 342–19 364, 2024.
+[5] S. Atakishiyev, M. Salameh, and R. Goebel, “Safety implications of explainable artificial intelligence in end-to-end autonomous driving,” IEEE Transactions on Intelligent Transportation Systems, vol. 26, no. 10, pp. 14 516–14 535, 2025.
+[6] Z. Li, K. Li, S. Wang, S. Lan, Z. Yu, Y. Ji, Z. Li, Z. Zhu, J. Kautz, Z. Wu et al., “Hydra-mdp: End-to-end multimodal planning with multi-target hydra-distillation,” 2024.
+[7] J.-J. Hwang, R. Xu, H. Lin, W.-C. Hung, J. Ji, K. Choi, D. Huang, T. He, P. Covington, B. Sapp, Y. Zhou, J. Guo, D. Anguelov, and M. Tan, “EMMA: End-to-end multimodal model for autonomous driving,” Transactions on Machine Learning Research, 2025.
+[8] B. Jiang, S. Chen, H. Gao, B. Liao, Q. Zhang, W. Liu, and X. Wang, “Vadv2: End-to-end vectorized autonomous driving via probabilistic planning,” 2026.
+[9] Z. Li, W. Yao, Z. Wang, X. Sun, J. Chen, N. Chang, M. Shen, Z. Wu, S. Lan, and J. M. Alvarez, “Generalized trajectory scoring for end-to-end multimodal planning,” 2025.
+[10] K. Guo, H. Liu, X. Wu, J. Pan, and C. Lv, “ipad: Iterative proposalcentric end-to-end autonomous driving,” 2025.
+[11] M. Bojarski, P. Yeres, A. Choromanska, K. Choromanski, B. Firner, L. D. Jackel, and U. Muller, “Explaining how a deep neural network trained with end-to-end learning steers a car,” 2017.
+[12] M. Bojarski, A. Choromanska, K. Choromanski, B. Firner, L. J. Ackel, U. Muller, P. Yeres, and K. Zieba, “Visualbackprop: Efficient visualization of cnns for autonomous driving,” in 2018 IEEE International Conference on Robotics and Automation (ICRA), 2018, pp. 4701–4708.
+[13] J. Kim and J. Canny, “Interpretable learning for self-driving cars by visualizing causal attention,” in 2017 IEEE International Conference on Computer Vision (ICCV), 2017, pp. 2961–2969.
+[14] A. Sauer, N. Savinov, and A. Geiger, “Conditional affordance learning for driving in urban environments,” in Proceedings of The 2nd Conference on Robot Learning, ser. Proceedings of Machine Learning Research, vol. 87, 29–31 Oct 2018, pp. 237–252.
+
+12
+
+[15] Y.-C. Liu, Y.-A. Hsieh, M.-H. Chen, C.-H. H. Yang, J. Tegner, and Y.C. J. Tsai, “Interpretable self-attention temporal reasoning for driving behavior understanding,” in ICASSP 2020 - 2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2020, pp. 2338–2342.
+[16] J. Araluce, L. M. Bergasa, M. Ocan˜a, A´ . Llamazares, and E. Lo´pezGuille´n, “Leveraging driver attention for an end-to-end explainable decision-making from frontal images,” IEEE Transactions on Intelligent Transportation Systems, vol. 25, no. 8, pp. 10 091–10 102, 2024.
+[17] J. Kim and M. Bansal, “Attentional bottleneck: Towards an interpretable deep driving network,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops, June 2020.
+[18] D. Holtz, N. Hanselmann, S. Doll, M. Cordts, and B. Schiele, “What matters for scalable and robust learning in end-to-end driving planners?” 2026.
+[19] M. Mirzaie and B. Rosenhahn, “Interpretable decision-making for endto-end autonomous driving,” in Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) Workshops, October 2025, pp. 805–815.
+[20] J. Morton and M. J. Kochenderfer, “Simultaneous policy learning and latent state inference for imitating driver behavior,” in 2017 IEEE 20th International Conference on Intelligent Transportation Systems (ITSC), 2017, pp. 1–6.
+[21] Y. Tian, K. Pei, S. Jana, and B. Ray, “Deeptest: automated testing of deep-neural-network-driven autonomous cars,” in Proceedings of the 40th International Conference on Software Engineering, ser. ICSE ’18, New York, NY, USA, 2018, p. 303–314.
+[22] S. Hu, L. Chen, P. Wu, H. Li, J. Yan, and D. Tao, “St-p3: End-to-end vision-based autonomous driving via spatial-temporal feature learning,” in Computer Vision – ECCV 2022, 2022, pp. 533–549.
+[23] Z. Zhou, T. Cai, S. Zhao, Y. Zhang, Z. Huang, B. Zhou, and J. Ma, “Autovla: A vision-language-action model for end-to-end autonomous driving with adaptive reasoning and reinforcement fine-tuning,” in Advances in Neural Information Processing Systems, vol. 38, 2025, pp. 27 920–27 956.
+[24] X. Zhou, X. Han, F. Yang, Y. Ma, V. Tresp, and A. Knoll, “Opendrivevla: Towards end-to-end autonomous driving with large vision language action model,” in Proceedings of the AAAI Conference on Artificial Intelligence, vol. 40, no. 16, 2026, pp. 13 782–13 790.
+[25] A. Templeton, T. Conerly, J. Marcus, J. Lindsey, T. Bricken, B. Chen, A. Pearce, C. Citro, E. Ameisen, A. Jones, H. Cunningham, N. L. Turner, C. McDougall, M. MacDiarmid, C. D. Freeman, T. R. Sumers, E. Rees, J. Batson, A. Jermyn, S. Carter, C. Olah, and T. Henighan, “Scaling monosemanticity: Extracting interpretable features from claude 3 sonnet,” Transformer Circuits Thread, 2024.
+[26] G. Daujotas. (2024, June) Interpreting and steering features in images. LessWrong. [Online]. Available: https://www.lesswrong.com/posts/ Quqekpvx8BGMMcaem/interpreting-and-steering-features-in-images
+[27] H. Lim, J. Choi, J. Choo, and S. Schneider, “Sparse autoencoders reveal selective remapping of visual concepts during adaptation,” in The Thirteenth International Conference on Learning Representations, 2025.
+[28] F. Motzkus, C. Schlauch, S. Bernhard, and U. Schmid, “Can i trust my trajectory prediction model?” in Proceedings of the TRUST-AI Workshop: European Workshop on Trustworthy AI, co-located with the European Conference on Artificial Intelligence (ECAI 2025), ser. CEUR Workshop Proceedings, Bologna, Italy, October 2025.
+[29] N. Elhage, T. Hume, C. Olsson, N. Schiefer, T. Henighan, S. Kravec, Z. Hatfield-Dodds, R. Lasenby, D. Drain, C. Chen, R. Grosse, S. McCandlish, J. Kaplan, D. Amodei, M. Wattenberg, and C. Olah, “Toy models of superposition,” Transformer Circuits Thread, 2022.
+[30] T. Bricken, A. Templeton, J. Batson, B. Chen, A. Jermyn, T. Conerly, N. Turner, C. Anil, C. Denison, A. Askell, R. Lasenby, Y. Wu, S. Kravec, N. Schiefer, T. Maxwell, N. Joseph, Z. Hatfield-Dodds, A. Tamkin, K. Nguyen, B. McLean, J. E. Burke, T. Hume, S. Carter, T. Henighan, and C. Olah, “Towards monosemanticity: Decomposing language models with dictionary learning,” Transformer Circuits Thread, 2023.
+[31] R. Huben, H. Cunningham, L. R. Smith, A. Ewart, and L. Sharkey, “Sparse autoencoders find highly interpretable features in language models,” in The Twelfth International Conference on Learning Representations, 2024.
+[32] L. Gao, T. D. la Tour, H. Tillman, G. Goh, R. Troll, A. Radford, I. Sutskever, J. Leike, and J. Wu, “Scaling and evaluating sparse autoencoders,” in The Thirteenth International Conference on Learning Representations, 2025.
+
+[33] B. Bussmann, N. Nabeshima, A. Karvonen, and N. Nanda, “Learning multi-level features with matryoshka sparse autoencoders,” in Fortysecond International Conference on Machine Learning, 2025.
+[34] T. Fel, E. S. Lubana, J. S. Prince, M. Kowal, V. Boutin, I. Papadimitriou, B. Wang, M. Wattenberg, D. E. Ba, and T. Konkle, “Archetypal SAE: Adaptive and stable dictionary learning for concept extraction in large vision models,” in Proceedings of the 42nd International Conference on Machine Learning, ser. Proceedings of Machine Learning Research, vol. 267, 13–19 Jul 2025, pp. 16 543–16 572.
+[35] N. Saphra and S. Wiegreffe, “Mechanistic?” 2024. [36] S. Marks, C. Rager, E. J. Michaud, Y. Belinkov, D. Bau, and A. Mueller,
+“Sparse feature circuits: Discovering and editing interpretable causal graphs in language models,” in The Thirteenth International Conference on Learning Representations, 2025. [37] C. Olah, A. Mordvintsev, and L. Schubert, “Feature visualization,” Distill, 2017. [38] R. Achtibat, M. Dreyer, I. Eisenbraun, S. Bosse, T. Wiegand, W. Samek, and S. Lapuschkin, “From attribution maps to human-understandable explanations through concept relevance propagation,” Nature Machine Intelligence, vol. 5, no. 9, pp. 1006–1019, Sep 2023. [39] S. Bach, A. Binder, G. Montavon, F. Klauschen, K.-R. Mu¨ller, and W. Samek, “On pixel-wise explanations for non-linear classifier decisions by layer-wise relevance propagation,” PLOS ONE, vol. 10, no. 7, pp. 1–46, 07 2015. [40] T. Fel, B. Wang, M. A. Lepori, M. Kowal, A. Lee, R. Balestriero, S. Joseph, E. S. Lubana, T. Konkle, D. E. Ba, and M. Wattenberg, “Into the rabbit hull: From task-relevant concepts in DINO to minkowski geometry,” 2025.
+
+

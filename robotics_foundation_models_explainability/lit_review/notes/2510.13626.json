@@ -1,0 +1,40 @@
+{
+  "id": "2510.13626",
+  "title": "LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models",
+  "first_author": "Fei",
+  "year": 2025,
+  "venue": "CVPR 2026 (as 'LIBERO-Plus: A Progressive Robustness Benchmark for Visual-Language-Action Models')",
+  "tier": "adjacent",
+  "models": ["OpenVLA", "OpenVLA-OFT (+ third-view-only and mix-SFT variants)", "pi0", "pi0-FAST", "NORA", "WorldVLA", "UniVLA", "RIPT-VLA"],
+  "action_head": "mixed: discrete action tokens, regression head (OpenVLA-OFT), flow/diffusion action expert (pi0)",
+  "methods": ["single-factor perturbations in 7 dimensions (object layout, camera viewpoint, robot initial state, language, light, background, sensor noise)", "blank-instruction and goal-replacement tests of language use", "compositional perturbation analysis", "benchmark of 10,030 perturbed tasks with difficulty levels"],
+  "question": "How robust are current VLAs on LIBERO to controlled perturbations, and do they actually use their language and visual inputs as assumed?",
+  "key_findings": [
+    "Camera viewpoint and robot initial state are most damaging: e.g. pi0 94.2% -> 15.8% (camera) and 6.6% (robot init); OpenVLA-OFT 97.1% -> 59.7% and 37.2%; UniVLA 95.2% -> 4.3% under camera change (Table 1).",
+    "Language perturbations cause the second-smallest average drop (-25.3 points), but blank-instruction tests show OpenVLA-OFT success on LIBERO-Object is largely unchanged with no instruction, so robustness reflects ignoring language.",
+    "Replacing the instruction target with another object in the same scene drops success nearly to zero, and models tend to execute the original task anyway (fixed vision-action mappings).",
+    "Models ignore distractors but fail when target objects are displaced, indicating positional rather than semantic object coding.",
+    "Wrist cameras confer robustness to viewpoint and illumination changes; co-trained models (pi0, pi0-FAST) are more robust across perturbation types.",
+    "Combined perturbations interact (negative compositionality gap), so robustness is not decomposable into single factors."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO (four suites) with perturbations", "LIBERO-Plus benchmark of 10,030 tasks"],
+    "scale": "per-condition episode counts in appendix (not extracted); 10 model checkpoints",
+    "statistics": "no",
+    "baselines": "unperturbed LIBERO performance of each model"
+  },
+  "causal_validation": "Input-level interventions only (blank instructions, goal replacement, perturbations); no internals.",
+  "closed_loop": "Yes: closed-loop LIBERO success rates under each perturbation.",
+  "limitations_stated": [
+    "Simulation benchmark; perturbation specifications defined by the authors."
+  ],
+  "critique": [
+    "Key behavioral evidence for the review: high LIBERO success can come from vision-action shortcuts that ignore language, which makes 'language-conditioned' interpretability findings on LIBERO-trained checkpoints suspect unless language is shown to matter.",
+    "Explains why several batch papers use LIBERO-Plus as a shift benchmark (ProbeAct, SAFECAST, VLA-FAIL).",
+    "Blank-instruction finding is reported mainly for OpenVLA-OFT; generality across models is less clear from the main text.",
+    "Consistent with 2603.12717's finding that language-dependent goals are concentrated in LIBERO-Goal."
+  ],
+  "code": "https://github.com/sylvestf/LIBERO-plus",
+  "one_line": "Systematic perturbations of LIBERO show that strong VLAs collapse under camera or initial-state changes and largely ignore their language instructions, so near-perfect benchmark scores overstate competence."
+}

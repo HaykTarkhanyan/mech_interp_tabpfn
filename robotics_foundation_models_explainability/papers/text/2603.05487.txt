@@ -1,0 +1,785 @@
+Observing and Controlling Features in Vision-Language-Action Models
+Hugo Buurmeijer1, Carmen Amo Alonso1, Aiden Swann2, and Marco Pavone1,3
+
+arXiv:2603.05487v2 [cs.RO] 21 Sep 2026
+
+Abstract— Vision-Language-Action models (VLAs) have shown remarkable progress towards embodied intelligence. While their architecture partially resembles that of Large Language Models (LLMs), VLAs exhibit higher complexity due to their multi-modal inputs/outputs and often hybrid nature of transformer and diffusion heads. This is part of the reason why insights from mechanistic interpretability in LLMs, which explain how the internal model representations relate to their output behavior, do not trivially transfer to VLA counterparts. In this work, we investigate whether VLA internal representations support lightweight behavioral steering without retraining. Across four frontier VLA models, linear observers recover stateand action-relevant information in both autoregressive and transformer–flow-matching architectures, and provide robust directions to causally alter VLA outputs. Building on this, we introduce a controller that minimally modifies representations to place observer predictions within prescribed target intervals. Closed-loop experiments with π0.5 in the LIBERO simulator and on DROID hardware demonstrate improved constraint satisfaction while retaining task performance, with only approximately 1% inference overhead. Together, these experiments show that lightweight linear interventions can reliably steer VLA behavior while preserving closed-loop capabilities, enabling alignment with user preferences and task requirements without fine-tuning.
+I. INTRODUCTION Vision-Language-Action models (VLAs) represent a significant step towards embodied intelligence. By processing multimodal inputs consisting of images, language instructions, and proprioceptive states, VLAs combine perception, reasoning, and action generation in a single model. Similar to other disciplines where generative models have unlocked unprecedented generalization, VLAs enable robots to interpret natural language commands in rich visual contexts and execute complex behaviors, exhibiting improved generalization across tasks and environments [1]. However, VLAs suffer from similar limitations to other generative models: their behavior can be unpredictable, difficult to correct in real time, or misaligned with user preferences and safety requirements [2]. One promising approach to overcoming these limitations is the ability to steer generative models toward desired behaviors while suppressing undesirable ones. In the context of Large Language Models (LLMs), intervening internal model representations to influence outputs has become a prominent research direction, referred to as “activation steering” [3]. Achieving a similar level of control is arguably even more critical for VLAs, where steering directly affects physical behavior in the real world. Furthermore, since VLAs often share architectural components with LLMs,
+1Department of Aeronautics and Astronautics, Stanford University, USA. 2Department of Mechanical Engineering, Stanford University, USA. 3NVIDIA Research, USA.
+
+(most notably transformer-based representations [4]), methods developed for LLMs could in theory transfer to VLAs without significant overhead. However, VLAs operate over multiple modalities, including proprioceptive inputs, and must function in closed-loop interaction with the physical world where compounding errors are notorious, thereby posing challenges absent in LLMs. Additionally, robotic tasks such as manipulation naturally demand smooth, continuous actions, which has driven frontier architectures toward hybrid transformer-diffusion designs [5], further complicating the transfer of interpretability insights from LLMs to VLAs.
+To close this gap, several works have explored porting concepts from mechanistic interpretability in LLMs over to the domain of VLAs [6], [7], [8], [9]. For instance, [6] overwrites VLA model activations at inference time to modulate basic motion features such as speed and direction. Overall, the effectiveness of existing methods is still limited. Crucially, while the focus of activation steering methods in LLMs is to control the behavior of the model while preserving its original merits, such as natural-sounding generations, in the field of VLAs interventions that preserve natural behaviors have not been studied. Moreover, the effect of architectural design choices, such as purely transformer-based versus hybrid transformer-diffusion architectures, on the interpretability and steerability of VLA representations remains unexplored.
+In this paper, we address these challenges by formalizing concepts that are often implicit in work on steering LLMs, with the goal of making them applicable to VLAs. We introduce a unified framework for analyzing and influencing VLA behavior through their internal representations (see Figure 1), and use them to systematically compare common VLA architectures. We find linearly predictive state and action information in both autoregressive and transformer– flow-matching architectures, with performance varying across models, datasets, and features. Building on these findings, we develop lightweight observers and representation controllers, and demonstrate behavioral steering while retaining task performance in closed-loop simulation and hardware experiments.
+Concretely, our contributions are as follows: • We formalize the concepts of feature-observability and
+feature-controllability for VLAs, inspired by classical notions of observability and controllability, providing a framework to analyze and influence behavior through internal representations. (Section III-B) • We systematically evaluate linear observability of OpenVLA, π0, π0-FAST, and π0.5 across LIBERO, DROID, and BridgeData V2 datasets. We identify predictive information in two architecture families; states are generally
+
+Add small modules to frozen VLA
+
+Control internal VLA representations
++1% latency only ⚡
+
+π B a s e π 0 . 5
+0.5
+
+StSeteererbbeehhavviioorraat tinifnerfeenrceence
+
+Ours ours
+
+Preferred behavior (%) Preferred behavior (%)
+
+hHaannddlleeggrraasspp
+
+co ee mug
+
+Layer ℓ
+xℓ x˜ℓ
+
+Feature observer
+
+Feature controller
+
+W`
+
+x˜`
+ªmax
+
+x`
+
+u`
+
+ªmin
+
+u` = (ªmin ° ªˆ`) W`/kW`k22
+
+blender
+
+rim Rim fork
+Fork
+
+handle Handle
+banana
+
+π Base π00..55
+
+14%
+
+oOuurrss
+
+74%
+
+0
+
+50
+
+bBaannaannaa isnetloecbtlieonnder
+
+π Base π00..55
+
+52%
+
+oOuurrss
+
+100 100%
+
+Banana
+
+0
+
+50
+
+100
+
+Fig. 1: We present the combination of feature-observability and feature-controllability: a framework to 50 rollouts per method per task observe and control robot behavior through accessing and modifying internal VLA representations. A linear observer estimates features from the Transformer’s internal representations, while a minimal additive controller steers these representations to align outputs with desired constraints. We demonstrate effective policy steering without fine-tuning in both simulation and on hardware.
+
+ff
+
+more decodable than actions, with π0.5 achieving the highest mean R2 across continuous features on both LIBERO and DROID datasets. (Sections IV-A, V-A) • We propose a minimal linear controller that leverages linear observability, and show that steering along observed directions smoothly affects the model outputs. (Sections IV-B, V-B) • We present an online algorithm that integrates the observer and controller into closed-loop deployment without retraining. Simulation and hardware experiments on π0.5 demonstrate the effectiveness of the proposed representation intervention. (Sections IV-C, V-C)
+II. RELATED WORK A. Mechanistic Interpretability in VLAs
+The intersection of mechanistic interpretability and robotics, specifically VLAs, remains significantly underexplored, though a number of recent works have investigated these tools in the context of end-to-end robot control. Notably, steering vectors can be extracted from the feed-forward layers of the Transformer backbone to causally affect model behaviors such as speed and height [6]. More abstract concepts, such as spatial relationships between objects and movement targets, were extracted from OpenVLA representations in [8] using linear probes, while [10] probe for recoverable statetransition structure. Such tools have also been used to improve downstream performance, e.g. by mechanistically identifying and fine-tuning task-relevant attention heads [7].
+A complementary line of work forgoes pre-specified concepts in favor of unsupervised feature discovery: concurrent work of [9] trains Sparse Autoencoders on π0.5 residual streams, proposes activation statistics to classify generality of features, and validates them via additive and ablative steering. Our contributions are complementary: because we target features specified a priori, observability and controllability are measured against a known ground truth rather than against post-hoc inspection of top-activating episodes.
+B. Activation Steering in LLMs A growing body of work has shown that semantic and
+behavioral features in LLMs are often linearly represented in their activation spaces, a phenomenon commonly referred to as the linear separability hypothesis [11]. It has been widely
+
+observed that simple linear classifiers can reliably extract attributes such as sentiment, topic, or personality traits from intermediate transformer layers [12], [13], [14], suggesting that these representations encode disentangled, behaviorally meaningful features. Building on this insight, activation steering methods modify internal activations at inference time to influence model outputs without fine-tuning [15], [16]. Techniques such as activation addition [3], [17] have been applied to guide generation toward desired attributes, mitigate harmful behaviors, and improve safety and alignment. Crucially, these methods emphasize preserving the naturalness and coherence of generated text by applying low-rank or minimal perturbations to the model’s internal states.
+III. PROBLEM STATEMENT In this section, we present the problem of how the internal representations in VLAs can be controlled to align their outputs with user preferences. To that end, we describe the internal structure of two common VLA architectures, exemplified by OpenVLA [18] and π0.5 [1]. We then introduce two concepts that enable the formalization of the problem in mathematical terms.
+A. Vision-Language-Action Models (VLAs) The goal is to formalize the study of internal representations
+in VLAs. Here we present two different types of VLA architectures (Figure 2): (a) autoregressive transformer-based, and (b) transformer-flow-matching hybrids.
+a) Transformer-based VLAs: This architecture consists of a Vision-Language-Model autoregressive transformer architecture, where visual observations (processed through vision encoders such as DINOv2 and SigLIP) and language instructions are encoded into a shared token space, and a language model backbone (e.g., Llama 2) predicts tokenized output actions autoregressively, which are then decoded into robot commands. Examples of this architecture are OpenVLA [18], π0-FAST [19] and RT2 [20].
+b) Transformer-Flow-Matching hybrid VLAs: This architecture consists of an autorregressive transformer architecture, where a pretrained Vision-Language Model (VLM) processes visual and language inputs, while a separate ”action expert” transformer uses conditional flow matching
+
+Autoregressive Transformer-based VLAs
+
+Transformer-Flow-Matching hybrid VLAs
+
+Layer 1 Layer 2 Layer 3 Layer T
+
+Fig. 2: Schematic representation of two VLA architectures. On the left, a Transformer-based VLA features an autoregressive Transformer architecture. On the right, a TransformerFlow-Matching hybrid VLA is composed of a Transformer architecture and a Flow Matching block (referred to as the “action expert”), where the Flow Matching layers attend to their paired counterparts in the Transformer.
+
+to generate continuous, high-frequency action trajectories. Examples of this architecture are π0 [21] and π0.5 [1].
+We formalize the Transformer architecture [4] as a sequence of transformations (layers) acting on a latent representation of an input sequence. We denote the input by w ∈ W, where W is the space of visual observations, language instructions, and proprioceptive states supplied to the model. An encoding map E, incorporating modality-specific encoders and projections, maps w to an initial hidden state X0 = E(w) ∈ RN×d, where N is the resulting number of token embeddings and d is their dimension. Then, each layer Tℓ : RN×d → RN×d transforms the hidden state from the previous layer, yielding
+
+Xℓ+1 = Tℓ+1(Xℓ), ℓ = 0, . . . , L − 1,
+
+(1)
+
+where Xℓ ∈ RN×d is the full hidden state after the ℓ-th layer. For the subsequent analysis, we summarize the full token
+matrix Xℓ by its mean-pooled representation
+
+xℓ
+
+:=
+
+1 N
+
+N
+
+(Xℓ)⊤i,: ∈ Rd,
+
+(2)
+
+i=1
+
+wfohreLreLM(Xrℓe)pir,:esdeenntaottieosnst,hwe ei-athssuromwe
+
+of Xℓ. As is mean pooling
+
+common preserves
+
+most feature-relevant information. Whether that information
+
+is present in VLAs is what we study.
+
+This Transformer architecture is then embedded into a VLA
+
+model, where the action a ∈ A ⊆ Rm is computed using the
+
+internal representations, i.e., a = ϕ(X1, . . . , XL). This map ϕ depends on the choice of architecture: for the transformer-
+
+based architecture ϕ depends only on the final layer represen-
+
+tation, XL, while for the transformer-flow-matching hybrid architecture ϕ includes the flow matching process that can be
+
+conditioned on intermediate layer representations X1, . . . , XL. The pooled vectors xℓ serve as summaries for our analysis; we do not assume that they alone determine the action.
+
+When deployed in the real world, each sampled action a
+
+is executed in the environment, producing a new input and,
+
+over repeated interaction, a closed-loop trajectory τ ∈ T :=
+
+(W × A)∗ of the form τ = (τ0, τ1, . . . ), where τt := (wt, at) is the t-th transition. The (·)∗ operator captures finite, variable-
+
+length trajectories.
+
+B. Feature Observability and Controllability
+A feature is a measurable attribute of the model’s output or the robot’s behavior during execution, such as an action displacement, grasp modality, or the identity of a manipulated object. Formally, a feature is a map ξ : T → Rn assigning to each trajectory a value ξ(τ ); this may be a direct readout of the trajectory, but can also be a label provided by a human annotator inspecting the rollout.
+In this paper, we explore how the structure of the representation space in VLAs can be leveraged to (i) observe features, and (ii) steer features into a desired region by controlling their representations. To that end, we introduce the concepts of feature-observability and feature-controllability. Both are properties of a feature relative to a collection of inputs to the VLA: the requirement is that a single map works for every input in that collection, so the property is a statement about the representation space at a layer rather than about an individual rollout.
+Definition III.1 (Feature-Observability). A feature ξ is observable at layer ℓ if there exists a single map fℓ ∈ F such that fℓ(xℓ) = ξ(τ ) for every input. The map fℓ is referred to as the observer.
+Definition III.2 (Feature-Controllability). Given a target set C ⊆ Rn, a feature ξ is controllable to C at layer ℓ if there exists a single map gℓ ∈ G such that, for every input, setting Xℓ = gℓ(Tℓ(Xℓ−1)) yields a trajectory τ˜ with ξ(τ˜) ∈ C. The map gℓ is referred to as the controller.
+Remark III.3. The definitions above admit a broad range of features. One can distinguish (a) output-level features, assessed at a specific point in the trajectory, ξ(τt); and (b) trajectory-level features, assessed on the full trajectory, ξ(τ ). Consequently a feature need not be observable or controllable at every time step: an eventual grasp modality may not yet be distinguishable early in execution, while a choice already realized cannot be undone by later interventions.
+In the general case, the set of observers and controllers considered are F ⊆ {f : Rd → Rn} and G ⊆ {g : RN×d → RN×d}. In practice the observer and controller are usually learned rather than prescribed, so F and G are restricted to a specific structure (linear maps, one-layer MLPs, etc.) and fitted on a collection of inputs drawn from rollouts together with their representations and feature values.
+We state both notions exactly, as the idealized versions make the structure clearest. Empirically neither holds exactly: we report the accuracy with which a fitted observer recovers ξ(τ ), and the rate at which a controller lands in C, and read these as graded evidence for the corresponding property.
+Given the definitions above, the open question is which layers admit observers and controllers for features of interest, and how small the classes F and G can be while still doing so. In what follows we propose that linear choices suffice: linear observers recover features of interest from xℓ, and linear, additive controllers steer the resulting behavior toward specified targets C during execution.
+
+IV. APPROACH In this section we instantiate the two introduced concepts, feature-observability and feature-controllability, with concrete choices of F and G. We propose a linear observer, which extracts the value of an interpretable feature from the model’s internal state, and an additive, linear controller, which intervenes on that state to steer the resulting behavior toward a target set. Both are cheap enough to apply online during execution, requiring a single matrix multiply per forward pass. We evaluate how well they hold empirically in Section V.
+
+A. Designing the Feature Observer We design the observer map at layer ℓ, fℓ(·), to be a linear
+function, i.e. we restrict F to be the set of linear maps from Rd to Rn. This is, given a representation xℓ ∈ Rd, the feature of interest is predicted as ξˆ = fℓ(xℓ), with
+
+fℓ(x) := Wℓ⊤x + bℓ,
+
+(3)
+
+where Wℓ ∈ Rd×n and bℓ ∈ Rn are learned from data. Specifically, we leverage pairs of inputs (w containing images, prompt and potentially robot states) to a feature of interest (denoted as ξ ∈ Rn). Given a set of input-feature pairs {w(i), ξ(i)}Ki=1, a set of activation-feature pairs {xℓ(i), ξ(i)}iK=1 can be collected at each layer ℓ by simply propagating each input sequence w(i) up until layer ℓ through the transformer architecture, whose output is xℓ(i). Then, Wℓ and bℓ are learned by minimizing a task-appropriate loss over {xℓ(i), ξ(i)}iK=1:
+
+K
+
+Wℓ, bℓ = arg min L W ⊤x(ℓi) + b, ξ(i) ,
+
+(4)
+
+W, b i=1
+
+where L is the mean squared error loss for continuous features (ξ ∈ Rn) and the cross-entropy loss for discrete features (ξ ∈ {0, 1}n). Algorithm 1 summarizes the steps to train the observer at layer ℓ, fℓ(·).
+The choice of a linear map is motivated by the linear separability hypothesis, widely explored in LLMs [11]. We note that the presented method holds for generalized versions of the linear observer, such as fℓ(x) = ν(Wℓ⊤x + bℓ), where ν is some known monotonic nonlinearity of choice.
+
+Algorithm 1 Learning linear observer fℓ (Eq. (3)) at layer ℓ
+
+1: Input: Labeled dataset {(w(i), ξ(i))}Ki=1 2: Output: Wℓ ∈ Rd×n and bℓ ∈ Rn
+
+3: for i = 1, . . . , K do ▷ In parallel for all i = 1, . . . , K
+
+4:
+
+x(0i) ← E(w(i))
+
+▷ Compute initial embedding
+
+5: for ℓ = 0, . . . , L − 1 do
+
+▷ Until layer L
+
+6:
+
+x(ℓi+)1 ← Eq. (1) ▷ Get layer ℓ representation
+
+7: end for
+
+8: end for 9: (Wℓ, bℓ) ← Eq. (4)
+10: return Wℓ, bℓ
+
+▷ Train linear observer at layer ℓ
+
+B. Designing the Feature Controller We design the controller map at layer ℓ to act additively
+on the full token representation, broadcasting a single perturbation uℓ ∈ Rd to every token. That is, we restrict G to maps of the form
+
+gℓ(X) := X + 1N uℓ(x)⊤,
+
+x
+
+=
+
+1 N
+
+X
+
+⊤
+
+1N
+
+,
+
+(5)
+
+where 1N ∈ RN is the all-ones vector and the perturbation depends on X only through its mean-pooled summary x. This shifts the pooled representation by exactly uℓ := uℓ(xℓ).
+Broadcasting is not an arbitrary choice: it is the least-norm way to realize a prescribed shift of the pooled summary.
+
+Proposition IV.1 (Minimum-norm realization of a pooled
+
+perturbation). For a prescribed pooled perturbation u ∈
+
+Rd, the broadcast perturbation ∆X⋆ = 1N u⊤ is the
+
+unique minimizer of ∥∆X∥F2 over ∆X ∈ RN×d satisfying
+
+1 N
+
+∆X
+
+⊤
+
+1N
+
+=
+
+u.
+
+Its
+
+squared
+
+Frobenius
+
+norm
+
+is
+
+N ∥u∥22.
+
+Proof. Write δj = ∆Xj⊤,:, so that about u,
+
+N j=1
+
+δj
+
+=
+
+N u.
+
+Expanding
+
+N
+
+N
+
+N
+
+∥∆X∥2F = ∥δj∥22 = N ∥u∥22+2u⊤ (δj−u)+ ∥δj−u∥22,
+
+j=1
+
+j=1
+
+j=1
+
+and the middle term vanishes by the constraint. Hence ∥∆X∥2F ≥ N ∥u∥22, with equality iff δj = u for all j.
+
+Following prior work in LLMs [12], we compute uℓ as the solution to the optimization problem:
+
+uℓ = argmin ∥u∥22
+
+(6a)
+
+u∈Rd
+
+s.t. fℓ(xℓ + u) ∈ C,
+
+(6b)
+
+where C ⊆ Rn is the desired set of feature values, and fℓ(·) is the observer map at layer ℓ. This optimization finds the smallest pooled perturbation that places the observer output in C, and by Proposition IV.1 it is also the smallest intervention on the full token representation, since ∥∆X∥2F = N ∥u∥22.
+In general, the constraint in (6b) may be nonconvex, depending on the form of fℓ and the geometry of C. To obtain a tractable solution, we use the linear observer in (3), and consider a scalar feature with target interval C = [ξmin, ξmax] ⊆ R, where ξmin ≤ ξmax. For Wℓ ≠ 0, the solution to (6) has the following closed form [12, Theorem 4.1]:
+
+uℓ
+
+=
+
+(ξmax
+
+−
+
+ξˆℓ
+
+)
+
+Wℓ ∥Wℓ∥22
+
+,
+
+uℓ
+
+=
+
+(ξmin
+
+−
+
+ξˆℓ)
+
+Wℓ ∥Wℓ∥22
+
+,
+
+uℓ = 0,
+
+if ξˆℓ > ξmax,
+
+(7a)
+
+if ξˆℓ < ξmin,
+
+(7b)
+
+otherwise,
+
+(7c)
+
+where ξˆℓ = fℓ(xℓ) = Wℓ⊤xℓ + bℓ is the layer ℓ observation. Observability and controllability are independent prop-
+erties [22], but methods from the LLM literature show that steering using a learned readout of the feature [12], [13] outperform those injecting directions without one [3]. Therefore, our proposed controller relies on the observer.
+
+States
+
+Actions
+
+State
+
+Action
+
+Acc. (%) ↑ R2 ↑
+
+LIBERO
+DROID Bridge
+
+xy zφθψ π0 0.96 0.98 1.00 0.93 0.94 0.93 π0-FAST 0.99 1.00 1.00 0.99 0.99 0.98 π0.5 0.95 0.97 0.99 0.90 0.89 0.92 π0 0.85 0.81 0.91 0.55 0.77 0.53 π0-FAST 0.95 0.95 0.97 0.69 0.85 0.84 π0.5 0.96 0.97 0.98 0.75 0.93 0.86 OpenVLA 0.97 0.98 0.96 0.78 0.82 0.85
+
+∆x ∆y ∆z ∆φ ∆θ ∆ψ
+1.0 0.78 0.86 0.84 0.57 0.51 0.75 0.93 0.95 0.93 0.44 0.41 0.84 0.88 0.92 0.92 0.77 0.74 0.86 0.67 0.59 0.71 0.45 0.52 0.61 0.5 0.59 0.53 0.63 0.36 0.42 0.53 0.64 0.59 0.66 0.40 0.47 0.55 0.37 0.39 0.47 0.10 0.21 0.14
+0.0
+
+g
+
+∆g
+
+50
+
+75 100
+
+50
+
+75 100
+
+Fig. 3: Linear observability of robot states and actions inside four vision-language-action models. Each row is one model evaluated on one dataset. For every quantity a linear probe is trained per layer on pooled Transformer activations, and scored on a held-out 10% split. Heatmaps report R2 for the six continuous states and actions, taking the best of the probed layers per quantity. Dot plots report accuracy on binary quantities, gripper state g and gripper command ∆g, where 50% is chance.
+
+C. Observing and Controlling Features in VLAs
+We illustrate how to leverage the proposed feature observer and feature controller in practice to align VLA outputs with user preferences. Given
+• a feature observer, fℓ(·), with linear structure as defined in Equation (3), where linear parameters Wℓ and bℓ are computed before inference time via Algorithm 1; and
+• a feature controller, gℓ(·), with linear structure as defined in Equation (5), where the additive uℓ is computed according to Equation (7),
+the goal is to integrate them into the inference time computations at layer ℓ to achieve precise representation control and downstream alignment of the VLA output.
+Let us consider two set of layers: (i) ΛO ⊆ [0, . . . , L] where feature-observability is desired, and (ii) ΛC ⊆ [0, . . . , L] where feature-controllability is desired. We note that, given that the proposed controller requires observations, ΛC ⊆ ΛO. The inference-time forward pass equipped with observer and controller for feature ξ is described by Algorithm 2.
+The forward-pass presented in Algorithm 2 only differs from a standard un-observed and un-intervened Transformer forward-pass in steps 6-12. A crucial advantage of choosing a linear observer and a linear closed-form controller is that
+
+Algorithm 2 Inference forward-pass in a VLA-embedded Transformer architecture with ξ-observer and ξ-controller
+
+1: Input: w, ΛO, ΛC , Wℓ∈ΛO , bℓ∈ΛO , ξmin, ξmax
+
+2: Output: x1, . . . , xL 3: x0 ← E(w)
+
+▷ Compute initial embedding
+
+4: for ℓ = 1, . . . , L do ▷ Forward-pass through layers
+
+5: xℓ ← Eq. (1) ▷ Compute layer ℓ representation
+
+6: if ℓ ∈ ΛO then
+
+7:
+
+ξℓ ← Eq. (3)
+
+▷ Feature-observability ▷ Compute observation
+
+8:
+
+if ℓ ∈ ΛC then
+
+▷ Feature-controllability
+
+9:
+
+uℓ ← Eq. (7)
+
+▷ Compute control input
+
+10:
+
+xℓ ← Eq. (5)
+
+▷ Apply intervention
+
+11:
+
+end if
+
+12: end if
+
+13: end for
+
+14: return x1, . . . , xL
+
+computations in step 7, 8 and 9 introduce minimal overhead, resulting in a negligible increase in extra runtime.
+V. EXPERIMENTS In this section, we present the experiments that explore the concepts of feature-observability and feature-controllability in frontier VLA policies: the transformer-based OpenVLA and π0-FAST and the transformer-flow-matching hybrid models π0 and π0.5. We first compare how accurately robot states and actions can be observed in representation space using a linear observer across these architectures. Then, we show that targeted perturbations in the representation space smoothly affect VLA outputs and that precise representation control is achieved. Lastly, we study how minimal control interventions to the representation space lead to effective VLA steering in closed-loop deployment on hardware.
+A. Observing Features in VLA Representations We assess whether robot-relevant features can be predicted
+using the linear observer defined in Equation (3), and how prediction performance varies across models and datasets. We evaluate π0, π0-FAST, and π0.5 on LIBERO [23] and DROID [24], and OpenVLA [18] on BridgeData V2 [25]. We focus on robot states and actions, which are available in these datasets, and fundamental robot quantities. Following Remark III.3, these are output-level features, while trajectorylevel features are evaluated in Section V-C.
+The state features are s = (x, y, z, ϕ, θ, ψ, g), comprising Cartesian end-effector position, roll, pitch, yaw, and normalized gripper aperture. Action features comprise translational and rotational commands (∆x, ∆y, ∆z, ∆ϕ, ∆θ, ∆ψ) and the gripper command ∆g, following each dataset’s conventions. For chunked actions, labels are averaged over the chunk; OpenVLA uses single-step action labels. Continuous quantities are predicted using regression probes, while gripper state and command are predicted using binary classifiers.
+For each model–dataset pair, we construct input–feature pairs {(w(i), ξ(i))}iK=1, where, for example, ξ = ∆x ∈ R. Inputs contain scene images, task instructions, and proprioceptive measurements as supported by each model; OpenVLA receives a single image and no proprioceptive measurements. We pass these inputs through the frozen models and collect
+
+∆g Mean Change ∆z Mean Change
+
+π0
+
+π0-FAST
+
+α = 0.25 0.2
+
+α = 0.5
+
+0.05
+
+α = 0.75
+
+α = 1 0.1
+
+α = 1.5
+
+α = 0.5 α=1 α = 1.5 α=2 α = 2.5
+
+0.00
+
+0.0
+
+1.0 α=1
+
+α = 1.5
+
+0.4
+
+α = 1.5
+
+α=2
+
+α=2 α = 2.5
+
+0.5
+
+α = 2.5 α=3
+
+0.2
+
+α=3
+
+α = 3.5
+
+0.0
+
+0.0
+
+105
+
+x2
+
+104
+
+103
+
+102 1 3 5 7 9 11 13 15 17 Layer Number ( )
+
+1 3 5 7 9 11 13 15 17 Layer Number ( )
+
+Fig. 4: Output sensitivity to observer-aligned representation
+
+interventions in the LIBERO checkpoints of π0 (left) and π0-FAST (right). Top and middle: mean changes in vertical displacement ∆z and gripper command ∆g relative to the
+
+unmodified model, as a function of intervention layer, for
+
+different strengths α. Bottom: representation L2-norm across layers, on a logarithmic scale.
+
+pooled representations at each layer, yielding activation–
+
+feature pairs VLM prefix,
+
+{e(xxc(ℓliu),dξin(ig))a}cKi=ti1o.nF-eoxrpaelrlt
+
+models, we activations
+
+probe the in hybrid
+
+architectures. For autoregressive models, activations are
+
+collected during the first forward pass, before action-token
+
+generation. Observers are trained separately for each feature
+
+and layer using Algorithm 1, and evaluated on a held-out
+
+10% split. Figure 3 reports the highest score across layers.
+
+Figure 3 shows that all evaluated model–dataset pairs
+
+contain linearly predictive information about robot states and
+
+actions. State features are recovered more accurately than
+
+action features throughout: Cartesian state probes achieve
+
+R2 = 0.81–1.00 and orientation probes R2 = 0.53–0.99,
+
+while the corresponding action probes fall well below this.
+
+Similarly, gripper-state classification is close to perfect, while
+
+gripper-command accuracy shows a larger spread. We also
+
+note that π0.5 on average has the strongest decodability of continuous features, but not for binary (gripper) features.
+
+Action decodability is markedly lower on the real-world
+
+datasets while state decodability is not, dropping by roughly
+
+a third from LIBERO to DROID with state scores essentially
+
+unchanged. Since the gap is specific to actions, one expla-
+
+nation is that the LIBERO policies encode a comparatively
+
+rigid state-to-action mapping fit to scripted demonstrations,
+
+whereas policies trained on diverse teleoperation data retain
+
+more distributed and multimodal action representations. Real-
+
+world action targets are also intrinsically noisier, so lower
+
+R2 need not by itself imply less linear structure.
+
+Overall, linear predictability of state and action features
+
+is present in autoregressive and transformer–flow-matching
+
+architectures alike, with the simulated–real gap in action
+
+decodability larger than any gap between architectures.
+
+π0.5
+Control
+
+α = 1.0
+
+α = 0.1 No Control
+−1.2
+
+−0.8
+
+−0.4
+
+0.0
+
+0.4
+
+Observer Prediction of ∆ψ at Layer 9
+
+Fig. 5: Representations projected into the classifier image space at layer 9 of π0.5, under different interventions. Individual samples are shown with means indicated by solid diamonds. The controller constrains the representations to lie within the target bounds [ξmin, ξmax], while baseline interventions and un-intervened representations fall outside.
+
+B. Controlling Features Through Representation Interventions Feature predictability alone does not establish that a repre-
+sentation can be used to steer model behavior. We therefore examine two requirements for representation control: whether observer-aligned perturbations produce graded changes in the generated actions, and whether the controller can place individual observer predictions within a prescribed target.
+Output sensitivity to representation interventions. We compare the LIBERO checkpoints of π0 and π0-FAST to examine flow-matching and autoregressive action generation within the same model family. For each scalar action feature, we perturb the representation along its linear observer direction, xℓ ← xℓ + αWℓ, where α controls intervention strength. Only one layer is perturbed per generation. We sweep the layer and intervention strength, measuring the mean change in the corresponding output feature relative to the unmodified model across 50 LIBERO episodes.
+Across the six continuous action dimensions, increasing α produces graded, generally ordered changes in the mean output over the tested intervention strengths. Figure 4 illustrates this behavior for the vertical displacement command ∆z. The trend appears in both models, indicating that observer-aligned interventions can modulate continuous actions under both generation mechanisms. Similar continuous-action responses are observed for the LIBERO and DROID checkpoints of π0.5, which we use in subsequent closed-loop experiments. The binary gripper response is less regular, while still showing an ordering with increasing α. Lower sensitivity in later layers may partly be attributed to increasing representation scales, which can reduce the relative effect of a fixed perturbation.
+Control of observer predictions. We next evaluate the minimal controller in Equation (7) in the output space of the scalar affine observer from Equation (3). A fixed additive perturbation shifts all observer predictions by the same amount, preserving their spread. Consequently, it can move the mean prediction into the target interval while leaving individual samples outside, as Figure 5 illustrates. The proposed controller instead adapts the intervention to each representation, satisfying fℓ(xℓ) ∈ [ξmin, ξmax] by construction of the constraint in Equation (6). Figure 5 demonstrates this empirically. This guarantee concerns the observer output; behavioral constraint satisfaction during closed-loop execution is evaluated in the next section.
+
+Transport lift ≤ 0.10 m
+
+1.0
+
+K=5→100
+
+Transport lift ≥ 0.20 m
+K=5→100
+
+Co ee mug grasping task
+
+Blender manipulation task
+
+Success Rate
+
+0.8
+
+0.6
+
+0.00 0.25 0.50 0.75 1.00 0.00 0.25 0.50 0.75 1.00
+
+Constraint Satisfaction Rate
+
+Constraint Satisfaction Rate
+
+no intervention prompting
+
+action clipping rejection sampling
+
+value vectors ours
+
+Fig. 6: Task success rate vs. constraint satisfaction in LIBEROSpatial across 100 rollouts per method (10 tasks × 10). The lift during the transport phase is constrained above/below. Whiskers show ±1 standard deviation across tasks.
+
+C. Observing and Controlling Features in Closed-Loop
+The preceding experiments examined state and action observability and the effects of representation interventions on model outputs. We now evaluate whether these interventions steer executed behavior during closed-loop interaction, including grasp modalities and object choices, while preserving task performance. We use frozen π0.5 checkpoints [1] in LIBERO simulation [23] and on the DROID hardware platform [24], with policy inference on a single NVIDIA RTX 5090 GPU.
+Evaluation and baselines. We consider transport-lift constraints, preferred grasp modalities, and task-specific object-selection constraints. The three simulation experiments comprise 100 rollouts each, while each of the three hardware tasks uses 50 rollouts per method. Constraint satisfaction is the fraction of rollouts for which ξ(τ ) ∈ C; for categorical features, this is the frequency of the preferred grasp or designated safe object. Task success is evaluated separately.
+The main baselines are the unmodified policy, prompt interventions, and value-vector steering [6]. For lift constraints, we additionally evaluate two output-side baselines: rejection sampling and action clipping. Rejection sampling draws up to K action chunks at each replan, selecting a satisfying candidate when available and otherwise executing the leastviolating candidate. Action clipping directly modifies the commanded motion, using a safety margin to account for discrepancies between commanded and executed trajectories. The 50 base policy rollouts are re-used to fit the observers.
+Constraining transport motion. We impose either an upper bound of 0.10 m or a lower bound of 0.20 m on the vertical lift during the task’s transport phase. Constraints apply over this phase, and task success requires completion of the original LIBERO task. Figure 6 shows that representation control substantially increases constraint satisfaction while retaining high task success. Prompting, on the other hand, fails to meaningfully alter the policy’s behavior. Increasing the rejection-sampling budget K = 5 to K = 100 leaves satisfaction below 10% for both bounds, while value vectors achieve approximately 74% for the upper bound and 0% for the lower bound. As expected for these geometric constraints, action clipping performs well. In our experiments, only the lower-bound constraint requires tuning: the limited vertical displacement achievable in a single control step necessitates
+
+→
+
+→
+
+❌
+
+✅
+
+❌
+
+✅
+
+Fig. 7: Examples of closed-loop hardware behaviors. Left: grasping a coffee-filled mug by the rim (undesired) or handle (preferred). Right: selecting a metal fork (unsafe) or banana (safe) for a blender. Arrows indicate desired behavior change.
+
+a margin (of 4 cm) that activates corrective motion early enough to reach the required lift during transport.
+ff
+Rejection sampling also incurs substantial computational overhead. Even with shared prefix computation and batched action-expert evaluations, median inference time increases by 16% at K = 5 and 583% at K = 100, compared with approximately 1% for our closed-form representation interventions (measured over 50 forward passes).
+Aligning grasp modalities with user preferences. We next constrain how the robot grasps an object. In LIBERO, the task is to pick up a wine bottle, with a more stable, preferred grasp at the base rather than the top. As shown in Table I, the base policy selects the preferred modality in only 28% of rollouts. The better of two prompts emphasizing grasp location or approach direction raises this to 40%, while value-vector steering reduces it to 3%. Representation control makes the preferred modality dominant at 73%.
+On hardware, the robot must pick up a coffee-filled mug by its handle; a rim grasp places a gripper finger in the liquid. The base policy grasps the handle in only 14% of rollouts. Prompting and value vectors increase this to 46% and 38%, respectively, while our method reaches 74%. All methods successfully grasp the mug, so the improvement concerns the executed grasp modality rather than grasp success. Figure 7 illustrates the preferred and undesired behaviors. In both tasks, representation control makes the preferred modality dominant, although some rollouts still violate the preference.
+Enforcing task-specific semantic constraints. Finally, we evaluate object selection in two hardware tasks: choosing a banana rather than a metal fork for a blender, and a glass rather than a plastic bowl for an oven. These constraints concern the identity of the manipulated object. The base policy selects the designated safe object in 52% and 48% of rollouts, respectively (Table II). Prompting reaches 40% and 62%, while value vectors reach 64% and 94%. Our method selects the designated safe object in all 50 evaluated
+
+TABLE I: Grasp modality distribution across 100 sampled initial conditions in the LIBERO-Goal scene (wine bottle) and across 50 rollouts on hardware (coffee mug).
+
+Wine bottle
+
+Coffee mug
+
+Base ↑ Top ↓ Handle ↑ Rim ↓
+
+Base policy (π0.5) Prompting Value vectors [6] Ours
+
+28% 40% 3% 73%
+
+72% 60% 97% 27%
+
+14% 46% 38% 74%
+
+86% 54% 62% 26%
+
+TABLE II: Object manipulation distribution across 50 rollouts for two semantic safety experiments. In each, the safe object should be selected and the unsafe object should be avoided.
+
+Base policy (π0.5) Prompting Value vectors [6] Ours
+
+Blender
+
+Banana ↑ Fork ↓
+
+52%
+
+48%
+
+40%
+
+60%
+
+64%
+
+36%
+
+100% 0%
+
+Oven (bowls)
+
+Glass ↑ Plastic ↓
+
+48%
+
+52%
+
+62%
+
+38%
+
+94%
+
+6%
+
+100% 0%
+
+rollouts of each task. Here, task success means successfully manipulating the selected object, which all methods achieve; full completion of the blender or oven task is not evaluated. We emphasize that our method does not guarantee safety in these scenarios, and hence can be complementary to outputlevel filters with action-space guarantees.
+VI. CONCLUSION AND OUTLOOK This paper introduced a principled framework for understanding and controlling Vision-Language-Action models through their internal representations. We used this framework to study how architectural design choices affect the interpretability and steerability of VLA internal representations, and leveraged these insights to enable reliable inference-time steering. We found linearly predictive state and action information in both autoregressive and transformer–flow-matching VLAs, with performance varying across models, datasets, and features. Our lightweight observers and controllers enable behavioral steering without retraining, adding approximately 1% inference overhead. Closed-loop experiments in the LIBERO simulator and on DROID hardware demonstrate improved constraint satisfaction while retaining task performance. On hardware, preferred grasps increased by 60 percentage points, and the designated safe objects were selected in all 50 rollouts, beating both prompting and value vector baselines. Limitations and Future Work. While our framework successfully demonstrates feature observability and controllability, several directions warrant further investigation. First, our current approach requires labeled data to train linear observers, which may not always be available in largescale robotics datasets. Second, we focused primarily on the Transformer components of VLA architectures; extending our framework to the diffusion or flow-matching heads would enable end-to-end interpretability and control across hybrid architectures. Finally, establishing principled safety guarantees and bounds on the effects of representation-space interventions would be crucial for deploying these techniques in safety-critical robotic applications.
+REFERENCES
+[1] P. Intelligence, K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. Equi, C. Finn, N. Fusai, et al., “π0.5: A vision-language-action model with open-world generalization,” arXiv preprint 2504.16054, 2025.
+[2] S. Fei, S. Wang, J. Shi, Z. Dai, J. Cai, P. Qian, L. Ji, X. He, S. Zhang, Z. Fei, et al., “Libero-plus: In-depth robustness analysis of vision-language-action models,” arXiv preprint 2510.13626, 2025.
+[3] A. M. Turner, L. Thiergart, D. Udell, G. Leech, U. Mini, and M. MacDiarmid, “Activation addition: Steering language models without optimization,” CoRR, 2023.
+
+[4] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” Advances in neural information processing systems, vol. 30, 2017.
+[5] K. Kawaharazuka, J. Oh, J. Yamada, I. Posner, and Y. Zhu, “Visionlanguage-action models for robotics: A review towards real-world applications,” IEEE Access, 2025.
+[6] B. Ha¨on, K. Stocking, I. Chuang, and C. Tomlin, “Mechanistic interpretability for steering vision-language-action models,” in Conference on Robot Learning, 2025.
+[7] C. Mitra, Y. Luo, R. Saravanan, D. Niu, A. Pai, J. Thomason, T. Darrell, A. Anwar, D. Ramanan, and R. Herzig, “Mechanistic finetuning of vision-language-action models via few-shot demonstrations,” arXiv preprint 2511.22697, 2025.
+[8] H. Lu, H. Li, P. S. Shahani, S. Herbers, and M. Scheutz, “Probing a vision-language-action model for symbolic states and integration into a cognitive architecture,” IEEE International Conference on AI and Data Analytics, 2025.
+[9] A. Swann, L. McGranahan, H. Buurmeijer, M. Kennedy III, and M. Schwager, “Sparse autoencoders reveal interpretable and steerable features in vla models,” in Conference on Robot Learning, 2026.
+[10] M. Molinari, L. Nevali, S. Navani, and O. G. Younis, “Emergent world representations in openvla,” arXiv preprint 2509.24559, 2025.
+[11] K. Park, Y. J. Choe, and V. Veitch, “The linear representation hypothesis and the geometry of large language models,” in International Conference on Machine Learning, PMLR, 2024.
+[12] E. Cheng and C. A. Alonso, “Liseco: Linear semantic control for language generation,” Transactions on Machine Learning Research, 2026.
+[13] P. Rodriguez, A. Blaas, M. Klein, L. Zappella, N. Apostoloff, X. Suau, et al., “Controlling language and diffusion models by transporting activations,” in The Thirteenth International Conference on Learning Representations, 2025.
+[14] R. Chen, A. Arditi, H. Sleight, O. Evans, and J. Lindsey, “Persona vectors: Monitoring and controlling character traits in language models,” arXiv preprint 2507.21509, 2025.
+[15] Z. Wu, A. Arora, Z. Wang, A. Geiger, D. Jurafsky, C. D. Manning, and C. Potts, “Reft: Representation finetuning for language models,” Advances in Neural Information Processing Systems, vol. 37, pp. 63 908–63 962, 2024.
+[16] J. Sun, S. Baskaran, Z. Wu, M. Sklar, C. Potts, and A. Geiger, “Hypersteer: Activation steering at scale with hypernetworks,” arXiv preprint 2506.03292, 2025.
+[17] K. Li, O. Patel, F. Vie´gas, H. Pfister, and M. Wattenberg, “Inferencetime intervention: Eliciting truthful answers from a language model,” Advances in Neural Information Processing Systems, 2023.
+[18] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao, A. Balakrishna, S. Nair, R. Rafailov, E. P. Foster, P. R. Sanketi, Q. Vuong, T. Kollar, B. Burchfiel, R. Tedrake, D. Sadigh, S. Levine, P. Liang, and C. Finn, “Openvla: An open-source vision-language-action model,” in Conference on Robot Learning, ser. Proceedings of Machine Learning Research, 2025.
+[19] K. Pertsch, K. Stachowicz, B. Ichter, D. Driess, S. Nair, Q. Vuong, O. Mees, C. Finn, and S. Levine, “Fast: Efficient action tokenization for vision-language-action models,” arXiv preprint 2501.09747, 2025.
+[20] B. Zitkovich et al., “Rt-2: Vision-language-action models transfer web knowledge to robotic control,” in Proceedings of The 7th Conference on Robot Learning, J. Tan, M. Toussaint, and K. Darvish, Eds., ser. Proceedings of Machine Learning Research, vol. 229, PMLR, 2023, pp. 2165–2183.
+[21] K. Black et al., “π0: A vision-language-action flow model for general robot control,” arXiv preprint 2410.24164, 2024.
+[22] R. Kalman, “A new approach to linear filtering and prediction problems,” Journal of Basic Engineering, vol. 82, no. 1, 1960.
+[23] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, Y. Zhu, and P. Stone, “Libero: Benchmarking knowledge transfer for lifelong robot learning,” Advances in Neural Information Processing Systems, vol. 36, pp. 44 776–44 791, 2023.
+[24] A. Khazatsky, K. Pertsch, S. Nair, A. Balakrishna, S. Dasari, S. Karamcheti, S. Nasiriany, M. K. Srirama, L. Y. Chen, K. Ellis, et al., “Droid: A large-scale in-the-wild robot manipulation dataset,” arXiv preprint 2403.12945, 2024.
+[25] H. Walke, K. Black, A. Lee, M. J. Kim, M. Du, C. Zheng, T. Zhao, P. Hansen-Estruch, Q. Vuong, A. He, V. Myers, K. Fang, C. Finn, and S. Levine, “Bridgedata v2: A dataset for robot learning at scale,” in Conference on Robot Learning, 2023.
+
+

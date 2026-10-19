@@ -1,0 +1,438 @@
+id	year	sources	themes	interp_terms	title
+2509.00328	2025	arXiv,pdf-references	embodied_llm_interp,12,robot_xai,vla_interp,vla_representations	mechanistic,activation steering,internal representations?,interpretab,explainab,steer	Mechanistic interpretability for steering vision-language-action models
+2608.13474	2026	arXiv,pdf-references	embodied_llm_interp,6,robot_policy_interp,vla_interp,vla_language_grounding,vla_representations,vla_short_name	mechanistic,linear prob(e|es|ing),internal representations?,interpretab,\bprob(e|es|ing)\b,steer,counterfactual	Decoding Task Progress from VLA Representations
+2603.19183	2026	arXiv,pdf-references	embodied_llm_interp,10,vla_interp,vla_representations,vla_short_name	mechanistic,sparse autoencoder,\bsaes?\b,internal representations?,internal (features|activations|states),interpretab,\bprob(e|es|ing)\b,steer,concept	Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models
+2610.20840	2026	arXiv	vla_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b,steer,concept	A Phenomenology of Neural Geometry in Vision-Language-Action Models
+2505.23450	2025	arXiv	robot_policy_interp,vla_interp	interpretab,introspect	Agentic Robot: A Brain-Inspired Framework for Vision-Language-Action Models in Embodied Agents
+2610.03498	2026	arXiv	embodied_llm_interp,vla_interp,vla_representations,vla_safety_internals,vla_short_name	mechanistic,sparse autoencoder,\bsaes?\b,linear prob(e|es|ing),internal representations?,\bprob(e|es|ing)\b	Detect and Suppress: A Mechanistic Defense against Adversarial Patches in VLA Models
+2609.15005	2026	arXiv,web-sweep	vla_attribution,vla_language_grounding,core	attribution,faithful,counterfactual	IMPACT-VLA: Interaction-aware Multimodal Propagation Attribution via Counterfactual Trajectories for Vision-Language-Action Policies
+2606.00269	2026	arXiv,web-sweep	vla_attribution,vla_interp,core	\bneurons?\b,steer,concept	Closed-Loop Neural Activation Control in Vision-Language-Action Models
+2607.04681	2026	arXiv,web-sweep	vla_interp,vla_language_grounding,core	interpretab,faithful,counterfactual	Do Vision-Language-Action Models Mean What They Say? On the Role of Faithfulness in Embodied Reasoning
+2608.21247	2026	arXiv	vla_attribution,vla_language_grounding	saliency,concept	Just Noticeable Difference Modeling for Token Compression in Vision-Language-Action Models
+2603.19233	2026	arXiv,pdf-references	diffusion_policy_interp,10,vla_interp	mechanistic,\bsaes?\b,interpretab,concept	Not All Features Are Created Equal: A Mechanistic Study of Vision-Language-Action Models
+https://doi.org/10.2139/ssrn.6967579	2026	Crossref	driving_interp,embodied_llm_interp,vla_interp	mechanistic,sparse autoencoder,dictionary learning,causal (tracing|mediation),\bcircuits?\b,interpretab,\bprob(e|es|ing)\b,attribution,concept	The Model as Microscope: Knowledge Discovery via Mechanistic Interpretability of Scientific Foundation Models
+2605.28527	2026	arXiv,pdf-references	2,vla_interp,vla_short_name	linear prob(e|es|ing),\bprob(e|es|ing)\b	What Frozen VLAs Already Know About Success: A Probing Study of Value-Like Structure in Foundation Robot Policies
+2607.23784	2026	arXiv	robot_policy_interp,vla_interp	interpretab,steer	A Few Words Go a Long Way: Language Guided Robot Policy Synthesis
+2609.27753	2026	arXiv	diffusion_policy_interp,vla_interp,vla_representations,vla_short_name,world_model_interp	interpretab,explainab	AWM-VLA: AlignedWorld Modeling for Efficient and Explainable Vision-Language-Action Policies
+2605.17144	2026	arXiv,pdf-references,web-sweep	diffusion_policy_interp,embodied_llm_interp,2,vla_interp,vla_representations,core	activation steering,steer,concept,hidden state	Contrastive Conceptor Activation Steering (COAST): Unlocking Vision-Language-Action Models through Hidden States
+2606.21496	2026	arXiv	diffusion_policy_interp,vla_interp	interpretab,concept	Decoupling the Declarative from the Procedural in Vision-Language-Action Models
+2607.14280	2026	arXiv	diffusion_policy_interp,robot_xai,vla_interp,vla_representations	internal representations?,interpretab,steer	DiMaS: Distribution Matching for Steering Vision-Language-Action Models
+2610.10178	2026	arXiv	vla_attribution,vla_interp,vla_language_grounding,vla_representations	mechanistic,activation patching,internal representations?,interpretab,attribution	Do Vision-Language-Action Models Understand Instructions? A Mechanistic Interpretability Study on Language Grounding
+2610.13816	2026	arXiv	robot_policy_interp	steer,faithful	Dream to Remember: Continual Steering of Generalist Robot Policies with World Models
+2605.00321	2026	arXiv,pdf-references	1,vla_attribution,vla_interp	interpretab,explanation,attribution,faithful	Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models
+2509.24559	2025	arXiv,pdf-references	10,vla_interp	sparse autoencoder,\bsaes?\b,linear prob(e|es|ing),\bprob(e|es|ing)\b	Emergent World Representations in OpenVLA
+2605.17204	2026	arXiv,pdf-references	embodied_llm_interp,3,vla_interp	mechanistic,sparse autoencoder,\bsaes?\b,interpretab	Event-Grounded Sparse Autoencoders for Vision-Language-Action Policies
+2609.26118	2026	arXiv	world_model_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	GDLAM: Group-Disentangled Latent Action Model for Highly Disentangled Embodied Pretraining
+2608.04510	2026	arXiv	vla_failure_monitoring,vla_interp,vla_language_grounding,vla_short_name	\bprob(e|es|ing)\b,failure (prediction|detection|explanation),counterfactual	GUARD: Grounding Uncertainty and Ablation-Based Risk Detection for Diffusion-Based VLAs
+2607.08448	2026	arXiv	vla_language_grounding	steer	Harness VLA: Steering Frozen VLAs into Reliable Manipulation Primitives via Memory-Guided Agents
+2609.38401	2026	arXiv	vla_representations	internal representations?	Memorize, Adapt, Ignore: Diagnosing Robot Learning Mechanisms under Training Data Variation
+2608.01826	2026	arXiv	vla_interp,vla_representations,vla_short_name	\bprob(e|es|ing)\b,hidden state	Multi-View Unified Camera Fields: Geometry-Shaped Action-Facing Representations for RGB-Only Multi-Camera VLA Policies
+2502.00726	2025	arXiv	embodied_llm_interp	sparse autoencoder,activation patching,\bcircuits?\b,interpretab,explanation,steer	Perspectives for Direct Interpretability in Multi-Agent Deep Reinforcement Learning
+2606.09740	2026	arXiv,pdf-references,web-sweep	1,vla_interp,vla_language_grounding,vla_representations,core	\bprob(e|es|ing)\b	ProbeAct: Probe-Guided Training-Free Failure Recovery in Vision-Language-Action Models
+2610.04681	2026	arXiv	robot_policy_interp,vla_interp,vla_representations	internal representations?,steer	RoboIRS: Inference-Time Internal Representation Steering for Generalist Robot Policies
+2506.09937	2025	Crossref,arXiv,pdf-references,web-sweep	2,vla_failure_monitoring,core	internal (features|activations|states),failure (prediction|detection|explanation)	SAFE: Multitask Failure Detection for Vision-Language-Action Models
+2610.09496	2026	arXiv	embodied_llm_interp,robot_policy_interp,vla_interp,vla_safety_internals	mechanistic,sparse autoencoder,interpretab	Sparse Feature Policy Unlearning Mitigates State Hallucination in Vision-Language-Action Models
+2609.30996	2026	arXiv	vla_attribution,vla_interp,vla_representations	linear prob(e|es|ing),internal representations?,\bprob(e|es|ing)\b,steer	The Linear Representation Hypothesis for Vision-Language-Action Models
+2609.34599	2026	arXiv	diffusion_policy_interp,vla_interp,vla_short_name	interpretab,\bprob(e|es|ing)\b,steer	The Low-Rank Structure of VLA Reinforcement Learning
+2609.24682	2026	arXiv	vla_attribution	internal (features|activations|states)	Think Like a World Model, Act Like a VLA: Distilling World-Model Representations into Compact Robot Policies
+2609.19104	2026	arXiv	vla_attribution	\bneurons?\b	rMuscle: Robotic Muscle Memory for Efficient Vision-Language-Action Model Inference
+2601.01618	2026	arXiv	vla_interp	interpretab,explanation	Action-Sketcher: From Reasoning to Action via Visual Sketches for Long-Horizon Robotic Manipulation
+2602.10437	2026	arXiv	rl_agent_mech_interp	mechanistic,sparse autoencoder,\bsaes?\b,interpretab,\bprob(e|es|ing)\b,steer	Control Reinforcement Learning: Interpretable Token-Level Steering of LLMs via Sparse Autoencoder Features
+2609.32253	2026	arXiv	vla_attribution,vla_language_grounding,vla_short_name	\bneurons?\b	DS-VLA: A Dendritic-inspired Vision-Language-Action Model for Robust Action Control
+2510.16281	2025	arXiv,pdf-references,web-sweep	2,vla_interp,vla_language_grounding,adjacent	steer,faithful	Do What You Say: Steering Vision-Language-Action Models via Runtime Reasoning-Action Alignment Verification
+2411.18714	2024	arXiv	vla_interp	interpretab,explainab,explanation,faithful,concept	Explainable deep learning improves human mental models of self-driving cars
+2506.07639	2025	arXiv,pdf-references	1,vla_interp	interpretab,faithful	Fast ECoT: Efficient Embodied Chain-of-Thought via Thoughts Reuse
+2610.18650	2026	arXiv	vla_language_grounding	counterfactual	ForkCast: Predictive Recovery for Vision-Language-Action Policies via Counterfactual Futures
+2406.18746	2024	arXiv	robot_policy_interp	interpretab,steer	Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+2603.28545	2026	arXiv	vla_attribution,vla_interp	interpretab,attribution	ManipArena: Comprehensive Real-world Evaluation of Reasoning-Oriented Generalist Robot Manipulation
+2602.11180	2026	Crossref,arXiv	driving_interp,embodied_llm_interp,rl_agent_mech_interp,vla_interp	mechanistic,activation steering,\bneurons?\b,\bcircuits?\b,interpretab,steer,causal (intervention|analysis)	Mechanistic Interpretability for Large Language Model Alignment: Progress, Challenges, and Future Directions
+2603.05487	2026	arXiv,pdf-references	embodied_llm_interp,11,vla_interp,vla_representations	mechanistic,internal representations?,interpretab,steer	Observing and Controlling Features in Vision-Language-Action Models
+2502.04558	2025	arXiv,pdf-references	3,vla_interp	interpretab,\bprob(e|es|ing)\b	Probing a Vision-Language-Action Model for Symbolic States and Integration into a Cognitive Architecture
+2607.18709	2026	arXiv	world_model_interp	interpretab,concept	RoboInter1.5: A Holistic Intermediate Representation Suite for Embodied World Modeling and Robotic Manipulation
+2505.15304	2025	arXiv	vla_attribution	saliency	Saliency-Aware Quantized Imitation Learning for Efficient Robotic Control
+2602.21633	2026	pdf-references	1	internal (features|activations|states)	Self-Correcting VLA: Online Action Refinement via Sparse World Imagination
+2610.12696	2026	arXiv	vla_interp,vla_language_grounding	explanation,\bprob(e|es|ing)\b,concept	Spa-Bench: A Real-Robot Benchmark for Spatial Grounding in Vision-Language-Action Models
+2512.02834	2025	arXiv,pdf-references	1,vla_attribution	steer	Steering Vision-Language-Action Models as Anti-Exploration: A Test-Time Scaling Approach
+2607.08283	2026	arXiv	vla_interp,vla_representations	mechanistic	TFP: Temporally Conditioned Memory-Fusion Policies for Visuomotor Learning
+2511.14178	2025	arXiv	vla_interp	steer	Towards Deploying VLA without Fine-Tuning: Plug-and-Play Inference-Time VLA Policy Steering via Embodied Evolutionary Diffusion
+2605.30117	2026	arXiv,pdf-references,web-sweep	5,vla_attribution,vla_interp,vla_representations,vla_short_name,core	\bcircuits?\b,\bprob(e|es|ing)\b,attribution	VLA-Trace: Diagnosing Vision-Language-Action Models through Representation and Behavior Tracing
+2605.30011	2026	arXiv	vla_language_grounding	faithful,counterfactual	VisualThink-VLA: Visual Intermediate Reasoning for Effective and Low-Latency Vision-Language-Action Policies
+2609.15064	2026	arXiv	rl_agent_mech_interp	mechanistic,sparse autoencoder,\bsaes?\b,internal (features|activations|states),interpretab,steer,concept	What Does an LLM Learn from Reinforcement Learning? A Mechanistic Interpretability Perspective with Fixed-SAE Track
+2609.39971	2026	arXiv	vla_language_grounding	internal (features|activations|states),counterfactual	When Instructions Retrieve Trajectories: Diagnosing and Mitigating Generalization Failures in VLA Models
+2606.12403	2026	arXiv	vla_interp	steer	World Pilot: Steering Vision-Language-Action Models with World-Action Priors
+2606.09749	2026	arXiv,pdf-references	1,vla_attribution	attention heads?	Your Model Already Knows: Attention-Guided Safety Filter for Vision-Language-Action Models
+2601.11404	2026	arXiv	vla_representations,vla_short_name	internal representations?	ACoT-VLA: Action Chain-of-Thought for Vision-Language-Action Models
+2606.10495	2026	arXiv	vla_attribution,vla_language_grounding,vla_representations	internal representations?,saliency,counterfactual	Act on What You See: Unlocking Safe Social Navigation in Vision-Language-Action Models
+2609.28955	2026	arXiv	vla_attribution,vla_language_grounding	counterfactual	ActGaze: Learning Action-Grounded Gaze through Counterfactual Visual Interventions for High-Precision Manipulation
+2602.06339	2026	arXiv,pdf-references	1,robot_policy_interp	mechanistic,explanation	Action Hallucination in Generative Vision-Language-Action Models
+2609.11270	2026	arXiv	robot_policy_interp	steer,hidden state	Beyond Noise Steering: Dual-Latent Space Reinforcement Learning for Generative Robot Policy
+2606.01095	2026	arXiv,web-sweep	embodied_llm_interp,vla_interp,vla_representations,vla_short_name,core	internal representations?	Beyond Task Success: Behavioral and Representational Diagnostics for WAM and VLA
+2610.20750	2026	arXiv	diffusion_policy_interp,embodied_llm_interp,vla_interp	mechanistic,activation patching,causal (intervention|analysis)	Causal Analysis of Robot Foundation Models Enables Efficiency Gains
+https://doi.org/10.21203/rs.3.rs-6599791/v1	2025	Crossref	embodied_llm_interp	mechanistic,activation patching,causal (tracing|mediation),\bcircuits?\b,interpretab,causal (intervention|analysis)	Causal Intervention Framework for Variational Auto Encoder Mechanistic Interpretability
+2608.04396	2026	arXiv	vla_language_grounding,vla_representations	counterfactual,causal (intervention|analysis)	CofactVLA: Deconfounding Vision-Language-Action Models via Counterfactual Intervention
+2511.14396	2025	arXiv	vla_language_grounding	internal (features|activations|states)	Continuous Vision-Language-Action Co-Learning with Semantic-Physical Alignment for Behavioral Cloning
+2605.19294	2026	arXiv	vla_language_grounding	counterfactual	DEFLECT: Temporal Counterfactual Preference Learning for Delay-Robust Asynchronous VLAs
+https://drvla.github.io	2026	web-sweep	core	sparse autoencoder,\bsaes?\b,interpretab,steer	DR.VLA project page and code (Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models)
+2607.02865	2026	arXiv	vla_interp,vla_language_grounding	steer	DREAMSTEER: Latent World Models Can Steer VLA Policies During Deployment Without Any Finetuning
+2606.19297	2026	arXiv,web-sweep	vla_interp,vla_short_name,adjacent	\bprob(e|es|ing)\b,concept	Does VLA Even Know the Basics? Measuring Commonsense and World Knowledge Retention in Vision-Language-Action Models
+2504.11419	2025	arXiv	world_model_interp	interpretab,\bprob(e|es|ing)\b,concept	Embodied World Models Emerge from Navigational Task in Open-Ended Environments
+2610.06235	2026	arXiv	robot_policy_interp,vla_interp,vla_language_grounding	linear prob(e|es|ing),\bprob(e|es|ing)\b	Encoded but Not in Control: Revealing the Grounding Gap in Vision-Language Robot Policies
+2601.18723	2026	arXiv	vla_interp	interpretab,explanation	Eval-Actions: Fine-Grained Execution Quality Evaluation for Robotic Manipulation
+https://github.com/xc-j/Event-SAE	2026	web-sweep	core	sparse autoencoder,\bsaes?\b	Event-SAE (code for Event-Grounded Sparse Autoencoders for Vision-Language-Action Policies)
+2510.01642	2025	arXiv,pdf-references	5,vla_failure_monitoring	explanation,failure (prediction|detection|explanation)	FailSafe: Reasoning and Recovery from Failures in Vision-Language-Action Models
+2609.04277	2026	arXiv	vla_failure_monitoring,vla_representations	internal representations?,failure (prediction|detection|explanation)	FailureSpot: Label-Efficient Timestamp-Level Failure Detection for Vision-Language-Action Models
+2606.23085	2026	arXiv,pdf-references	1,vla_failure_monitoring,vla_representations	failure (prediction|detection|explanation)	Foresight: Failure Detection for Long-Horizon Robotic Manipulation with Action-Conditioned World Model Latents
+2506.09930	2025	arXiv,pdf-references	2,robot_policy_interp,vla_interp	\bprob(e|es|ing)\b	From Intention to Execution: Probing the Generalization Boundaries of Vision-Language-Action Models
+2501.00226	2024	arXiv	world_model_interp	internal representations?,internal (features|activations|states),explanation	Generative Emergent Communication: Large Language Model is a Collective World Model
+2607.21049	2026	arXiv,web-sweep	robot_policy_interp,adjacent	interpretab	GuidedAttention: Interpretable and Correctable Visual Attention for OOD-Robust Robot Manipulation via Imitation Learning
+2608.14822	2026	arXiv	vla_language_grounding	counterfactual	Imagining Recovery: Inference-Time Counterfactual Realignment for Vision-Language-Action Models
+2504.00682	2025	arXiv	robot_policy_interp	explainab,explanation,attribution	Immersive Explainability: Visualizing Robot Navigation Decisions through XAI Semantic Scene Projections in Virtual Reality
+2609.33647	2026	arXiv	vla_language_grounding	\bcircuits?\b,counterfactual	InfraVLA: Extending Vision-Language-Action Navigation with Infrastructure Cameras
+2509.20623	2025	arXiv,pdf-references	embodied_llm_interp,1,robot_policy_interp	activation steering,steer	Latent Activation Editing: Inference-Time Refinement of Learned Policies for Safer Multirobot Navigation
+2609.02634	2026	arXiv	vla_interp,vla_representations	internal representations?,interpretab,concept	Latent Cluster Analysis for Vision-Language-Action Models
+2609.22521	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	Latent Policy Steering: An Efficient and Flexible Framework for Cross-Embodiment Transfer
+2610.08425	2026	arXiv	vla_interp,vla_short_name	explanation,\bprob(e|es|ing)\b	MIM-VLA: Learning Physical Interaction Representations from Gripper Motor Feedback
+2511.22697	2025	arXiv,pdf-references	embodied_llm_interp,5,vla_attribution,vla_interp	mechanistic,attention heads?,interpretab,steer	Mechanistic Finetuning of Vision-Language-Action Models via Few-Shot Demonstrations
+2609.34684	2026	arXiv	vla_failure_monitoring,vla_representations,vla_short_name	internal representations?,failure (prediction|detection|explanation),faithful	Natural State-Prediction Accuracy can Hide Weak Controlled Responsiveness in VLA Readouts
+2608.27609	2026	arXiv	vla_representations,vla_short_name	internal representations?	PHR-VLA: Planning Horizon Reasoning for Vision-Language-Action Models
+2606.20754	2026	arXiv	vla_failure_monitoring	failure (prediction|detection|explanation)	Perturbation-Based Epistemic Uncertainty for Failure Detection in Vision-Language-Action Models
+2609.33765	2026	arXiv	diffusion_policy_interp,robot_policy_interp,vla_interp	steer	Principal Steering Subspaces for Online Adaptation of Frozen Generative Robot Policies
+2605.11887	2026	arXiv	rl_agent_mech_interp	mechanistic,sparse autoencoder,\bsaes?\b,interpretab,steer,concept	Qwen-Scope: Turning Sparse Features into Development Tools for Large Language Models
+2609.17728	2026	arXiv	vla_representations,vla_short_name	internal representations?,hidden state	RAF-VLA: Representation Alignment with the Future for End-to-End Autonomous Driving
+2602.01789	2026	arXiv	diffusion_policy_interp	steer	RFS: Reinforcement Learning with Residual Flow Steering for Dexterous Manipulation
+2607.26991	2026	arXiv	diffusion_policy_interp,vla_interp,vla_representations	steer	RL$^2$-VLA: Adaptive RL Latent Compositional Steering with Test-Time Scaling for Vision-Language-Action Models
+2604.17800	2026	arXiv	vla_attribution,vla_interp	interpretab,attention (map|pattern)	ReFineVLA: Multimodal Reasoning-Aware Generalist Robotic Policies via Teacher-Guided Fine-Tuning
+2607.14609	2026	arXiv	diffusion_policy_interp,vla_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	Representation-Aligned Tactile Grounding for Contact-Rich Robotic Manipulation
+2605.19282	2026	arXiv	vla_attribution	attention heads?	Rethinking Muon Beyond Pretraining: Spectral Failures and High-Pass Remedies for VLA and RLVR
+2606.15568	2026	arXiv	vla_interp	steer	SAPS: Shared Autonomy for Policy Steering by Blending Teleoperation with a Pretrained VLA
+2605.19524	2026	arXiv	vla_interp,vla_language_grounding	steer,counterfactual	SafeAlign-VLA: A Negative-Enhanced Safe Alignment Framework for Risk-Aware Autonomous Driving
+2603.18342	2026	arXiv,pdf-references	1,vla_failure_monitoring	failure (prediction|detection|explanation),introspect	Shifting Uncertainty to Critical Moments: Towards Reliable Uncertainty Quantification for VLA Model
+2609.37046	2026	arXiv	driving_interp,vla_interp,vla_language_grounding,vla_representations	linear prob(e|es|ing),interpretab,\bprob(e|es|ing)\b,counterfactual	Speed in the Blind Spot: An Interpretability Analysis of Dynamic Perception in VLMs for Autonomous Driving
+2602.13193	2026	arXiv	vla_interp	steer	Steerable Vision-Language-Action Policies for Embodied Reasoning and Hierarchical Control
+2606.15021	2026	arXiv	robot_policy_interp,vla_interp	steer	Steering Autoregressive Vision-Language-Action Policies via Action Token Intervention
+https://doi.org/10.1609/aaai.v40i48.42236	2026	Crossref	vla_short_name	mechanistic,sparse autoencoder,\bsaes?\b,attention heads?,interpretab,steer	Steering Sparse Autoencoder Latents to Control Dynamic Head Pruning in Vision Transformers (Student Abstract)
+2605.10821	2026	arXiv	vla_interp	steer	UniSteer: Unified Noise Steering for Efficient Human-Guided VLA Adaptation
+2604.18000	2026	arXiv	robot_policy_interp,vla_interp	mechanistic,causal (intervention|analysis)	Unmasking the Illusion of Embodied Reasoning in Vision-Language-Action Models
+2602.03973	2026	arXiv,pdf-references	diffusion_policy_interp,1,robot_policy_interp	steer,concept	VLS: Steering Pretrained Robot Policies via Vision-Language Models
+2602.17659	2026	arXiv,pdf-references,web-sweep	4,vla_language_grounding,adjacent	faithful,counterfactual	When Vision Overrides Language: Evaluating and Mitigating Counterfactual Failures in VLAs
+2506.24044	2025	arXiv	vla_interp	interpretab,explanation	A Survey on Vision-Language-Action Models for Autonomous Driving
+2510.10221	2025	arXiv	robot_policy_interp	interpretab,saliency,attention (map|pattern)	A3RNN: Bi-directional Fusion of Bottom-up and Top-down Process for Developmental Visual Attention in Robots
+2410.00371	2024	pdf-references	4	explanation,failure (prediction|detection|explanation)	AHA: A Vision-Language-Model for Detecting and Reasoning Over Failures in Robotic Manipulation
+2603.12717	2026	arXiv,web-sweep	vla_language_grounding,core	counterfactual	Altered Thoughts, Altered Actions: Reasoning Chain as Control Surface for a Vision-Language-Action Policy
+2511.18746	2025	arXiv	robot_visual_repr_probing,world_model_interp	interpretab,concept	Any4D: Open-Prompt 4D Generation from Natural Language and Images
+2511.18617	2025	pdf-references	1	saliency	AutoFocus-IL: VLM-based Saliency Maps for Data-Efficient Visual Imitation Learning without Extra Human Annotations
+2606.29201	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	Behavior Uncloning: Distilling Mode Redirection into Policy Weights without Inference-Time Steering
+2605.19919	2026	arXiv	diffusion_policy_interp	steer	Beyond Action Residuals: Real-World Robot Policy Steering via Bottleneck Latent Reinforcement Learning
+2609.24525	2026	arXiv	vla_interp,vla_representations	linear prob(e|es|ing),\bprob(e|es|ing)\b	Bridge3D: Enabling Vision-Language-Action Models to See and Act in 3D
+2508.13446	2025	arXiv,pdf-references	3,vla_language_grounding	counterfactual	CAST: Counterfactual Labels Improve Instruction Following in Vision-Language-Action Models
+2605.04470	2026	arXiv	vla_language_grounding	counterfactual	CRAFT: Counterfactual-to-Interactive Reinforcement Fine-Tuning for Driving Policies
+2503.08558	2025	pdf-references	7	failure (prediction|detection|explanation)	Can We Detect Failures Without Failure Data? Uncertainty-Aware Runtime Failure Detection for Imitation Learning Policies
+2606.20285	2026	arXiv	diffusion_policy_interp,vla_interp,vla_short_name	\bsaes?\b,interpretab	Co-VLA: Coordination-Aware Structured Action Modeling for Dual-Arm Vision-Language-Action Systems
+2602.01834	2026	arXiv	vla_interp,vla_safety_internals	dictionary learning,interpretab,concept	Concept-Based Dictionary Learning for Inference-Time Safety in Vision Language Action Models
+2607.17861	2026	arXiv	concept_policies	interpretab,concept	ConceptTree: Bringing Semantic Transparency to Black-Box Decision Making for Robotic Manipulation
+2608.21740	2026	arXiv	vla_language_grounding	counterfactual	CounterAlign: Counterfactual Supervision for Vision-Language-Action Models
+2512.24426	2025	arXiv,pdf-references	3,vla_interp,vla_language_grounding,vla_short_name	interpretab,counterfactual	Counterfactual VLA: Self-Reflective Vision-Language-Action Model with Adaptive Reasoning
+2609.38989	2026	arXiv	vla_interp,vla_language_grounding	steer	Cue the Flow: Steering Flow-Matching Policies for Open-World Delivery Manipulation
+2608.24885	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b,faithful	Do Robotic World Models Really Follow Actions? Diagnosing and Aligning Action-Conditioned Generation for Policy Learning
+2610.06078	2026	arXiv	vla_short_name	linear prob(e|es|ing),\bprob(e|es|ing)\b	Do VLAs Understand and Adapt to the Objects They Handle, or Simply Replay Learned Behaviors?
+2606.27755	2026	arXiv,pdf-references,web-sweep	1,vla_language_grounding,adjacent		Drop-Then-Recovery: How Redundant Are Vision-Language-Action Models?
+2609.35047	2026	arXiv	world_model_interp	interpretab,hidden state	EMPIRIC: Experiment-Driven Learning of Residual World Models for Robot Planning
+2606.29699	2026	arXiv,pdf-references,web-sweep	1,vla_interp,core	internal (features|activations|states),\bprob(e|es|ing)\b	Early Warning Signals for OpenVLA Failure under Visual Distribution Shift
+2606.12965	2026	arXiv	robot_policy_interp	steer	EmbodiSteer: Steering Embodiment-Agnostic Visuomotor Policies with Joint-Space Guidance for Zero-Shot Cross-Embodiment Deployment
+2304.03767	2023	arXiv	concept_policies	interpretab,concept	Embodied Concept Learner: Self-supervised Learning of Concepts and Mapping through Instruction Following
+2512.11865	2025	arXiv	vla_interp	explainab,explanation	Explainable Adversarial-Robust Vision-Language-Action Model for Robotic Manipulation
+2412.20338	2024	arXiv	robot_policy_interp	interpretab	Exploiting Hybrid Policy in Reinforcement Learning for Interpretable Temporal Logic Manipulation
+2509.04018	2025	arXiv	vla_failure_monitoring	failure (prediction|detection|explanation)	FPC-VLA: A Vision-Language-Action Framework with a Supervisor for Failure Prediction and Correction
+2510.09459	2025	arXiv,pdf-references	3,robot_policy_interp	interpretab,failure (prediction|detection|explanation)	Failure Prediction at Runtime for Generative Robot Policies
+2602.10067	2026	pdf-references	1	interpretab,\bprob(e|es|ing)\b,steer,concept	Features as Rewards: Scalable Supervision for Open-Ended Tasks via Interpretability
+2502.01828	2025	arXiv	robot_policy_interp	steer	From Foresight to Forethought: VLM-In-the-Loop Policy Steering via Latent Alignment
+2603.23202	2026	arXiv	robot_policy_interp,vla_attribution,vla_interp	interpretab,attention (map|pattern)	Gaze-Regularized Vision-Language-Action Models for Robotic Manipulation
+2606.03385	2026	arXiv	diffusion_policy_interp	attribution	Grasp-Then-Plan with Failure Attribution: A Closed Two-Stage Framework for Precise and Generalizable Robotic Manipulation
+2605.27354	2026	arXiv	rl_agent_mech_interp	mechanistic,sparse autoencoder,\bsaes?\b,interpretab,\bprob(e|es|ing)\b	Guiding LLM Post-training Data Engineering with Model Internals from Sparse Autoencoders
+2506.08296	2025	arXiv	robot_policy_interp,vla_interp	\bcircuits?\b	HiBerNAC: Hierarchical Brain-inspired Robotic Neural Agent Collective for Disentangling Complex Manipulation
+2609.23885	2026	arXiv	robot_policy_interp	\bprob(e|es|ing)\b,concept	HumynexSurg-1: A Curated Expert Liposuction Dataset
+2604.05378	2026	arXiv,pdf-references	1,vla_attribution,vla_language_grounding	counterfactual	ICR-Drive: Instruction Counterfactual Robustness for End-to-End Language-Driven Autonomous Driving
+2606.13675	2026	arXiv	robot_policy_interp	steer	Improving Robotic Generalist Policies via Flow Reversal Steering
+2606.26588	2026	arXiv	robot_policy_interp	steer	Inference-Time Robot Behavior Steering through Physically-Aware Reconfiguration of Task-Structure
+2606.14981	2026	arXiv	robot_policy_interp	steer	Inference-time Policy Steering via Vision and Touch
+2505.10522	2025	arXiv	robot_policy_interp	interpretab,concept	Knowledge capture, adaptation and composition (KCAC): A framework for cross-task curriculum learning in robotic manipulation
+2608.25757	2026	arXiv,web-sweep	diffusion_policy_interp,robot_xai,vla_interp,core	explainab,explanation	LM-X: Explainable Vision--Language--Action Modeling via Progress, Event, and Uncertainty Prediction
+2606.01151	2026	arXiv	diffusion_policy_interp,vla_interp	steer	Lagrangian Perturbation Diffusion Steering: Latent Reinforcement Learning for Generative Policies
+2507.13340	2025	arXiv	robot_policy_interp	steer	Latent Policy Steering with Embodiment-Agnostic Pretrained World Models
+2610.12407	2026	arXiv	diffusion_policy_interp,world_model_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b,steer	LeWAM: A JEPA World Action Model with Diffusion-Steering-Based MPC
+2508.20840	2025	arXiv	robot_visual_repr_probing,world_model_interp	interpretab,concept	Learning Primitive Embodied World Models: Towards Scalable Robotic Learning
+2609.25518	2026	arXiv	rl_agent_mech_interp	mechanistic,\bcircuits?\b,interpretab,attribution,causal (intervention|analysis)	Matryoshka attribution: Learning to attribute language model outputs to representations and weights
+2510.21693	2025	arXiv	rl_agent_mech_interp	mechanistic,sparse autoencoder,\bsaes?\b,interpretab,concept	Mechanistic Interpretability for Neural TSP Solvers
+https://doi.org/10.1136/bmjhci-2025-101935	2026	Crossref	rl_agent_mech_interp	mechanistic,sparse autoencoder,interpretab,explanation	Mechanistic interpretability of reinforcement learning in Medicaid care coordination
+2311.11955	2023	arXiv	robot_policy_interp	explainab,explanation	Multi-Agent Strategy Explanations for Human-Robot Collaboration
+2504.21841	2025	arXiv	robot_policy_interp	interpretab,explainab,explanation	Neuro-Symbolic Generation of Explanations for Robot Policies with Weighted Signal Temporal Logic
+2603.11642	2026	arXiv	diffusion_policy_interp,robot_policy_interp	mechanistic,explanation,attribution	Noise-Space Attribution and Control of Chunk-Boundary Artifact
+2603.10340	2026	arXiv	vla_attribution	concept	Overcoming Visual Clutter in Vision Language Action Models via Concept-Gated Visual Distillation
+2610.08784	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	PEARS: Physical-Prior-Guided Efficient Adaptation via Failure Reasoning and Diffusion Steering for Tactile Manipulation
+2603.10980	2026	arXiv,pdf-references	diffusion_policy_interp,1	steer	PPGuide: Steering Diffusion Policies with Performance Predictive Guidance
+2603.03739	2026	arXiv	vla_representations	internal representations?	PROSPECT: Unified Streaming Vision-Language Navigation via Semantic--Spatial Fusion and Latent Predictive Representation
+2609.40165	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	PrefPI: Preference-Guided Steering into Out-of-Distribution Behaviors
+2606.14801	2026	arXiv	diffusion_policy_interp,vla_interp	steer	QPILOTS: Efficient Test-Time Q-Steering for Flow Policies
+2505.19080	2025	arXiv	vla_attribution,vla_interp	interpretab,attention (map|pattern)	ReFineVLA: Reasoning-Aware Teacher-Guided Transfer Fine-Tuning
+2606.21572	2026	arXiv	robot_policy_interp	steer,failure (prediction|detection|explanation)	Robot Critics that Sweat the Small Stuff
+2608.04246	2026	arXiv,pdf-references,web-sweep	1,vla_failure_monitoring,vla_interp,vla_representations,vla_short_name,core	\bprob(e|es|ing)\b,failure (prediction|detection|explanation)	SAFECAST: Robust Failure Detection for VLA Policies with Contrast-Set Training and Calibration
+2609.21220	2026	arXiv	robot_policy_interp,vla_interp	steer	Safe Real-Time Policy Steering via Noise-Space Trajectory Optimization for One-Step Generative Policies
+2602.08440	2026	arXiv,pdf-references	1,vla_interp	steer	SteerVLA: Steering Vision-Language-Action Models in Long-Tail Driving Scenarios
+2609.15014	2026	arXiv	robot_policy_interp	steer	Steering Generative Robot Policies with Lexicographic Preferences
+2509.07962	2025	arXiv	vla_representations,vla_short_name	internal representations?	TA-VLA: Elucidating the Design Space of Torque-aware Vision-Language-Action Models
+2603.23117	2026	arXiv	vla_interp,vla_safety_internals,vla_short_name	interpretab,steer	TRAP: Hijacking VLA CoT-Reasoning via Adversarial Patches
+2601.20239	2026	arXiv	robot_policy_interp	steer	TouchGuide: Inference-Time Steering of Visuomotor Policies via Touch Guidance
+2407.08065	2024	arXiv	robot_policy_interp	interpretab,concept	Towards Interpretable Foundation Models of Robot Behavior: A Task Specific Policy Generation Approach
+2607.08127	2026	arXiv	robot_xai	explanation,attention (map|pattern)	Understanding and Mitigating the Video-Action Generalization Gap via Temporal Ratio
+2609.21246	2026	arXiv	vla_failure_monitoring	failure (prediction|detection|explanation)	VLA-Scope: Shift-Aware Failure Prediction for Vision-Language-Action Models
+2505.03500	2025	arXiv,pdf-references	1,vla_representations,vla_safety_internals,vla_short_name	internal representations?,hidden state	VLAs are Confined yet Capable of Generalizing to Novel Instructions
+2603.22169	2026	arXiv	robot_xai	interpretab,explainab	VersualRL: Closed-Loop Verbal Reinforcement Learning with Visual Execution Feedback for Task-Level Robot Planning
+2602.03153	2026	arXiv	vla_interp,vla_safety_internals	mechanistic	When Attention Betrays: Erasing Backdoor Attacks in Robotic Policies by Reconstructing Visual Tokens
+2606.11129	2026	arXiv	world_model_interp	interpretab,faithful	WorldOlympiad: Can Your World Model Survive a Triathlon?
+2603.13782	2026	arXiv,pdf-references	2,vla_attribution,vla_safety_internals	attention heads?	Your Vision-Language-Action Model Already Has Attention Heads For Path Deviation Detection
+2304.12958	2023	arXiv	robot_xai	explainab,explanation	A Closer Look at Reward Decomposition for High-Level Robotic Explanations
+2507.10136	2025	arXiv	rl_agent_mech_interp	mechanistic,explainab	A PBN-RL-XAI Framework for Discovering a "Hit-and-Run" Therapeutic Strategy in Melanoma
+2202.08434	2022	web-sweep	adjacent	explainab,explanation	A Survey of Explainable Reinforcement Learning
+2507.23540	2025	arXiv	vla_interp	interpretab,explainab	A Unified Perception-Language-Action Framework for Adaptive Autonomous Driving
+2311.13549	2023	arXiv	world_model_interp	interpretab,concept	ADriver-I: A General World Model for Autonomous Driving
+2606.08508	2026	pdf-references	3	\bprob(e|es|ing)\b,failure (prediction|detection|explanation)	ActProbe: Action-Space Probe for Early Failure Detection of Generative Robot Policies
+https://doi.org/10.62311/nesx/rb5jy-978-81-689653-4-8	2026	Crossref	vla_short_name	mechanistic,sparse autoencoder,interpretab	Agentic AI TRiSM with Sparse-Autoencoder Interpretability for Secure Tool-Use Policy Learning and Indirect Prompt-Injection Defence
+2509.02055	2025	arXiv	vla_interp	steer	Align-Then-stEer: Adapting the Vision-Language Action Models through Unified Latent Guidance
+https://doi.org/10.2139/ssrn.5966555	2025	Crossref	world_model_interp	mechanistic,interpretab,explainab,concept	Beyond Mechanistic Interpretability: A Philosophical Framework for Interpreting AI World Models "Digital Ontos" Toward Operational, Ontological, and Governance-Aware AI Interpretation
+2609.22582	2026	arXiv	vla_language_grounding	counterfactual	Beyond the Leaderboard: Counterfactual Diagnosis of End-to-End and VLA Driving Policies Under Domain Shift
+2604.23121	2026	arXiv,pdf-references	1,robot_policy_interp,vla_attribution,vla_interp	steer,concept	Breaking Lock-In: Preserving Steerability under Low-Data VLA Post-Training
+2412.03293	2024	arXiv,pdf-references	1,robot_policy_interp,vla_short_name	interpretab	Diffusion-VLA: Generalizable and Interpretable Robot Foundation Model via Self-Generated Reasoning
+2510.25616	2025	arXiv,pdf-references,web-sweep	5,vla_attribution,vla_interp,vla_short_name,core	\bprob(e|es|ing)\b,attention (map|pattern)	Don't Blind Your VLA: Aligning Visual Representations for OOD Generalization
+2604.11423	2026	arXiv	robot_xai	explainab,concept	Dyadic Partnership(DP): A Missing Link Towards Full Autonomy in Medical Robotics
+2511.22845	2025	arXiv	world_model_interp	interpretab,counterfactual	Embodied Intelligent Wireless (EIW): Synesthesia of Machines Empowered Wireless Communications
+2511.14499	2025	arXiv	vla_interp	interpretab,attention (map|pattern)	Enhancing End-to-End Autonomous Driving with Risk Semantic Distillaion from VLM
+2610.12861	2026	arXiv	vla_language_grounding	counterfactual	Evidence-Guided Counterfactual Learning for Long-Tailed Robotic Policies
+2309.10346	2023	arXiv	robot_xai	interpretab,explanation,counterfactual	Explaining Agent Behavior with Large Language Models
+2607.26513	2026	arXiv	concept_policies	concept	Explicit Kinematic Guidance from Analytic Concepts for Vision-Language-Action Models
+2606.17073	2026	arXiv	robot_xai	explainab,concept	Extracting Semantics: LLM-Guided Automatic Population of Robot Ontology from URDF
+2609.30833	2026	arXiv	vla_representations	faithful	Fast Plans, Faithful Actions: Closing the Planning-Execution Gap in Hierarchical Vision-Language-Action Models
+2606.10180	2026	arXiv	diffusion_policy_interp,vla_interp	steer	Flow Control: Steering Vision-Language-Action Models with Simple Real-Time Inputs
+2606.13817	2026	arXiv	robot_policy_interp,world_model_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	FlowMo-WM: A World Model with Object Momentum and Hidden Ambient Drift
+2510.11321	2025	arXiv	concept_policies	interpretab,concept	HiMaCon: Discovering Hierarchical Manipulation Concepts from Unlabeled Multi-Modal Data
+2305.19223	2023	arXiv	rl_agent_mech_interp	mechanistic,internal (features|activations|states),interpretab	Intent-aligned AI systems deplete human agency: the need for agency foundations research in AI safety
+2505.10670	2025	arXiv	embodied_llm_interp	sparse autoencoder,interpretab,steer	Interpretable Risk Mitigation in LLM Agent Systems
+https://icml.cc/virtual/2026/79411	2026	web-sweep	core	interpretab,\bprob(e|es|ing)\b	Interpretable Signals Reveal Failure-Relevant Representations in Vision-Language-Action Models
+2511.02239	2025	arXiv	robot_xai	internal representations?	LACY: A Vision-Language Model-based Language-Action Cycle for Self-Improving Robotic Manipulation
+2510.13626	2025	pdf-references,web-sweep	17,adjacent		LIBERO-Plus: In-depth Robustness Analysis of Vision-Language-Action Models
+2606.12299	2026	arXiv	vla_interp	steer	Learning What to Say to Your VLA: Mostly Harmless Vision Language Action Model Steering
+2609.15113	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b,faithful	Legislating World-Model-Based Planning with Legal Reasoning
+2507.11662	2025	arXiv	diffusion_policy_interp	steer,failure (prediction|detection|explanation)	Let's Think in Two Steps: Mitigating Agreement Bias in MLLMs with Self-Grounded Verification
+2605.21446	2026	arXiv	vla_failure_monitoring,vla_interp,vla_short_name	interpretab,explanation	Lost in Fog: Sensor Perturbations Expose Reasoning Fragility in Driving VLAs
+2603.15248	2026	arXiv	embodied_llm_interp	mechanistic,\bcircuits?\b,interpretab	Mechanistic Foundations of Goal-Directed Control
+2411.00867	2024	arXiv,web-sweep	rl_agent_mech_interp,adjacent	mechanistic,interpretab,saliency	Mechanistic Interpretability of Reinforcement Learning Agents
+https://doi.org/10.26714/jcase.v2i1.1106	2026	Crossref	robot_policy_interp	mechanistic,attention heads?,internal representations?,interpretab	Mechanistic Interpretability of Transformer Attention Heads in Indonesian Fiscal Policy Discourse: Decoding Internal Representations and Latent Biases
+2504.05625	2025	arXiv	robot_xai	interpretab,explanation	Model-Agnostic Policy Explanations with Large Language Models
+2508.07917	2025	arXiv,pdf-references	4,robot_policy_interp,robot_xai	explainab,steer	MolmoAct: Action Reasoning Models that can Reason in Space
+2610.20767	2026	arXiv	vla_attribution,vla_interp	interpretab,steer,attribution	Multi-Dimensional Featurizers Yield Fine-Grained Steering and Data Shaping in Robot Foundation Models
+2610.01048	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b,counterfactual	Network World Models as Environments for Algorithm Design on Complex Systems
+2601.13876	2026	arXiv	vla_interp	interpretab,explanation	Pedagogical Alignment for Vision-Language-Action Models: A Comprehensive Framework for Data, Architecture, and Evaluation in Education
+2609.24317	2026	arXiv	diffusion_policy_interp	steer	Performance-Preserving Online Adaptation in Social Navigation via Diffusion Steering
+2607.03372	2026	arXiv	vla_interp,vla_short_name	linear prob(e|es|ing),\bprob(e|es|ing)\b,steer	Present but Not Remembered: Auditing How Frozen VLAs Encode, Deploy, and Steer Visual History
+2609.09148	2026	arXiv	robot_policy_interp	steer	Proxy Policy Steering
+2402.10828	2024	arXiv	robot_xai	explainab,explanation	RAG-Driver: Generalisable Driving Explanations with Retrieval-Augmented In-Context Learning in Multi-Modal Large Language Model
+2606.14010	2026	arXiv	vla_interp	explainab,explanation	RT-VLA: Real-Time Vision-Language-Action Models via Knowledge Distillation
+https://neurips.cc/virtual/2026/162921	2026	web-sweep	core	\bprob(e|es|ing)\b,attribution	Reaction Without Attribution: Hijacking a VLA's Actions Reveals No Linearly Readable Efference Copy
+2606.18328	2026	arXiv	concept_policies	concept	Recover, Discover, Plan: Learning Skills and Concepts from Robot Failures
+2605.10094	2026	arXiv	vla_interp	steer	Retrieve-then-Steer: Online Success Memory for Test-Time Adaptation of Generative VLAs
+2610.10534	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	RoboPrompt: Intuitive Robot Policy Steering with Sparse Human Input
+2411.11683	2024	arXiv,pdf-references	1,robot_policy_interp	steer,concept	Robot Collapse: Supply Chain Backdoor Attacks Against VLM-based Robotic Manipulation
+2506.04743	2025	pdf-references	1	interpretab,faithful	SRD: Reinforcement-Learned Semantic Perturbation for Backdoor Defense in VLMs
+2411.03409	2024	arXiv	robot_policy_interp	steer	STEER: Flexible Robotic Manipulation via Dense Language Grounding
+2604.01346	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b,concept	Safety, Security, and Cognitive Risks in World Models
+2607.13597	2026	arXiv	vla_attribution,vla_interp	\bneurons?\b,\bprob(e|es|ing)\b	Semantic Anchoring for Robotic Action Representations
+2606.16572	2026	arXiv	diffusion_policy_interp	steer	Steering Generative Reinforcement Learning into Stable Robotic Controller
+2606.11489	2026	arXiv	embodied_llm_interp	sparse autoencoder,\bprob(e|es|ing)\b,steer	Steering Multirobot Behavior via Closed-Loop Affine Activation Editing
+2506.14287	2025	arXiv	robot_policy_interp	steer	Steering Robots with Inference-Time Interactions
+2506.15799	2025	arXiv,pdf-references	diffusion_policy_interp,2,robot_policy_interp	steer	Steering Your Diffusion Policy with Latent Space Reinforcement Learning
+2410.13816	2024	arXiv	robot_policy_interp	steer	Steering Your Generalists: Improving Robotic Foundation Models via Value Guidance
+2608.26214	2026	arXiv	robot_policy_interp,world_model_interp	interpretab,concept	Surgical Video Generation From Diffusion to World Models: A Survey
+2609.34319	2026	arXiv	vla_attribution,vla_representations	attention heads?	Text-Vision Synergistic Token Caching: A Training-Free Framework for Efficient Vision-Language-Action Inference
+2407.12197	2024	arXiv	world_model_interp	interpretab,\bprob(e|es|ing)\b	Towards Interpretable Visuo-Tactile Predictive Models for Soft Robot Interactions
+2507.22940	2025	arXiv	rl_agent_mech_interp	mechanistic,interpretab,counterfactual	Trustworthy Reasoning: Evaluating and Enhancing Factual Accuracy in LLM Intermediate Thought Processes
+2311.18062	2023	arXiv	robot_xai	interpretab,explanation,counterfactual	Understanding Your Agent: Leveraging Large Language Models for Behavior Explanation
+2605.24642	2026	arXiv	vla_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	Understanding the Impact of Geometric Foundation Models on Vision-Language-Action Models
+2603.10282	2026	arXiv	diffusion_policy_interp	steer	Update-Free On-Policy Steering via Verifiers
+2603.14482	2026	arXiv,pdf-references	1,robot_visual_repr_probing,world_model_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	V-JEPA 2.1: Unlocking Dense Features in Video Self-Supervised Learning
+2602.21445	2026	arXiv,pdf-references,web-sweep	1,vla_interp,vla_short_name,adjacent		VLA Knows Its Limits: Adaptive Execution Horizons for Robot Policies
+2606.21386	2026	arXiv	vla_failure_monitoring	failure (prediction|detection|explanation)	VLA-FAIL: Efficient Task Failure Detection for Finetuned Vision-Language-Action Models
+2610.05818	2026	arXiv	vla_interp,vla_short_name	linear prob(e|es|ing),\bprob(e|es|ing)\b	What the Guard Misses, the Robot Executes: Implied Harm in VLA Instructions
+2606.07593	2026	arXiv	vla_interp,vla_representations,vla_safety_internals	mechanistic,internal representations?	A Mechanistic Analysis of Adversarial Fine-tuning of Vision Transformers
+2604.13645	2026	arXiv	robot_policy_interp	mechanistic	A Mechanistic Analysis of Sim-and-Real Co-Training in Generative Robot Policies
+https://doi.org/10.1007/s44430-026-00048-y	2026	Crossref	robot_xai	explainab,concept	A monotone redundancy-aware decision-burden method for explainable human oversight in human–robot collaboration
+2509.00373	2025	pdf-references	1	activation steering,steering vector,steer	Activation Steering Meets Preference Optimization: Defense Against Jailbreaks in Vision Language Models
+2409.08212	2024	arXiv	robot_policy_interp	interpretab,explanation	Adaptive Language-Guided Abstraction from Contrastive Explanations
+2507.09406	2025	arXiv	rl_agent_mech_interp	mechanistic,activation patching,interpretab	Adversarial Activation Patching: A Framework for Detecting and Mitigating Emergent Deception in Safety-Aligned Transformers
+2512.11620	2025	arXiv	robot_xai	interpretab,explainab	Architecting Large Action Models for Human-in-the-Loop Intelligent Robots
+2510.01618	2025	arXiv	concept_policies	interpretab,concept	Automated Genomic Interpretation via Concept Bottleneck Models for Medical Robotics
+2506.08756	2025	arXiv	world_model_interp	interpretab,concept	Bayesian Inverse Physics for Neuro-Symbolic Robot Learning
+https://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html	2025	web-sweep	core	interpretab,steer	Between pixels and policies: Toward interpretable representations for (inter)action
+2509.24713	2025	arXiv	rl_agent_mech_interp	mechanistic,\bcircuits?\b,interpretab	Circuit-Aware Reward Training: A Mechanistic Framework for Longtail Robustness in RLHF
+2511.19914	2025	arXiv,pdf-references	1,vla_short_name	interpretab,explainab	CoC-VLA: Delving into Adversarial Domain Transfer for Explainable Autonomous Driving via Chain-of-Causality Visual-Language-Action Model
+2509.00789	2025	arXiv	vla_representations	internal representations?	CogDriver: Integrating Cognitive Inertia for Temporally Coherent Planning in Autonomous Driving
+2302.07241	2023	arXiv	robot_xai	concept	ConceptFusion: Open-set Multimodal 3D Mapping
+2505.05787	2025	pdf-references,web-sweep	1,core		Demystifying Diffusion Policies: Action Memorization and Simple Lookup Table Alternatives
+2608.07361	2026	arXiv	vla_interp	logit lens,\bprob(e|es|ing)\b	Depth-Wise Probing and Pruning of the Planning Token in a Driving Vision-Language-Action Model
+2607.06328	2026	web-sweep	adjacent	dictionary learning,interpretab,concept	Driving the Wrong Way: Leveraging Interpretability in End2End Autonomous Driving Models
+2506.13922	2025	arXiv	diffusion_policy_interp,robot_policy_interp	steer	DynaGuide: Steering Diffusion Polices with Active Dynamic Guidance
+2309.00941	2023	pdf-references	1	internal representations?,interpretab,\bprob(e|es|ing)\b	Emergent Linear Representations in World Models of Self-Supervised Sequence Models
+2403.15498	2024	pdf-references	2	linear prob(e|es|ing),internal representations?,\bprob(e|es|ing)\b	Emergent World Models and Latent Variable Estimation in Chess-Playing Language Models
+2403.09567	2024	arXiv	robot_xai	explainab,explanation	Enhancing Trust in Autonomous Agents: An Architecture for Accountability and Explainability through Blockchain and Large Language Models
+2601.14587	2026	arXiv	robot_xai	explainab,explanation	Explainable OOHRI: Communicating Robot Capabilities and Limitations as Augmented Reality Affordances
+2402.04206	2024	arXiv	robot_xai	explainab,explanation,concept	Explaining Autonomy: Enhancing Human-Robot Interaction through Explanation Generation with Large Language Models
+2310.19432	2023	arXiv,web-sweep	robot_policy_interp,adjacent	attribution	Explaining the Decisions of Deep Policy Networks for Robotic Manipulations
+2202.05894	2022	pdf-references	1	failure (prediction|detection|explanation)	Failure Prediction with Statistical Guarantees for Vision-Based Robot Control
+2403.06091	2024	arXiv	embodied_llm_interp	steer,concept	Fish-inspired tracking of underwater turbulent plumes
+2402.11871	2024	arXiv	robot_policy_interp,world_model_interp	interpretab,concept	From Real World to Logic and Back: Learning Generalizable Relational Concepts For Long Horizon Robot Planning
+2509.20935	2025	arXiv	rl_agent_mech_interp	mechanistic,interpretab,explainab	GALAX: Graph-Augmented Language Model for Explainable Reinforcement-Guided Subgraph Reasoning in Precision Medicine
+2609.06823	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b,counterfactual	Generalist Open-World Temporal Perception
+2605.12369	2026	arXiv	vla_attribution	attention heads?	GuidedVLA: Specifying Task-Relevant Factors via Plug-and-Play Action Attention Specialization
+https://doi.org/10.36227/techrxiv.173152254.49960816/v1	2024	Crossref	driving_interp	interpretab,attribution	HAVING IT ALL: Multi-Agents, Accuracy and Interpretability in Trajectory Prediction for Autonomous Driving
+https://www.lesswrong.com/posts/fKBkAWZXEGArc9kyB/hijacking-a-7b-robot-policy-s-actions-it-reacts-to-what-it-1	2026	web-sweep	core	\bprob(e|es|ing)\b	Hijacking a 7B robot policy's actions: it reacts to what it sees, not to what it did
+2608.17095	2026	arXiv	vla_interp	steer	Inference-Time Attention Steering for Vision-Language-Action Driving Models
+2309.09702	2023	pdf-references	1	explainab,explanation,concept	Information based explanation methods for deep learning agents -- with applications on large open-source chess models
+1807.06583	2018	arXiv	robot_policy_interp,world_model_interp	interpretab,concept	Interpretable Latent Spaces for Learning from Demonstration
+2504.01871	2025	web-sweep	adjacent	mechanistic	Interpreting Emergent Planning in Model-Free Reinforcement Learning
+2202.05262	2022	pdf-references	3	\bneurons?\b,counterfactual,causal (intervention|analysis)	Locating and Editing Factual Associations in GPT
+2603.15618	2026	arXiv,web-sweep	robot_visual_repr_probing,vla_interp,core		Look Before Acting: Enhancing Vision Foundation Representations for Vision-Language-Action Models
+2404.14082	2024	arXiv	rl_agent_mech_interp	mechanistic,interpretab,concept	Mechanistic Interpretability for AI Safety -- A Review
+2508.14581	2025	arXiv	robot_visual_repr_probing	interpretab,explainab,explanation	Memory-Anchored Multimodal Reasoning for Explainable Video Forensics
+2605.29360	2026	arXiv	robot_policy_interp,world_model_interp	\bprob(e|es|ing)\b,faithful	MiraBench: Evaluating Action-Conditioned Reliability in Robotic World Models
+2602.13800	2026	arXiv	robot_xai	explainab,explanation	Ontological grounding for sound and natural robot explanations via large language models
+https://neurips.cc/virtual/2026/162908	2026	web-sweep	core	mechanistic,explanation	Partial Composition, Not Blind Substitution: Decomposing a Grounding Failure in Vision-Language-Action Models
+2507.03049	2025	arXiv	robot_xai	explainab,explanation,concept	Personalised Explanations in Long-term Human-Robot Interactions
+2610.19143	2026	arXiv	vla_interp	steer	Post-Training, Finetuning, and Steering:A Field Guide for Curating Training Data
+2605.20072	2026	arXiv	robot_xai	\bprob(e|es|ing)\b	Probing an Embodied LLM: When Higher Observation Fidelity Hurts Problem Solving
+2503.17703	2025	arXiv	robot_xai	explanation	RAIDER: Tool-Equipped Large Language Model Agent for Robotic Action Issue Detection, Explanation and Recovery
+2306.15724	2023	arXiv,pdf-references,web-sweep	1,robot_xai,adjacent	explainab,explanation,failure (prediction|detection|explanation)	REFLECT: Summarizing Robot Experiences for Failure Explanation and Correction
+2609.36813	2026	arXiv	rl_agent_mech_interp	mechanistic,\bcircuits?\b,interpretab	RESCUE: Repairing Language Model Errors to Sparse Circuits via Reinforcement Learning
+2601.10825	2026	arXiv	rl_agent_mech_interp	mechanistic,interpretab	Reasoning Models Generate Societies of Thought
+2211.05500	2022	pdf-references	1	\bprob(e|es|ing)\b,concept	Reinforcement Learning in an Adaptable Chess Environment for Detecting Human-understandable Concepts
+2606.30101	2026	arXiv	robot_policy_interp	explainab	SIR: Structured Image Representations for Explainable Robot Learning
+2403.18947	2024	arXiv	robot_policy_interp	interpretab,explainab,saliency	Self-Supervised Interpretable End-to-End Learning via Latent Functional Modularity
+2607.14943	2026	pdf-references	1	mechanistic,interpretab,steer	Steering Robustness into World Action Models via Mechanistic Interpretability and Optimal Control
+2610.18711	2026	arXiv	diffusion_policy_interp,robot_policy_interp	steer	Steertuning Policies from a Few Human Videos
+2512.11345	2025	arXiv	diffusion_policy_interp	steer	Symmetry-Aware Steering of Equivariant Diffusion Policies: Benefits and Limits
+2602.18967	2026	arXiv	robot_xai	explainab,explanation	TactEx: An Explainable Multimodal Robotic Interaction Framework for Human-Like Touch and Hardness Estimation
+2607.27933	2026	arXiv	vla_short_name	failure (prediction|detection|explanation),faithful	The Geometry of Flow-Matching Uncertainty: A Cost-free Uncertainty Proxy and Its Application in Flow-based VLA Failure Detection
+https://icml.cc/virtual/2026/79347	2026	web-sweep	core	mechanistic,interpretab	The Hitchhiker's Guide to Mechanistic Interpretability of Vision-Language-Action Models
+2511.17869	2025	arXiv	embodied_llm_interp	mechanistic,interpretab	The Horcrux: Mechanistically Interpretable Task Decomposition for Detecting and Mitigating Reward Hacking in Embodied AI Systems
+https://doi.org/10.32657/10356/218808		Crossref	vla_failure_monitoring,vla_language_grounding	failure (prediction|detection|explanation)	Time-aware failure detection for vision-language-action models in robot manipulation
+https://doi.org/10.1109/lra.2026.3678455/mm1		Crossref	vla_short_name	steer	Towards Deploying VLA Without Fine-Tuning: Plug-and-Play Inference-Time VLA Policy Steering Via Embodied Evolutionary Diffusion_supp1-3678455.mp4
+2606.19998	2026	arXiv	vla_failure_monitoring,vla_interp,vla_short_name	interpretab,failure (prediction|detection|explanation)	Tri-Info: Generalizable, Interpretable Failure Prediction for VLA Models via Information Theory
+2504.05477	2025	arXiv	robot_xai	interpretab,explainab,explanation	Trust Through Transparency: Explainable Social Navigation for Autonomous Mobile Robots via Vision-Language Models
+2606.18247	2026	arXiv	robot_policy_interp	steer	Visual Verification Enables Inference-time Steering and Autonomous Policy Improvement
+2608.00583	2026	pdf-references	1	linear prob(e|es|ing),\bprob(e|es|ing)\b	A False Average: Pooled CoT-Monitor Accuracy Conceals a Reasoning-Dependent Fragility
+2607.21918	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b	Action-Conditioned World Model for Goal Plane Probe Guidance in Robotic Ultrasound
+2507.01368	2025	pdf-references	1	activation steering,steer	Activation Reward Models for Few-Shot Model Alignment
+2609.31690	2026	arXiv	robot_xai	explainab,explanation	Adapting Vision-Language Models for Human-Readable XAI in Industrial Object Detection
+https://doi.org/10.1109/mpuls.2026.3659245	2026	Crossref	vla_failure_monitoring	failure (prediction|detection|explanation)	Assessing Vision-Language Models for Failure Detection in Robotic Manipulation
+2609.21461	2026	arXiv	vla_language_grounding,vla_representations	representation(s)? analysis	AtomEgo: Exploring Ego-Robot Integration for Embodied Foundation Model Pretraining
+2605.24322	2026	web-sweep	adjacent	steer,concept	Causal Physics Steering in Video World Models via Concept Activation Vectors
+2604.12424	2026	arXiv	robot_visual_repr_probing	interpretab,\bprob(e|es|ing)\b	Decoding by Perturbation: Mitigating MLLM Hallucinations via Dynamic Textual Perturbation
+2603.00102	2026	arXiv	robot_xai	explainab,explanation	Designing Social Robots with Ethical, User-Adaptive Explainability in the Era of Foundation Models
+2503.01750	2025	arXiv	driving_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	ECG-EmotionNet: Nested Mixture of Expert (NMoE) Adaptation of ECG-Foundation Model for Driver Emotion Recognition
+2602.20577	2026	arXiv	vla_interp	explainab	Efficient and Explainable End-to-End Autonomous Driving via Masked Vision-Language-Action Diffusion
+https://doi.org/10.1109/lra.2022.3143518	2022	Crossref	concept_policies	interpretab	Efficient and Interpretable Robot Manipulation With Graph Neural Networks
+https://doi.org/10.1109/ijcnn64981.2025.11227984	2025	Crossref	rl_agent_mech_interp	interpretab	Enhanced Interpretability for Conditional Coordinated Behavior in Multi-Agent Reinforcement Learning
+https://doi.org/10.32604/icces.2026.014240	2026	Crossref	driving_interp	interpretab,concept	Enhancing Interpretability of End-to-End Autonomous Driving via Concept Bottleneck Models
+2406.00430	2024	arXiv	robot_xai	failure (prediction|detection|explanation)	Evaluating Uncertainty-based Failure Detection for Closed-Loop LLM Planners
+2406.00877	2024	pdf-references,web-sweep	1,adjacent	attention heads?,\bprob(e|es|ing)\b	Evidence of Learned Look-Ahead in a Chess-Playing Neural Network
+2410.10863	2024	pdf-references	1	interpretab,steer	Exploring the Personality Traits of LLMs through Latent Features Steering
+2609.27244	2026	arXiv	vla_attribution	\bneurons?\b	Full-Covariance Smoothing of Bayesian Neural Networks for Online Adaptation
+2608.24934	2026	arXiv	robot_xai	explainab	Fusing Perceptual Vision Experts with Multimodal LLMs for Explainable Plant Disease Diagnosis: From Benchmark Imagery to Real-World Robotic Field Validation
+2610.18637	2026	arXiv	world_model_interp	\bprob(e|es|ing)\b	Grid or Nodes? Probing Object Memory in World Models Under Partial Observability
+https://doi.org/10.1109/iceaai68945.2026.11442302	2026	Crossref	rl_agent_mech_interp	interpretab	Hierarchical Extraction of Team Tactical Strategies and Multi-Level Interpretability Analysis in Multi-Agent Reinforcement Learning
+2506.08462	2025	arXiv	vla_interp	explanation	Hybrid Reasoning for Perception, Explanation, and Autonomous Action in Manufacturing
+2509.16072	2025	pdf-references	1	failure (prediction|detection|explanation)	I-FailSense: Towards General Robotic Failure Detection with Vision-Language Models
+2605.14309	2026	arXiv	robot_visual_repr_probing	interpretab,concept	ICED: Concept-level Machine Unlearning via Interpretable Concept Decomposition
+https://doi.org/10.1145/2909824.3020233	2017	Crossref	diffusion_policy_interp	explanation	Improving Robot Controller Transparency Through Autonomous Policy Explanation
+2411.16627	2024	arXiv	diffusion_policy_interp	steer	Inference-Time Policy Steering through Human Interactions
+2605.20784	2026	arXiv	embodied_llm_interp	activation patching	Interaction Locality in Hierarchical Recursive Reasoning
+https://doi.org/10.1109/ijcnn54540.2023.10191825	2023	Crossref	rl_agent_mech_interp	interpretab	Interpretability for Conditional Coordinated Behavior in Multi-Agent Reinforcement Learning
+https://doi.org/10.31219/osf.io/rb4vh	2024	Crossref	rl_agent_mech_interp	interpretab	Interpretability in Deep Reinforcement Learning
+https://doi.org/10.29007/tt18		Crossref	robot_policy_interp	interpretab,concept	Interpretability of a Service Robot: Enabling User Questions and Checkable Answers
+2210.06650	2022	arXiv,web-sweep	robot_policy_interp,adjacent	interpretab	Interpreting Neural Policies with Disentangled Tree Representations
+2603.19968	2026	arXiv	rl_agent_mech_interp	mechanistic,interpretab	Interpreting Reinforcement Learning Model Behavior via Koopman with Control
+2505.19419	2025	arXiv	robot_xai	interpretab,explainab	It's Not Just Labeling -- A Research on LLM Generated Feedback Interpretability and Image Labeling Sketch Features
+2601.12479	2026	arXiv	robot_xai	interpretab,explainab	Language-Based Swarm Perception: Decentralized Person Re-Identification via Natural Language Descriptions
+2501.04005	2025	arXiv	driving_interp	linear prob(e|es|ing),\bprob(e|es|ing)\b	LargeAD: Large-Scale Cross-Sensor Data Pretraining for Autonomous Driving
+https://ii.metu.edu.tr/node/1694	2026	web-sweep	core	mechanistic,\bprob(e|es|ing)\b	Layer-Wise Structural and Mechanistic Interpretation of OpenVLA Using Controlled Perturbations
+2605.20299	2026	arXiv	embodied_llm_interp	mechanistic	Mechanisms of Misgeneralization in Physical Sequence Modeling
+2601.06552	2026	arXiv	robot_xai	explainab,explanation	Model Reconciliation through Explainability and Collaborative Recovery in Assistive Robotics
+https://icml.cc/virtual/2026/79352	2026	web-sweep	adjacent	interpretab	MultiSTEVE-1s: A Model Zoo and Interpretability Suite for Instruction-Following Vision Agents
+2508.17260	2025	arXiv	robot_xai	interpretab	OVITA: Open-Vocabulary Interpretable Trajectory Adaptations
+https://doi.org/10.22215/etd/2024-16083		Crossref	rl_agent_mech_interp	interpretab,explainab	On the Interpretability and Explainability of Prototype-Based Methods and Reinforcement Learning
+https://neurips.cc/virtual/2026/162894	2026	web-sweep	core	linear prob(e|es|ing),\bprob(e|es|ing)\b	Predictable Before Action, Resistant to Correction: Failure Signals in Vision-Language-Action Models
+2504.19475	2025	web-sweep	adjacent	mechanistic,interpretab	Prisma: An Open Source Toolkit for Mechanistic Interpretability in Vision and Video
+2602.01515	2026	pdf-references	1	interpretab,saliency	RAPT: Model-Predictive Out-of-Distribution Detection and Failure Diagnosis for Sim-to-Real Humanoid Deployment
+https://openreview.net/forum?id=GQEGpBhtYk	2026	web-sweep	core	steer	Reading and Steering a Vision Language Action Policy in English with Action-Grounded Supervision
+2510.20835	2025	arXiv	world_model_interp	mechanistic	Rethinking the Simulation vs. Rendering Dichotomy: No Free Lunch in Spatial World Modelling
+1903.07456	2019	arXiv	embodied_llm_interp	mechanistic,concept	Self-Organization and Artificial Life
+2501.09024	2024	arXiv	robot_xai	explainab,explanation	Social-LLaVA: Enhancing Robot Navigation through Human-Language Reasoning in Social Spaces
+2610.09710	2026	arXiv	vla_attribution	\bneurons?\b	SpikingVLA: Asynchronous Spiking Vision-Language-Action Models
+2505.10764	2025	arXiv	robot_xai	explainab,explanation	SurgXBench: Explainable Vision-Language Model Benchmark for Surgery
+2610.02021	2026	arXiv	robot_visual_repr_probing	interpretab,concept	Task-Adaptive Grounded 3D-Programmers Using 2D VLMs
+2606.29460	2026	arXiv	robot_xai	explainab,explanation	Understanding LLM Intervention Explanations in Multi-Party Human-Robot Interaction
+2310.08043	2023	pdf-references,web-sweep	1,adjacent	\bcircuits?\b	Understanding and Controlling a Maze-Solving Policy Network
+1207.1374	2012	arXiv	world_model_interp	internal representations?	Use of Dempster-Shafer Conflict Metric to Detect Interpretation Inconsistency
+2303.16010	2023	pdf-references	1	explanation,failure (prediction|detection|explanation)	User Study Exploring the Role of Explanation of Failures by Robots in Human Robot Collaboration Tasks
+2607.06988	2026	arXiv	robot_policy_interp	steer	WAM-TTT: Steering World-Action Models by Watching Human Play at Test Time
+2510.16435	2025	arXiv	robot_xai	explainab,explanation	What Questions Should Robots Be Able to Answer? A Dataset of User Questions for Explainable Robotics
+https://icml.cc/virtual/2026/78133	2026	web-sweep	core	\bsaes?\b	When Internal Feedback Goodharts: SAE Rewards Fail to Improve Robot Success
+2602.22474	2026	arXiv,pdf-references	diffusion_policy_interp,1	steer	When to Act, Ask, or Learn: Uncertainty-Aware Policy Steering
+2604.15483	2026	arXiv,pdf-references	4,robot_policy_interp	steer	$π_{0.7}$: a Steerable Generalist Robotic Foundation Model with Emergent Capabilities
+2606.03685	2026	web-sweep	adjacent	\bprob(e|es|ing)\b	A Close Look At World Model Recovery In Supervised Fine-Tuned LLM Planners
+2609.03758	2026	arXiv	embodied_llm_interp	steer	A Multi-Vine Soft Robot Enabling Accessible Working Channel and Steering
+2504.11170	2025	arXiv	embodied_llm_interp	sparse autoencoder	A real-time anomaly detection method for robots based on a flexible and sparse latent space
+2408.08864	2024	arXiv	embodied_llm_interp	mechanistic	Aerodynamic equilibria and flight stability of plates at intermediate Reynolds numbers
+https://doi.org/10.15607/rss.2023.xix.002	2023	Crossref	robot_xai	explainab	Autonomous Justification for Enabling Explainable Decision Support in Human-Robot Teaming
+https://doi.org/10.1109/roman.2018.8525675	2018	Crossref	robot_xai	explanation	Behavior Explanation as Intention Signaling in Human-Robot Teaming
+https://journal.hep.com.cn/bir/EN/1223295907161035662	2025	web-sweep	core		Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation
+https://openreview.net/forum?id=ei1BNFHxTo	2026	web-sweep	core	attention heads?	Block the Heads: Improving the Robustness of VLAs to Spatial Object Perturbation via Attention-Head Blocking
+https://doi.org/10.1021/acsaem.5c02979.s001		Crossref	concept_policies	concept	Bottleneck Size Manipulation through the Introduction of Large-Radius Alkali Ions in Na Sites of a NaSICON Solid Electrolyte: A Computational Proof of Concept
+2310.16410	2023	pdf-references	2	concept	Bridging the Human-AI Knowledge Gap: Concept Discovery and Transfer in AlphaZero
+https://doi.org/10.1088/1757-899x/1261/1/012014	2022	Crossref	robot_policy_interp	internal representations?	Coevolution of internal representations in physical human-robot orchestration – models of the surgeon and the robot in robotic surgery
+2309.16650	2023	arXiv	robot_xai	concept	ConceptGraphs: Open-Vocabulary 3D Scene Graphs for Perception and Planning
+2508.14387	2025	arXiv	robot_xai	explainab	DEXTER-LLM: Dynamic and Explainable Coordination of Multi-Robot Systems in Unknown Environments via Large Language Models
+https://openreview.net/forum?id=FEWwJF9avD	2026	web-sweep	adjacent		Decision-Level Auditing of Latent Robot World Models
+2212.03827	2022	pdf-references	1	internal (features|activations|states)	Discovering Latent Knowledge in Language Models Without Supervision
+2010.15347	2020	arXiv	embodied_llm_interp	sparse autoencoder	Distance Invariant Sparse Autoencoder for Wireless Signal Strength Mapping
+https://doi.org/10.1109/aeeca65693.2025.00152	2025	Crossref	driving_interp	interpretab	E2E-AD: An End-to-End Implicit Interpretability Framework for Open-Road Autonomous Driving
+2510.06457	2025	arXiv	robot_xai	explainab	Evaluating Node-tree Interfaces for AI Explainability
+2105.02658	2021	web-sweep	adjacent	explainab	Explainable Autonomous Robots: A Survey and Perspective
+https://doi.org/10.1126/scirobotics.aaz8586	2019	Crossref	robot_xai	explainab	Explainable robotics in science fiction
+2403.02647	2024	arXiv	robot_xai	explainab	FinReport: Explainable Stock Earnings Forecasting via News Factor Analyzing Model
+https://neurips.cc/virtual/2026/workshop/137521	2026	web-sweep	core	mechanistic,steer	How Do World Action Models Use Their Imagined Futures? Evidence from Mechanistic Interventions
+https://doi.org/10.1109/ictbig68706.2025.11323269	2025	Crossref	robot_xai	explainab	Human–Robot Collaboration: Explainable AI Models for Safe Industrial Co-Robotics
+https://doi.org/10.25148/etd.fidc010230		Crossref	diffusion_policy_interp,robot_policy_interp	interpretab	Interpretability of AI in Computer Systems and Public Policy
+https://doi.org/10.7249/pea828-1	2022	Crossref	diffusion_policy_interp,robot_policy_interp	interpretab	Machine Learning in Public Policy: The Perils and the Promise of Interpretability
+2605.05115	2026	pdf-references	1	steer	Manifold Steering Reveals the Shared Geometry of Neural Network Representation and Behavior
+https://doi.org/10.1109/lra.2023.3327654/mm1		Crossref	diffusion_policy_interp	interpretab	Modality Attention for Prediction-Based Robot Motion Generation: Improving Interpretability and Robustness of Using Multi-Modality_supp1-3327654.mp4
+https://doi.org/10.1016/j.tranpol.2025.103783	2025	Crossref	diffusion_policy_interp	explanation	Modeling the diffusion of Electric Vehicles by a robust explanation of the Bass diffusion model: An application to Pan-European Policy Analysis
+https://doi.org/10.1109/icusac68314.2025.11414290	2025	Crossref	driving_interp	interpretab	Multidimensional Interpretability Fusion Framework for End-to-End Autonomous Driving (PilotNet)
+https://doi.org/10.1145/3776734.3794387	2026	Crossref	robot_xai	explanation	Neurosymbolic Explanation Selection in Robotics: Combining the Strengths of Planning and Foundation Models for XAI
+https://doi.org/10.70675/864521d1zfe50z4051z8dbdz67a3d85ea660		Crossref	rl_agent_mech_interp	interpretab	On actions that matter : credit assignment and interpretability in reinforcement learning
+2609.24840	2026	arXiv	diffusion_policy_interp	steer	PredActor: Predictive Action Diffusion for Steerable Onboard Humanoid Control
+https://doi.org/10.1109/lra.2025.3608656	2025	Crossref	world_model_interp	\bprob(e|es|ing)\b	Probing Multimodal LLMs as World Models for Driving
+https://openreview.net/forum?id=qFie1LpSrf	2026	web-sweep	adjacent	steer	Reasoning We Can TRUST: Steering Reasoning and Its Effects on VLA Actions
+1512.07506	2015	arXiv	embodied_llm_interp	sparse autoencoder	Recovering 6D Object Pose and Predicting Next-Best-View in the Crowd
+2404.10109	2024	arXiv	vla_short_name	\bneurons?\b	Rotation and flipping invariant self-organizing maps with astronomical images: A cookbook and application to the VLA Sky Survey QuickLook images
+2204.10059	2022	arXiv	embodied_llm_interp	steer	Steering self-organisation through confinement
+https://openreview.net/forum?id=Ycgsk5hBUu	2026	web-sweep	adjacent		Structured Velocity-Field Disagreement for Failure Awareness in Vision-Language-Action Models
+2512.19755	2025	arXiv	embodied_llm_interp	mechanistic	The mechanics of anisotropic active plates with applications to cell alignment on curved substrates
+https://doi.org/10.1109/lra.2021.3062320	2021	Crossref	robot_xai	explainab	Toward Deep Generalization of Peripheral EMG-Based Human-Robot Interfacing: A Hybrid Explainable Solution for NeuroRobotic Systems
+https://doi.org/10.1007/978-3-031-55000-3_15	2024	Crossref	robot_xai	explainab	Towards a Holistic Framework for Explainable Robot Navigation
+https://doi.org/10.1126/scirobotics.aan6080	2017	Crossref	robot_xai	explainab	Transparent, explainable, and accountable AI for robotics
+2510.13808	2025	arXiv	robot_visual_repr_probing	\bprob(e|es|ing)\b	VisCoP: Visual Probing for Video Domain Adaptation of Vision Language Models
+2604.23775	2026	web-sweep	adjacent		Vision-Language-Action Safety: Threats, Challenges, Evaluations, and Mechanisms
+2606.28455	2026	web-sweep	adjacent		Event-Conditioned Diagnostics of Kinematic, Contact, and Object-Permanence Structure in Passive Object-State World Models
+https://www.goodfire.com/robotics-vision	2026	web-sweep	core		Goodfire Silico for Robotics & Vision
+2602.07050	2026	web-sweep	adjacent		Interpreting Physics in Video World Models
+2603.20327	2026	web-sweep	adjacent	\bprob(e|es|ing)\b	Probing the Latent World: Emergent Discrete Symbols and Physical Structure in Latent Representations
+https://openreview.net/forum?id=uJy4INfmBA	2026	web-sweep	adjacent		Reacting to Text Is Not Following It: Verifying Language Grounding in Driving VLAs
+2505.21552	2025	web-sweep	adjacent		Understanding the learned look-ahead behavior of chess neural networks

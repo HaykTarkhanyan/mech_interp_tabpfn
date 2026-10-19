@@ -1,0 +1,47 @@
+{
+  "id": "2603.12717",
+  "title": "Altered Thoughts, Altered Actions: Reasoning Chain as Control Surface for a Vision-Language-Action Policy",
+  "first_author": "Trinh",
+  "year": 2026,
+  "venue": "NeurIPS 2026 Workshop VLM4RWD",
+  "tier": "core",
+  "models": ["DeepThinkVLA (2.9B, PaliGemma: SigLIP + Gemma, text reasoning chain in <think> tags before each action chunk)"],
+  "action_head": "action chunk of 10 seven-DoF actions decoded by the Gemma decoder in one bidirectional pass after the reasoning chain (token type not specified in the parts read)",
+  "methods": ["deterministic seeded entity swap of object names in the instruction and/or the generated reasoning chain", "four-condition counterfactual design (A clean; B chain corrupted; C instruction corrupted, chain regenerated; D instruction corrupted, clean chain injected)", "pre-registered exact one-sided paired Wilcoxon test over tasks, bootstrap CIs, paired Cohen's d", "structural parse of LIBERO .bddl goal specifications"],
+  "question": "Do a reasoning VLA's actions causally depend on the content of its text reasoning chain, so that editing the chain can repair a corrupted instruction or corrupt a correct one?",
+  "key_findings": [
+    "LIBERO-Goal success (600 episodes per condition): clean A 97.3%, chain corrupted B 76.5%, instruction corrupted C 11.5%, instruction corrupted with clean chain injected D 59.3% (Table 2).",
+    "Pre-registered rescue D - C = +47.8 pp (95% CI [31.7, 63.8], paired d = 1.78), exact Wilcoxon W+ = 55/55, p = 0.0010; all 10 tasks move in the predicted direction, per-task rescue 10.0 to 86.7 pp.",
+    "Pre-registered prediction that the residual (clean - D) would be 5-15 pp is falsified: residual 38.0 pp (upper 95% bound 51.2 pp), so the chain carries only part of the goal information.",
+    "Corrupting only the chain with a correct instruction costs 20.8 pp (observed, untested); in 2 of 5 inspected failing episodes the policy acts on the object named in the corrupted chain.",
+    "Across LIBERO suites, chain-corruption cost concentrates where language alone determines the goal: 19.3 pp Goal, 6.2 Spatial, 4.7 Long, 3.2 Object (observed).",
+    "Corrupting the instruction (with chain kept correct) costs 1.82x as much as corrupting the chain (difference -17.2 pp, CI [-30.7, -2.5]), reported descriptively because power was only 0.39.",
+    "Evaluation is deterministic (byte-identical reruns), so the unit of analysis is the task (n = 10), not episodes."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Goal (confirmatory)", "LIBERO-Spatial, -Object, -Long (observed backdrop)"],
+    "scale": "10 tasks x 3 run seeds (42, 123, 456) x 20 episodes = 600 episodes per condition; 300-step cap; greedy decoding; about 140 A100 GPU-hours",
+    "statistics": "yes: pre-registered one-sided exact Wilcoxon on tasks, 95% bootstrap CIs over tasks, paired Cohen's d, power analysis; only one confirmatory test",
+    "baselines": "within-model counterfactual conditions; appendix compares the entity swap with six other chain corruptions"
+  },
+  "causal_validation": "Yes, a clean text-level intervention: injecting the clean reasoning chain against a byte-identical corrupted instruction changes closed-loop success in the predicted direction on all tasks; corrupting the chain against a correct instruction lowers success and sometimes redirects behavior to the named object. The intervention is on the generated text, not on activations.",
+  "closed_loop": "Yes: all conditions are full closed-loop LIBERO rollouts with the chain regenerated or injected at every query.",
+  "limitations_stated": [
+    "Requires a text chain replaceable before decoding; DeepThinkVLA is an instrument, not a sample of VLAs.",
+    "Claims scoped to LIBERO-Goal, where language alone determines the goal.",
+    "Simulation only; programmatic success checks.",
+    "Mechanical, non-adaptive entity swap; no claims about optimized adversaries.",
+    "n = 10 tasks limits testable effect sizes; injection pathway differs from native generation (checked at one state only: first-action change at most 0.024).",
+    "Missing controls: empty chain against corrupted instruction, scoring the swapped goal, re-injecting the policy's own chain over whole episodes."
+  ],
+  "critique": [
+    "Methodologically the strongest paper in the faithfulness section: pre-registration, a falsified prediction reported honestly, task as the unit of analysis, and a direct counterfactual contrast rather than correlational consistency scores.",
+    "Directly bears on 2607.04681's distinction: here the chain is shown to be partly causally load-bearing (mechanistic in the input-intervention sense), not just consistent.",
+    "The 38 pp residual shows the instruction also reaches actions through paths that bypass the chain; the paper cannot say how much of that is conflict cost vs. direct instruction-to-action routing without the missing empty-chain control.",
+    "Single model and single suite; the 'control surface' result may be much weaker for models whose reasoning is latent or for suites where vision determines the goal (as the backdrop numbers already show).",
+    "Text-level, not activation-level: it shows the chain matters, but not where in the network instruction and chain information compete."
+  ],
+  "code": "not released yet (promised with the archival version)",
+  "one_line": "In DeepThinkVLA on LIBERO-Goal, injecting the policy's clean reasoning chain against a corrupted instruction recovers 47.8 points of success (pre-registered, all 10 tasks) while corrupting the chain costs 20.8 points, so the text reasoning is a real but partial causal channel to actions."
+}

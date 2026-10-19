@@ -1,0 +1,45 @@
+{
+  "id": "2606.01095",
+  "title": "Beyond Task Success: Behavioral and Representational Diagnostics for WAM and VLA",
+  "first_author": "Mai",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["VLAs: pi0, pi0.5, X-VLA", "joint WAM: Cosmos Policy", "sequential WAM: LingBot-VA", "auxiliary WAMs: FastWAM, VLA-JEPA"],
+  "action_head": "mixed: flow/diffusion action experts (pi0, pi0.5, X-VLA) and video/world-model-based action generation (WAMs)",
+  "methods": ["behavioral metrics: delta/acceleration/jerk, chunk-boundary jump, low-motion failure rate, target-object progress, distractor drift, manipulation-stage completion, runtime", "TopK SAEs (with AuxK loss) on last or near-last hidden latents of current-vision, future and action streams per model", "weakly supervised labeling of SAE features as memorized / reactive-general / predictive-general using coverage, persistence, future-consistency and future-action metrics plus manual audit and a logistic classifier", "phase-aligned feature activation plots"],
+  "question": "Do world-action models change robot behavior and internal representations in ways that matter for control, beyond what task success shows, compared with direct VLAs?",
+  "key_findings": [
+    "LIBERO success is similar for most models (Cosmos 98.0, LingBot-VA 98.0, VLA-JEPA 97.1, pi0.5 96.6, X-VLA 95.8, FastWAM 95.3; pi0 66.9), but WAMs generally have lower jerk and boundary jumps (e.g. LingBot-VA boundary jump 0.153 vs pi0.5 0.298 and pi0 0.666) (Table 1).",
+    "WAMs tend to show stronger target-object progress and less distractor disturbance than VLAs; auxiliary WAMs sit in between (Table 2, qualitative summary in text).",
+    "Inference cost: WAM p50 latency 956-4701 ms vs 100-329 ms for VLAs (Table 3).",
+    "On RoboTwin2.0, pi0.5 looks smoother (jerk 0.022 vs LingBot-VA 0.036) but succeeds far less (44.3% vs 81.6%) and 53.0% of its episodes are low-motion failures; 95.3% of its failed episodes are stalls (Table 4, App. C.1).",
+    "SAE feature classes (Table 5): VLA features are almost never labeled predictive (pi0 0.8% current / 0.5% action; pi0.5 1.2% / 0.8%; X-VLA 0.3% / 0.9%), while LingBot-VA's future stream is 53.2% predictive and VLA-JEPA's action stream 59.8% (of only 92 active features).",
+    "Many SAE dictionaries are largely dead in some streams (e.g. FastWAM future 94.0% dead, VLA-JEPA action 91.0%, pi0.5 action 88.2%).",
+    "Authors state explicitly that the link between predictive features and object-level behavior is associative, not causal."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO", "RoboTwin2.0"],
+    "scale": "episode counts per model not clearly reported in the parts read; public checkpoints",
+    "statistics": "no: point estimates, no CIs or tests",
+    "baselines": "cross-model comparison only (7 policies)"
+  },
+  "causal_validation": "None. No feature ablation or steering; the paper says its evidence is associative.",
+  "closed_loop": "Behavioral metrics come from closed-loop rollouts; SAE analyses are offline on recorded latents.",
+  "limitations_stated": [
+    "Evidence is associative, not causal.",
+    "SAE feature labels are weak probabilistic annotations.",
+    "Object-state metrics depend on decoded traces being available.",
+    "Simulation only and public checkpoints only; WAMs have high runtime cost."
+  ],
+  "critique": [
+    "A useful reminder for the review that smoothness metrics can be misleading (stalled failures look smooth), and that success-saturated benchmarks hide behavioral differences.",
+    "The memorized / reactive / predictive taxonomy is defined by the authors' own heuristics and a classifier trained on their manual audit labels; it is not validated by intervention, so 'predictive features' may simply be features from streams that are trained to predict the future.",
+    "Comparing SAE statistics across models with very different architectures, layers and dead-feature rates (up to 94%) is fragile; small active-feature counts (e.g. 92 for VLA-JEPA action) make percentages unstable.",
+    "The pi0 checkpoint underperforms on LIBERO (66.9%), which may reflect setup rather than the model family.",
+    "No numbers on how many episodes underlie each metric, so differences between models cannot be assessed for noise."
+  ],
+  "code": "not reported",
+  "one_line": "Comparing three VLAs and four world-action models on LIBERO and RoboTwin, the paper finds WAMs move more smoothly and target objects more selectively at 3-20x higher latency, and their SAE features look more future-predictive than VLA features, but all evidence is correlational."
+}

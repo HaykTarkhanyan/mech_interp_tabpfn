@@ -1,0 +1,365 @@
+arXiv:2603.11642v2 [cs.RO] 20 May 2026
+
+Noise-Space Attribution and Control of Chunk-Boundary Artifact
+Rui Wang1
+Abstract
+Action chunking is widely used in generative visuomotor policies, yet the recurring execution discontinuities at chunk boundaries still lack a mechanistic explanation. This paper treats chunk-boundary artifact as an analyzable mechanism variable. We first show that successful and failed episodes separate stably on artifact metrics. We then show that, in stochastic action-chunked policies, fixing the observation context and changing only latent noise is sufficient to modulate artifact systematically. On the same Diffusion Policy checkpoint, comparisons among DDPM, zero-variance DDPM, and DDIM further show that this local controllability depends on whether the information path from initial noise to action output remains intact. Finally, from controlled interventions at fixed local execution states, we find that artifact changes can carry through to final outcome, and that the preferred direction can reverse even within the same task: some contexts achieve higher success under lower artifact, whereas others achieve higher success under higher artifact. In a representative high-artifact-favoring key context selected by held-out matched-continuation validation, success rate increases from 0.033 to 0.717. These results show that chunk-boundary artifact is not a mere execution-side by-product, but a variable in noise space that can be attributed, controlled, and mechanistically linked to task outcome.
+1 Introduction
+Action chunking—predicting a short sequence of future actions in one forward pass and executing only part of it—has become a standard design pattern in generative robot policies [2, 3, 1]. This design improves inference efficiency by reducing replanning frequency and often yields smooth motion within a chunk. However, when one chunk ends and the next chunk is replanned, the executed trajectory can exhibit recurring discontinuities at chunk boundaries. In practice, this phenomenon is often treated as an engineering issue to be smoothed or repaired, rather than as a mechanism variable that merits direct explanation.
+Most prior work treats boundary discontinuity as an execution-side by-product and focuses on post hoc remedies such as temporal ensembling, cross-chunk continuation modeling, or re-execution control [3, 6, 8, 9, 7]. These methods can mitigate the boundary problem, but they leave a more basic question unanswered: what determines the strength of chunk-boundary artifact, and can this mechanism be directionally intervened on in noise space so as to influence task outcome?
+1Nanjing University
+1
+
+Our basic finding is that, for stochastic action-chunked policies, noise space contains structures that can stably drive chunk-boundary artifact, and that in some contexts these artifact changes continue to propagate to task outcome. The focus here is therefore not another boundary-smoothing technique, but the generation of boundary artifact itself, its attribution to latent noise, and its relationship to outcome.
+Concretely, the paper does three things:
+1. Mechanism-variable formulation. We introduce both episode-level and local metrics for chunk-boundary artifact and thereby formulate it as an analyzable mechanism variable.
+2. Evidence for noise-space attribution. We show that under fixed observation contexts, changing only latent noise is sufficient to systematically modulate boundary artifact, and that this controllability depends on whether an intact information path exists from initial noise to action output.
+3. Outcome-level bridge. Through controlled interventions, we show that changes in boundary artifact can propagate to task outcome in some settings, and that this propagation is strongly context-dependent.
+2 Related Work
+Action chunking and boundary discontinuity. ACT [3], RTC [8], REMAC [9], and native continuation [6] all acknowledge that chunk boundaries are a special regime. Most of this work, however, is about making the boundary smoother—through temporal ensembling, re-execution, or continuation modeling. Our question is earlier in the chain: why does boundary artifact appear at all, and can it already be analyzed and controlled in noise space before execution?
+Structure in generative-model noise spaces. InitNO [10] and NoiseCLR [4] suggest that noise space itself can carry exploitable semantic structure. We bring that perspective into generative robot control. The question here is not whether noise contains some abstract structure in general, but which directions in noise space show up concretely as chunk-boundary artifact and then matter for outcome.
+Latent-level policy improvement. Methods such as DSRL [11] study how latent manipulations can increase reward, typically through online interaction and reward signals. This paper is not another latent optimization method. Its purpose is to explain why latent intervention changes success at all. The difference is that prior work mainly treats noise as a means of policy improvement, whereas we treat artifact as the mechanism to be explained. Our analysis also does not rely on an additional online reward-optimization loop.
+2
+
+3 Preliminaries and Artifact Definition
+
+3.1 Action-chunked generative policy
+We consider a visuomotor policy πθ that receives an observation context xt at time step t and, for stochastic policies, latent noise z, and generates a future action chunk:
+
+at:t+H = πθ(xt, z).
+
+(1)
+
+At deployment time, the agent executes only the first K ≤ H actions and then replans from the new context xt+K. As a result, the trajectory periodically switches chunks at replanning boundaries t, t + K, t + 2K, . . ..
+
+3.2 Boundary-artifact metrics
+We measure action discontinuity at the boundary using action jerk:
+
+jt = ∥at − 2at−1 + at−2∥2 .
+
+(2)
+
+Let p(t) = t mod K denote the phase within a replanning cycle, with boundary phases B = {0, 1} and interior phases I = {2, 3, 4}, and let ¯jp denote the mean of jt over all timesteps in the episode whose phase equals p. We define the episode-level boundary–
+interior jerk contrast as
+
+1 Jcontrast = |B|
+
+¯jp
+
+−
+
+1 |I |
+
+¯jp.
+
+(3)
+
+p∈B
+
+p∈I
+
+To study local mechanism changes, we further define first-boundary metrics around the first executable replanning boundary. We focus on the first boundary because later ones are progressively contaminated by state drift, contact events, and compounding replanning error, making the effect of noise itself harder to isolate. The first-boundary transition jerk (BTJ) is the first jump at the boundary itself. The first-boundary gap is defined as the mean of the first two local boundary jerks minus the mean of the subsequent interior jerks. Episode-level metrics describe boundary discontinuity over a whole rollout, whereas local metrics characterize the mechanism at a single replanning transition.
+
+3.3 Experimental setup and mechanism-chain overview
+Unless otherwise stated, we use frozen OpenPI flow-matching checkpoints. The main experiments use pi0.5-libero, while a small number of near-saturation controls use pi0-libero. Goal 0 (opening the middle drawer) and goal 3 (opening the top drawer and placing the bowl inside) are the two LIBERO [5] goals used to compare artifact separation between successful and failed episodes; task 8 is the representative non-saturated task used for outcome-level steering analysis.
+In fixed-context experiments, we refer to the local execution state formed at a specified replanning boundary of a rollout prefix as a key context, written as (seed, trial, replan) for rollout seed, episode index under that seed, and boundary index within the episode.
+In outcome-level intervention experiments, we first fix the reference noise at the boundary and then search for local steering directions around it. A direction that lowers the local artifact at that boundary is denoted target-low, and one that raises it is denoted
+3
+
+Table 1: Episode-level boundary–interior jerk contrast for successful and failed rollouts. All p values are from 20,000-sample permutation tests.
+
+Task Control condition
+
+Success mean Failure mean ∆ p value
+
+All episodes goal 3 Contact-free
+Contact-free first 50 steps
+
+0.102 0.100 0.093
+
+0.341 0.297 0.138
+
++0.238 < 10−4 +0.197 < 10−4
++0.045 0.005
+
+All episodes goal 0 Contact-free
+Contact-free first 50 steps
+
+0.108 0.108 0.049
+
+0.219 0.185 0.070
+
++0.110 < 10−4 +0.077 0.002 +0.021 0.008
+
+target-high. The reference gap is the first-boundary gap produced by the reference noise itself, and can be understood as the baseline artifact level of that context. When we report results “after subtracting the reference gap,” we mean that this context-specific baseline has been removed before comparing the additional variation induced by different noises.
+The experimental chain in this paper addresses three questions. First, under a fixed context, is changing noise alone sufficient to change artifact? Second, does this controllability depend on whether the sampler preserves an intact information path from initial noise to action output? Third, when we intervene along artifact-aligned directions, can these local changes further propagate to final outcome? The next three sections correspond to these three links in the mechanism chain.
+4 Artifact as a Mechanism Variable: Separation First, Control Second
+We first establish why chunk-boundary artifact is worth treating as a mechanism variable, and then show that it can be controlled stably in noise space.
+4.1 Artifact separation between successful and failed episodes
+We begin with a basic question: is artifact genuinely related to task outcome? Table 1 reports rollout statistics for the frozen OpenPI main checkpoint (pi0.5-libero). On both goal 3 and goal 0, failed episodes exhibit substantially stronger episode-level boundary– interior jerk contrast than successful episodes. More importantly, this separation remains under matched-horizon and contact-free controls, indicating that it cannot be reduced to trivial explanations such as longer failed episodes, more contact events, or terminal instability. Chunk-boundary artifact is therefore not merely an execution-side nuisance, but a mechanism variable stably associated with failure risk.
+4.2 Noise controllability under fixed contexts
+Outcome-level separation alone is not enough; artifact must also vary with noise under a fixed context. We therefore hold the observation context fixed and vary only latent noise. On goal 3, we sample 24 noise values for each of 16 contexts, yielding 384 samples in total. The mean context-wise standard deviation is σ = 0.040 for local boundary gap and
+4
+
+Figure 1: Matched-horizon action-jerk time courses. Even after truncating successful and failed rollouts to a common horizon, failed trajectories still exhibit stronger jerk pulses around replanning boundaries. Vertical dashed lines mark boundaries every five steps.
+σ = 0.038 for boundary transition jerk; the largest context-level standard deviations reach 0.097 and 0.084. This already rules out a simple explanation in which large artifact is merely a by-product of context change. Instead, the data suggest that context determines the region of artifact space, while noise determines which variations within that region can be pushed consistently. That steerable component is the object of study here.
+Because boundary artifact arises from the transition between two adjacent chunks, Appendix table A2 further decomposes the contributions of the current-chunk noise z0 and the next-chunk noise z1. Both materially affect the first-boundary artifact, but the dominant term is not fixed; it varies with task and context. A representative slice of the underlying context–noise gap matrix used in this fixed-context analysis is shown in Appendix table A1.
+4.3 Local controllability along noise directions
+Noise-dependent variation under a fixed context still does not show that artifact can be pushed along a signed direction. We therefore search, at each fixed observation context, for a local noise direction d and write the perturbed noise as
+z′ = z + αd,
+where α is the signed steering strength along that direction. Concretely, we sample 12 random unit directions per context, probe each at α = ±ϵ with ϵ = 0.5, and select the direction whose first-boundary transition jerk shows the largest separation between the +ϵ and −ϵ probes. We then sweep α along the selected direction. Across model checkpoints, direction magnitudes are normalized by dim(z) so that the per-step perturbation scale is comparable. On pi0.5-libero for LIBERO-10 task 8, the resulting local
+5
+
+Figure 2: Artifact variation when the observation context is fixed and only latent noise is changed. Shaded regions indicate mean ± standard deviation across noise samples under the same context, and red dots denote reference rollouts. Top: boundary transition jerk. Bottom: local boundary–interior jerk contrast.
+signed response is strong on this small panel: across 4 fixed contexts, α has mean Pearson correlation 0.904 with first-boundary transition jerk and 0.968 with first-boundary gap; the mean gap range is 0.108, already comparable in scale to the success/failure group difference.
+As shown in Figure 3, the top row gives two representative fixed-context sweeps. Panel (a) is close to affine across the scan interval: first-boundary gap rises steadily as α increases. Panel (b) shows why this result should be interpreted as a local operating regime, rather than a global linear law valid at arbitrary steering strength: once |α| approaches the edge of the scan interval, the response begins to bend. This also explains why the later interventions use moderate steering strengths instead of simply increasing α without bound; overly strong steering tends to move sampling away from the model’s usual local noise regime and thereby weakens interpretability and stability.
+Real-robot directional response. We also observe the same signed local response on a real Aubo i5 setup. Starting from a single fixed real-robot execution context, sweeping the steering strength α along the selected OpenPI noise direction produces a monotone change in the centered first-boundary gap, with Pearson r = 0.968 and R2 = 0.938. This result is used as a hardware-side check of the local noise-to-artifact response, rather than as an outcome-level success claim. A broader hardware-side replication across additional contexts is left to future work given the present access constraints to the physical platform.
+6
+
+Figure 3: Local controllability along noise directions and information-path conditions. The horizontal axis is α in all four panels, and each vertical axis is centered at α = 0, so the comparison is about response shape rather than absolute scale. (a) OpenPI with a near-linear response; (b) OpenPI bending at large |α|; (c) DDPM collapse; (d) ACT remaining nearly flat.
+4.4 Information-path condition: ACT and DDPM/DDIM
+The previous subsection shows that OpenPI / flow matching admits stable controllability along local noise directions. The next question is whether this is a generic property of stochastic chunked policies, or whether it depends on an intact transmission path from initial noise to action output. We therefore use two complementary controls. ACT serves as a deterministic reference: it shows only weak residual artifact and is almost unresponsive to signed latent perturbations, consistent with the near-flat response in Figure 3(d). We also keep Diffusion Policy weights fixed and change only the sampling rule. Under the default DDPM sampler, the mean Pearson correlation across 8 fixed contexts is only 0.114 for first-boundary gap and 0.052 for first-boundary transition jerk. Even setting the variance of subsequent DDPM reverse steps to zero does not restore controllability: the mean correlations remain 0.114 and 0.052, and across these 8 contexts not a single one reaches even a stable linear interval of |α| ≥ 0.25 under R2 ≥ 0.95. By contrast, switching to DDIM (η = 0) raises the same correlations to 0.961 and 0.927 and restores a wide, near-linear signed response regime in most contexts.
+Fresh randomness at each DDPM step is not enough to explain the loss of steering. If reverse-step random reinjection were the whole story, then removing the later-step variance should restore the local directional structure; it does not. The reason is that zero-variance DDPM only replaces later stochastic sampling with its reverse-step mean;
+7
+
+Figure 4: Real-robot directional scan on an Aubo i5 platform. Under a fixed execution context, sweeping α along an OpenPI noise direction produces a monotone response in the centered first-boundary gap. The result supports hardware-side local controllability of chunk-boundary artifact, without making an outcome-level success claim.
+
+Table 2: Mechanism-level comparison across policy states. The point is not direct comparability of absolute values across tasks, but the pattern: stochastic policies exhibit large and controllable artifact, the deterministic reference exhibits only weak residual artifact, and steering effectiveness depends on whether the noise pathway is accessible.
+
+Policy state
+
+Representative metric
+
+Steering signal
+
+Interpretation
+
+ACT
+
+first-boundary gap ≈ 0.009 no stable signed separation weak residual artifact
+
+OpenPI (flow matching; main experiments use pi0.5-libero) local α sweep
+
+rgap/rtransition = 0.968/0.904 strong local directional structure
+
+Diffusion Policy + DDPM
+
+same weights
+
+rgap/rtransition = 0.114/0.052 pathway largely broken
+
+Diffusion Policy + DDPM (subsequent variance set to zero) same weights
+
+still 0.114/0.052
+
+removing reinjection does not restore directional structure
+
+Diffusion Policy + DDIM (η = 0)
+
+same weights
+
+rgap/rtransition = 0.961/0.927 pathway intact
+
+it does not turn DDPM into DDIM. The original Markovian reverse updates still remix and distort the local signed direction carried by the initial noise as denoising proceeds. Determinism alone is therefore not sufficient. What matters is whether the sampling rule preserves a stable transmission path from initial noise to final action output. Only DDIM restores a usable directional manifold under the same weights. Chunk-boundary artifact is therefore not a purely execution-side random error. It is a structure variable in noise space that can be driven directionally. Table 2 summarizes this mechanism-level comparison across policy states.
+
+5 Causal Attribution of Artifact
+5.1 Full-trajectory steering and outcome change
+Once artifact becomes controllable, the next question is whether full-trajectory steering along artifact-aligned directions changes the final outcome. We use full-trajectory steering as a mechanistic intervention tool : at each replanning boundary it suppresses or amplifies
+
+8
+
+local artifact in a controlled way, so that we can observe how this mechanism variable propagates to outcome.
+Figure 5 shows two complementary cases. Target-low and target-high denote steering along previously calibrated low-artifact and high-artifact directions. We keep only the two results that illustrate the point most directly: one near-saturation task, used to show that a success ceiling compresses positive gains, and one non-saturated task 8 result, used to show that the outcome distribution moves together with artifact when there is still room for improvement. The remaining pooled results are shown in Appendix Figure A1.
+In the first type of task, baseline success is already close to saturation. This pooled comparison uses n = 21 episodes per group: both baseline and target-low achieve success rate 1.0, whereas target-high drops to 0.762, i.e., 23.8 percentage points below baseline. The corresponding mean boundary-gap values move from 0.171 down to 0.081 or up to 0.381. With n = 21 and baseline already at 1.0, this comparison cannot resolve a positive uplift on this task; it is reported only to illustrate the ceiling-compression effect on the success-rate side while the boundary-gap metric remains responsive in both directions.
+The second type of task still has substantial room for improvement. On task 8, each group contains n = 43 episodes, and the success ordering
+0.791 > 0.674 > 0.535
+exactly matches the boundary-gap ordering
+0.0546 < 0.0899 < 0.1765.
+Target-low improves success by 11.7 percentage points relative to baseline, whereas targethigh decreases it by 13.9 points. The 95% confidence intervals of the three success rates are [0.648, 0.886], [0.525, 0.795], and [0.389, 0.675], respectively. This indicates that fulltrajectory steering is acting on a mechanism variable that materially affects failure risk.
+5.2 Direction reversal under fixed key contexts
+The strongest bridge evidence comes from paired interventions at fixed key contexts. Concretely, we fix a rollout prefix up to a specified replanning boundary, treat the resulting local execution state as one context instance, and then change only the boundary noise or steering direction while keeping the prefix and pairwise matched future continuation unchanged. In several tightly controlled contexts, the preferred artifact direction lines up cleanly with outcome change: some key contexts favor lower artifact, whereas others favor higher artifact. “Artifact affects outcome” is therefore not a globally monotone law across contexts, but a strongly context-dependent local regularity.
+These key contexts are not two identifiers picked post hoc from an unconstrained search space. The selection pipeline has three stages. First, we run a cross-index scan over rollouts on task 8 to enumerate candidate key contexts; for the high-artifactfavoring side we additionally restrict to contexts with successhigh = 1, successbaseline = 0, successlow = 0, and gaphigh > gapbaseline > gaplow, which yields 223 candidates. Second, each candidate passes through a local controllability check that retains only contexts with monotone α-response. Third, surviving candidates are evaluated with matchedcontinuation paired validation, with pilot α-selection and held-out evaluation on disjoint matched-continuation banks so that the reported uplift is not the result of α tuning on the same data. The two rows in Table 3 are the strongest survivors of this pipeline in the
+9
+
+Figure 5: Full-trajectory steering. The top row shows a task whose baseline success rate is already near saturation: the mechanism metric is controllable, but positive success gains are compressed. The bottom row shows a task with clear room for improvement: targetlow raises success from 0.674 to 0.791, while target-high lowers it to 0.535; meanwhile the boundary-gap metric preserves the consistent ordering low < baseline < high.
+low-favoring and high-favoring directions, respectively. Several other high-artifact candidates that passed local screening (e.g., (10, 7, 20), (10, 16, 35), (10, 29, 37)) yielded null or marginal effects under the same matched-continuation protocol, which is why direction preference cannot be claimed at the task level. We also explicitly checked that the ctx (10, 24, 21) uplift is not driven by future-continuation seed luck: under pairwise-matched future continuations and an identical prefix, the only quantity that changes is the boundary noise itself, so the uplift is attributable to the local first-boundary artifact change it induces.
+The two paired results in Table 3 both come from task 8, yet the optimal direction is opposite. The first key context favors target-low, whereas the second favors target-high. In counts, the first changes from 127/180 to 147/180, while the second changes from 2/60 to 43/60. More importantly, future continuation is pairwise matched in these designs, so the outcome shift cannot be attributed to downstream rollout randomness; it must arise from the current boundary noise and the local artifact state that it induces.
+5.3 Context dependence of the optimal steering target
+The larger fixed-context extension directly rejects the idea that the optimal target is a global constant. Here we share the same set of 16 candidate noises across 192 fixed contexts, yielding 3072 context-noise combinations, and ask a simple question: does the same noise remain best across contexts?
+10
+
+Table 3: Paired steering results for two fixed key contexts within task 8. Both come from the same top-12 candidate list under matched-continuation validation, but their optimal intervention directions are opposite. The first row aggregates n = 180 matched pairs and the second aggregates n = 60 matched pairs. The baseline in the second row is the conditional success rate under the frozen reference noise at that key context, not the task-level average success rate.
+
+Context (seed, trial, replan) Preferred direction Pairs Baseline Steered Uplift
+
+p
+
+(10, 23, 19) (10, 24, 21)
+
+target-low target-high
+
+180 0.706 0.817 +0.111 0.0093 60 0.033 0.717 +0.683 4.55 × 10−13
+
+Table 4: Quantitative results from the larger fixed-context extension on task 8. The analysis uses 192 contexts and a shared set of 16 candidate noises to quantify the context×noise interaction and to show why the optimal steering target cannot be treated as a global constant across contexts.
+
+Statistic
+
+Value
+
+Variance decomposition of raw gap
+Residual decomposition after subtracting baseline gap Fraction of contexts where the globally best low-artifact noise remains locally optimal Mean gap under the globally best lowartifact noise Mean gap under context-wise optimal noise selection Relative adaptive gain
+
+context main effect 59.1%; noise main effect 1.4%; context×noise interaction 39.4% context main effect 49.1%; noise main effect 1.8%; context×noise interaction 49.1% 3.1%
+0.087
+0.005
+93.8% reduction in mean gap
+
+Table 4 shows that, after subtracting the baseline gap each context carries under its reference noise, the remaining variation is split almost evenly between the context main effect and the context×noise interaction term. At the same time, the globally best lowartifact noise remains locally optimal for only 3.1% of contexts. In other words, that globally best noise is not the best choice for 96.9% of contexts. By contrast, if we allow context-wise selection within the same 16-noise candidate set, the mean gap drops from 0.087 to 0.005.
+The quantity that must be predicted is therefore not a globally reusable high/low artifact constant, but a control target modulated by context. This also explains why adaptive steering is difficult to stabilize: the problem is not regression to a single lowdimensional target, but a strongly context-dependent local decision problem.
+6 Discussion
+Why the mechanism evidence is stronger than the method-level closure. The most stable evidence in this paper remains at the mechanism level, not at the level of a unified online controller. Once these local regularities are compressed into a single controller, candidate-set size, label noise, local credit assignment, and sequential intervention budget all enter the problem at once. Current diagnostics indicate that the first-stage question—which contexts are worth intervening on—is not entirely unlearnable, but the real bottleneck lies in the second-stage dispatch: the controller must decide when to intervene, whether to choose low or high, and how to allocate a limited intervention budget.
+
+11
+
+More fundamentally, direction preference itself can reverse within the same task. On task 8, some complete local contexts favor low artifact, some favor high artifact, and many are best left unperturbed, so there is no single fixed direction that transfers across contexts. The current adaptive-steering results therefore show only local positive signal, not yet stable online gains.
+Integrity of the information path. The DDPM/DDIM comparison shows that what determines steering success is not stochasticity per se, but whether the control signal can be transmitted stably from the initial noise to the action output. Zero-variance DDPM still fails to recover directional structure, further excluding the simple explanation that the problem is merely per-step random-noise reinjection. As generative robot policies increasingly move toward few-step paradigms, such as flow matching and consistencystyle models, this information-path issue is likely to become even more exposed.
+Online cost and future method directions. The current intervention procedure still depends on local direction search, so its online cost remains well above that of a lightweight real-time module. If this line is pursued further, a budget-aware contextadaptive controller is a more sensible target than continued tuning of the current gate. Before that, the more realistic intermediate path remains staged key-context screening followed by local branch validation.
+7 Conclusion
+This paper provides a mechanism-level attribution of chunk-boundary artifact in actionchunked policies by tracing the chain from noise to artifact to outcome. The experiments show that stochastic action-chunked policies contain structures in noise space that can stably drive boundary artifact; that the DDPM, zero-variance DDPM, and DDIM comparison ties this controllability to the integrity of the information path from initial noise to action output; that directional intervention on this structure at fixed key contexts can significantly change task outcome; and that fixed-context oracle analysis shows the optimal steering target is determined by context rather than by a global constant shared across contexts. Chunk-boundary artifact should therefore not be treated as a mere execution disturbance. It is a variable that can be analyzed, controlled, and mechanistically linked to task outcome. This clarifies the source of boundary problems in action-chunked policies and provides a concrete starting point for future context-adaptive steering.
+References
+[1] K. Black, N. Brown, D. Driess, A. Escontrela, M. Nasiriany, et al. π0: A visionlanguage-action flow model for general robot control. In RSS, 2025.
+[2] C. Chi, Z. Xu, S. Feng, Y. Du, E. Cousineau, et al. Diffusion Policy: Visuomotor Policy Learning via Action Diffusion. In RSS, 2023.
+[3] T. Z. Zhao, V. Kumar, S. Levine, and C. Finn. Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware. In RSS, 2023.
+12
+
+[4] Y. Dalva and P. Yanardag. NoiseCLR: A Contrastive Learning Approach for Unsupervised Discovery of Interpretable Directions in Diffusion Models. In CVPR, 2024.
+[5] B. Liu, Y. Zhu, C. Gao, Y. Feng, Q. Liu, et al. LIBERO: Benchmarking Knowledge Transfer for Lifelong Robot Learning. In NeurIPS Datasets and Benchmarks, 2023.
+[6] Y. Liu, H. Yu, J. Zhao, B. Li, D. Zhang, M. Li, et al. Learning Native Continuation for Action Chunking Flow Policies. arXiv preprint arXiv:2602.12978, 2026.
+[7] Y. Liu, J. I. Hamid, A. Xie, Y. Lee, M. Du, and C. Finn. Bidirectional Decoding: Improving Action Chunking via Closed-Loop Resampling. In ICLR, 2025.
+[8] K. Black, M. Y. Galliker, and S. Levine. Real-Time Execution of Action Chunking Flow Policies. In NeurIPS, 2025.
+[9] H. Wang, G. Zhang, Y. Yan, Y. Shang, R. R. Kompella, and G. Liu. Real-Time Robot Execution with Masked Action Chunking. In ICLR, 2026.
+[10] X. Guo, J. Liu, M. Cui, J. Li, H. Yang, and D. Huang. InitNO: Boosting Text-toImage Diffusion Models via Initial Noise Optimization. In CVPR, 2024.
+[11] A. Wagenmaker, M. Nakamoto, Y. Zhang, S. Park, W. Yagoub, et al. Steering Your Diffusion Policy with Latent-Space Reinforcement Learning. In CoRL, 2025.
+13
+
+Appendix
+
+Appendix A: Context–Noise Matrix Slice
+
+Table A1: Top-left 6 × 8 slice of the OpenPI context–noise boundary-gap matrix used in the fixed-context noise analysis. Columns correspond to contexts c1 through c6, and rows correspond to noise samples z1 through z8.
+
+Noise / Context
+
+c1
+
+c2
+
+c3
+
+c4
+
+c5
+
+c6
+
+z1
+
+0.199 0.166 0.029 0.044 0.105 0.102
+
+z2
+
+0.169 0.158 0.018 0.067 0.126 0.061
+
+z3
+
+0.169 0.183 0.012 0.073 0.112 0.065
+
+z4
+
+0.208 0.212 0.011 0.073 0.103 0.047
+
+z5
+
+0.109 0.096 0.046 0.080 0.119 0.142
+
+z6
+
+0.224 0.249 0.024 0.059 0.055 0.050
+
+z7
+
+0.169 0.150 0.032 0.070 0.148 0.110
+
+z8
+
+0.255 0.280 0.044 0.087 0.009 0.020
+
+Appendix B: z0 / z1 Decomposition
+
+Table A2: First-boundary noise decomposition. We vary only current-chunk noise z0, only next-chunk noise z1, or both together, and report the standard deviation of the firstboundary artifact metrics. BTJ denotes first-boundary transition jerk. Each condition uses 2 contexts × 5 samples; goal 0 is overall less noise-sensitive than goal 3 (∼ 0.02 vs ∼ 0.03), and at this sample size the goal 0 “vary both” std is not separable from the single-factor conditions.
+
+Task Condition BTJ std gap std
+
+vary z0 only goal 3 vary z1 only
+vary both
+
+0.029 0.035 0.038
+
+0.030 0.040 0.038
+
+vary z0 only goal 0 vary z1 only
+vary both
+
+0.022 0.024 0.017
+
+0.020 0.025 0.019
+
+This decomposition shows that chunk noise on both sides of the boundary contributes to first-boundary artifact. For goal 3, z1 contributes slightly more than z0, which matches the intuition that the artifact depends strongly on what the next chunk generates. But this relative ordering should not be read as a global law: in a harder task-8 replication, z0 is slightly stronger than z1. The more robust conclusion is therefore that both sides of the boundary matter, and the dominant term depends on task and context.
+
+14
+
+Appendix C: Full-Trajectory Steering Summary
+
+Figure A1: Aggregate summary of the full-trajectory steering experiments (n = 158 per group). Left: success rate. Right: episode-level boundary–interior jerk contrast. The aggregate mixes near-saturation baselines, settings with substantial room for improvement, settings close to a failure floor, and settings with still-limited sample size; accordingly, pooled success-rate separation is compressed, while the directional ordering of the mechanism metric is preserved.
+
+Appendix D: Adaptive Steering Exploration
+
+Table A3: Supplementary diagnostics for adaptive steering. These are not presented as positive method results, but as key diagnostics: whether first-stage sensitivity screening is learnable, whether the online controller exhibits local positive signal, and whether adaptive selection becomes feasible at the artifact level before it becomes stable at the outcome level.
+
+Component
+
+Result
+
+First-stage sensitivity predictor
+After connecting the first-stage filter to the online controller Online controller Fixed-context predictor with 16 shared candidate noises
+
+A linear classifier using only the current context predicts whether a local context is intervention-worthy, i.e. whether offline fixed-context validation shows that some intervention branch outperforms baseline there; under leave-onetrial-out evaluation it reaches accuracy 0.651 ± 0.017 and AUROC 0.593 ± 0.040, above the majority-class baseline accuracy of 0.617 the number of interventions drops to roughly 1/3–1/4 of the original level, but after aggregation over a longer window success drops from the baseline 0.6 to 0.2, indicating that once the filter fires, second-stage dispatch—when to intervene, which direction to choose, and how to allocate budget—remains the main bottleneck a local positive result appears on a shorter evaluation window with 0.4 → 0.8, but after aggregation over a longer window it becomes only 0.5 → 0.6; the one-sided sign test against baseline gives p = 0.5 single-model selection reduces held-out mean gap from 0.1068 to 0.0815; the validation-selected top-3 ensemble yields positive gain on 5/5 splits, with mean absolute gap gain 0.0246
+
+The outcome-level controller is not yet stable, but artifact-level adaptation is already learnable. Under a fixed-context setting with 16 shared candidate noises, we train a
+
+15
+
+context-adaptive predictor that directly predicts which candidate noise is more suitable for the current context. On held-out contexts, the single-model result reduces predictorselected mean gap from the global fixed low-noise baseline of 0.1068 to 0.0815, a relative reduction of 23.7%. Across 5 logical-context splits, the validation-selected top-3 ensemble achieves positive gains on all 5 splits, with mean absolute gap gain 0.0246.
+Adaptive selection is thus already feasible at the artifact level; the remaining difficulty is to carry that advantage through to the outcome level in a stable way.
+
+Table A4: Results for the fixed-context predictor with 16 shared candidate noises. Single model denotes the best single model chosen by validation within each split; top-3 ensemble denotes the ensemble of the three models ranked highest by validation performance.
+
+Setting
+
+Held-out selected gap Global fixed baseline gap Absolute gain
+
+Note
+
+single model (split seed 1) single model (5-split aggregate) top-3 ensemble (5-split aggregate)
+
+0.0815 0.0566 0.0517
+
+0.1068 0.0763 0.0763
+
+0.0253 0.0197 0.0246
+
+RMSE = 0.1037, Pearson r = 0.618 positive gain on 4/5 splits positive gain on 5/5 splits
+
+16
+
+

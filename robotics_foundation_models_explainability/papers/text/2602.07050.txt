@@ -1,0 +1,764 @@
+Interpreting Physics in Video World Models
+
+arXiv:2602.07050v1 [cs.CV] 4 Feb 2026
+
+Sonia Joseph 1 2 Quentin Garrido 1 Randall Balestriero 1 Matthew Kowal 3 Thomas Fel 4 Shahab Bakhtiari 2 5 Blake Richards 2 † Mike Rabbat 1 †
+
+Abstract
+A long-standing question in physical reasoning is whether video-based models need to rely on factorized representations of physical variables in order to make physically accurate predictions, or whether they can implicitly represent such variables in a task-specific, distributed manner. While modern video world models achieve strong performance on intuitive physics benchmarks, it remains unclear which of these representational regimes they implement internally. Here, we present the first interpretability study to directly examine physical representations inside large-scale video encoders. Using layerwise probing, subspace geometry, patch-level decoding, and targeted attention ablations, we characterize where physical information becomes accessible and how it is organized within encoder-based video transformers.
+Across architectures, we identify a sharp intermediate-depth transition— which we call the Physics Emergence Zone—at which physical variables become accessible. Physics-related representations peak shortly after this transition and degrade toward the output layers. Decomposing motion into explicit variables, we find that scalar quantities such as speed and acceleration are available from early layers onwards, whereas motion direction becomes accessible only at the Physics Emergence Zone. Notably, we find that direction is encoded through a high-dimensional population structure with circular geometry, requiring coordinated multi-feature intervention to control. These findings suggest that modern video models do not use factorized representations of physical variables like a classical physics engine. Instead, they use a distributed representation that is nonetheless sufficient for making physical predictions.
+†Joint last authors. 1FAIR, Meta Superintelligence Labs 2Mila & McGill University 3FAR.AI 4Kempner Institute, Harvard University 5Universite´ de Montre´al. Correspondence to: Sonia Joseph <soniajoseph@meta.com>.
+Preprint. February 10, 2026.
+
+1. Introduction
+Despite rapid progress in video modeling, it remains unclear whether–and how–video world models represent physical information internally. Prior work has largely addressed this question indirectly, evaluating downstream performance on physics benchmarks while treating the model as a black box (Yi et al., 2020; Garrido et al., 2025; Motamed et al., 2025). As a result, we lack answers to fundamental representational questions: Where in the network physical information is constructed (if at all)? How it is organized across layers and patches? What geometric form does it take?
+Understanding this internal organization has implications beyond benchmark accuracy. A model that infers stable physical structure from video could aid scientific modeling in regimes where analytic simulators are incomplete or unavailable, including climate systems, fluid dynamics, and materials science. Models that infer physical variables in a factorized manner—i.e., with distinct representations for quantities such as direction or momentum—could provide interpretable windows into the governing dynamics of the system being modeled rather than black-box predictions alone. These questions closely mirror debates from cognitive science, where accounts of physics representation are often divided between physics engine-based views, which posit compact and reusable latent state variables (Battaglia et al., 2013; Ullman et al., 2017), and heuristic-based views, which emphasize domain-specific rules or perceptual shortcuts without an explicit physics engine (Siegler, 1976; Vasta & Liben, 1996; Davis et al., 2017).
+In this paper, we present one of the first interpretability analyses of physical variables in video world models. Using layerwise probing, subspace analysis, and targeted ablations, we map where physical information becomes accessible, how it is structured, and what computational substrate supports it.
+Physical reasoning in video world models is not formally defined, but broadly refers to the ability to infer object properties, dynamics, and interactions, such as solidity, continuity, and causality (Xue et al., 2023). To this end, we narrow our focus to two complementary diagnostic tasks designed to examine the internal organization supporting physically coherent behavior. First, we analyze a physics
+
+1
+
+Interpreting Physics in Video World Models
+
+Table 1. We consider five distinct possible representations of physics inside video world models. Our findings favor distributed, taskspecific representations instead of physics-engine-style assumptions (see Section 8.1 for a discussion).
+
+Physics-engine assumption Staged derivation
+Cartesian representation Shared latent physics Compact state variables
+Object-centric state slots
+
+Interpretability prediction
+
+Our finding
+
+Acceleration is derived from velocity interme- Acceleration is decodable at the same stage
+
+diates
+
+as velocity without an explicit intermediate
+
+velocity state (Sec. 5.2)
+
+Motion encoded as (vx, vy)
+
+Polar factorization (speed, direction) dominates (Sec. 5.3)
+
+Motion variables reused across physical tasks
+Motion variables occupy low-dimensional subspaces
+
+Direction and intuitive-physics subspaces are nearly orthogonal (Sec. 6.2) Direction spans tens of approximately orthogonal components, steering requires dozens of dimensions (Sec. 7.2)
+
+Motion decodable from specific spatial or tem- Direction becomes spatially redundant
+
+poral patches
+
+across patches post-Physics Emergence
+
+Zone (App. C.5)
+
+task in which models distinguish possible from impossible videos (Riochet et al., 2021; Garrido et al., 2025), capturing coarse-grained physical features including object permanence, shape constancy, and spatiotemporal continuity. Second, to enable fine-grained analysis with ground-truth physical variables, we construct a synthetic toy-ball dataset with precisely controlled velocity and acceleration. Rather than aiming for exhaustive coverage of physical reasoning, we examine in-depth how physical information is structured, transformed, and reused for these two tasks on two state-ofthe-art video encoders, V-JEPA 2 (Large, Huge, and Giant) and (Assran et al., 2025) and VideoMAE-v2 G (Wang et al., 2023).
+Across all of the models tested, the representation of physicsrelated information emerges sharply at approximately onethird depth—a transition we call the Physics Emergence Zone. The representation of physical variables then peaks in the middle layers, and degrades toward the output. Decomposing motion into finer-grained variables, we find that scalar quantities like speed and acceleration are accessible at the earliest layers, while directional information becomes accessible only at the Physics Emergence Zone. Acceleration does not require an explicit velocity intermediate and can be approximated directly by a single MLP. Direction is a reliable diagnostic of the transition, co-emerging with the ability to distinguish physically impossible videos from physically plausible ones, and with performance on temporal reasoning tasks, such as detecting shuffled videos.
+We next examine the relationship between possible–impossible physics judgments and motion direction. Under a physics-engine view with compact, reusable latent states, direction would be expected to support both tasks. Instead, despite their co-emergence, direction and possible–impossible judgments occupy nearly orthogonal representational subspaces, indicating task-specific repre-
+
+sentations rather than shared latent variables. Both tasks nevertheless rely on a shared circuit-level substrate: attention heads within the Physics Emergence Zone that exhibit unusually local spatiotemporal processing. Suppressing local processing of these heads in the Physics Emergence Zone substantially degrades physics and temporal reasoning performance yet leaves static tasks such as ImageNet classification largely unaffected, showing their critical role in spatiotemporal processing. In addition, we show that motion direction is represented as a high-dimensional population code with circular geometry, reminiscent of population codes in motion neuroscience, requiring coordinated intervention across dozens of dimensions, in contrast to the low-dimensional steering in language models. Overall, our results particularly favor task-specific physical representations over compact, reusable state variables (Tab. 1).
+2. Related Work
+We situate our work within prior research on video world models, physical reasoning, and interpretability of video transformers.
+2.1. Video world models
+A world model is a learned system whose internal representations capture reusable environmental structure to support prediction, imagination, or planning (Ha & Schmidhuber, 2018). In visual domains, this role is increasingly fulfilled by large-scale unsupervised video models spanning video prediction, robotics, and generative modeling (Ding et al., 2025; Li et al., 2025; Kong et al., 2025).
+While recent advances include diffusion-based generators (Ho et al., 2022; Blattmann et al., 2023), their computation is distributed across denoising steps, complicating representation-level analysis. We therefore focus on
+
+2
+
+Interpreting Physics in Video World Models
+
+encoder-based video world models such as VideoMAE-v2 (Wang et al., 2023) and V-JEPA 2 (Assran et al., 2025), whose persistent intermediate representations provide a natural substrate for studying internal physical structure beyond behavioral performance.
+
+3. Models and Probing Methodology
+We study two state-of-the-art video transformer architectures and evaluate physical reasoning using a layer-wise probing methodology.
+
+2.2. Physical reasoning in video models and cognitive science
+Physical reasoning concerns the ability to infer object properties and interactions such as solidity, continuity, and causality (Xue et al., 2023). Despite strong predictive performance, video world models exhibit systematic failures on physical reasoning benchmarks. Models underperform on causal and counterfactual questions in CLEVRER (Yi et al., 2020), show brittleness under violation-of-expectation tests in IntPhys and IntPhys2 (Riochet et al., 2020; Bordes et al., 2025), and fail to generalize in interactive environments such as PHYRE (Bakhtin et al., 2019). Notably, perceptual realism is only weakly correlated with physical correctness (Motamed et al., 2025), raising the question of what internal representations may support physical reasoning.
+In parallel, a central debate in cognitive science concerns the representational form of physical reasoning in humans: whether physical judgments rely on compact, reusable latent states—often described as an intuitive physics engine (McCloskey, 1983; Battaglia et al., 2013; Ullman et al., 2017)—or instead arise from heuristic, domain-specific reasoning (Siegler, 1976; Vasta & Liben, 1996; Davis et al., 2017). Several reviews frame this distinction as a continuum rather than a dichotomy (Kubricht et al., 2017; Smith et al., 2023). Our work engages this debate at the representational level by analyzing how physical information is organized within video world models.
+2.3. Interpretability for video encoders
+Most previous interpretability work has focused on text and images, with comparatively limited attention to video due to its higher dimensionality and temporal complexity. Existing video interpretability studies typically rely on proxy tasks or diagnostic benchmarks to assess whether models capture dynamic information, or on visualization-based approaches such as activation maximization and clustering of intermediate representations (Ghodrati et al., 2018; Hadji & Wildes, 2018; Choi et al., 2019; Buch et al., 2022; Kowal et al., 2024). These analyses have revealed strong biases toward static appearance in many video models. However, while prior work can quantify or visualize temporal concepts, it does not characterize the representational form used to construct such concepts. In contrast, we perform targeted interpretability analyses to determine where and how physical information is organized within video encoders.
+
+3.1. Models
+Based on the Joint Embedding Predictive Architecture, VJEPA 2 (Assran et al., 2025) trains an encoder fθ to map spatiotemporal patches to latent representations, while a predictor gϕ forecasts representations of masked or future patches. This predictive objective encourages temporally structured features over low-level appearance. The architecture extends a vision transformer to video using space–time patches with RoPE embeddings. We analyze the frozen pretrained encoder fθ.
+In contrast to V-JEPA 2’s latent prediction objective, VideoMAE V2 (Wang et al., 2023) employs masked autoencoding: a large fraction of patches is masked and an encoder-decoder reconstructs the missing pixels, with only the encoder retained after pretraining. This pixel-level reconstruction loss directly incentivizes the preservation of visual detail. We analyze the frozen pretrained encoder and contrast its internal representations with those learned by V-JEPA 2.
+3.2. Probing methodology
+To localize where physical information appears in the network, we probe the residual stream at every layer. We primarily use linear probes on mean-pooled space–time patches, which provide a direct readout of what is linearly available in the representation rather than computed by the probe. Because pooling can obscure spatial or temporal structure, we complement these with patch-preserving attentive-mlp probes and interpret both jointly. This setup allows us to first identify where intuitive physics emerges, and then isolate the motion variables and mechanisms that support it. Probe training details are provided in Appendix B.
+4. The Physics Emergence Zone
+To distinguish between physically possible and impossible sequences a model must integrate multiple perceptual cues, capturing sensitivities such as object permanence and spatiotemporal continuity (Baillargeon & DeVos, 1991; Wilcox, 1999; Spelke et al., 1995). Although video transformers can succeed on intuitive physics benchmarks (Garrido et al., 2025), behavioral performance alone does not reveal where the ability to identify impossible physical sequences emerges internally. In this section, we localize the emergence of this ability across layers and subsequently decompose it into explicit motion variables in Section 5.
+
+3
+
+Interpreting Physics in Video World Models
+
+Figure 1. The Physics Emergence Zone consistently emerges one-third in the model’s layers. We probe performance on V-JEPA 2 (Large, Huge, and Giant) and VideoMAEv2-G across all layers for the possible-vs-impossible physical reasoning task. The shaded area is the emergence zone one-third through the network, where the network starts performing well on the task for linear probes (left) and attentive-MLP probes (right). For full results, including for the VideoMAE-v2 family, see Appendix C.1.
+
+4.1. Dataset
+To test for the ability to distinguish physically possible vs. impossible sequences, we probe each layer using linear classifiers trained on the IntPhys dataset (Riochet et al., 2021), training the probe on a binary classification task between matched possible and impossible video pairs. Impossible variants violate core physical constraints, including object permanence (objects spontaneously appear or disappear), shape constancy (a cube transforms into a cone), or spatiotemporal continuity (trajectory reversals). Crucially, possible and impossible videos differ only at a single “breakpoint” frame, ensuring that successful classification requires representations that integrate high-level motion dynamics rather than visual cues like texture or color. See Appendix Fig. 5 for dataset examples.
+4.2. Distinction between possible and impossible physics emerges one-third through model
+Across all V-JEPA 2 model scales (Large, Huge, and Giant), probe accuracies exhibit a remarkably sharp and consistent transition from near chance (∼50%) to high performance (∼85–95%) at approximately one-third of the depth through the encoder (Fig. 1). We refer to this consistent one-third depth transition as the Physics Emergence Zone. The location of the Physics Emergence Zone is remarkably consistent across model sizes, indicating a shared computational regime rather than architecture- or scale-specific behavior. VideoMAE-v2-G also exhibits a similar depth-dependent transition; meanwhile, smaller VideoMAE-v2 variants fail to exhibit reliable emergence, potentially due to differences in model capacity, dataset size, or training objective (Appendix C.1).
+Breaking down by different types of violations of physics reveals a similar pattern across object permanence, shape constancy, and spatiotemporal continuity (Appendix Fig. 10), which indicates that the Physics Emergence Zone is not
+
+unique to a single type of violation of the laws of physics.
+In addition, perhaps counterintuitively, the best possible-vsimpossible physics representations are strongest at intermediate depth: probe accuracy peaks in the middle third of the encoder and degrades toward the output. This indicates that final-layer features do not necessarily preserve the most informative physical structure, consistent with prior findings that intermediate representations can outperform final layers for downstream perception tasks in vision encoders (Bolya et al., 2025). We show that the intermediate representations of the encoder lead to better performance on a downstream intuitive task in Appendix C.1.4.
+5. Velocity and Acceleration in the Physics Emergence Zone
+Our results demonstrate where the models we are testing can distinguish possible from impossible physics events, but not which physical quantities contribute to that capability. To move beyond coarse behavioral signatures, we turn to explicit physical variables that admit clear ground truth. We focus on Cartesian representations for velocity vt = (vx,t, vy,t) and acceleration at = (ax,t, ay,t), and their polar decompositions, speed rt = ∥vt∥2, motion direction θt, and acceleration magnitude ∥at∥2.
+5.1. Synthetic toy ball dataset
+We generate synthetic single-ball videos using the Kubric simulator (Greff et al., 2022) with controlled motion parameters (Fig. 2a). The ball follows straight-line trajectories under either constant velocity or externally induced acceleration, with all other factors held fixed. Ground-truth motion variables are measured in pixels per frame, enabling targeted probing of vt, at, rt, θt, and ∥at∥2. Full dataset details are provided in Appendix A.1.2.
+
+4
+
+Interpreting Physics in Video World Models
+
+(a) Dataset Example
+
+(b) Cartesian
+
+(c) Polar
+
+Figure 2. Motion property encoding across layers. (a) Example from our synthetic ball rolling dataset showing motion direction θ. (b) Cartesian representations (vx, ax) show similar layer-wise emergence patterns, with acceleration available at the same time as velocity. (c) Polar representations (speed, direction, acceleration magnitude) across layer fraction. Direction is only available at the Physics Emergence Zone, while magnitudes are available early.
+
+5.2. Cartesian representation: acceleration does not rely on velocity
+Both Cartesian velocity (vx, vy) and acceleration (ax, ay) exhibit a transition at the Physics Emergence Zone (Fig. 2b). Notably, acceleration is also decodable with high R2 from early layers, indicating that acceleration-like signals can be extracted directly from local features without relying on explicit intermediate velocity representations. However, Cartesian variables entangle motion magnitude and direction, making it unclear which aspects of motion are constructed at this stage.
+5.3. Polar representation: speed emerges early, while direction emerges at the Physics Emergence Zone
+To disentangle magnitude and direction, we reparameterize motion in polar coordinates. Under this decomposition, speed and acceleration magnitude are available from early layers, while directional information becomes reliably decodable only at the Physics Emergence Zone (Fig. 2c). This pattern indicates that the transition is more strongly associated with the emergence of direction rather than of scalar motion quantities. We do a deeper dive into the mechanism behind the globalization of direction in Appendix C.5.
+The growing availability of direction in the Physics Emergence Zone persists on the multi-object dataset CLEVRER (Yi et al., 2020), in which object-level probes recover the same Physics Emergence Zone signature across object types and model scales (Appendix Fig. 13b), indicating that direction emergence generalizes beyond single-object motion. For per-object results, see Appendix C.3.
+Interestingly, the early availability of speed and the later emergence of direction mirror the motion-processing hierarchy in biological vision: speed-sensitive motion energy appears early, while higher-order pooling gives rise to positioninvariant direction selectivity at later stages (Pasternak & Tadin, 2020; Born & Bradley, 2005).
+
+6. What is the Relationship between Possible-vs-Impossible Physics and Direction?
+So far, we have shown that representations for possible-vsimpossible physics judgments and motion direction emerge at the same Physics Emergence Zone, but their internal relationship remains unclear. We consider three competing hypotheses about the relationship of the two representations: (i) their co-emergence reflects a generic depth-dependent effect across many tasks, including tasks not related to physical information; (ii) direction is compositionally reused to support possible-vs-impossible judgments, akin to a physics engine, or similarly, both tasks rely on the same underlying latent feature (e.g. spatiotemporal features that are more fine-grained than motion direction); or (iii) the two tasks depend on shared circuit-level computation without any representational overlap in latent space.
+In this section, we evaluate each hypothesis. We find that the Physics Emergence Zone is specific to temporally structured tasks, which rules out a generic depth effect. We further show that direction and possible-vs-impossible judgments occupy distinct representational subspaces, which rules out variable reuse and shared underlying latent features. Finally, we identify a shared circuit-level substrate—local spatiotemporal processing in attention heads within the Physics Emergence Zone that supports both tasks, which provides the strongest evidence for the last hypothesis.
+6.1. The Physics Emergence Zone is specific to tasks requiring spatiotemporal processing
+We first test whether the Physics Emergence Zone reflects a generic depth-dependent pattern, or whether it is selectively associated with tasks that impose specific temporal constraints. To this end, we apply the same layerwise probing analysis to several control tasks, including CLEVRER object counting (Yi et al., 2020), ImageNet classification (Deng et al., 2009), Something-Something-v2 (SSv2) video
+
+5
+
+Interpreting Physics in Video World Models
+
+classification (Goyal et al., 2017), and shuffled versus nonshuffled video discrimination.
+Although CLEVRER counting and SSv2 operate on video input, neither task necessarily requires coherent objectlevel motion or stable direction representations, and can in principle be supported by frame-level information or short-range temporal cues. In contrast, both IntPhys possible–impossible discrimination and shuffled-video detection impose global coherence constraints over time: IntPhys requires maintaining physically consistent object trajectories, while shuffled-video detection requires sensitivity to global temporal order.
+Consistent with this distinction, neither CLEVRER counting nor SSv2 exhibits the characteristic one-third emergence signature (Appendix Fig. 12), whereas shuffled-video detection shows a similar emergence pattern. These results suggest that the Physics Emergence Zone is not a generic property of video processing or network depth, but is selectively associated with global spatiotemporal coherence.
+
+responsible for both tasks. Our results from Section 6.1 suggest that the Physics Emergence Zone contains a mechanism that is unique to spatiotemporal processing.
+Given that attention heads mediate spatiotemporal processing in transformers across patches, we analyze attention head distance across layers. We find that attention heads outside of the Physics Emergence Zone show relatively homogenous attention profiles. However, uniquely at the Physics Emergence Zone, unusually spatiotemporally local attention heads emerge alongside longer-range heads, resulting in a sharp increase in attention head diversity as measured by distance (Fig. 3). Our method of measuring attention head distance is in Appendix C.6.
+
+6.2. Possible-vs-impossible physics and motion direction do not overlap in latent space
+Next, we test whether the possible-vs-impossible and direction tasks share representational space: either the more general possible-vs-impossible physics task compositionally reusing direction, or both tasks relying on the same underlying feature. Both mechanisms would be similar to physics simulators, in which a general and shared set of underlying features generates a variety of physical behavior.
+We look at the geometric relationship between their decoding subspaces to find minimal overlap: principal angles between motion and IntPhys subspaces average 69◦–83◦, with direction closer to IntPhys (69◦) than speed (81◦). Projection overlap is low—only 7–13% of the IntPhys subspace projects onto direction, and < 3% onto speed, statistically indistinguishable from random projects (Bjorck & Golub, 1973). For a full account of our method and results, see Appendix C.4. Thus, despite becoming accessible with a probe at the same depth, the two capabilities occupy nearly orthogonal representational subspaces, ruling out representational reuse and shared latent-variable explanations.
+6.3. Local attention heads in the Physics Emergence Zone underpin spatiotemporal processing
+In the previous section, we established that the internal representations of the possible-vs-impossible physics task and direction are task-specific, without feature reuse between tasks. Still, the two tasks show a shared emergence pattern in the Physics Emergence Zone, which suggests that they may share an underlying computational process– for example, the same attention heads or MLP mechanisms may be
+
+Figure 3. Spatiotemporally local attention heads crop up uniquely at the Physics Emergence Zone. Per-head attention locality heatmap showing the coexistence of local and long-range heads at this stage. See Appendix Fig. 19 for a line plot of attention distance.
+
+Table 2. Local attention suppression at the Physics Emergence Zone degrades performance. Direction and intuitive physics degrade strongly under spatiotemporal local attention suppression on the Physics Emergence Zone, while ImageNet performance remains largely unchanged. For a full spatiotemporal sweep across a variety of s and t, see Appendix Tab. 4.
+
+CONDITION
+
+DIR. (R2) INTPHYS (%) INET (%)
+
+BASE SPATIAL (s=7) TEMPORAL (t=3) COMBINED (s=3, t=1)
+
+0.97 0.93 0.83 0.14
+
+78.3 62.2 51.9 61.7
+
+33.7 33.5 30.3 33.1
+
+We next test whether local attention is functionally responsible for spatiotemporal processing by suppressing local attention exclusively in the Physics Emergence Zone (Appendix C.6). Our targeted suppression produces severe degradation in both direction decoding and possible-vsimpossible discrimination, while leaving the static task of ImageNet classification largely unaffected (Tab. 2).
+Our results identify a shared computational mechanism at the Physics Emergence Zone that supports the possiblevs-impossible physics and motion direction tasks without requiring shared representational subspaces. Our analysis
+
+6
+
+Interpreting Physics in Video World Models
+
+(a)
+
+(b)
+
+(c)
+
+Figure 4. Direction neurons form a ring-shaped population code with structured redundancy. (a) At the one-third emergence zone, direction-selective MLP units tile the full angular space and organize into a circular population code. (b) Individual neurons exhibit smooth, sinusoidal tuning to motion direction. (c) Probe accuracy across successive orthogonalizations exhibits a sawtooth pattern, indicating structured redundancy consistent with paired (e.g., sine–cosine) feature encodings.
+
+focuses on coarse spatiotemporal reasoning; other compositional physical computations, such as contact dynamics or force-based inference, may rely on additional mechanisms not examined here.
+
+However, manipulating only the unit-circle subspace does not effectively steer direction, suggesting that direction is embedded in a higher-dimensional representation beyond a single unit circle. We test this hypothesis in the next section.
+
+7. Steering the Direction Variable
+One gold standard in interpretability is the ability to steer representations in latent space to change the model’s prediction, establishing the feature’s causal impact on the output (Turner et al., 2024; Panickssery et al., 2024; Zou et al., 2025). In the following section, we attempt to steer motion direction to change the decoding. We find a rich and counterintuitive set of behaviors for the representation of direction: circular population geometry, ”sawtooth” sin-cosine encoding, and successful steering only along manipulating dozens of orthogonal probe dimensions.
+7.1. Direction neurons form a ring-shaped population code at the Physics Emergence Zone
+We find that MLP layers (fc1/fc2) at the end of the Physics Emergence Zone selectively encode motion direction (Fig. 4a), with most units strongly direction-tuned (high GLM R2), and preferred directions tiling 360◦ (Fig. 4b). At the population level, direction-selective features organize into a unit-circle geometry that is absent in early layers and emerges sharply at the transition (Appendix Fig. 20), consistent with a circular population code in motion neuroscience (Jazayeri & Movshon, 2006). We do not observe an analogous circular organization for speed, indicating a qualitative difference between direction and speed (Appendix Fig. 21). For our full methodology, see Appendix C.7.
+
+7.2. Physics-related variables require many tens of directions to steer
+To estimate the dimensionality of motion direction, we iteratively train linear probes, orthogonalize each probe direction, and retrain on the residual representation until performance reaches chance, a method closely related to prior work on iterative nullspace projection and amnesic probing (Ravfogel et al., 2020). We describe our method in detail in Appendix C.11.
+We find that speed, direction, and possible-vs-impossible representations are encoded in high-dimensional subspaces. Possible-impossible discrimination requires approximately 20 independent features at the Physics Emergence Zone, while direction decoding requires roughly 40–50 features, increasing to up to 80 near the output layers (Appendix Fig. 22). Interestingly, probe performance exhibits a characteristic sawtooth pattern across successive orthogonalizations (Fig. 4c), consistent with direction being encoded via approximately sinusoidal feature pairs (e.g., sine–cosine components) – a pattern that we see uniquely in motion direction and not speed (Appendix Fig. 23).
+We next examine whether the high-dimensional direction representation can be causally controlled along its many feature dimensions. In line with the previous section’s results about manipulating the unit circle in the MLP layers, steering along a single feature direction or probe axis produces little to no change in decoded motion direction. In con-
+
+7
+
+Interpreting Physics in Video World Models
+
+trast, coordinated interventions across increasing numbers of orthogonal probe directions yield smooth and monotonic reductions in mean angular error (Appendix, Fig. 24). When steering across all probe directions at layer 8, we achieve < 0.5◦ error to target angles, compared to > 80◦ for singleprobe interventions (Appendix C.12). Effective steering therefore requires manipulating a large fraction of the representational subspace, rather than modifying any individual feature.
+Surprisingly, unlike language models, where semantic concepts often align with single or low-rank directions, even complex behaviors such as refusal can often be controlled via a single activation direction or a small set of vectors (Turner et al., 2024; Panickssery et al., 2024; Zou et al., 2025; Arditi et al., 2024), motion direction in video encoders requires coordinated high-dimensional steering.
+8. Discussion
+Our goal in this work was to characterize the representational form through which physical information is made available internally.
+8.1. Intuitive physics in cognitive science
+A central debate in cognitive science concerns whether intuitive physics relies on compact, reusable latent state variables—akin to a physics engine—or on distributed, taskspecific computations (Battaglia et al., 2013; Ullman et al., 2017; Davis et al., 2017). Our results support the latter at the representational level. Despite strong physical behavior, we find no evidence for shared, low-dimensional latent variables: motion direction and possible–impossible judgments occupy nearly orthogonal subspaces, and direction itself requires high-dimensional coordinated steering (Tab. 1). These findings are difficult to reconcile with physics-enginestyle representations and instead support distributed, taskspecific representations built atop shared spatiotemporal computation.
+8.2. Connections to neuroscience
+The organization of motion direction we observe closely parallels biological vision. In primate cortex, directionselective neurons tile angular space and direction is represented as a circular population code rather than an explicit latent variable (Albright, 1984; Jazayeri & Movshon, 2006). Similarly, direction in video world models emerges as a distributed circular geometry. Moreover, the early availability of speed and later emergence of direction mirror the motionprocessing hierarchy in cortex, where direction selectivity arises through higher-order pooling (Born & Bradley, 2005; Pasternak & Tadin, 2020). Together, these parallels suggest that video world models may provide an ideal complemen-
+
+tary substrate for studying findings in neuroscience.
+8.3. Applications to physics simulators
+Recent work on physics steering shows that a transformer trained on PDE simulations (not video) can admit lowdimensional activation interventions corresponding to interpretable physical phenomena (McCabe et al., 2025). In contrast, our results show that our video world models encode motion variables in distributed, high-dimensional geometries, suggesting that whether learned models expose compact, interpretable “state variables” is not guaranteed, but depends critically on training domain and objective.
+9. Limitations
+Our analysis is limited to encoder-based video transformers trained with masked objectives; autoregressive or diffusion video models may exhibit different representational structure. We focus on possible–impossible discrimination and controlled motion variables, which probe core spatiotemporal sensitivity but do not isolate richer physical computations such as contact dynamics, force inference, or long-horizon interaction. Our methods characterize representational accessibility and coarse causal influence rather than a complete circuit-level mechanism, and our synthetic toy-ball dataset may not reflect how physical structure is represented in natural video.
+10. Conclusion
+We map where and how physics-relevant information appears inside large-scale video encoders. Across V-JEPA 2 and VideoMAE-v2 G, both possible–impossible discrimination and motion direction emerge at a sharp mid-depth transition—the Physics Emergence Zone—after which physics signals peak and then weaken toward the output layers. Motion decomposition reveals a clear asymmetry: scalar magnitudes are available early, while direction becomes linearly accessible only at this transition. Although these abilities co-emerge, direction and possible–impossible judgments occupy nearly orthogonal representational subspaces, while both depend causally on localized spatiotemporal attention. Direction itself is encoded as a high-dimensional, unit circle population code that resists low-dimensional steering. These findings argue against compact, reusable latent physics state and instead support a distributed, task-specific representational regime, in favor of heuristic-based accounts of intuitive physics proposed in cognitive science.
+Impact Statement
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal
+
+8
+
+Interpreting Physics in Video World Models
+
+consequences of our work, none of which we feel must be specifically highlighted here.
+References
+Albright, T. D. Direction and orientation selectivity of neurons in visual area mt of the macaque. Journal of neurophysiology, 52(6):1106–1130, 1984.
+Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery, N., Gurnee, W., and Nanda, N. Refusal in language models is mediated by a single direction, 2024. URL https://arxiv.org/abs/2406.11717.
+Assran, M., Bardes, A., Fan, D., Garrido, Q., Howes, R., Mojtaba, Komeili, Muckley, M., Rizvi, A., Roberts, C., Sinha, K., Zholus, A., Arnaud, S., Gejji, A., Martin, A., Hogan, F. R., Dugas, D., Bojanowski, P., Khalidov, V., Labatut, P., Massa, F., Szafraniec, M., Krishnakumar, K., Li, Y., Ma, X., Chandar, S., Meier, F., LeCun, Y., Rabbat, M., and Ballas, N. V-jepa 2: Self-supervised video models enable understanding, prediction and planning, 2025. URL https://arxiv.org/abs/2506.09985.
+Baillargeon, R. and DeVos, J. Object permanence in young infants: Further evidence. Child development, 62(6): 1227–1246, 1991.
+Bakhtin, A., van der Maaten, L., Johnson, J., Gustafson, L., and Girshick, R. Phyre: A new benchmark for physical reasoning, 2019. URL https://arxiv.org/abs/ 1908.05656.
+Battaglia, P. W., Hamrick, J. B., and Tenenbaum, J. B. Simulation as an engine of physical scene understanding. Proceedings of the national academy of sciences, 2013.
+Bjorck, A. and Golub, G. H. Numerical methods for computing angles between linear subspaces. Mathematics of computation, 27(123):579–594, 1973.
+Blattmann, A., Rombach, R., Ling, H., Dockhorn, T., Kim, S. W., Fidler, S., and Kreis, K. Align your latents: High-resolution video synthesis with latent diffusion models, 2023. URL https://arxiv.org/abs/2304. 08818.
+Bolya, D., Huang, P.-Y., Sun, P., Cho, J. H., Madotto, A., Wei, C., Ma, T., Zhi, J., Rajasegaran, J., Rasheed, H., Wang, J., Monteiro, M., Xu, H., Dong, S., Ravi, N., Li, D., Dolla´r, P., and Feichtenhofer, C. Perception encoder: The best visual embeddings are not at the output of the network, 2025. URL https://arxiv.org/abs/ 2504.13181.
+Bordes, F., Garrido, Q., Kao, J. T., Williams, A., Rabbat, M., and Dupoux, E. Intphys 2: Benchmarking intu-
+
+itive physics understanding in complex synthetic environments, 2025. URL https://arxiv.org/abs/ 2506.09849.
+Born, R. T. and Bradley, D. C. Structure and function of visual area mt. Annu. Rev. Neurosci., 28(1):157–189, 2005.
+Buch, S., Eyzaguirre, C., Gaidon, A., Wu, J., Fei-Fei, L., and Niebles, J. C. Revisiting the” video” in video-language understanding. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pp. 2917–2927, 2022.
+Choi, J., Gao, C., Messou, J. C., and Huang, J.-B. Why can’t i dance in the mall? learning to mitigate scene bias in action recognition. Advances in Neural Information Processing Systems, 32, 2019.
+Davis, E., Marcus, G., and Frazier-Logue, N. Commonsense reasoning about containers using radically incomplete information. Artificial intelligence, 248:46–84, 2017.
+Deng, J., Dong, W., Socher, R., Li, L.-J., Li, K., and Fei-Fei, L. Imagenet: A large-scale hierarchical image database. In 2009 IEEE conference on computer vision and pattern recognition, pp. 248–255. Ieee, 2009.
+Ding, J., Zhang, Y., Shang, Y., Feng, J., Zhang, Y., Zong, Z., Yuan, Y., Su, H., Li, N., Piao, J., Deng, Y., Sukiennik, N., Gao, C., Xu, F., and Li, Y. Understanding world or predicting future? a comprehensive survey of world models, 2025. URL https://arxiv.org/abs/2411. 14499.
+Garrido, Q., Ballas, N., Assran, M., Bardes, A., Najman, L., Rabbat, M., Dupoux, E., and LeCun, Y. Intuitive physics understanding emerges from self-supervised pretraining on natural videos, 2025. URL https://arxiv.org/ abs/2502.11831.
+Ghodrati, A., Gavves, E., and Snoek, C. G. Video time: Properties, encoders and evaluation. arXiv preprint arXiv:1807.06980, 2018.
+Goyal, R., Kahou, S. E., Michalski, V., Materzyn´ska, J., Westphal, S., Kim, H., Haenel, V., Fruend, I., Yianilos, P., Mueller-Freitag, M., Hoppe, F., Thurau, C., Bax, I., and Memisevic, R. The ”something something” video database for learning and evaluating visual common sense, 2017. URL https://arxiv.org/abs/ 1706.04261.
+Greff, K., Belletti, F., Beyer, L., Doersch, C., Du, Y., Duckworth, D., Fleet, D. J., Gnanapragasam, D., Golemo, F., Herrmann, C., et al. Kubric: A scalable dataset generator. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pp. 3749–3761, 2022.
+
+9
+
+Interpreting Physics in Video World Models
+
+Ha, D. and Schmidhuber, J. World models. 2018. doi: 10.5281/ZENODO.1207631. URL https://zenodo. org/record/1207631.
+Hadji, I. and Wildes, R. P. A new large scale dynamic texture dataset with application to convnet understanding. In Proceedings of the European Conference on Computer Vision (ECCV), pp. 320–335, 2018.
+Ho, J., Salimans, T., Gritsenko, A., Chan, W., Norouzi, M., and Fleet, D. J. Video diffusion models, 2022. URL https://arxiv.org/abs/2204.03458.
+Jazayeri, M. and Movshon, J. A. Optimal representation of sensory information by neural populations. Nature neuroscience, 9(5):690–696, 2006.
+Kong, L., Yang, W., Mei, J., Liu, Y., Liang, A., Zhu, D., Lu, D., Yin, W., Hu, X., Jia, M., Deng, J., Zhang, K., Wu, Y., Yan, T., Gao, S., Wang, S., Li, L., Pan, L., Liu, Y., Zhu, J., Ooi, W. T., Hoi, S. C. H., and Liu, Z. 3d and 4d world modeling: A survey, 2025. URL https: //arxiv.org/abs/2509.07996.
+Kowal, M., Dave, A., Ambrus, R., Gaidon, A., Derpanis, K. G., and Tokmakov, P. Understanding video transformers via universal concept discovery. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 10946–10956, 2024.
+Kubricht, J. R., Holyoak, K. J., and Lu, H. Intuitive physics: Current research and controversies. Trends in cognitive sciences, 21(10):749–759, 2017.
+Li, X., He, X., Zhang, L., Wu, M., Li, X., and Liu, Y. A comprehensive survey on world models for embodied ai, 2025. URL https://arxiv.org/abs/2510. 16732.
+McCabe, M., Mukhopadhyay, P., Marwah, T., Blancard, B. R.-S., Rozet, F., Diaconu, C., Meyer, L., Wong, K. W. K., Sotoudeh, H., Bietti, A., Espejo, I., Fear, R., Golkar, S., Hehir, T., Hirashima, K., Krawezik, G., Lanusse, F., Morel, R., Ohana, R., Parker, L., Pettee, M., Shen, J., Cho, K., Cranmer, M., and Ho, S. Walrus: A cross-domain foundation model for continuum dynamics, 2025. URL https://arxiv.org/abs/2511.15684.
+McCloskey, M. Intuitive physics. Scientific american, 1983.
+Motamed, S., Culp, L., Swersky, K., Jaini, P., and Geirhos, R. Do generative video models understand physical principles?, 2025. URL https://arxiv.org/abs/ 2501.09038.
+Panickssery, N., Gabrieli, N., Schulz, J., Tong, M., Hubinger, E., and Turner, A. M. Steering llama 2 via contrastive activation addition, 2024. URL https: //arxiv.org/abs/2312.06681.
+
+Pasternak, T. and Tadin, D. Linking neuronal direction selectivity to perceptual decisions about visual motion. Annual Review of Vision Science, 6(1):335–362, 2020.
+Ravfogel, S., Elazar, Y., Gonen, H., Twiton, M., and Goldberg, Y. Null it out: Guarding protected attributes by iterative nullspace projection. In Jurafsky, D., Chai, J., Schluter, N., and Tetreault, J. (eds.), Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp. 7237–7256, Online, July 2020. Association for Computational Linguistics. doi: 10.18653/v1/2020.acl-main.647. URL https: //aclanthology.org/2020.acl-main.647/.
+Riochet, R., Castro, M. Y., Bernard, M., Lerer, A., Fergus, R., Izard, V., and Dupoux, E. Intphys: A framework and benchmark for visual intuitive physics reasoning, 2020. URL https://arxiv.org/abs/1803.07616.
+Riochet, R., Castro, M. Y., Bernard, M., Lerer, A., Fergus, R., Izard, V., and Dupoux, E. Intphys 2019: A benchmark for visual intuitive physics understanding. IEEE Transactions on Pattern Analysis and Machine Intelligence, 44 (9):5016–5025, 2021.
+Siegler, R. S. Three aspects of cognitive development. Cognitive psychology, 8(4):481–520, 1976.
+Smith, K., Battaglia, P., and Tenenbaum, J. Integrating heuristic and simulation-based reasoning in intuitive physics. 2023.
+Spelke, E. S., Kestenbaum, R., Simons, D. J., and Wein, D. Spatiotemporal continuity, smoothness of motion and object identity in infancy. British journal of developmental psychology, 13(2):113–142, 1995.
+Turner, A. M., Thiergart, L., Leech, G., Udell, D., Vazquez, J. J., Mini, U., and MacDiarmid, M. Steering language models with activation engineering, 2024. URL https: //arxiv.org/abs/2308.10248.
+Ullman, T. D., Spelke, E., Battaglia, P., and Tenenbaum, J. B. Mind games: Game engines as an architecture for intuitive physics. Trends in cognitive sciences, 2017.
+Vasta, R. and Liben, L. S. The water-level task: An intriguing puzzle. Current Directions in Psychological Science, 5(6):171–177, 1996.
+Vershynin, R. High-dimensional probability: An introduction with applications in data science, volume 47. Cambridge university press, 2018.
+Wang, L., Huang, B., Zhao, Z., Tong, Z., He, Y., Wang, Y., Wang, Y., and Qiao, Y. Videomae v2: Scaling video masked autoencoders with dual masking, 2023. URL https://arxiv.org/abs/2303.16727.
+
+10
+
+Interpreting Physics in Video World Models Wilcox, T. Object individuation: Infants’ use of shape, size,
+pattern, and color. Cognition, 72(2):125–166, 1999. Xue, C., Pinto, V., Gamage, C., Nikonova, E., Zhang, P.,
+and Renz, J. Phy-q as a measure for physical reasoning intelligence. Nature Machine Intelligence, 5(1):83–93, 2023. Yi, K., Gan, C., Li, Y., Kohli, P., Wu, J., Torralba, A., and Tenenbaum, J. B. Clevrer: Collision events for video representation and reasoning, 2020. URL https:// arxiv.org/abs/1910.01442. Yuan, J., Zhang, X., Friedrich, F., Beltran-Velez, N., Hall, M., Askari-Hemmat, R., Han, X., Ballas, N., Drozdzal, M., and Romero-Soriano, A. Improving the physics of video generation with vjepa-2 reward signal, 2025. URL https://arxiv.org/abs/2510.21840. Zou, A., Phan, L., Chen, S., Campbell, J., Guo, P., Ren, R., Pan, A., Yin, X., Mazeika, M., Dombrowski, A.-K., Goel, S., Li, N., Byun, M. J., Wang, Z., Mallen, A., Basart, S., Koyejo, S., Song, D., Fredrikson, M., Kolter, J. Z., and Hendrycks, D. Representation engineering: A top-down approach to ai transparency, 2025. URL https://arxiv.org/abs/2310.01405.
+11
+
+A. Experimental Details
+A.1. Dataset Details A.1.1. INTUITIVE PHYSICS
+
+Interpreting Physics in Video World Models
+
+Figure 5. A possible and impossible example from each fold of IntPhys.
+A.1.2. SYNTHETIC BALL DATASET We generate two controlled synthetic motion datasets using the Kubric physics simulator (Greff et al., 2022) to study representations of constant-velocity and uniformly accelerated motion. All videos depict a single sphere moving along straight-line trajectories with known ground-truth dynamics.
+Velocity dataset. The velocity dataset contains 392 videos (8 directions × 7 speeds × 7 start positions), each 16 frames long at 24 fps (0.67 s), rendered at 256 × 256 resolution. Motion directions are θ ∈ {0◦, 45◦, . . . , 315◦}, with speed magnitudes v ∈ {1, . . . , 7} m/s. Start positions are sampled uniformly from [−2, 2]2 m for each (θ, v) pair. Scenes are generated using Kubric (Greff et al., 2022), with physics simulated in PyBullet 3.2.5 and rendering performed in Blender 2.93. Each scene contains a sphere (radius 0.3 m, mass 1.0 kg), a static 8 × 8 m floor plane, a fixed overhead perspective camera at (0,0,10) m, and a single directional light. All friction terms (lateral, rolling, spinning) and restitution are set to zero. The sphere is initialized with nonzero velocity v in direction θ, and no external forces are applied, yielding uniform linear motion throughout the sequence (∆v = 0).
+12
+
+Interpreting Physics in Video World Models Acceleration dataset. The acceleration dataset consists of 280 videos (8 directions × 5 accelerations × 7 start positions) with identical temporal and spatial resolution. Motion directions follow the same θ set as above, with acceleration magnitudes a ∈ {2, 4, 6, 8, 10} m/s2. Start positions are sampled uniformly from [−2, 2]2 m for each (θ, a) pair. The sphere is initialized at rest and subjected to a constant external force F = ma applied at each timestep in direction θ. Physics is simulated at 240 Hz (10 substeps per rendered frame). Under frictionless conditions, measured accelerations match target values within 10−4 m/s2, verified via finite differences of recorded velocities. Rendering, scene configuration, and annotations are identical to the velocity dataset.
+B. Probe Training Details
+For all experiments, we trained linear probes of the form f (hℓ) = W hℓ + b on spatiotemporally pooled activations from each layer ℓ ∈ {0, . . . , n − 1} of the frozen n-layer encoder. We performed a hyperparameter sweep over 20 configurations, with learning rates {10−4, 3 × 10−4, 10−3, 3 × 10−3, 5 × 10−3} and weight decay {0.01, 0.1, 0.4, 0.8}, selecting the best model based on validation performance. We used 5-fold grouped cross-validation and report results as mean ± standard deviation across folds.
+C. Additional Experiments
+C.1. Possible-vs-impossible physics task C.1.1. FULL RESULTS FOR LINEAR PROBE
+13
+
+Interpreting Physics in Video World Models
+Figure 6. Full results for the linear probe on all sizes of V-JEPA 2. 14
+
+Interpreting Physics in Video World Models
+Figure 7. Full results for the linear probe on all sizes of VideoMAE-v2. 15
+
+Interpreting Physics in Video World Models C.1.2. FULL RESULTS FOR ATTENTIVE-MLP PROBE
+Figure 8. Full results for the attentive-mlp probe on all sizes of V-JEPA 2. 16
+
+Interpreting Physics in Video World Models Figure 9. Full results for attentive-mlp probe on all sizes of VideoMAE-v2.
+17
+
+Interpreting Physics in Video World Models C.1.3. CONSISTENCY ACROSS POSSIBLE-VS-IMPOSSIBLE PHYSICS SUB-TASKS
+Figure 10. Intuitive physics results broken down by subtasks of object permanence, shape constancy, and spatiotemporal continuity.
+In Section 4.2, we show a distinct emergence pattern one-third through the network for the possible vs. impossible physics task. The IntPhys (Riochet et al., 2021) dataset is further divided into three sub-tasks capturing object permanence, shape constancy, and spatiotemporal continuity. Therefore, a natural next question is whether each sub-task has a unique emergence signature. Probe performance by subtask reveals the same one-third emergence pattern across all three principles: object permanence, shape constancy, and spatiotemporal continuity (Figure 10). This universality suggests that the models may have the same underlying processing for possible vs. impossible tasks. C.1.4. THE MIDDLE LAYER POSSIBLE-VS-IMPOSSIBLE PHYSICS REPRESENTATIONS GENERALIZE TO BETTER
+PERFORMANCE ON A DOWNSTREAM INTUITIVE PHYSICS TASK
+In Section 5.3, we show that perhaps counterintuitively strongest representations for the possible vs. impossible intuitive physics task are at the center of the network across model sizes and architectures. Our findings echo past results in which intermediate instead of final representations were seen to be useful on certain tasks for contrastively vision-language models (Bolya et al., 2025). Similarly, using intermediate instead of end representations may be useful in tasks like using V-JEPA-2 representations to improve the physics plausibility of video generative models (Yuan et al., 2025). To confirm this hypothesis, we trained from scratch a V-JEPA 2 large predictor on the representations of every layer on the violation-of-expectation framework taken from (Garrido et al., 2025). This downstream task measures the plausibility of the next-frame, and it is a more real-world task than our previous set-up. We confirm that the middle one third of the network yields the best predictivity on the task (Appendix Figure 11). This suggests that for future tasks involving training on physical representations, the center of the network may be more optimal than the end of the network, where performance degrades. Interestingly, we also notice that even early layers that give poor performance on only the encoder suddenly perform well
+18
+
+Interpreting Physics in Video World Models
+Figure 11. Downstream performance of the V-JEPA 2 Large predictor on the violation-of-expectation intuitive physics set-up. Representations from the middle layers of the encoder provide the best performance compared to final layers. (Layer 0). This is likely because the predictor itself is learning from the representation. Future interpretability work will need to investigate why this is the case; we hypothesize it may be related to feature object binding, in which velocity information is most ”bound” to the corresponding object. At the end of the network, information is catered to the optimization objective of predicting the next frame in latent space, not necessarily to preserving object-level information. C.2. Task-Specificity of Physics Emergence Zone
+Figure 12. Layer-wise probe performance on control tasks. Object counting, image classification, and standard video classification do not exhibit the one-third emergence signature, indicating it is not a generic depth effect. Only shuffled video detection shows a similar pattern, consistent with relying on temporal order. C.3. Direction validation on multi-object scenes In Section 5.3, we validated the emergence of direction for multi-object scenes like the CLEVRER dataset to discover that the Physics Emergence Zone signature was consistent across model architectures (Fig. 13 ) (Yi et al., 2020). This Appendix
+19
+
+Interpreting Physics in Video World Models section contains additional results, including a per-object breakdown for accuracy.
+
+(a)
+
+(b)
+
+Figure 13. CLEVRER dataset: (a) Sample video frames. The first six frames of the CLEVRER video dataset, which shows objects of various colors, shapes, and textures moving across the screen. We train per-object probes on each of the objects to detect its direction. (b) Per-object direction results.
+
+20
+
+Interpreting Physics in Video World Models
+Figure 14. Full results for linear probes for all 48 objects of CLEVRER. Each gray line is an object and the blue is the average across all objects. Error bars are from k-fold cross validation.
+21
+
+Interpreting Physics in Video World Models
+Figure 15. Results for CLEVRER velocity per-object linear probe R² grouped by cube, cylinder, and sphere shape across all model types. 22
+
+Interpreting Physics in Video World Models
+Figure 16. Results for CLEVRER velocity per-object linear probe R² grouped by metal and rubber material across all model types. 23
+
+Interpreting Physics in Video World Models
+
+(a) VideoMAE-v2-G
+
+(b) V-JEPA 2-G
+
+(c) V-JEPA 2-H
+
+(d) V-JEPA 2-L
+
+Figure 17. CLEVRER velocity linear probe R² heatmaps across layers and object types for all models.
+
+24
+
+Interpreting Physics in Video World Models
+C.4. Subspace Overlap Analysis
+In Section 6.2, we examined the relationship between the direction and intuitive physics subtasks to determine whether there is significant representational reuse or shared feature space. To quantify the relationship between motion encoding and intuitive physics reasoning, we measure the overlap between the subspaces spanned by direction probes, speed probes, and IntPhys probes across layers.
+
+Method. For each layer ℓ, we collect the weight vectors from trained probes. For direction (velocity θ) probes, we use
+
+circular regression weights Wdir ∈ R2×d (sine and cosine components) from each spatial position, yielding a matrix of probe weights. For speed and IntPhys probes, we collect the linear regression weights w ∈ Rd. We construct orthonormal
+
+bases QA, QB for each subspace via QR decomposition of the stacked weight matrices. We compute three metrics to
+
+characterize subspace relationships: Principal angles. The principal angles θ1, . . . , θk between subspaces A and B are
+
+computed via the singular value decomposition of QA⊤QB, where cos(θi) = σi (Bjorck & Golub, 1973). We report the
+
+mean
+
+principal
+
+angle
+
+θ¯ =
+
+1 k
+
+k i=1
+
+θi.
+
+Projection overlap. The fraction of subspace B captured by subspace A is:
+
+Overlap(A ← B) = ∥Q⊤AQB∥2F
+
+(1)
+
+dim(B)
+
+This measures how much of B’s variance lies within A. Grassmann distance. The geodesic distance on the Grassmann manifold:
+
+k
+
+dG(A, B) =
+
+θi2
+
+(2)
+
+i=1
+
+Random Baseline. To assess whether observed overlaps reflect meaningful structure or merely geometric coincidence, we compare against the expected overlap for random subspaces. For two random subspaces A and B with dimensions kA and kB in an ambient space of dimension d, the expected projection overlap is (Vershynin, 2018):
+
+E[Overlap(A
+
+←
+
+B)]
+
+=
+
+kA d
+
+(3)
+
+Intuitively, a random kA-dimensional subspace captures a fraction kA/d of any random direction’s variance. For V-JEPA 2-L with embedding dimension d = 1024:
+
+• Direction subspace (k = 66–136): expected random overlap = 6.4–13.3% • Speed subspace (k = 21–29): expected random overlap = 2.1–2.8% • IntPhys subspace (k = 7–15): expected random overlap = 0.7–1.5%
+
+Results. Table 3 shows the subspace overlap between motion encoding (direction and speed) and IntPhys reasoning across layers. The direction subspace is high-dimensional (66–136 dimensions), speed is lower-dimensional (21–29 dimensions), while IntPhys is compact (7–15 dimensions). Direction and IntPhys subspaces maintain mean principal angles of 69◦–75◦, with direction→IntPhys overlap of 7–13%. Speed and IntPhys subspaces are more orthogonal (80◦–83◦), with overlap below 3%. Critically, these observed overlaps match the random baselines: direction→IntPhys overlap (7–13%) aligns with the expected 6–13% for random subspaces of equivalent dimension, and speed→IntPhys overlap (2–3%) matches the expected 2–3%. This correspondence with chance-level overlap indicates that the motion and IntPhys subspaces share no more structure than would be expected from arbitrary subspaces of the same dimensionality. Despite both capabilities becoming decodable at similar depths in the network, they occupy nearly orthogonal representational subspaces, ruling out representational reuse and shared latent-variable explanations.
+
+25
+
+Interpreting Physics in Video World Models
+
+Table 3. Subspace overlap between motion encoding (direction/speed) and IntPhys probes (V-JEPA v2-L, d=1024). OverlapA→B measures the fraction of subspace B captured by subspace A.
+
+Direction vs IntPhys
+
+Speed vs IntPhys
+
+Layer Dir IP Angle Dir→IP IP→Dir Spd IP Angle Spd→IP IP→Spd Dim Dim (◦) Overlap Overlap Dim Dim (◦) Overlap Overlap
+
+0
+
+30 1 79.1 0.036 0.001 25 1 81.8 0.020 0.001
+
+1
+
+30 1 79.6 0.033 0.001 24 1 82.4 0.017 0.001
+
+2
+
+14 1 81.7 0.021 0.001 25 1 80.3 0.028 0.001
+
+3
+
+114 1 70.6 0.110 0.001 17 1 82.8 0.016 0.001
+
+4
+
+94 1 72.8 0.088 0.001 19 1 82.0 0.019 0.001
+
+5
+
+62 7 75.7 0.064 0.007 16 7 83.5 0.015 0.007
+
+6
+
+96 5 71.4 0.104 0.005 20 5 80.9 0.027 0.007
+
+7
+
+78 11 74.6 0.073 0.010 26 11 81.9 0.022 0.009
+
+8
+
+136 15 69.1 0.129 0.014 28 15 80.7 0.030 0.016
+
+9
+
+122 13 70.7 0.112 0.012 21 13 82.4 0.021 0.013
+
+10
+
+66 12 75.2 0.069 0.012 29 12 81.6 0.025 0.010
+
+11
+
+120 10 70.2 0.117 0.010 26 10 81.2 0.027 0.010
+
+12
+
+122 14 69.9 0.121 0.014 22 14 82.4 0.021 0.013
+
+13
+
+128 13 70.0 0.119 0.012 20 13 82.2 0.023 0.015
+
+14
+
+100 9 71.4 0.103 0.009 21 9 82.6 0.018 0.008
+
+15
+
+122 9 70.7 0.111 0.008 26 9 81.4 0.025 0.008
+
+16
+
+128 14 69.7 0.122 0.013 23 14 81.9 0.023 0.014
+
+17
+
+128 11 68.9 0.132 0.011 21 11 81.9 0.023 0.012
+
+18
+
+128 13 69.0 0.131 0.013 24 13 81.9 0.022 0.012
+
+19
+
+128 7 69.0 0.130 0.007 26 7 81.1 0.026 0.007
+
+20
+
+400 6 51.6 0.386 0.006 25 6 81.3 0.026 0.006
+
+21
+
+400 19 51.5 0.388 0.018 26 19 80.9 0.030 0.022
+
+22
+
+400 6 51.6 0.386 0.006 30 6 79.6 0.034 0.007
+
+23
+
+400 32 51.5 0.389 0.031 31 32 81.3 0.030 0.031
+
+C.5. Direction moves to per-patch encoding
+In Section 5.3, we showed that direction uniquely arises at the Physics Emergence Zone compared to other physics-related information like scalar speed and scalar acceleration. The one-third emergence zone appears consistently across tasks and datasets, suggesting that it reflects a structural change in the representation rather than a task-specific artifact. We therefore ask what changes in the representation itself when physical information, specifically direction, becomes decodable.
+From a patch-level perspective, we find that direction-related signals are already present in early layers, but remain tightly coupled to specific spatial locations. Direction information is fragmented across patches, such that no single patch contains sufficient information to support reliable decoding or spatial generalization. Mean-pooled probes can nevertheless achieve modest performance by linearly combining these fragmented signals across the frame (Figures 18a).
+Around the one-third emergence zone, this structure changes sharply. Direction information becomes broadly distributed across patches, with a marked increase in redundancy and spatial spread. At this stage, individual patches begin to carry sufficient information to support reliable direction decoding on their own. This transition explains why per-patch probe performance rises abruptly at the emergence zone, while mean-pooled performance improves more gradually (Figures 18a, b).
+This representational shift also enables spatial generalization (Figure 18b). Probes trained on direction information from one region of the frame begin to generalize to unseen regions only after the emergence zone, indicating that direction is no longer tied to specific spatial coordinates. Instead, it becomes encoded in a globally accessible form that survives pooling operations and supports position-invariant decoding.
+Together, these results indicate that the emergence zone corresponds to a transition from local, retinotopic direction signals to a globally distributed representation. This local-to-global shift is reminiscent of the V1→MT hierarchy in biological vision, where early motion signals are spatially localized and later representations pool over space to yield position-invariant direction selectivity.
+
+26
+
+Interpreting Physics in Video World Models
+Figure 18. Direction representations transition from local to global at the one-third emergence zone. Results are shown for the synthetic velocity dataset using V-JEPA 2-L. (a) Per-patch linear probe performance across layers. Mean-pooled probes achieve moderate performance earlier by aggregating weak signals across patches, whereas per-patch probes become reliable only at the emergence zone. (b) Spatial generalization performance for probes trained on one half of the frame and evaluated on the other half. Generalization improves sharply at the emergence zone. (c) Per-patch decoding heatmaps illustrate a sharp transition between Layers 7 and 8, where direction becomes decodable from individual patches.
+C.6. Attention Distance Analysis In Section 6.3, we looked at the shared attention head spatiotemporal processing impacted the possible-vs-impossible physics task. We analyze how ablating local attention in V-JEPA v2 affects physics encoding across four tasks: direction prediction (R2), IntPhys accuracy, per-patch direction decoding (R2), and ImageNet classification accuracy. V-JEPA v2 uses tubelet embedding with temporal stride 2, so 16 input frames are encoded into 8 temporal tokens. The model processes T × N = 8 × 196 = 1568 tokens, where each tubelet covers 2 consecutive frames and N = 196 is the spatial patch count (14 × 14 grid from 224 × 224 images with 16 × 16 patches). We define spatial distance between patches as Euclidean distance in patch coordinates: ds(i, j) =
+(xi − xj)2 + (yi − yj)2, measured in patch units (maximum ∼18 on the diagonal). Temporal distance is the tubelet difference: dt(i, j) = |ti − tj|, ranging from 0 to 7 tubelets. To test whether local attention is causally important for physics encoding, we ablate attention by masking weights to nearby tokens and renormalizing the remainder. For spatial threshold s, we zero all attention where ds(q, k) ≤ s; for temporal threshold t, we zero attention where dt(q, k) ≤ t. We evaluate three regimes: (1) spatial-only ablation with s ∈ {1, 3, 5, 7, 9, 11, 13} patches; (2) temporal-only ablation with t ∈ {1, 2, 3, 4, 5, 6} tubelets; and (3) combined spatiotemporal ablation with paired thresholds. Large performance drops after ablation indicate reliance on local attention at that scale. Spatial ablation minimally affects direction R2 but degrades per-patch localization; temporal ablation strongly impacts both direction and IntPhys; combined ablation destroys direction encoding entirely.
+27
+
+Interpreting Physics in Video World Models
+
+Figure 19. In the physics emergence zone, the average attention head distance drops, and head specialization spikes as local heads emerge among the longer distance heads.
+
+Table 4. Effect of ablating local attention at varying spatial (s, in patches) and temporal (t, in tubelets) thresholds. Spatial ablation minimally affects direction R2 but degrades per-patch localization; temporal ablation strongly impacts both direction and IntPhys;
+combined spatiotemporal ablation destroys direction encoding entirely while IntPhys and ImageNet degrade more gradually.
+
+Condition Params
+
+Direction R2
+
+Baseline s=0, t=0
+
+0.97
+
+Spatial-only (temporal preserved)
+
+s=1
+
+0.96
+
+s=3
+
+0.95
+
+s=5
+
+0.95
+
+s=7
+
+0.93
+
+s=9
+
+0.92
+
+s=11
+
+0.91
+
+s=13
+
+0.88
+
+Temporal-only (spatial preserved)
+
+t=1
+
+0.94
+
+t=2
+
+0.85
+
+t=3
+
+0.83
+
+t=4
+
+0.82
+
+t=5
+
+0.81
+
+t=6
+
+0.80
+
+Spatiotemporal (both knocked out)
+
+s=3, t=1
+
+0.14
+
+s=5, t=2
+
+<0
+
+s=7, t=3
+
+<0
+
+s=9, t=4
+
+<0
+
+s=11, t=5 <0
+
+s=13, t=6 <0
+
+IntPhys Acc
+78.3
+71.4 67.2 63.9 62.2 60.6 61.1 60.8
+76.4 60.6 51.9 50.6 50.8 50.8
+61.7 60.3 56.4 56.7 58.1 50.8
+
+Per-patch R2
+0.72
+0.65 0.53 0.43 0.30 0.14 <0 <0
+0.64 0.48 0.41 0.36 0.29 0.24
+<0 <0 <0 <0 <0 <0
+
+ImageNet Acc
+33.7
+33.8 33.3 33.5 33.5 33.8 33.7 33.9
+33.3 33.0 30.3 28.0 27.0 25.6
+33.1 31.8 29.7 27.3 19.5 11.2
+
+28
+
+Interpreting Physics in Video World Models
+
+C.7. Direction Tuning Analysis
+In Section 7.1, we identified that the Physics Emergence Zone has circular population geometry for direction tuning in tis MLP neurons. To characterize the direction selectivity of individual neurons within V-JEPA 2, we fit generalized linear models (GLMs) to predict each neuron’s activation from the stimulus direction. For each neuron i at each spatiotemporal position (patch × frame), we model the activation y as a linear function of direction θ:
+
+y = β0 + βcos cos(θ) + βsin sin(θ) + ϵ
+
+(4)
+
+where θ ∈ [−π, π] is the motion direction in radians. This sinusoidal basis captures smooth, circular tuning curves commonly observed in biological direction-selective neurons.
+We evaluate each neuron’s direction tuning strength using cross-validated ∆R2, computed via k-fold cross-validation (k = 5). For each fold, we fit the GLM on training samples and compute the coefficient of determination on held-out validation samples. The cross-validated ∆R2 quantifies how much variance in the neuron’s response is explained by direction, while guarding against overfitting. We regularize the GLM with ridge regression (α = 10−3) to ensure numerical stability.
+To extract each neuron’s preferred direction (PD), we fit the GLM on the full dataset and compute:
+
+PDi = arctan 2(βsin, βcos)
+
+(5)
+
+This yields the direction that maximally activates each neuron. We also compute the direction tuning gain as βc2os + βs2in, which reflects the amplitude of the neuron’s direction modulation.
+To visualize the population-level direction tuning, we construct heatmaps with neurons on the vertical axis and preferred direction (binned into 24 bins spanning [−π, π]) on the horizontal axis. For each neuron, we assign its cross-validated ∆R2 to its corresponding preferred direction bin. When multiple spatiotemporal positions for the same neuron fall into the same bin, we aggregate using the maximum ∆R2 across positions. Neurons are sorted vertically by their peak preferred direction bin, then by tuning strength within each bin. The resulting heatmap reveals whether the network contains a diverse population of direction-tuned neurons spanning all directions, or whether direction tuning is sparse or concentrated at particular angles.
+We further find that the circular population code only emerges at the Physics Emergence Zone, and that it is not present at the early layers, with disorganized direction tuning in Layer 0 (Appendix Fig 20)
+
+Figure 20. Direction tuning vectors show that direction tuning is sporadic and disorganized at Layer 0, but has emerged in neat organization by Layer 8 of the Physics Emergence Zone
+29
+
+Interpreting Physics in Video World Models
+
+C.8. Speed Tuning Analysis
+
+To characterize speed selectivity, we fit a separate GLM for each neuron predicting activation from stimulus speed. We use a quadratic model to capture neurons with preferred speeds at intermediate values:
+
+y = β0 + βr · r + βr2 · r2 + ϵ
+
+(6)
+
+where r ≥ 0 is the speed magnitude. The quadratic term allows the model to capture neurons that respond maximally at a particular speed rather than monotonically increasing or decreasing with speed.
+As with direction tuning, we evaluate speed tuning strength using cross-validated ∆R2 with k-fold cross-validation (k = 5) and ridge regularization (α = 10−3). To extract each neuron’s preferred speed, we compute the vertex of the fitted parabola:
+
+ri∗
+
+=
+
+− βr 2βr2
+
+(7)
+
+This preferred speed is only well-defined when βr2 < 0 (i.e., the parabola opens downward, indicating a true peak). We clip r∗ to lie within the observed speed range [rmin, rmax]. The speed tuning gain is defined as |βr|, reflecting the neuron’s
+sensitivity to speed changes.
+
+Population heatmaps for speed tuning follow the same construction as for direction: neurons are binned by their preferred speed (24 bins spanning the 1st to 99th percentile of observed preferred speeds), with cross-validated ∆R2 aggregated via maximum within each bin. Neurons are sorted by their peak preferred speed bin. These heatmaps reveal whether the network contains a continuum of speed-tuned neurons or whether speed encoding is concentrated at particular values.
+
+Figure 21. Heatmap of preferred speed for V-JEPA 2 L. C.9. High feature dimensionality of physics-related representations In Section 7.2, we discuss the high feature dimensionality of physics-related information. C.10. Speed representations do not have sawtooth pattern
+30
+
+Interpreting Physics in Video World Models
+Figure 22. Estimated feature dimensionality of decoded variables across tasks, measured by the number of orthogonal linear probes trainable before performance approaches chance (Direction: R2 < 0.3; Speed: R2 < 0.1; IntPhys: accuracy < 55%). Physical variables require tens of independent features.
+Figure 23. Direction shows a jagged sawtooth pattern, while speed does not. 31
+
+Interpreting Physics in Video World Models
+C.11. Orthogonal Probe Sequence Method
+To measure the dimensionality of motion and physics representations, we train sequences of linear probes on progressively orthogonalized activation subspaces. This procedure quantifies how many independent directions in activation space encode a given variable.
+
+Procedure. For a layer with activations X ∈ RN×d (where N is the number of samples and d = 1024 is the embedding dimension), we iteratively:
+1. Train a linear probe Pk on the current activations X(k) to predict the target variable (direction θ, speed, or IntPhys label).
+2. Extract the probe weights Wk and compute an orthonormal basis via QR decomposition. 3. Project out the learned direction: X(k+1) = X(k) − X(k)QkQ⊤k , where Qk is the orthonormal basis of Wk. 4. Repeat until probe performance falls below threshold.
+The number of probes trained before reaching chance-level performance indicates the effective dimensionality of the representation for that variable.
+
+Probe Architecture. All probes are single-layer linear models:
+• Direction (θ): Circular regression with outputs (sin θ, cos θ), trained with MSE loss. • Speed: Linear regression with scalar output, trained with MSE loss. • IntPhys: Binary logistic regression (possible vs. impossible), trained with cross-entropy loss.
+
+Training Details. Probes are trained using Adam optimizer with learning rate η = 10−3 and weight decay λ = 10−4 for 100 epochs (direction) or 50 epochs (speed, IntPhys). We use an 80/20 train/test split with a fixed random seed for reproducibility.
+
+Stopping Criteria. The probe sequence terminates when performance approaches chance level:
+• Direction: R2 < 0.1 or circular MAE > 80◦ (chance ≈ 90◦) • Speed: R2 < 0.05 or MAE > 90% of random baseline • IntPhys: Accuracy < 55% or AUC < 0.55 (chance = 50%)
+
+Subspace Dimensionality. The total number of probes K trained before stopping defines the subspace dimensionality. For direction probes (with 2D output for sin / cos), the effective dimensionality is 2K. For speed and IntPhys probes (1D output), the dimensionality equals K. Across layers 0–23, we find direction subspaces of dimension 14–136, speed subspaces of dimension 16–31, and IntPhys subspaces of dimension 1–15 (Table 3).
+
+C.12. Steering
+In Section 7.2, we show that internal representations of physics variables are surprisingly high-dimensional. Here we verify that the identified direction subspace causally controls direction encoding through activation steering experiments with proper held-out evaluation.
+
+Subspace Construction. From the orthogonal probe sequence (Appendix C.11), we obtain K probes with weights Wk ∈ R2×d predicting [sin θ, cos θ]. We construct an orthonormal basis V ∈ Rd×2K for the direction subspace by stacking
+the probe weight matrices and applying QR decomposition:
+
+V, = QR [W1⊤, W2⊤, . . . , WK⊤ ]
+
+(8)
+
+Steering Procedure. Given activations x ∈ Rd and target angle θ∗, we:
+1. Project activations onto the direction subspace: c = V⊤x, x⊥ = x − Vc 2. Solve for target coordinates c∗ via least squares such that all probes predict θ∗ 3. Reconstruct steered activations: x∗ = Vc∗ + x⊥
+
+32
+
+Interpreting Physics in Video World Models Generalization Experiment. To verify that steering affects the true direction representation—not just the specific probes used for steering—we design a held-out evaluation protocol:
+1. Split the dataset into disjoint train (70%, 240 videos) and test (30%, 103 videos) sets 2. Train steering probes on train set activations using the orthogonal probe sequence (25 probes until R2 < 0.1) 3. Train a held-out evaluation probe on test set activations only (R2 = 0.99) 4. Apply steering (constructed from train-set probes) to test set activations 5. Evaluate whether the held-out probe reads the target direction from steered activations This protocol ensures the evaluation probe has never seen the steering probes or the activations used to construct the steering subspace, providing a true test of generalization. Results. We steer videos with 8 discrete motion directions (0, 45, 90, . . . , 315) toward a single target angle θ∗ = 90. This requires angular shifts ranging from 0 (for videos already at 90) to 180 (for videos at 270), with an average shift of approximately 90. At layer 8 of V-JEPA 2-L: • Baseline (no steering): The held-out probe reads the true direction with MAE = 4.9 to ground truth, but MAE = 82.9
+to the target angle (as expected given the average angular distance). • After steering with 20 probes: The held-out probe reads MAE = 11.9 to the target, demonstrating that steering
+generalizes to a probe trained on entirely different data—a 71 improvement over baseline. Figure 24 shows that effective steering requires coordinated intervention across many orthogonal directions: steering with only 1–5 probes yields modest improvement (MAE > 50), while steering with ∼20 probes achieves MAE ≈ 12. Importantly, as MAE to the target decreases, MAE to the true labels increases correspondingly, confirming that we are genuinely shifting the representation toward the target direction rather than simply injecting the target into a separate subspace.
+Figure 24. Steering generalizes to held-out data and probes. We train orthogonal probes on the train set (70%) and a separate evaluation probe on the test set (30%). Videos span 8 motion directions (0–315), all steered toward target θ∗ = 90. After steering test activations using N train-set probes, the held-out probe (trained only on test data) reads the target direction with MAE decreasing from 82.9 (baseline) to 11.9 with 20 probes. Layer 8, V-JEPA 2-L.
+33
+
+

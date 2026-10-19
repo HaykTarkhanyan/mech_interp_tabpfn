@@ -1,0 +1,46 @@
+{
+  "id": "2603.19233",
+  "title": "Not All Features Are Created Equal: A Mechanistic Study of Vision-Language-Action Models",
+  "first_author": "Grant",
+  "year": 2026,
+  "venue": "ICLR 2026 (arXiv v2 Oct 2026)",
+  "tier": "core",
+  "models": ["pi0.5", "OpenVLA-OFT", "X-VLA", "SmolVLA", "GR00T N1.5", "ACT (language-free control)", "OpenVLA (base, appendix)"],
+  "action_head": "mixed: flow/diffusion action expert (pi0.5, X-VLA, SmolVLA, GR00T), regression head (OpenVLA-OFT, L1), CVAE (ACT); discrete tokens (OpenVLA) only in appendix",
+  "methods": ["activation injection / episode-level patching (null-prompt, same-scene, cross-task, cross-seed, per-pathway)", "layer zeroing (grid ablation)", "counterfactual prompting (null, negation, motor command, object swap, mid-episode switch)", "per-token and mean-pooled TopK SAEs (424 SAEs), contrastive concept selection, concept ablation and steering", "linear probes with projection-out tests", "Wilson CIs, ANOVA"],
+  "question": "Across six VLA architectures, which pathways (vision, language, VLM vs action expert) drive actions, how much do policies use language, and what do SAEs reveal and allow us to control?",
+  "key_findings": [
+    "pi0.5 with a null prompt plus injected PaliGemma activations from a correct-prompt episode recovers near-identical actions (cosine 0.999 all layers, 0.997 layer 0 only) and 73-77% success; OpenVLA-OFT null injection recovers only 14-15% (n=120 per layer).",
+    "Cross-task injection collapses destination success (pi0.5 2.6%, X-VLA/SmolVLA/GR00T 0%) but trajectories move toward the source task's positions (pi0.5 99.6% of 1,968 pairs, X-VLA 99.8% of 3,150, OFT 77.9%, GR00T 57.0%), read as 'spatially bound motor programs'.",
+    "Language sensitivity depends on the task suite: pi0.5 shows no prompt effect (ANOVA F(4,3391)=1.23, p=0.247, eta2=0.012), e.g. goal 83.3% baseline vs 80.0% null; X-VLA goal 94% -> 10% under null/wrong prompts while object stays 60-100%; GR00T goal 97% -> 0%.",
+    "Prompt category is decodable from pi0.5 layer 17 at 99.3% despite no behavioral effect ('encoded but not used').",
+    "Pathway specialization: injecting mismatched expert activations gives active wrong reaching, while mismatched PaliGemma activations give stalling; SmolVLA expert injection displaces behavior ~2x more than VLM injection (15.8% vs 9.0%, 732 pairs).",
+    "Mean-pooled SAE reconstruction destroys pi0.5 success (96% -> 8%; or 0.4% vs 70% in another setting) while per-token SAEs preserve it (96% -> 94%); X-VLA is the exception where mean-pooling works better.",
+    "Concept ablation over 15,096+ concept-task pairs: zero-effect rates from 28% (SmolVLA) to 92% (OFT); 70% of 'kill-switch' features are object concepts and they concentrate in early layers.",
+    "Appendix: SAEs inserted into base OpenVLA (discrete 256-bin tokens) give 0% success at all but the last layer despite R2 0.87-0.96; OpenVLA-OFT tolerates them (99.2%)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO (4 suites)", "MetaWorld (50 tasks)", "SimplerEnv (WidowX)", "ALOHA sim (2 tasks)"],
+    "scale": "394,000+ rollout episodes in total (pi0.5 65,000+, OFT 70,700+, X-VLA 50,000+, SmolVLA 42,000+, GR00T 164,700+, ACT 1,870); per-condition n varies, e.g. OFT n=120 per layer per suite, GR00T null injection n=30 per suite",
+    "statistics": "yes: 95% Wilson CIs on rates, ANOVA with eta2, Wilcoxon for phase-specific steering; many table cells still reported as point values or ranges",
+    "baselines": "unintervened policies, ACT as a language-free control, per-pathway comparisons, per-token vs mean-pooled SAEs"
+  },
+  "causal_validation": "Yes, extensively: episode-level activation injection, layer zeroing, SAE concept ablation and steering, probe-direction projection, all measured by closed-loop task success and trajectory displacement.",
+  "closed_loop": "Yes: all interventions are evaluated in closed-loop simulated rollouts.",
+  "limitations_stated": [
+    "All experiments in simulation; whether patterns survive real-robot fine-tuning is untested.",
+    "Counterfactual prompts are simple; compositional and ambiguous instructions would be stronger tests.",
+    "Cross-task injection can create invalid internal states due to temporal misalignment.",
+    "Steering sensitivity varies widely by architecture; SAE features are not guaranteed to be disentangled."
+  ],
+  "critique": [
+    "Null-prompt injection replaces whole-layer activations, including text-token positions, with activations from a correct-prompt episode. Recovering behavior therefore re-supplies the language too and does not isolate the visual pathway; 'visual pathway dominance' is better supported by the prompt-ablation results than by injection.",
+    "Cross-task injection overwrites the destination episode's internal state with the source's, so moving toward the source trajectory is close to expected. 'Spatially bound motor programs' is a plausible reading but not tested against alternatives (e.g. injection of only object-position features).",
+    "Contradiction with 2610.06235: here pi0.5 on LIBERO-Goal barely reacts to null or wrong prompts (83.3% -> 80.0%), while 2610.06235 reports pi0.5 Goal falling from 98.0% to 11.7% under random sentences. The baselines differ (83.3% vs 98.0%), so the checkpoints or protocols likely differ. Language-sensitivity claims are checkpoint-specific.",
+    "Huge episode counts but heterogeneous designs; many headline numbers are ranges across conditions, and per-condition n is sometimes small (n=30). Scale should not be read as uniform statistical strength.",
+    "The discrete-token SAE-insertion failure is an important practical point: SAE-based interventions may not transfer to token-based VLAs, which matters when comparing with 2603.19183 and 2602.01834."
+  ],
+  "code": "https://action-atlas.com (Action Atlas); project page https://cwru-aism.github.io/vla-interp-page/",
+  "one_line": "A six-architecture, 394k-episode study finds that VLA behavior is driven mainly by the visual scene, language matters only when the scene is ambiguous, action experts carry motor programs while VLM pathways carry goals, and SAE interventions need per-token processing and continuous action heads."
+}

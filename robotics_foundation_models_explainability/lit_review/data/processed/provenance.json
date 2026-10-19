@@ -1,0 +1,1297 @@
+{
+ "summary": {
+  "included": 151,
+  "by_route": {
+   "arXiv+pdf-references+web-sweep": 10,
+   "arXiv": 65,
+   "arXiv+web-sweep": 12,
+   "arXiv+pdf-references": 23,
+   "web-sweep": 31,
+   "Crossref+arXiv+pdf-references+web-sweep": 1,
+   "pdf-references": 5,
+   "pdf-references+web-sweep": 4
+  },
+  "by_screen": {
+   "core: web": 30,
+   "core: rescued (interpretability terms too weak)": 11,
+   "adjacent: pass": 32,
+   "core: pass": 44,
+   "adjacent: rescued (interpretability terms too weak)": 6,
+   "adjacent: web": 28
+  },
+  "found_only_by_web_sweep": 31,
+  "found_only_by_reference_lists": 5
+ },
+ "works": [
+  {
+   "key": "2510.25616",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2608.08904",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2606.19297",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2605.15735",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2606.21496",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2502.04558",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2509.24559",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2608.13474",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.28527",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2607.03372",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.34684",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.06235",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.02634",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.30117",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2610.20840",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.30996",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.24642",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2602.04880",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "w_reaction_without_attribution_hijacking",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_hijacking_a_7b_robot",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_layer_wise_structural_and",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2603.19183",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.19233",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.05487",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.17204",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2602.01834",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.09496",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.20767",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "w_when_internal_feedback_goodharts",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_goodfire_silico_for_robotics",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2509.00328",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.17144",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.00269",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2607.14280",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2511.22697",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.04681",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.11489",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2509.20623",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2608.04692",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2605.30695",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "w_reading_and_steering_a",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2610.10178",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.15005",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2610.20750",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.00321",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2604.18000",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.13782",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.09749",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.06001",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2610.05878",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2609.39973",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2606.27755",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2603.15618",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2609.39971",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.38401",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.02813",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2607.20771",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2606.31382",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "w_block_the_heads_improving",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_partial_composition_not_blind",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2506.09937",
+   "tier": "core",
+   "sources": [
+    "Crossref",
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.29699",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2608.04246",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.09740",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.19998",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2605.30834",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2609.21246",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.21386",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.04277",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2608.04510",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2510.09459",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2503.08558",
+   "tier": "core",
+   "sources": [
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.08508",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2607.14943",
+   "tier": "core",
+   "sources": [
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2410.00371",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2310.16410",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.20754",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2607.27933",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.18342",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.23085",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "w_interpretable_signals_reveal_failure",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_predictable_before_action_resistant",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_structured_velocity_field_disagreement",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2607.04681",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2603.12717",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2510.16281",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2609.34794",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2609.30833",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "w_reasoning_we_can_trust",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2610.03498",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2602.03153",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2607.12571",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2610.09462",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2505.05787",
+   "tier": "core",
+   "sources": [
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2604.13645",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.11642",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.01095",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_how_do_world_action",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2608.25757",
+   "tier": "core",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2607.21049",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2607.17861",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.30101",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2407.08065",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2412.03293",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.27753",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2210.06650",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_between_pixels_and_policies",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_the_hitchhiker_s_guide",
+   "tier": "core",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.30686",
+   "tier": "core",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2604.23775",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2504.19475",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2510.13626",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2602.17659",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2506.09930",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.06078",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2505.03500",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2610.19438",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "fail: interpretability terms too weak"
+  },
+  {
+   "key": "2306.15724",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2309.10346",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2311.18062",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2504.05625",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2402.04206",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2503.17703",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2510.16435",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2304.12958",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2310.19432",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2105.02658",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2202.08434",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_beyond_performance_explaining_generalisation",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2602.07050",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2603.20327",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2605.24322",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2606.28455",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2610.18637",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2606.03685",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2605.20299",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2603.15248",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2504.11419",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "w_decision_level_auditing_of",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2504.01871",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2406.00877",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2505.21552",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2310.08043",
+   "tier": "adjacent",
+   "sources": [
+    "pdf-references",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2411.00867",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv",
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "w_multisteve_1s_a_model",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2607.06328",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  },
+  {
+   "key": "2608.07361",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2609.37046",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2608.17095",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "2411.18714",
+   "tier": "adjacent",
+   "sources": [
+    "arXiv"
+   ],
+   "screen": "pass: rule"
+  },
+  {
+   "key": "w_reacting_to_text_is",
+   "tier": "adjacent",
+   "sources": [
+    "web-sweep"
+   ],
+   "screen": "pass: web sweep (judged relevant by hand)"
+  }
+ ]
+}

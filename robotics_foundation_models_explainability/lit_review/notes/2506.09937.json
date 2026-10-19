@@ -1,0 +1,49 @@
+{
+  "id": "2506.09937",
+  "title": "SAFE: Multitask Failure Detection for Vision-Language-Action Models",
+  "first_author": "Gu",
+  "year": 2025,
+  "venue": "NeurIPS 2025",
+  "tier": "core",
+  "models": ["OpenVLA (LIBERO fine-tuned; Open-X Magic Soup++ pretrained on real WidowX)", "pi0 (LIBERO)", "pi0* (open reproduction, SimplerEnv Google Robot and WidowX)", "pi0-FAST (LIBERO; pi0-FAST-DROID on real Franka)"],
+  "action_head": "mixed: discrete action tokens (OpenVLA, pi0-FAST) and flow/diffusion action expert (pi0, pi0*); features taken from the last layer before logits or before the velocity projection",
+  "methods": ["supervised probe on last-layer features (1-2 layer MLP with cumulative score, or 1-layer LSTM)", "t-SNE visualization of success/failure features", "functional conformal prediction for time-varying thresholds", "baselines: token uncertainty, sample consistency, embedding distances, RND, LogpZO, STAC"],
+  "question": "Can a single failure detector trained on VLA internal features from seen tasks detect failures early on unseen tasks, for several VLA architectures?",
+  "key_findings": [
+    "t-SNE of pi0-FAST last-layer features on LIBERO-10 shows failed rollouts from different tasks drifting into a shared 'failure zone' (Fig. 1); for OpenVLA failures form small scattered blobs, and on the real Franka successes and failures are not visibly separable (App. C.1).",
+    "Simulation ROC-AUC averaged over 4 benchmarks (Table 1, 3 seeds/splits): SAFE-MLP 81.43 seen / 78.00 unseen, SAFE-LSTM 82.26 / 77.04; best single-sample baseline on unseen is Cosine k-NN at 73.93; paper reports SAFE beats best baseline by 4-5% on unseen tasks.",
+    "SAFE does not win everywhere: on pi0 LIBERO unseen, SAFE-MLP 73.27 vs Mahalanobis 74.31 and gripper total variation 75.19; on pi0-FAST LIBERO unseen, STAC (10 samples) 85.31 vs SAFE-LSTM 84.48.",
+    "Token-uncertainty baselines (max/avg prob, entropy) are near chance (about 44-69 ROC-AUC across settings), matching the LLM UQ literature.",
+    "Real robot (Fig. 6a, 5 seeds/splits): pi0-FAST Franka SAFE-MLP 86.76 seen / 64.16 unseen (best baseline unseen Euclid k-NN 60.27); OpenVLA WidowX SAFE-MLP 89.11 seen / 88.42 unseen vs Mahalanobis 82.37 / 70.00.",
+    "Ablation (Table 7, real Franka): image-only DINOv2+CLIP features give SAFE-LSTM 77.09 seen / 59.65 unseen vs VLA features 77.27 / 58.70; only the MLP variant shows a clear VLA-feature advantage (86.76 vs 76.36 seen, 64.16 vs 58.43 unseen).",
+    "More training tasks generally help unseen performance on OpenVLA LIBERO (Table 6): SAFE-MLP unseen 63.76 with 1 task, 73.47 with 7.",
+    "Overhead: SAFE-LSTM has 2.3M parameters and adds 0.73 ms vs pi0 inference of 149 ms; multi-sample methods make pi0 152% and pi0-FAST 221% slower for 10 samples.",
+    "SAFE-MLP predicts 40% of pi0-FAST LIBERO failures after the first timestep (App. C.3), i.e. many failures are predictable from the initial state."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-10 and SimplerEnv simulation; real Franka with pi0-FAST-DROID and real WidowX with OpenVLA)",
+    "benchmarks": ["LIBERO-10", "SimplerEnv (Google Robot and WidowX, 4 tasks each)", "real Franka 13 tasks", "real WidowX 8 tasks"],
+    "scale": "LIBERO-10: 10 tasks x 50 rollouts per VLA, 3 tasks held out as unseen, 60/40 train/val split on seen. Franka: 13 tasks x 30 successful + 30 failed rollouts, 3 unseen. WidowX: 532 rollouts (244 success, 288 fail), 2 of 8 tasks unseen. Sim results averaged over 3 seeds with different task splits, real over 5.",
+    "statistics": "partial: means over 3 or 5 seed/split runs; standard deviations in App. Table 8; no significance tests or CIs",
+    "baselines": "token max/avg prob and entropy; sample-consistency (action total variation, cluster entropy, 10 samples); embedding distances (Mahalanobis, k-NN Euclid/cosine, PCA-KMeans); RND and LogpZO (FAIL-Detect); STAC and STAC-Single; DINOv2/CLIP image features (ablation)"
+  },
+  "causal_validation": "None. The detector is a correlational probe; no ablation or steering along the success/failure direction is done. The authors only suggest steering as future work (App. F.3).",
+  "closed_loop": "Detection is evaluated offline on recorded closed-loop rollouts (no intervention during execution). The detector never triggers a stop or recovery in the loop, so the downstream benefit of detection is not measured.",
+  "limitations_stated": [
+    "Only manipulation; unclear generalization across embodiments, sim-to-real or to action-less video.",
+    "Only last-layer features; how to aggregate across layers is open.",
+    "Needs deployment and collection of successful and failed rollouts to train the detector.",
+    "Conformal guarantee assumes exchangeability that fails when calibrating on seen and testing on unseen tasks; TNR falls below 1 - alpha on 3 of 5 benchmarks (App. C.2).",
+    "Human failure-time annotation is ambiguous for freezing and repeated-grasp failures."
+  ],
+  "critique": [
+    "The 'VLA features know about failure' claim is weakened by the paper's own Table 7: generic DINOv2+CLIP image features match VLA features for the LSTM on real Franka, so much of the signal may be visual scene state rather than policy-internal knowledge; the text nonetheless says VLA features win 'by a large margin'.",
+    "Unseen-task generalization on real Franka is weak (best ROC-AUC 64.16); the strong cross-task story rests mostly on simulation and the 8-task WidowX setup.",
+    "Only the final layer is probed and features are aggregated by mean/first/last selected on validation data, so the paper says nothing about where in the network failure information first appears.",
+    "Unseen tasks come from the same suite (LIBERO-10, same embodiment and scenes), so 'unseen task' is a mild shift; no visual or embodiment shift is tested.",
+    "Good that the authors fix rollout length per task to stop detectors from just counting time, a shortcut later papers in this batch should be checked for.",
+    "Results across 3 seeds with per-split variation and no tests; several margins over baselines (1-4 points) are within the reported std ranges."
+  ],
+  "code": "https://vla-safe.github.io/ (project page with code)",
+  "one_line": "A small MLP or LSTM on the last-layer features of OpenVLA, pi0 and pi0-FAST flags task failure on held-out tasks better than uncertainty and OOD baselines, but generic image features do nearly as well on the real robot and nothing is tested causally."
+}

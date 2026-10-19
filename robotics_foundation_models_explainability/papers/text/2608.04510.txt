@@ -1,0 +1,1509 @@
+GUARD: Grounding Uncertainty and Ablation-Based Risk Detection for Diffusion-Based VLAs
+Suhas Hegde1, Jitendra Yasaswi Bharadwaj Katta1
+1Bosch Research India
+
+arXiv:2608.04510v1 [cs.RO] 5 Aug 2026
+
+Abstract
+Diffusion-based vision-language-action (VLA) policies can generate plausible actions even when their predictions are weakly grounded in the visual and language evidence defining the task. We introduce GUARD, a test-time failure detection method that measures this grounding without modifying the pretrained policy. GUARD estimates the influence of token-indexed entries in the final vision-language model key– value (KV) cache, constructs counterfactual caches by ablating salient KV entries, and compares their denoising responses with the original conditioning. Based on the comparison, we derive GUARD diagnostic stream including sensitivity, attention entropy, modality bias, and grounding efficiency, which are calibrated online and processed by a lightweight temporal classifier. We evaluate GUARD under task-held-out splits across five policy–benchmark settings, using Pi0, SmolVLA, and Alpamayo-1.5 on LIBERO, SimplerEnv, MetaWorld, and PhysicalAI-AV. GUARD achieves the best ROC-AUC on four of five unseen-task settings and ranks second on the remaining setting, improving the average unseen-task ROC-AUC by 5.73 percentage points over the strongest competing runtime monitor while remaining within 0.19 points of the best seen-task average. These results show that directly probing action-head dependence on multimodal evidence provides a transferable failure signal across policies, tasks, embodiments, and domains.
+1 Introduction
+Large-scale robot datasets and vision-language pretraining have enabled vision-language-action (VLA) policies to follow natural-language instructions across diverse manipulation tasks and embodiments (Open X-Embodiment Collaboration et al. 2023; Walke et al. 2023; Khazatsky et al. 2024; Brohan et al. 2022; Zitkovich et al. 2023; Kim et al. 2024; Octo Model Team et al. 2024; Black et al. 2024; Shukor et al. 2025). Recent architectures increasingly combine a pretrained vision-language backbone with diffusion- or flowbased action generation, providing an expressive mechanism for modeling continuous, multimodal robot behavior (Chi et al. 2023; Black et al. 2024; Shukor et al. 2025; Römer et al. 2026). Despite this progress, deployment remains vulnerable to novel environments, changing object appearances, compounding control errors, and task conditions that are insufficiently represented in the training data (Gu et al. 2025; Römer et al. 2025, 2026). Under such shifts, a VLA may ex-
+
+ecute unreliable actions without an explicit indication that its prediction should not be trusted (Römer et al. 2025, 2026). Timely failure detection is therefore necessary to support intervention strategies such as stopping execution, invoking a fallback, or requesting human assistance before an error becomes unrecoverable (Farid et al. 2022; Gu et al. 2025; Römer et al. 2025).
+Failure detection is particularly challenging for generalist VLAs because an unfamiliar observation or instruction is not necessarily a failure: the policy may successfully generalize to a situation that differs from its training distribution (Gu et al. 2025; Römer et al. 2025). Task-specific detectors are also difficult to scale because generalist policies may encounter many unseen tasks for which collecting labeled success and failure rollouts is impractical (Gu et al. 2025). Existing monitors address parts of this problem through embedding-space novelty or likelihood scores (Xu et al. 2025; Gu et al. 2025; Römer et al. 2025), temporal action consistency and progress monitoring (Agia et al. 2025), observation novelty combined with sampled action uncertainty (Römer et al. 2025), or supervised probes over internal VLA features (Gu et al. 2025). Recent work also estimates epistemic uncertainty in flow-based VLAs through disagreement among ensembled velocity fields, but this requires maintaining multiple policy models (Römer et al. 2026). These approaches provide useful evidence about distribution shift, representation state, action variability, or model disagreement, yet they do not directly measure whether the generated action remains grounded in the particular visual and language evidence that defines the current task (Gu et al. 2025; Römer et al. 2025, 2026).
+We study failure detection from this complementary perspective. Our central hypothesis is that a reliable action chunk should remain functionally coupled to the salient multimodal evidence specifying what the robot should perceive and do. Conversely, when the diffusion action head becomes insensitive to influential visual or language tokens, the resulting action may appear smooth or confident while being weakly grounded in the task context. The qualitative examples in Figure 1 motivate this view by exposing which visual regions and language tokens influence action generation throughout successful and failed rollouts.
+To operationalize this hypothesis, we introduce GUARD, a test-time failure detector for VLAs with diffusion- or flow-
+
+Figure 1: Qualitative comparison of saliency across failed (top) and successful (bottom) rollouts for the task “Put both the cream cheese box and the butter in the basket,” shown at normalized progress checkpoints. Numbered boxes indicate salient visual-token locations, while the text below each frame lists the corresponding salient language tokens. In the successful rollout, saliency initially concentrates on the cream cheese box as the robot places it in the basket, and then shifts to the butter as the robot completes the second subgoal. In the failed rollout, the visual and language saliency similarly supports placing the cream cheese box in the basket, but does not subsequently focus on the butter when the second subgoal should be executed. This motivates our hypothesis that, when the conditioning entries most influential to action generation are poorly aligned with the active task evidence, ablating those entries produces only a small change in the generated action.(Please zoom in 500%)
+matching action heads. These models condition action generation on contextualized visual and language token representations, together with the robot state. GUARD intervenes on the token-aligned conditioning KV entries passed from the VLM to the action head, implemented as a KV cache used either as a layer-wise prefix or as cross-attention in the action head, depending on the VLA architecture. Since this KV cache preserves token positions while integrating information across modalities, it supports token-level attribution and counterfactual intervention on the evidence used for action generation.
+At each action-generation step, GUARD estimates which visual and language cache entries most influence the actionhead response. It then constructs counterfactual caches, defined as controlled alternatives to the original cache in which only the most salient entries from the token positions of each modality are replaced by that modality’s mean cache entries, while all remaining entries are unchanged. The action head evaluates the original cache and these visual- and language-ablated counterfactual caches from the same noisy action state. Consequently, the change in a single denoising response isolates the policy’s dependence on the removed evidence.
+These comparisons produce a compact diagnostic stream: sensitivity measures the response change under ablation; attention entropy measures how broadly influence is distributed across tokens; modality bias compares dependence on visual and language evidence; entropy-adjusted calibration mea-
+
+sures deviation from an episode-specific sensitivity baseline; and grounding efficiency relates sensitivity to attention entropy. A lightweight temporal classifier aggregates these diagnostics online. Functional conformal prediction then calibrates time-dependent alarm thresholds from classifierscore trajectories, enabling a user-controlled false-alarm tolerance (Vovk, Gammerman, and Shafer 2005; Lei, Rinaldo, and Wasserman 2015; Angelopoulos and Bates 2021). The pretrained VLA remains frozen, and the original and counterfactual cache variants are evaluated together in a batched single-step probe.
+Across five task-held-out manipulation and autonomousdriving settings, GUARD ranks first on four unseen-task evaluations and second on the fifth, improving average unseentask ROC-AUC by 5.73 percentage points over the strongest competing state-of-the-art monitor while providing timely alarms.
+2 Related Work
+Vision-language-action policies with generative action heads. Recent robot policies increasingly combine pretrained vision-language representations with continuous action generation. RT-1 and RT-2 established largescale vision-language-action (VLA) policies for languageconditioned control, showing that Transformer policies can benefit from diverse robot data and web-scale visuallanguage pretraining (Brohan et al. 2022; Zitkovich et al. 2023). OpenVLA and Octo further advanced open generalist robot policies trained across multiple embodiments and manipulation tasks (Kim et al. 2024; Octo Model Team et al. 2024). A parallel trend replaces direct action regression with diffusion or flow-based action heads. Diffusion Policy demonstrated that iterative denoising can model multimodal continuous actions for visuomotor control (Chi et al. 2023), while Pi0 uses a flow-matching action expert conditioned on a pretrained VLM to generate action chunks for general robot control (Black et al. 2024). SmolVLA follows this direction with an efficient VLA architecture (Shukor et al. 2025), and autonomous-driving VLAs such as AlpamayoR1 use generative trajectory decoders for planning (Wang et al. 2025). Related generative robot policies also study efficient VLA fine-tuning, spatially grounded representations, and diffusion-Transformer action modules (Kim, Finn, and Liang 2025; Qu et al. 2025; Liu et al. 2024b; Li et al. 2024). Our work targets this class of diffusion-action-head VLAs and asks whether failures can be detected by probing the dependence of the generated action on visual-language conditioning.
+Runtime failure detection. Failure detection for learned policies is often formulated as uncertainty estimation, outof-distribution detection, or temporal consistency monitoring (Hendrycks and Gimpel 2017; Lakshminarayanan, Pritzel, and Blundell 2017). Representation-based methods compare test-time embeddings against training distributions using nearest-neighbor, cosine, clustering, or Mahalanobisstyle scores (Papernot and McDaniel 2018; Lee et al. 2018). In robot learning, runtime monitors have also used uncertainty and conformal prediction to detect policy failures
+
+without requiring large failure datasets (Farid et al. 2022; Xu et al. 2025). Recent methods for generative policies include FIPER, which combines observation novelty and action uncertainty for failure prediction (Römer et al. 2025), and Sentinel/STAC, which monitors temporal action consistency and task progress during execution (Agia et al. 2025). SAFE studies multitask failure detection for VLAs by training lightweight probes on internal VLA features and evaluating them under task-held-out splits (Gu et al. 2025). These methods provide strong baselines, but primarily rely on embedding distance, action uncertainty, or temporal consistency.
+Attribution and intervention. Gradient-based attribution estimates the local dependence of model outputs on inputs or internal representations (Simonyan, Vedaldi, and Zisserman 2013; Sundararajan, Taly, and Yan 2017). Perturbation-based explanations complement these scores by testing importance through controlled interventions on selected features (Fong and Vedaldi 2017). Studies of Transformer attention further show that raw attention weights need not provide faithful importance estimates, motivating approaches that combine attention analysis with gradients or ablations (Jain and Wallace 2019; Serrano and Smith 2019; Abnar and Zuidema 2020).
+3 Methodology
+We propose a test-time failure detection framework for vision-language-action (VLA) policies with diffusion-based action head. The key hypothesis is that a reliable action chunk should remain functionally coupled to the visual and language evidence that specifies the task. When the policy’s denoising response becomes weakly dependent on the most salient multimodal tokens, the resulting action is more likely to be poorly grounded and therefore risky to execute. Our method probes this dependence without modifying the base policy. The VLA remains frozen; the detector operates by extracting a compact stream of diagnostic variables from the policy’s own action-generation process.
+The method has three stages. First, the frozen VLA policy performs its standard rollout to generate an action chunk. During this rollout, the VLM produces its final key–value (KV) cache, which is subsequently supplied as the conditioning context to the diffusion action head. Because the cache positions retain a one-to-one correspondence with the visual and language token positions, we estimate the influence of each token-indexed KV-cache entry on the generated action using a saliency backward pass. Second, a lightweight counterfactual probe constructs counterfactual caches by ablating the key and value representations at the most influential ρm fraction of cache positions within each modality with modality-specific mean key and value representations. The original and ablated final-cache variants are batched together and evaluated from the same noisy action state using a single denoising step. The resulting normal and counterfactual denoising responses are then used to compute uncertainty and grounding diagnostics. Figure 2 summarizes the full test-time pipeline for generating the diagnostics. Third, a lightweight temporal failure classifier consumes short windows of these
+
+diagnostics and predicts online failure risk. The classifier may use recurrent or attention-based layers, such as GRU, LSTM, or Transformer layers.
+The following subsections define these components in sequence. Subsection 3.2 defines the cache-entry influence scores used to select intervention targets. Subsection 3.3 then defines sensitivity St and modality bias Bt, while Subsection 3.4 defines attention entropy Et, grounding efficiency Gt, the adaptive threshold θt, calibration status ct, and lowsensitivity indicator bt. Finally, Subsection 3.5 and Subsection 3.6 combine these seven quantities into the online failure-risk prediction.
+
+3.1 Problem Setup
+At control step t, the robot observes ot = {It, ℓt, st}, where It denotes one or more camera observations, ℓt is the language instruction, and st is the robot state when available. A pretrained VLA policy πθ predicts an action chunk At = [at, at+1, . . . , at+H−1] ∈ RH×da , where H is the action horizon and da is the action dimension (Zhao et al. 2023). The VLM encodes the multimodal observation into its final KV cache Zt, which is passed as conditioning context to the diffusion action head. We index this cache by the originating visual and language token positions:
+
+Zt = [z1, z2, . . . , zN ] = fθ(It, ℓt, st),
+
+(1)
+
+zi = (ki, vi),
+
+where zi denotes the token-indexed cache entry containing the key and value representations (ki, vi) associated with token position i.
+For diffusion- or flow-style action generators, the action chunk is obtained by iterative denoising (Ho, Jain, and Abbeel 2020; Lipman et al. 2023). Let n0 ∼ N (0, I) and let K be the number of denoising steps, with At = nK . Our detector evaluates the sampled chunk, and all saliency and ablation operations are applied to the final VLM cache Zt used by the diffusion action head.
+
+3.2 Saliency over Token-Indexed KV-Cache
+
+The first step is to identify which token-indexed entries in the final VLM KV cache locally influence the produced action chunk, following gradient-based attribution methods (Simonyan, Vedaldi, and Zisserman 2013; Sundararajan, Taly, and Yan 2017). We define the action-level scalar objective Φ(At) = ∥vec(At)∥2 and compute the saliency of token position i as
+
+gi =
+
+∂Φ(At) . ∂zi 2
+
+(2)
+
+Here, zi = (ki, vi) is the token-indexed entry in the final VLM KV cache supplied to the diffusion action head. The saliency score aggregates the gradient norm over both the key and value tensors associated with position i. Thus, gi measures the local influence of the cache state corresponding to a specific visual or language token, while the intervention itself is performed directly in KV-cache space.
+
+Let Mvis and Mlang be the visual and language token index sets. To avoid selecting only the dominant modality, we
+
+Figure 2: GUARD diagnostic creation with VLA rollout, saliency backward pass, and counterfactual probe with mean ablations.
+
+select salient positions independently within each modality: Sm = TopK({gi : i ∈ Mm}, ⌈ρm|Mm|⌉) , (3) m ∈ {vis, lang},
+
+where ρvis and ρlang are modality-specific saliency fractions. The selected set is S = Svis ∪ Slang.
+
+3.3 Counterfactual Mean-Ablation Probes
+
+After selecting salient positions, we test whether the actiongeneration dynamics actually depend on them through controlled perturbation (Fong and Vedaldi 2017). For modality m, define a modality mean representation
+
+1
+
+z¯m
+
+=
+
+|Mm|
+
+zi.
+i∈Mm
+
+(4)
+
+We construct three ablated conditioning states: Zt−vis, where selected visual positions are replaced by z¯vis; Zt−lang, where selected language positions are replaced by z¯lang; and Zt−both, where both selected visual and language positions are replaced. Mean replacement keeps the ablated represen-
+tation on the same scale as the original feature space while
+removing token-specific information. The robot state is not
+ablated.
+To make the probe comparable across original and ablated
+conditionings, we evaluate all responses at the same noisy action input. Given a fixed probe noise ξ and probe scale λp ∈ (0, 1], define
+
+n˜K−1 = (1 − λp)At + λpξ.
+
+(5)
+
+A single denoising response is then computed under the original rt+ = Dθ(n˜K−1, λp, Zt) and ablated conditionings rt−vis = Dθ(n˜K−1, λp, Zt−vis), rt−lang =
+
+Dθ(n˜K−1, λp, Zt−lang), rt−both = Dθ(n˜K−1, λp, Zt−both). The sensitivity score St is defined as the normalized change
+caused by ablating the selected visual-language evidence S:
+
+St =
+
+rt+ − rt−both rt+ 2 + ε
+
+2.
+
+(6)
+
+Large St means that the policy’s denoising response changes substantially when salient evidence is ablated. Low St means that the sampled action is weakly affected by the identi-
+
+fied visual-language evidence, which we treat as a potential
+
+grounding failure.
+
+We also compute a modality-bias ratio,
+
+Bt =
+
+rt+ − rt−vis 2 . rt+ − rt−lang + ε
+
+(7)
+
+2
+
+This ratio distinguishes failures dominated by ablation of
+
+KV cache entries in visual token position vs language token
+
+position.
+
+3.4 Entropy-Normalized Grounding and Online Calibration
+
+Sensitivity can be interpreted relative to the policy’s attention distribution and the task-specific scale of the rollout. Because raw attention weights need not provide faithful importance estimates, GUARD uses entropy only as a complementary concentration statistic and pairs it with intervention-based sensitivity (Jain and Wallace 2019; Serrano and Smith 2019; Abnar and Zuidema 2020). We therefore measure the entropy of the final-layer cross-attention from action queries to conditioning tokens. Let P¯q,i be the attention probability from query q to conditioning token i, averaged over heads. The attention entropy is
+
+1
+
+Et
+
+=
+
+− |Q|
+
+N
+P¯q,i log(P¯q,i + ε).
+
+(8)
+
+q∈Q i=1
+
+We define grounding efficiency as
+
+Gt
+
+=
+
+St Et +
+
+. ε
+
+(9)
+
+Intuitively, Gt is high when the policy is sensitive to salient evidence while keeping attention relatively concentrated.
+
+Because the absolute scale of St can vary across policies, tasks, and episodes, we calibrate an episode-level constant
+
+during an initial calibration window C. For u ∈ C,
+
+1 C=
+|C|
+
+Su(Eu + ε)γ ,
+
+(10)
+
+u∈C
+
+where γ controls the entropy correction. After calibration,
+
+the adaptive threshold is
+
+C
+
+θt
+
+=
+
+µ (Et
+
++
+
+ε)γ
+
+,
+
+(11)
+
+where µ is a safety margin. ct = 1 if the calibration is ongoing and 0 otherwise. A low-sensitivity event (LSE) is
+
+recorded as bt = 1[St < θt]. The LSE is therefore not an externally supplied failure label. It is an internally defined
+
+event that occurs when the current sensitivity falls below the
+
+entropy-adjusted level expected from the calibration window.
+
+Table 1: Seen- and unseen-task ROC-AUC (%) across policies and benchmarks. Bold and underlined values indicate the best and second-best result in each column, respectively.
+
+Method
+SAFE Euclidean
+Cosine Mahalanobis PCA-kMeans
+logpzo FIPER STAC STAC-single
+GUARD
+
+Pi0 Libero
+Seen Unseen
+
+96.32 96.65 95.99 95.60 72.51
+∼ ∼ 66.55 70.46
+
+82.64 74.68 73.36 52.98 37.19 77.38 89.46 63.91 68.39
+
+94.86
+
+91.24
+
+SmolVLA Libero
+Seen Unseen
+
+97.26 98.61 98.55 97.78 85.51
+∼ ∼ 64.97 82.21
+
+68.75 69.41 68.35 56.08 54.73 50.04 84.97 42.35 64.42
+
+95.41
+
+91.06
+
+Pi0 SimplerEnv
+Seen Unseen
+
+88.38 89.73 90.19 88.42 66.88 88.79
+∼ 60.74 68.71
+
+80.11 68.41 71.32 52.84 61.19 74.66 88.95 62.21 70.40
+
+86.60
+
+90.98
+
+SmolVLA Meta-world
+Seen Unseen
+
+99.83 99.60 99.60 99.77 99.58 97.95
+∼ 92.62 96.90
+
+85.40 80.32 89.59 69.02 94.01 84.98 99.69 60.34 78.95
+
+99.94
+
+98.84
+
+Alpamayo Physical AI AV Seen Unseen
+
+68.47 65.28 66.59 57.53 54.27 60.94 70.41 51.24 57.96
+
+64.19 58.56 61.27 53.98 50.16 56.07 68.46 49.38 54.81
+
+73.16
+
+72.08
+
+Average Seen Unseen
+
+90.05 89.97 90.18 87.82 75.75 82.56 70.41 67.22 75.25
+
+76.22 70.28 72.78 56.98 59.46 68.63 83.11 55.64 67.39
+
+89.99
+
+88.84
+
+3.5 Final GUARD Diagnostic Stream
+
+At each action-chunk generation step, GUARD produces the seven-dimensional diagnostic vector
+
+xt = [St, Bt, Et, Gt, θt, ct, bt] ∈ R7,
+
+(12)
+
+The primary diagnostics St, Et, and Bt characterize policy grounding and uncertainty, while the four derived parameters
+θt, bt, ct, and Gt provide the additional context used by the online temporal failure classifier.
+
+3.6 Window-Based Online Failure Classifier
+
+Single-step diagnostics can be noisy because action sampling, occlusion, and transient attention shifts can affect individual probes. We therefore train a temporal classifier over short diagnostic windows. Given a rollout diagnostic sequence x1:T , we extract fixed-length windows spaced uniformly throughout the rollout
+
+Xs:s+L−1 = [xs, xs+1, . . . , xs+L−1],
+
+(13)
+
+where L is the window length. The classifier is trained with a from_first_lse target. Suc-
+cessful episodes have negative targets at all timesteps. For a failed episode, we identify the first LSE as tLSE = min{t : St < θt}. The timestep targets are then
+
+yt =
+
+0, 1,
+
+t < tLSE, t ≥ tLSE.
+
+(14)
+
+This avoids treating every step of a failed rollout as risky, since the failure may emerge somewhere in the middle of the rollout.
+We train a lightweight one- or two-layer GRU, LSTM, or Transformer model on the diagnostic dataset as a binary failure-classification task using binary cross-entropy loss. At inference time, the classifier is applied online to the most recent diagnostic window. The timestep probabilities pt are converted into rollout-level scores using window mean aggregation:
+
+1 s+L−1
+
+qmean = L
+
+pt,
+
+t=s
+
+(15)
+
+A rollout is classified as failure-positive when the score exceeds a threshold. The threshold is determined using functional conformal prediction. Conformal prediction provides distribution-free thresholding from calibration data (Vovk, Gammerman, and Shafer 2005; Shafer and Vovk 2008), and functional conformal methods extend this idea to curveor trajectory-valued scores (Lei, Rinaldo, and Wasserman 2015). More details are provided in appendix.
+4 Experiments
+4.1 Evaluation Benchmarks
+We evaluate GUARD across four benchmarks spanning robotic manipulation and autonomous driving. LIBERO-10 evaluates Pi0 and SmolVLA on long-horizon tabletop tasks with varied scenes, objects, and instructions (Liu et al. 2023). SimplerEnv tests Pi0 across related manipulation tasks and embodiment settings (Li et al. 2025), while MetaWorld evaluates SmolVLA on diverse object-interaction skills (Yu et al. 2020). PhysicalAI-AV extends the study to Alpamayo-1.5 under varied driving conditions (NVIDIA Corporation 2025). In every setting, complete tasks or driving-condition groups are held out for unseen-task evaluation. Additional details on rollout collection are provided in appendix.
+4.2 Evaluation Baselines
+We compare GUARD with three baseline families on identical task-held-out splits. The learned VLA-feature detector SAFE uses an LSTM to model the temporal evolution of internal VLA features (Gu et al. 2025). Embedding-space detectors comprise Euclidean and cosine nearest-neighbor distances (Papernot and McDaniel 2018), class-conditional Mahalanobis distance (Lee et al. 2018), and PCA-KMeans cluster distance (Liu et al. 2024a). Runtime monitors include LogpZO for representation likelihood (Xu et al. 2025), FIPER for observation novelty and sampled-action uncertainty (Römer et al. 2025), and STAC/STAC-Single for action-chunk consistency (Agia et al. 2025).
+
+Figure 3: Thresholded online failure detection across five policy–benchmark settings for unseen tasks. Blue and green bars show balanced accuracy at the lower and higher conformal levels, respectively, using the lower horizontal axis; the manipulation settings use α = 0.05 and 0.10, while PhysicalAI-AV uses α = 0.4 and 0.5. Blue circles and green diamonds report the corresponding average detection time as a percentage of rollout duration using the upper axis. Higher balanced accuracy and lower detection time are preferred. (Please zoom in 500%)
+
+Table 2: Seen- and unseen-task ROC-AUC (%) for different cache-ablation percentages and selection modes. We keep ρvis = ρlang and is mentioned as ρ in the table. Top, random, and least denote selection of the most salient, randomly sampled, and least salient cache entries, respectively. Bold and underlined values indicate the best and second-best result in each column.
+
+ρ (%) (%)
+10
+30 50
+
+Selection mode
+Top Random
+Least Top Top
+
+Pi0 LIBERO
+Seen Unseen
+
+94.86 79.14 78.95 86.62 88.91
+
+91.24 69.97 71.02 77.00 78.43
+
+SmolVLA LIBERO
+Seen Unseen
+
+95.41 90.63 89.48 91.89 88.67
+
+91.06 82.10 70.43 88.28 80.32
+
+Pi0 SimplerEnv
+Seen Unseen
+
+86.60 83.28 86.38 86.67 87.78
+
+90.98 83.76 90.30 91.04 86.95
+
+SmolVLA MetaWorld
+Seen Unseen
+
+99.94 99.94 98.13 96.97 98.93
+
+98.84 99.60 97.95 94.03 92.25
+
+Alpamayo PhysicalAI-AV Seen Unseen
+
+73.16 69.17 67.45 72.48 68.71
+
+72.08 68.28 65.30 70.16 67.11
+
+4.3 Evaluation Metrics
+
+We report both threshold-free and thresholded online de-
+
+tection metrics. For overall separability, we use ROC-AUC,
+
+which measures whether failed rollouts receive higher de-
+
+tector scores than successful rollouts across all possible
+
+thresholds (Fawcett 2006). For each rollout, we aggre-
+
+gate the window-level scores into a single episode score
+
+Q
+
+=
+
+1 W
+
+W w=1
+
+qm(we)an,
+
+where
+
+qm(we)an
+
+is
+
+the
+
+mean
+
+detector
+
+score in window w. ROC-AUC is computed using these
+
+rollout-level scores and the binary success/failure labels.
+
+For thresholded evaluation, we report balanced accuracy,
+
+defined as BalAcc = (TPR + TNR)/2. Balanced accu-
+
+racy gives equal importance to failure detection and false-
+
+alarm avoidance, which is useful when the numbers of suc-
+
+cessful and failed rollouts are imbalanced (Brodersen et al.
+
+2010). At inference time, a rollout is flagged when qmean in Eq. (15) exceeds a time-dependent threshold τα(w) calibrated using Functional Conformal Prediction. We also report normalized detection time tdet = w⋆/W , where w⋆ = min{w : qmean > τα(w)}. Lower values indicate earlier warning within the rollout.
+
+5 Results
+5.1 Failure–Success Separability
+In Table 1, we report ROC-AUC based on the episode score Q. The embedding-space detectors are strong on seen tasks:
+
+Euclidean and cosine distance lead three manipulation settings and attain the best overall seen-task result. Their performance, however, drops substantially on held-out tasks. This indicates that the geometry of the pretrained feature space is informative about failures within the training-task distribution, but is less reliable when task semantics change.
+The learned SAFE baseline improves robustness over most fixed-distance scores on unseen tasks, suggesting that temporal evolution in the internal VLA features provides useful failure information. Among the runtime monitors, FIPER is the strongest competitor and achieves the best unseen result on MetaWorld with SmolVLA. In contrast, STAC and STAC-Single are less consistent across settings, showing that action-chunk instability alone does not provide a sufficiently general failure signal.
+GUARD achieves the strongest and most consistent task generalization. It ranks first on four of the five unseen settings and second on the remaining MetaWorld setting, yielding an unseen-task average of 88.84%—5.73 percentage points above FIPER and 12.62 points above SAFE. Importantly, this improvement does not sacrifice seen-task performance: GUARD remains within 0.19 points of the best seen-task average. Its seen–unseen gap is also an order of magnitude smaller than those of the learned-feature and nearestneighbor baselines.
+The gains are consistent across two VLA architectures on Libero, across embodiments in SimplerEnv and MetaWorld,
+
+and in the substantially different PhysicalAI-AV driving domain. We attribute this robustness to GUARD’s direct measurement of whether the action head remains dependent on salient multimodal evidence. Whereas embedding detectors model where a rollout lies in feature space and consistency monitors measure how actions vary, GUARD probes the action-generation mechanism itself through counterfactual cache ablation.
+5.2 Online Failure Detection
+Figure 3 evaluates thresholded online detection using balanced accuracy and average detection time. Balanced accuracy measures the quality of the final failure decision while accounting equally for successful and failed rollouts, whereas detection time measures when the first alarm is raised as a percentage of rollout duration. A useful runtime monitor must perform well on both axes.
+GUARD provides the strongest balanced-accuracy performance in three of the five settings. It leads all baselines for both operating points on Pi0 Libero, SmolVLA Libero, and SmolVLA MetaWorld, demonstrating that the ROC-AUC gains in Table 1 translate into reliable thresholded decisions. The advantage is especially clear on Pi0 Libero and MetaWorld, where GUARD separates itself from both learned feature probes and runtime monitors. On Pi0 SimplerEnv and Alpamayo PhysicalAI-AV, FIPER attains the highest balanced accuracy, but GUARD remains close to the best result. Thus, GUARD is consistently competitive even when the policy architecture, embodiment, and domain change.
+The detection-time results show a similar pattern. GUARD raises the earliest alarms on Pi0 Libero, SmolVLA Libero, and MetaWorld, detecting failures after roughly one-fifth to three-fifths of the rollout depending on the setting. On Pi0 Libero, it warns about ten percentage points of rollout progress earlier than FIPER while also achieving higher balanced accuracy. On MetaWorld, GUARD detects at approximately 20% progress, ahead of the next-fastest competitive methods, while retaining the best accuracy. FIPER is slightly earlier on SimplerEnv and PhysicalAI-AV, but the difference is small in the driving setting, where GUARD remains the closest accuracy competitor.
+5.3 Importance of Saliency-based Ablation
+Table 2 isolates the effects of both cache-entry selection and ablation percentage. The default configuration, which ablates the top 10% most salient entries within each modality, achieves the highest average performance on both seen and unseen tasks. This result indicates that GUARD benefits from a focused counterfactual intervention rather than from perturbing the conditioning cache indiscriminately.
+At a fixed 10% ablation rate, selecting the most salient entries substantially outperforms random and least-salient selection. Averaged across settings, top-saliency ablation improves unseen-task ROC-AUC by 8.10 percentage points over random selection and 9.84 points over least-salient selection. It exceeds least-salient ablation in every seen and unseen task and surpasses random ablation eight of ten times, while tying one. The only exception is MetaWorld unseentask evaluation, where random selection is slightly higher.
+
+The overall pattern confirms that the detector relies on identifying action-relevant evidence, rather than merely benefiting from noise injected into the cache.
+The ablation percentage also matters. Increasing topsaliency ablation from 10% to 30% reduces the average seenand unseen-task results, and increasing it to 50% causes a larger decline in unseen-task performance. Four of the five policy–benchmark settings favor the 10% configuration. SimplerEnv is the main exception: 30% gives a marginally higher unseen result, while 50% gives the highest seen result but generalizes less effectively. Thus, ablating more salient entries does not consistently strengthen the diagnostic signal.
+These findings support the design of GUARD. Ablating too few unimportant entries produces little change in the denoising response, whereas random selection mixes relevant and irrelevant evidence and yields an inconsistent signal. Conversely, ablating a large fraction of the cache can remove excessive task context, making the response reflect broad conditioning corruption rather than dependence on a compact set of salient tokens. The top-10% configuration provides the most reliable balance.
+5.4 Efficiency and Deployability
+GUARD incurs only modest computational overhead: 1.14× for Pi0 and 1.27× for SmolVLA. The added cost comes from one saliency backward pass and one batched singlestep counterfactual probe, while the lightweight temporal classifier is negligible. Overall, GUARD does not introduce prohibitive overhead and remains suitable for deployment; a detailed stage-wise analysis is provided in the appendix.
+6 Conclusion
+GUARD reframes VLA failure detection as a question of functional grounding rather than merely input novelty, representation distance, or action variability. Our results indicate that testing how action generation responds when its most influential visual and language evidence is removed provides a failure signal that remains informative across tasks, policies, embodiments, and domains. Temporal aggregation and conformal prediction turn local grounding changes into actionable online warnings.
+Limitations. GUARD is currently applicable only for VLAs with diffusion-based action head, and therefore does not directly apply to autoregressive VLAs. Extending it to autoregressive action generation is a direction for future work. In addition, the saliency backward pass requires retaining intermediate activations of the action head and increases peak VRAM relative to standard policy inference; memoryefficient gradient computation and selective probing could reduce this cost.
+References
+Abnar, S.; and Zuidema, W. 2020. Quantifying Attention Flow in Transformers. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, 4190–4197.
+
+Agia, C.; Sinha, R.; Yang, J.; Cao, Z.-a.; Antonova, R.; Pavone, M.; and Bohg, J. 2025. Unpacking Failure Modes of Generative Policies: Runtime Monitoring of Consistency and Progress. In Proceedings of The 8th Conference on Robot Learning, volume 270 of Proceedings of Machine Learning Research, 689–723.
+Angelopoulos, A. N.; and Bates, S. 2021. A Gentle Introduction to Conformal Prediction and Distribution-Free Uncertainty Quantification. arXiv preprint arXiv:2107.07511.
+Black, K.; Brown, N.; Driess, D.; Esmail, A.; Equi, M.; Finn, C.; Fusai, N.; Groom, L.; Hausman, K.; Ichter, B.; et al. 2024. π0: A Vision-Language-Action Flow Model for General Robot Control. arXiv preprint arXiv:2410.24164.
+Brodersen, K. H.; Ong, C. S.; Stephan, K. E.; and Buhmann, J. M. 2010. The Balanced Accuracy and Its Posterior Distribution. In 2010 20th International Conference on Pattern Recognition, 3121–3124. IEEE.
+Brohan, A.; Brown, N.; Carbajal, J.; Chebotar, Y.; Dabis, J.; Finn, C.; Gopalakrishnan, K.; Hausman, K.; Herzog, A.; Hsu, J.; et al. 2022. RT-1: Robotics Transformer for Real-World Control at Scale. arXiv preprint arXiv:2212.06817.
+Chi, C.; Xu, Z.; Feng, S.; Cousineau, E.; Du, Y.; Burchfiel, B.; Tedrake, R.; and Song, S. 2023. Diffusion Policy: Visuomotor Policy Learning via Action Diffusion. arXiv preprint arXiv:2303.04137.
+Farid, A.; Snyder, D.; Ren, A. Z.; and Majumdar, A. 2022. Failure Prediction with Statistical Guarantees for VisionBased Robot Control. arXiv preprint arXiv:2202.05894.
+Fawcett, T. 2006. An Introduction to ROC Analysis. Pattern Recognition Letters, 27(8): 861–874.
+Fong, R. C.; and Vedaldi, A. 2017. Interpretable Explanations of Black Boxes by Meaningful Perturbation. In Proceedings of the IEEE International Conference on Computer Vision, 3429–3437.
+Gu, Q.; Ju, Y.; Sun, S.; Gilitschenski, I.; Nishimura, H.; Itkina, M.; and Shkurti, F. 2025. SAFE: Multitask Failure Detection for Vision-Language-Action Models. arXiv preprint arXiv:2506.09937.
+Hendrycks, D.; and Gimpel, K. 2017. A Baseline for Detecting Misclassified and Out-of-Distribution Examples in Neural Networks. In International Conference on Learning Representations.
+Ho, J.; Jain, A.; and Abbeel, P. 2020. Denoising Diffusion Probabilistic Models. In Advances in Neural Information Processing Systems, volume 33, 6840–6851.
+Jain, S.; and Wallace, B. C. 2019. Attention is not Explanation. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, 3543–3556.
+Khazatsky, A.; Pertsch, K.; Nair, S.; Balakrishna, A.; Dasari, S.; Karamcheti, S.; Nasiriany, S.; Srirama, M. K.; Chen, L. Y.; Ellis, K.; et al. 2024. DROID: A Large-Scale In-the-Wild Robot Manipulation Dataset. arXiv preprint arXiv:2403.12945.
+Kim, M. J.; Finn, C.; and Liang, P. 2025. Fine-Tuning VisionLanguage-Action Models: Optimizing Speed and Success. In Robotics: Science and Systems.
+
+Kim, M. J.; Pertsch, K.; Karamcheti, S.; Xiao, T.; Balakrishna, A.; Nair, S.; Rafailov, R.; Foster, E.; Sanketi, P.; Vuong, Q.; et al. 2024. OpenVLA: An Open-Source VisionLanguage-Action Model. arXiv preprint arXiv:2406.09246.
+Lakshminarayanan, B.; Pritzel, A.; and Blundell, C. 2017. Simple and Scalable Predictive Uncertainty Estimation Using Deep Ensembles. In Advances in Neural Information Processing Systems, volume 30.
+Lee, K.; Lee, K.; Lee, H.; and Shin, J. 2018. A Simple Unified Framework for Detecting Out-of-Distribution Samples and Adversarial Attacks. In Advances in Neural Information Processing Systems.
+Lei, J.; Rinaldo, A.; and Wasserman, L. 2015. A Conformal Prediction Approach to Explore Functional Data. Annals of Mathematics and Artificial Intelligence, 74: 29–43.
+Li, Q.; Liang, Y.; Wang, Z.; Luo, L.; Chen, X.; Liao, M.; Wei, F.; Deng, Y.; Xu, S.; Zhang, Y.; et al. 2024. CogACT: A Foundational Vision-Language-Action Model for Synergizing Cognition and Action in Robotic Manipulation. arXiv preprint arXiv:2411.19650.
+Li, X.; Hsu, K.; Gu, J.; Mees, O.; Pertsch, K.; Walke, H. R.; Fu, C.; Lunawat, I.; Sieh, I.; Kirmani, S.; Levine, S.; Wu, J.; Finn, C.; Su, H.; Vuong, Q.; and Xiao, T. 2025. Evaluating Real-World Robot Manipulation Policies in Simulation. In Proceedings of the 8th Conference on Robot Learning, volume 270 of Proceedings of Machine Learning Research, 3705–3728.
+Lipman, Y.; Chen, R. T. Q.; Ben-Hamu, H.; Nickel, M.; and Le, M. 2023. Flow Matching for Generative Modeling. In International Conference on Learning Representations.
+Liu, B.; Zhu, Y.; Gao, C.; Feng, Y.; Liu, Q.; Zhu, Y.; and Stone, P. 2023. LIBERO: Benchmarking Knowledge Transfer in Lifelong Robot Learning. In Advances in Neural Information Processing Systems, volume 36, 44776–44791.
+Liu, H.; Zhang, Y.; Betala, V.; Zhang, E.; Liu, J.; Ding, C.; and Zhu, Y. 2024a. Multi-Task Interactive Robot Fleet Learning with Visual World Models. In 8th Annual Conference on Robot Learning.
+Liu, S.; Wu, L.; Li, B.; Tan, H.; Chen, H.; Wang, Z.; Xu, K.; Su, H.; and Zhu, J. 2024b. RDT-1B: A Diffusion Foundation Model for Bimanual Manipulation. arXiv preprint arXiv:2410.07864.
+NVIDIA Corporation. 2025. PhysicalAI Autonomous Vehicles Dataset. Hugging Face dataset. Accessed July 20, 2026.
+Octo Model Team; Ghosh, D.; Walke, H.; Pertsch, K.; Black, K.; Mees, O.; Dasari, S.; Hejna, J.; Kreiman, T.; Xu, C.; et al. 2024. Octo: An Open-Source Generalist Robot Policy. arXiv preprint arXiv:2405.12213.
+Open X-Embodiment Collaboration; O’Neill, A.; Rehman, A.; Gupta, A.; Maddukuri, A.; et al. 2023. Open XEmbodiment: Robotic Learning Datasets and RT-X Models. arXiv preprint arXiv:2310.08864.
+Papernot, N.; and McDaniel, P. 2018. Deep k-Nearest Neighbors: Towards Confident, Interpretable and Robust Deep Learning. arXiv preprint arXiv:1803.04765.
+
+Qu, D.; Song, H.; Chen, Q.; Yao, Y.; Ye, X.; Ding, Y.; Wang, Z.; Gu, J.; Zhao, B.; Wang, D.; and Li, X. 2025. SpatialVLA: Exploring Spatial Representations for VisionLanguage-Action Models. arXiv preprint arXiv:2501.15830.
+Römer, R.; Kobras, A.; Worbis, L.; and Schoellig, A. P. 2025. Failure Prediction at Runtime for Generative Robot Policies. arXiv preprint arXiv:2510.09459.
+Römer, R.; Seeliger, M.; Liu, S.; Sturgis, B.; Bagatella, M.; Marta, D.; Krause, A.; and Schoellig, A. P. 2026. Uncertainty Quantification for Flow-Based Vision-LanguageAction Models. arXiv preprint arXiv:2606.18043.
+Serrano, S.; and Smith, N. A. 2019. Is Attention Interpretable? In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 2931–2951.
+Shafer, G.; and Vovk, V. 2008. A Tutorial on Conformal Prediction. Journal of Machine Learning Research, 9: 371– 421.
+Shukor, M.; Aubakirova, D.; Capuano, F.; Kooijmans, P.; Palma, S.; Zouitine, A.; Aractingi, M.; Pascal, C.; Russi, M.; Marafioti, A.; et al. 2025. SmolVLA: A Vision-LanguageAction Model for Affordable and Efficient Robotics. arXiv preprint arXiv:2506.01844.
+Simonyan, K.; Vedaldi, A.; and Zisserman, A. 2013. Deep Inside Convolutional Networks: Visualising Image Classification Models and Saliency Maps. arXiv preprint arXiv:1312.6034.
+Sundararajan, M.; Taly, A.; and Yan, Q. 2017. Axiomatic Attribution for Deep Networks. In Proceedings of the 34th International Conference on Machine Learning, volume 70 of Proceedings of Machine Learning Research, 3319–3328.
+Vovk, V.; Gammerman, A.; and Shafer, G. 2005. Algorithmic Learning in a Random World. Springer.
+Walke, H. R.; Black, K.; Zhao, T. Z.; Vuong, Q.; Zheng, C.; Hansen-Estruch, P.; He, A. W.; Myers, V.; Kim, M. J.; Du, M.; Lee, A.; Fang, K.; Finn, C.; and Levine, S. 2023. BridgeData V2: A Dataset for Robot Learning at Scale. In Proceedings of The 7th Conference on Robot Learning, volume 229 of Proceedings of Machine Learning Research, 1723–1736.
+Wang, Y.; Luo, W.; Bai, J.; Cao, Y.; Che, T.; Chen, K.; Chen, Y.; Diamond, J.; Ding, Y.; Ding, W.; et al. 2025. AlpamayoR1: Bridging Reasoning and Action Prediction for Generalizable Autonomous Driving in the Long Tail. arXiv preprint arXiv:2511.00088.
+Xu, C.; Nguyen, T. K.; Dixon, E.; Rodriguez, C.; Miller, P.; Lee, R.; Shah, P.; Ambrus, R.; Nishimura, H.; and Itkina, M. 2025. Can We Detect Failures Without Failure Data? Uncertainty-Aware Runtime Failure Detection for Imitation Learning Policies. arXiv preprint arXiv:2503.08558.
+Yu, T.; Quillen, D.; He, Z.; Julian, R.; Hausman, K.; Finn, C.; and Levine, S. 2020. Meta-World: A Benchmark and Evaluation for Multi-Task and Meta Reinforcement Learning. In Proceedings of the Conference on Robot Learning, volume 100 of Proceedings of Machine Learning Research, 1094–1100.
+Zhao, T. Z.; Kumar, V.; Levine, S.; and Finn, C. 2023. Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware. arXiv preprint arXiv:2304.13705.
+
+Zitkovich, B.; Yu, T.; Xu, S.; Xu, P.; Xiao, T.; Xia, F.; Wu, J.; Wohlhart, P.; Welker, S.; Wahid, A.; et al. 2023. RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control. In Proceedings of The 7th Conference on Robot Learning, volume 229 of Proceedings of Machine Learning Research, 2165–2183.
+
+Appendix
+A Mathematical Intuition and Properties of GUARD Diagnostics
+This section gives mathematical intuition for the GUARD saliency diagnostics defined in the methodology. These results should not be read as a proof that the detector must perfectly separate success and failure. Such a theorem would require strong assumptions about the robot, environment, task distribution, and VLA policy. Instead, the analysis characterizes how the diagnostics reflect the mechanisms encoded in their definitions: sensitivity captures counterfactual dependence on salient evidence, entropy describes attention concentration, grounding efficiency combines these two effects, and the adaptive threshold compares sensitivity against an episode-calibrated operating regime.
+
+A.1 Local Influence Interpreted as Gradient Saliency
+
+Recall the action-level objective
+
+Φ(At) = ∥ vec(At)∥2,
+
+(16)
+
+and the KV-cache-entry saliency score
+
+gi =
+
+∂Φ(At) . ∂zi 2
+
+(17)
+
+The purpose of Eq. (17) is to estimate how strongly the final action chunk changes, to first order, when an entry at a visual or
+
+language position in the final KV cache is perturbed.
+
+Property 1: first-order influence bound. Assume that the mapping from the final conditioning KV cache to the action
+
+objective is differentiable in a neighborhood of Zt. Let δzi be a small perturbation applied only to the cache entry at position i,
+
+with ∥δzi∥2 ≤ η. Then
+
+|Φ(At(zi + δzi)) − Φ(At(zi))| ≤ ηgi + O(η2).
+
+(18)
+
+Proof. By Taylor expansion,
+
+Φ(At(zi + δzi)) = Φ(At(zi)) +
+
+∂Φ(At ∂zi
+
+)
+
+,
+
+δzi
+
++ O(∥δzi∥22).
+
+(19)
+
+Taking absolute values and applying Cauchy–Schwarz gives
+
+∂
+
+Φ(At) ∂zi
+
+,
+
+δzi
+
+≤
+
+∂Φ(At) ∂zi
+
+∥δzi∥2 ≤ ηgi.
+2
+
+(20)
+
+This proves Eq. (18).
+
+□
+
+This result justifies using gi as a local influence score. A large gi means that, for the same perturbation budget, the KV-cache
+
+entry at position i can produce a larger first-order change in the action objective than an entry with smaller gi.
+
+A.2 Why Use Modality-Balanced Top-K Selection? The method selects salient entries separately within the sets of visual and language positions in the final KV cache:
+
+Sm = TopK({gi : i ∈ Mm}, ⌈ρm|Mm|⌉) , m ∈ {vis, lang}.
+
+(21)
+
+Property 2: optimality under per-modality cardinality constraints. Let km = ⌈ρm|Mm|⌉. Among all subsets Tm ⊆ Mm of size km, Eq. (21) maximizes the total first-order saliency mass
+
+gi.
+
+(22)
+
+i∈Tm
+
+Proof. Suppose a selected set Tm of size km is not the top-km set. Then there exist i ∈/ Tm and j ∈ Tm such that gi > gj.
+
+Replacing j with i strictly increases the sum. Repeating this exchange yields the top-km set.
+
+□
+
+The modality-balanced constraint is important because the numbers of visual and language cache positions and their gradient
+
+scales may differ. A joint top-K selection could select almost all entries from one modality, whereas Eq. (21) guarantees that
+
+KV-cache entries at both visual and language positions are probed.
+
+(a) Action head layer 29
+
+(b) Action head layer 31
+
+Figure 4: Single-action cross-attention profiles over conditioning positions for action-query positions 0, 25, and 49 across ten denoising steps of SmolVLA on LIBERO spatial task. Panels (a) and (b) show the profiles from expert layers 29 and 31, respectively. The blue vertical lines delineate KV-cache positions associated with image input 1, image input 2, and the language instruction, in that order.
+
+A.3 Mean Ablation as Minimal-Distortion Information Removal For each modality m, the ablation value is the modality mean
+
+1
+
+z¯m
+
+=
+
+|Mm|
+
+zi.
+i∈Mm
+
+(23)
+
+Mean replacement removes position-specific information from the selected KV-cache entries while keeping the replacement on the scale of the original modality representation.
+The cross-attention profiles in Figure 4 show how strongly each action query attends to the KV-cache entries aligned with visual and language positions. The attention magnitudes exhibit distinct modality-dependent patterns across these positions, indicating that visual and language entries need not share a common representation scale or attention regime. We therefore compute the replacement mean independently within each modality, preserving its characteristic scale while removing position-specific information from the selected entries.
+
+Property 3: least-squares constant representative. Among all constant replacement vectors c ∈ Rd, the mean vector in Eq. (23) minimizes the total squared reconstruction error
+
+J(c) =
+
+∥zi − c∥22.
+
+(24)
+
+i∈Mm
+
+Proof. Differentiating J(c) gives
+
+∇cJ(c) = 2
+
+(c − zi).
+
+(25)
+
+i∈Mm
+
+Setting the gradient to zero yields
+
+|Mm|c =
+
+zi,
+
+(26)
+
+i∈Mm
+
+so c = z¯m. Since J(c) is convex in c, this stationary point is the global minimizer.
+
+□
+
+Thus, mean ablation is a conservative counterfactual: it removes the identity-specific information carried by the selected
+
+KV-cache entries while minimizing the magnitude of the replacement shift within the modality.
+
+A.4 Counterfactual Denoising Sensitivity The probe evaluates the original and ablated conditionings at the same noisy action input
+
+n˜K−1 = (1 − λp)At + λpξ,
+
+(27)
+
+and computes responses rt+ and rt−both. The sensitivity diagnostic is
+
+St
+
+=
+
+∥rt+ − ∥rt+
+
+rt−both ∥2 + ε
+
+∥2
+
+.
+
+(28)
+
+Property 4: sensitivity estimates local dependence on ablated evidence. Let Dθ(n˜K−1, λp, Z) be differentiable with respect to Z. Let ∆Z = Zt−both − Zt. A first-order expansion gives
+
+rt−both = rt+ + JZ ∆Z + O(∥∆Z∥22),
+
+(29)
+
+where JZ is the Jacobian of the denoising response with respect to the conditioning state. Therefore,
+
+St
+
+=
+
+∥JZ ∆Z∥2 ∥rt+∥2 + ε
+
++ O(∥∆Z∥22).
+
+(30)
+
+This explains why St is a counterfactual grounding diagnostic. If the denoising response strongly depends on the selected visual-language evidence, then ablating those positions produces a large response change. If the response barely changes, the sampled action is locally insensitive to the evidence that the saliency step identified as important.
+
+Property 5: scale normalization. Ignoring the small stabilizer ε, St is invariant to a common positive scaling of denoising responses. If rt+ and rt−both are both multiplied by a > 0, then
+
+∥art+ − art−both∥2 ∥art+∥2
+
+=
+
+∥rt+
+
+− rt−both∥2 ∥rt+∥2
+
+.
+
+(31)
+
+This normalization makes sensitivity less dependent on the absolute magnitude of the denoising vector.
+
+A.5 Modality-Bias Ratio
+
+The modality-bias diagnostic is
+
+Bt
+
+=
+
+∥rt+ ∥rt+ −
+
+− rt−vis∥2 rt−lang∥2 +
+
+ε
+
+.
+
+(32)
+
+This ratio is not a failure score by itself. Instead, it describes whether the denoising response changes more under visual ablation
+
+or language ablation.
+
+When Bt > 1, visual ablation changes the response more than language ablation. When Bt < 1, language ablation has the larger effect. Since manipulation and driving failures can arise from different sources—visual ambiguity, language mismatch,
+
+or multimodal disagreement—Bt gives the temporal classifier information about the source of instability rather than only its magnitude.
+
+A.6 Attention Entropy and Grounding Efficiency
+
+The attention entropy diagnostic is
+
+1 Et = − |Q|
+
+N
+P¯q,i log(P¯q,i + ε).
+
+(33)
+
+q∈Q i=1
+
+For each query q, the vector P¯q,1:N is a probability distribution over conditioning positions in the final KV cache.
+
+Property 6: entropy range. Ignoring ε for notation, for each query q,
+
+N
+
+0 ≤ − P¯q,i log P¯q,i ≤ log N.
+
+(34)
+
+i=1
+
+Consequently,
+
+0 ≤ Et ≤ log N.
+
+(35)
+
+Proof. Shannon entropy is nonnegative and is maximized by the uniform distribution. For the uniform distribution, P¯q,i = 1/N ,
+
+so the entropy is log N . Averaging over queries preserves the same bounds.
+
+□
+
+Figure 5: Entropy–sensitivity phase plot for surgical saliency diagnostics. Each point corresponds to one action-chunk generation step. The horizontal axis shows attention entropy Et, while the vertical axis shows surgical sensitivity St. Dashed curves denote iso-contours of grounding efficiency Gt = St/(Et + ε). The plot illustrates the operating regimes induced by the diagnostic definition: high sensitivity with low entropy corresponds to high grounding efficiency, while low sensitivity with high entropy corresponds to weak grounding efficiency.
+
+The grounding-efficiency diagnostic is
+
+Gt
+
+=
+
+St Et +
+
+. ε
+
+(36)
+
+It is monotone increasing in sensitivity and monotone decreasing in entropy:
+
+∂Gt = 1 > 0, ∂St Et + ε
+
+∂Gt ∂Et
+
+=
+
+−
+
+(Et
+
+St +
+
+ε)2
+
+≤
+
+0.
+
+(37)
+
+Thus, for fixed sensitivity, diffuse attention reduces grounding efficiency; for fixed entropy, stronger counterfactual dependence increases grounding efficiency.
+Figure 5 gives a geometric interpretation of Eq. (36). The upper-left region corresponds to strong grounding: the denoising response changes substantially when salient evidence is removed, while attention remains concentrated. The lower-right region corresponds to weak grounding: the response is insensitive to salient evidence and attention is diffuse. The dashed iso-contours show points with equal grounding efficiency. Moving upward increases Gt because the policy response becomes more sensitive to salient evidence; moving rightward decreases Gt because the same sensitivity is distributed over a more diffuse attention pattern.
+This visualization reinforces the interpretation of Gt as an instantaneous grounding-efficiency diagnostic and clarifies the advantage of interpreting sensitivity and entropy together. A high value of St is most meaningful when attention entropy is low or moderate; conversely, a moderate value of St may be less reliable when the attention distribution is highly diffuse. Thus, GUARD saliency does not merely measure whether the policy changes under ablation, but whether that change occurs under a concentrated multimodal attention regime.
+
+Figure 6: Diagnostic trajectories for failed Pi0–LIBERO rollouts aligned at their first low-sensitivity event (LSE). Relative index
+zero, marked by the red dashed line, denotes the first LSE, and the shaded regions show variability across aligned episodes.
+Sensitivity St decreases before the event, drops sharply immediately afterward, and only partially recovers at a lower level. The dynamic threshold θt rises abruptly at the event and remains elevated, with a gradual decline later in the rollout. Attention entropy Et follows an overall increasing trend, indicating progressively more diffuse attention after the first LSE. Modality bias Bt spikes at the event and remains higher afterward despite short-term fluctuations, indicating a stronger imbalance between visual and language influence. Grounding efficiency Gt collapses at the event and recovers only partially, remaining below its early-rollout level. Together, these trends show that the first LSE coincides with a broader shift toward weaker, more diffuse, and
+less balanced grounding rather than an isolated threshold crossing.
+
+A.7 Online Calibration and the Low-Sensitivity Event
+
+The calibration equations are
+
+1 C=
+|C|
+
+Su(Eu + ε)γ ,
+
+(38)
+
+u∈C
+
+C
+
+θt
+
+=
+
+µ (Et
+
++
+
+ε)γ
+
+,
+
+(39)
+
+and
+
+bt = 1[St < θt].
+
+(40)
+
+Property 7: equivalent normalized-threshold test. Eq. (40) is equivalent to
+
+St(Et + ε)γ < µ.
+
+(41)
+
+C
+
+Proof. Since Et + ε > 0, multiply both sides of St < µC/(Et + ε)γ by (Et + ε)γ/C.
+
+□
+
+This shows that the adaptive threshold compares the current entropy-adjusted sensitivity to its calibration-window baseline.
+
+The constant C absorbs episode- and task-specific scale, while µ controls the safety margin.
+
+Figure 7: Online failure-classifier module. At each timestep, the most recent causal window of normalized GUARD diagnostics is processed by the temporal classifier and aggregated into a scalar failure score. Dense causal evaluation produces the score trajectory subsequently calibrated by functional conformal prediction.
+
+B Functional Conformal Prediction for Online Failure Detection
+For rollout i, let xi,0:Ti denote the seven-dimensional GUARD diagnostic sequence from Eq. (12), and let yi ∈ {0, 1} denote the trajectory-level success/failure label. The online detector has two stages: a temporal classifier converts the diagnostic history into a causal failure-score curve, and functional conformal prediction calibrates a time-varying upper threshold from successful seen-task calibration rollouts (Vovk, Gammerman, and Shafer 2005; Lei, Rinaldo, and Wasserman 2015; Angelopoulos and Bates 2021). The objective is to detect failed rollouts early while limiting alarms on successful rollouts.
+
+Dense causal score curve. Although training uses sampled fixed-length windows, online timing is evaluated densely and causally. For window length L, define Li,t = min(L, t + 1) and the window ending at timestep t as
+
+Xi,t = [xi,t−Li,t+1, . . . , xi,t].
+
+(42)
+
+Let p(i,tτ) be the classifier probability associated with position τ when evaluating Xi,t. The causal window-mean score is
+
+qi(t)
+
+=
+
+1 Li,t
+
+t
+pi(,tτ) .
+τ =t−Li,t+1
+
+(43)
+
+When Li,t = L, Eq. (43) reduces to the window-mean aggregation in Eq. (15). Evaluating every t = 0, . . . , Ti produces the score curve qi(0 : Ti). Sparse windows sampled for training or threshold-free episode scoring are not used to estimate alarm
+timing, because they do not represent the complete causal evaluation sequence. We enumerate the dense causal evaluations by
+w = 1, . . . , Wi, where ti,w is the endpoint of window w, and write qm(we)an,i = qi(ti,w). Figure 7 summarizes this aggregation stage.
+
+Calibration masking and normalized time. The calibration-status feature ci,t identifies timesteps used for the episode-level GUARD calibration in Eq. (10). We suppress alarms while ci,t = 1 and define the first post-calibration timestep as
+
+ti0 = 1 + max{t : ci,t = 1}.
+
+(44)
+
+The full rollout is retained for timing, but conformal calibration and alarm triggering use only t ≥ ti0. Because rollout lengths differ, each post-calibration curve is linearly resampled onto a common grid uj = j/(J − 1), j = 0, . . . , J − 1, using the
+
+normalized time map
+
+ui(t)
+
+=
+
+t − t0i Ti − t0i
+
+.
+
+(45)
+
+We denote the resulting resampled score function by qi(uj).
+
+Functional conformal upper band. Let Dc0p contain n successful seen-task calibration rollouts. At each normalized time uj, we estimate the successful-rollout mean and scale,
+
+1 µ(uj) = n
+
+qi (uj ),
+
+1 σ(uj) = n − 1
+
+qi(uj) − µ(uj) 2.
+
+(46)
+
+i∈Dc0p
+
+i∈Dc0p
+
+Each successful calibration rollout receives the one-sided functional nonconformity score
+
+Ai
+
+=
+
+max
+j
+
+qi(uj) − µ(uj) σ(uj) + ε
+
+.
+
+(47)
+
+Let A(1) ≤ · · · ≤ A(n) be the ordered scores and kα = min{n, ⌈(n + 1)(1 − α)⌉}. The conformal multiplier and upper band are
+
+λα = A(kα), Bα(uj ) = µ(uj ) + λα σ(uj ) + ε .
+
+(48)
+
+Unlike a single scalar threshold, Bα adapts to systematic changes in successful-rollout scores at early, middle, and late normalized times. The corresponding threshold for window w of rollout i is τα,i(w) = Bα(ui(ti,w)).
+
+Alarm rule and metrics. For a new rollout, the first alarm window is
+
+wi⋆ = min w : ti,w ≥ t0i , qm(we)an,i > τα,i(w) ,
+
+(49)
+
+with no alarm if the set is empty. For each α, we report the true-positive rate (TPR), true-negative rate (TNR), and balanced accuracy BalAcc = (TPR + TNR)/2. Detection time is evaluated on failed rollouts as
+
+di =
+
+wi⋆/Wi, 1,
+
+if an alarm occurs, otherwise,
+
+(50)
+
+so missed failures contribute an end-of-rollout detection rather than being omitted. Because Wi counts dense causal evaluations over the complete rollout, including the masked calibration phase, di preserves the full-rollout timing scale.
+The level α controls the sensitivity–specificity trade-off illustrated in Figure 10: smaller values produce a higher, more conservative band, whereas larger values generally produce more and earlier alarms. Under exchangeability between future successful rollouts and the successful conformal-calibration rollouts, the construction targets a successful-rollout crossing probability of at most α up to finite-sample and grid effects (Vovk, Gammerman, and Shafer 2005; Angelopoulos and Bates 2021). For held-out tasks, where exchangeability with seen-task calibration trajectories may not hold, we interpret false-alarm control empirically through TNR and balanced accuracy.
+
+C Additional Experiments
+C.1 Computational Overhead and Deployability
+Table 3 decomposes GUARD’s runtime cost by processing stage. Stage 1 performs the policy’s normal action generation and the saliency backward pass used to identify influential cache entries. Stage 2 edits the selected KV-cache positions and evaluates the original and counterfactual conditionings as a batched single-step probe from the same noisy action state. The saliency backward pass accounts for most of the additional computation, while cache editing and probing contribute a smaller fraction.
+For Pi0, GUARD increases the per-step cost from 4.379 to 4.985 TFLOPs, corresponding to a 1.14× overhead. For SmolVLA, the cost increases from 0.640 to 0.811 TFLOPs, or 1.27×. Stage 3 is not shown because the lightweight temporal classifier operates on short windows of seven-dimensional diagnostics and consumes negligible FLOPs relative to the VLA forward, backward, and denoising operations. Thus, GUARD adds one lightweight saliency backward pass and one batched counterfactual probe without requiring multiple complete action-generation rollouts. These measurements quantify arithmetic cost; realized latency will additionally depend on hardware and implementation efficiency.
+Table 3: Computational cost of GUARD per action-generation step. Stage 1 includes standard action generation and the saliency backward pass, while Stage 2 includes KV-cache editing and the counterfactual probe. The overhead ratio compares total action generation with and without GUARD.
+
+Model
+Pi0 SmolVLA
+
+Stage 1
+
+Normal Action Saliency Backward
+
+Generation
+
+Overhead
+
+(TFLOPs)
+
+(TFLOPs)
+
+Stage 2
+KV-Cache Edit + Probe Overhead
+(TFLOPs)
+
+Action Generation with GUARD (TFLOPs)
+
+Total Cost
+Action Generation without GUARD
+(TFLOPs)
+
+Overhead (×)
+
+4.379 0.640
+
+0.451 0.125
+
+0.155 0.046
+
+4.985 0.811
+
+4.379
+
+1.14
+
+0.640
+
+1.27
+
+C.2 Leave-One-Feature-Out Analysis To assess the contribution of each diagnostic, we retrain the temporal classifier seven times, each time removing one component of xt = [St, θt, bt, Et, Bt, ct, Gt], and compare the resulting seen- and unseen-task ROC-AUC with the full model.
+Figure 8: Leave-one-feature-out ROC-AUC analysis of the seven GUARD diagnostics. Each variant retrains the classifier after removing one feature; blue and green bars report seen- and unseen-task ROC-AUC, respectively. Larger reductions relative to the full model indicate a stronger contribution to failure classification and task-held-out generalization.
+Seen-task ROC-AUC remains comparatively stable after most removals, whereas unseen-task performance is substantially more sensitive, indicating that the diagnostic diversity primarily supports transfer beyond the training tasks. The calibrationstatus feature ct is the most consistently important: removing it reduces unseen ROC-AUC from 91.2% to 75.6% on Pi0 LIBERO, from 91.1% to 84.6% on SmolVLA LIBERO, and from 98.8% to 73.5% on SmolVLA MetaWorld. MetaWorld additionally depends strongly on the below-threshold indicator bt, raw sensitivity St, modality bias Bt, and grounding efficiency Gt, while Pi0 SimplerEnv shows its largest reduction when attention entropy Et is removed (91.0% to 84.8%). Although the dominant feature varies across policies and benchmarks, the full seven-feature representation achieves the best unseen-task ROC-AUC in every setting, showing that the diagnostics provide complementary grounding and calibration information. C.3 Choice of Saliency and Ablation Target We compare the standard GUARD intervention on the final token-indexed KV cache with an alternative that operates on the input token embeddings. The two variants use the same rollout splits, top-10% modality-wise selection rule, diagnostic construction, temporal classifier, and evaluation protocol; they differ only in where saliency is measured and where the counterfactual intervention is applied. In the standard KV-cache variant, the saliency backward pass differentiates the action-head objective with respect to the final visual- and language-token KV entries supplied directly as action-head conditioning, and the selected key and value entries are replaced by their modality-specific means. In the token-embedding variant, gradients are propagated through both the action head and the VLM to the visual and language embeddings entering the VLM. The most salient input embeddings are then replaced by their modality-specific means, and the modified embeddings are propagated through the VLM to obtain the counterfactual conditioning used by the action head.
+
+Figure 9: Saliency-target ablation comparing interventions on the input token embeddings and the final token-indexed KV cache. Blue and green bars report seen- and unseen-task ROC-AUC, respectively, across four manipulation policy–benchmark settings. All components other than the saliency and counterfactual-ablation target are held fixed.
+Figure 9 shows that targeting the final KV cache improves seen-task ROC-AUC in all four settings and unseen-task ROC-AUC in three of four settings. The largest gain occurs on SmolVLA LIBERO, where the KV-cache target improves seen ROC-AUC from 92.2% to 95.4% and unseen ROC-AUC from 86.1% to 91.1%. On Pi0 LIBERO, the unseen result increases from 88.4% to 91.2%, while Pi0 SimplerEnv improves from 84.2% to 86.6% on seen tasks and from 89.7% to 91.0% on unseen tasks. SmolVLA MetaWorld is near saturation for both variants: the KV-cache intervention is slightly higher on seen tasks (99.9% versus 99.8%), whereas the token-embedding intervention is 0.7 points higher on unseen tasks. Averaged across the four settings, targeting the KV cache improves seen and unseen ROC-AUC by approximately 1.6 and 2.1 percentage points, respectively.
+This advantage is consistent with the location of the two representations in the action-generation computation. The final KV cache is the contextualized conditioning memory consumed directly by the action head, so its gradients more closely reflect the evidence governing the current denoising response, and ablating a selected cache entry produces a localized change at the action-head interface. Input token embeddings are computationally farther from the action output: their influence passes through multiple VLM layers, attention interactions, residual paths, normalization, and cross-modal mixing before reaching the action head. Saliency propagated to this earlier representation can therefore become more diffuse, while embedding-level ablations may be redistributed or partially compensated by the VLM. The results support the GUARD design choice of probing the final token-indexed KV cache as a more direct and discriminative representation of the multimodal evidence used for action generation.
+
+C.4 Sensitivity to the Conformal Miscoverage Level
+Figure 10: Effect of the functional conformal miscoverage level α on GUARD’s unseen-task online failure detection across five policy–benchmark settings. Curves report the true-positive rate (TPR), true-negative rate (TNR), and balanced accuracy. Increasing α generally relaxes the alarm threshold, improving failure sensitivity while reducing specificity; balanced accuracy summarizes this trade-off.
+D Implementation Details
+D.1 Evaluation Benchmarks For each task-held-out split, complete tasks are reserved for unseen-task evaluation, while episodes from the remaining tasks are stratified by success/failure label into training and seen-task evaluation sets. All temporal samples from a rollout remain in the same partition, preventing leakage and measuring transfer to tasks without additional labeled rollouts. Benchmark setup. Table 4 summarizes the benchmark sources and the episode-level split protocol used for each VLA– benchmark variant. For the manipulation benchmarks, failure labels are derived from rollout success: successful episodes are treated as negative examples for failure prediction, whereas failed episodes are treated as positive examples. For Alpamayo, we use the PhysicalAI-AV autonomous-driving dataset and define failures using the minimum-ADE threshold of 3.0. In all cases, splits are constructed at the episode or clip level so that prefixes from the same rollout do not appear in both training and evaluation subsets. Aggregated split statistics. Table 5 reports the aggregate number of episode or clip assignments across the three seen/unseen splits. The train column corresponds to the training episodes from seen tasks, eval-seen corresponds to held-out episodes from seen tasks, and eval-unseen corresponds to all episodes from held-out tasks. Because each benchmark variant is evaluated under three different seen/unseen splits, the total in this table counts split assignments rather than unique original rollouts. Thus, a rollout can contribute to different columns across different split folds if its task is seen in one split and unseen in another. LIBERO task statistics. Table 6 gives the per-task rollout outcomes for the two LIBERO-10 variants. Each LIBERO-10 task contains 50 evaluated rollouts. The table reports the number and percentage of successful rollouts for each task before constructing the classifier splits. These values characterize the base VLA rollout distribution from which the failure-classification dataset is formed. The same LIBERO-10 task IDs and split protocol are used for the Pi0 and SmolVLA variants, but their success rates differ because the rollouts are generated by different policies. SimplerEnv and Meta-World task statistics. Table 7 reports task-level success statistics for the Pi0–SimplerEnv and SmolVLA–Meta-World variants. The SimplerEnv benchmark uses four Google Robot tasks with 50 rollouts per task. The Meta-World benchmark uses a 10-task subset of MT50, also with 50 rollouts per task. These per-task success rates determine
+
+the class balance of the failure-detection dataset and help identify tasks that provide more failure examples for classifier training and evaluation.
+Alpamayo / PhysicalAI-AV scenario statistics. Table 8 reports the per-scenario clip counts used for the Alpamayo failureclassification benchmark. Unlike the manipulation benchmarks, these labels are not based on binary rollout success from a simulator. Instead, each clip is labeled using a minimum-ADE threshold of 3.0: clips above the threshold are counted as failures, and clips below the threshold are counted as successes. The local benchmark subset contains 584 unique clips across 12 scenario IDs, with 50 clips for most scenarios and fewer clips for scenario IDs 6 and 11.
+Table 4: Benchmark setup for the five evaluated variants. Failure labels for manipulation benchmarks are derived from rollout success; Alpamayo failures are defined by a minimum-ADE threshold of 3.0.
+
+Variant Pi0–LIBERO
+
+Benchmark / dataset LIBERO-10
+
+SmolVLA–LIBERO Pi0–SimplerEnv
+SmolVLA–Meta-World
+Alpamayo
+
+LIBERO-10 SimplerEnv Google Robot Meta-World MT10 subset PhysicalAI-AV
+
+Tasks 10
+10 4
+10
+12
+
+Rollouts Split protocol
+
+50 per task 50 per task 50 per task 50 per task 584 total clips
+
+3 unseen tasks per split; remaining 7 tasks split 60/40 into train/eval-seen
+Same LIBERO split protocol
+1 unseen task per split; remaining 3 tasks split 60/40 into train/eval-seen
+3 unseen tasks per split; remaining 7 tasks split 60/40 into train/eval-seen
+3 unseen scenario IDs per split; seen scenarios split 60/40 into train/eval-seen
+
+Table 5: Aggregated benchmark split statistics across the three seen/unseen splits. Counts are episode or clip assignments across splits.
+
+Variant
+
+Tasks
+
+Pi0–LIBERO
+
+10
+
+SmolVLA–LIBERO
+
+10
+
+Pi0–SimplerEnv
+
+4
+
+SmolVLA–Meta-World 10
+
+Alpamayo /
+
+12
+
+PhysicalAI-AV
+
+train eval-seen evalunseen
+
+630
+
+420
+
+450
+
+630
+
+420
+
+450
+
+270
+
+180
+
+150
+
+630
+
+420
+
+450
+
+783
+
+521
+
+448
+
+Total
+1500 1500 600 1500
+1752
+
+Success rate
+46.2% 45.8% 64.0% 69.8%
+40.9%
+
+Unseen task IDs by split
+{0, 3, 5}; {5, 7, 8}; {6, 8, 9} {0, 3, 5}; {5, 7, 8}; {6, 8, 9} {0}; {3}; {2} {4, 18, 31}; {31, 40, 48}; {38, 48, 49} {8, 9, 11}; {1, 8, 11}; {2, 7, 8}
+
+Table 6: Per-task LIBERO-10 rollout success statistics for the two LIBERO variants.
+
+ID LIBERO-10 instruction
+0 put the white mug on the left plate and put the yellow and white mug on the right plate 1 put the white mug on the plate and put the chocolate pudding to the right of the plate 2 put the yellow and white mug in the microwave and close it 3 turn on the stove and put the moka pot on it 4 put both the alphabet soup and the cream cheese box in the basket 5 put both the alphabet soup and the tomato sauce in the basket 6 put both moka pots on the stove 7 put both the cream cheese box and the butter in the basket 8 put the black bowl in the bottom drawer of the cabinet and close it 9 pick up the book and place it in the back compartment of the caddy
+
+Pi0 success
+16/50 (32%) 26/50 (52%) 35/50 (70%) 38/50 (76%) 10/50 (20%) 30/50 (60%) 17/50 (34%) 18/50 (36%) 14/50 (28%) 27/50 (54%)
+
+SmolVLA success
+14/50 (28%) 31/50 (62%) 31/50 (62%) 40/50 (80%)
+4/50 (8%) 32/50 (64%) 24/50 (48%) 16/50 (32%) 17/50 (34%) 20/50 (40%)
+
+Table 7: Per-task rollout success statistics for Pi0–SimplerEnv and SmolVLA–Meta-World.
+
+Variant Pi0–SimplerEnv Pi0–SimplerEnv Pi0–SimplerEnv Pi0–SimplerEnv
+
+ID Task 0 google_robot_move_near_v0 1 google_robot_open_drawer 2 google_robot_close_drawer 3 google_robot_place_apple_in_closed_top_drawer
+
+SmolVLA–Meta-World 40 reach-v3 SmolVLA–Meta-World 38 push-v3 SmolVLA–Meta-World 31 pick-place-v3 SmolVLA–Meta-World 15 door-open-v3 SmolVLA–Meta-World 18 drawer-open-v3 SmolVLA–Meta-World 17 drawer-close-v3 SmolVLA–Meta-World 4 button-press-topdown-v3 SmolVLA–Meta-World 28 peg-insert-side-v3 SmolVLA–Meta-World 48 window-open-v3 SmolVLA–Meta-World 49 window-close-v3
+
+Success
+36/50 (72%) 29/50 (58%) 40/50 (80%) 23/50 (46%)
+10/50 (20%) 13/50 (26%) 26/50 (52%) 47/50 (94%) 47/50 (94%) 50/50 (100%) 50/50 (100%) 6/50 (12%) 50/50 (100%) 50/50 (100%)
+
+Table 8: Per-scenario PhysicalAI-AV statistics used for Alpamayo. Failure labels are assigned using the min-ADE threshold of 3.0.
+
+Scenario ID
+0 1 2 3 4 5 6 7 8 9 10 11
+
+Clips
+50 50 50 50 50 50 35 50 50 50 50 49
+
+Success
+19 16 22 20 15 30 15 22 17 16 19 28
+
+Failure
+31 34 28 30 35 20 20 28 33 34 31 21
+
+Success rate
+38.0% 32.0% 44.0% 40.0% 30.0% 60.0% 42.9% 44.0% 34.0% 32.0% 38.0% 57.1%
+
+D.2 Hyperparameter Search
+We search over classifier architecture, optimization parameters, and temporal windowing. The four manipulation benchmarks share the model and training search space reported in Table 9, while their temporal window and searches are benchmark-specific (Table 10 and Table 11). A separate Transformer-specific search space is used for the autonomous-driving experiments, as reported in Table 12.
+We denote a temporal-window configuration by (w, n), where w is the number of timesteps in each window and n is the number of windows sampled from each episode.
+
+Table 9: Shared model and training hyperparameter search space for the Pi0–LIBERO, SmolVLA–LIBERO, Pi0–SimplerEnv, and SmolVLA–Meta-World experiments. A gradient-clipping value of 0 denotes that gradient clipping is disabled.
+
+Category
+
+Hyperparameter
+
+Values searched
+
+Architecture Optimization
+
+Classifier model Hidden dimension Number of layers
+Dropout Learning rate Weight decay Batch size Gradient-clipping norm
+
+{GRU, LSTM, Transformer} {32, 64, 96, 128} {1, 2, 3}
+{0, 0.05, 0.10, 0.20, 0.30} {3×10−4, 5×10−4, 1×10−3, 2×10−3, 3×10−3} {0, 10−5, 10−4, 10−3} {128, 256, 512} {0, 0.5, 1, 2}
+
+Table 13 reports the best configuration selected for each VLA–benchmark variant after evaluating the model, optimization, and temporal-window choices defined in Table 9, Table 10, Table 11, and Table 12. The selected classifier architecture and training parameters differ across variants, while the reported window configuration specifies the temporal context used to train and evaluate the final failure detector.
+Table 10: Dataset-specific temporal-window search spaces for the LIBERO experiments. Each pair denotes (window size, windows per episode).
+
+VLA and benchmark Pi0–LIBERO SmolVLA–LIBERO
+
+Window configurations {(20, 8)} {(20, 8)}
+
+Table 11: Dataset-specific temporal-window search spaces for the SimplerEnv and Meta-World experiments. Each pair denotes (window size, windows per episode).
+
+VLA and benchmark Pi0–SimplerEnv SmolVLA–Meta-World
+
+Window configurations
+{(3, 16), (5, 12), (8, 8), (10, 8), (12, 6), (15, 6), (18, 5), (20, 4), (20, 8)}
+All pairs in {3, 4, 5, 6} × {4, 8, 16, 32, 64}, where the first and second sets respectively specify the window size and number of windows per episode
+
+Table 12: Hyperparameter search space for the Alpamayo autonomous-driving experiments. The classifier backbone is fixed to a Transformer.
+
+Category Architecture
+Optimization Temporal windows
+
+Hyperparameter
+Classifier model Hidden dimension Classifier-head layers Attention heads Feed-forward dimension Transformer layers
+Dropout Learning rate Weight decay Batch size Gradient-clipping norm
+Window size w Windows per episode n Constraint
+
+Values searched
+{Transformer} {64, 96, 128} {1} {4, 8} {64, 128, 256} {1, 2, 3}
+{0.15, 0.20, 0.25, 0.30} {3×10−4, 5×10−4, 7×10−4, 10−3} {0, 10−6, 10−5, 10−4} {128, 256, 512} {0.5, 1, 2}
+{3, 5} {2, 3, 4, 5} w≤5
+
+Table 13: Best hyperparameters selected by the search for each VLA–benchmark variant.
+
+Hyperparameter
+
+Pi0–LIBERO
+
+SmolVLA– LIBERO
+
+Pi0–SimplerEnv SmolVLA–Meta- Alpamayo World
+
+Classifier model Hidden dimension Number of layers Attention heads Feed-forward dimension Transformer layers Dropout Learning rate Weight decay Batch size Gradient-clipping norm Window configuration (w, n)
+
+LSTM 64 1 – – – 0.20
+1×10−3 10−5 128 1 (20, 8)
+
+GRU 64 1 – – – 0.20
+1×10−3 10−4 256 0 (20, 8)
+
+Transformer 128 2 – – – 0.10
+2×10−3 10−4 512 2 (5, 12)
+
+LSTM 128 1 – – – 0.30
+3×10−3 {0, 10−5, 10−4}
+128 2
+(6, 8)
+
+Transformer 64 1 4 128 2 0.20 5×10−4 0 256 2 (5, 3)
+
+Table 14 separately summarizes the hyperparameters used to generate the GUARD diagnostic stream before temporal classification. These settings control the action horizon, modality-specific saliency fractions, probe-noise scale, entropy correction, safety margin, calibration interval, and autonomous-driving temporal sampling; they are distinct from the classifier and optimization choices reported in Table 13. Entries marked “n/a” are not applicable to the corresponding policy–benchmark setting.
+Table 14: Hyperparameters related to GUARD diagnostic creation.
+
+Symbol
+H ρvis ρlang λp γ µ Cstart Cend Temporal sampling
+
+Methodology meaning
+Action horizon / chunk length Visual saliency fraction Language saliency fraction Probe-noise mixing scale in Eq. (8) Entropy correction exponent in Eqs. (13)–(14) Safety margin in adaptive threshold Calibration window start step Calibration window end step PhysicalAI AV temporal offsets
+
+PI0 SmolVLA MT10 SmolVLA LIBERO PI0 LIBERO SimplerEnv
+
+Alpamayo AV
+
+10
+
+10
+
+10
+
+10
+
+n/a
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.1
+
+0.05
+
+0.05
+
+0.05
+
+0.05
+
+0.05
+
+2.0
+
+2.0
+
+2.0
+
+2.0
+
+2.0
+
+0.8
+
+0.8
+
+0.8
+
+0.8
+
+0.8
+
+25
+
+25
+
+25
+
+4
+
+0
+
+35
+
+35
+
+35
+
+10
+
+3
+
+n/a
+
+n/a
+
+n/a
+
+n/a
+
+2.0 × 106, 1.0 × 106 µs
+
+Table 15: Summary of the principal notation used throughout the paper and appendix.
+
+Symbol
+
+Name and meaning
+
+Policy, action, and KV-cache notation
+
+t
+
+Control or action-generation timestep
+
+It, ℓt, st
+
+Camera input, language instruction, and optional robot state
+
+At
+
+Predicted action chunk beginning at timestep t
+
+Zt
+
+Final VLM KV cache conditioning the action head
+
+N
+
+Number of positions in the final KV cache
+
+Saliency and counterfactual-probe notation
+
+Φ(At )
+
+Scalar action-level objective used for saliency
+
+Mvis, Mlang
+
+Sets of visual and language KV-cache positions
+
+Svis, Slang , S Zt−vis, Zt−lang , Zt−both
+nK−1 rt+, rt−vis, rt−lang , rt−both
+
+Selected salient positions and their union Visual, language, and joint mean-ablated caches Shared noisy action input used by all probes
+Original and modality-ablated denoising responses
+
+GUARD diagnostics and online calibration
+
+St
+
+Counterfactual sensitivity to jointly ablated evidence
+
+P¯q,i
+
+Head-averaged attention probability from query q to
+
+cache position i
+
+Et
+
+Mean cross-attention entropy
+
+C
+
+Initial episode-calibration timestep set
+
+γ
+
+Entropy-correction exponent
+
+θt
+
+Adaptive sensitivity threshold
+
+bt
+
+Low-sensitivity-event indicator
+
+Temporal classification and functional conformal prediction
+
+L
+
+Temporal-classifier window length
+
+tLSE
+
+First low-sensitivity-event timestep
+
+i, Ti, yi pi(,tτ)
+Wi, ti,w t0i
+qi(uj )
+
+Rollout index, final timestep, and trajectory-level label Classifier probability at position τ within Xi,t Number of dense windows and endpoint of window w First post-calibration timestep Resampled failure-score function
+
+µ(uj ), σ(uj )
+
+Successful-rollout mean and scale functions
+
+α, kα
+
+Miscoverage level and finite-sample quantile index
+
+Bα(uj ) wi⋆
+TPR, TNR, BalAcc
+
+Functional conformal upper band First window crossing the conformal band True-positive rate, true-negative rate, and balanced
+
+accuracy
+
+Symbol
+ot πθ
+H, da zi = (ki, vi)
+K
+gi ρvis, ρlang
+z¯m ξ, λp Dθ
+ε
+Bt Q
+Gt C µ ct xt
+Xs:s+L−1 yt Xi,t
+qi (t) qm (we)an,i ui(t), uj Dc0p, n
+Ai λα τα,i (w) di m ∈ {vis, lang}
+
+Name and meaning
+Multimodal observation at timestep t Frozen pretrained VLA policy
+Action horizon and action dimension Key–value cache entry at position i Number of diffusion or flow denoising steps
+Gradient saliency of the KV-cache entry at position i Modality-specific saliency fractions Mean KV-cache representation for modality m Probe noise and probe-noise mixing scale Frozen action-head denoising-response function
+Positive numerical stabilizer
+Visual-to-language modality-bias ratio Set of action queries used for attention aggregation
+Grounding efficiency St/(Et + ε) Episode-level entropy-adjusted sensitivity baseline Safety-margin multiplier for the adaptive threshold Indicator that episode-level calibration is active Seven-dimensional GUARD diagnostic vector
+Fixed-length diagnostic window beginning at s Timestep-level classifier target Causal diagnostic window ending at timestep t Causal window-mean failure score Failure score assigned to dense window w Rollout-normalized time and common grid point Successful conformal-calibration set and its size One-sided functional nonconformity score Conformal multiplier Time-varying alarm threshold for window w Normalized failure-detection time Modality index
+
+

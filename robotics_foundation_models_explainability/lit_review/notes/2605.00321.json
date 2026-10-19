@@ -1,0 +1,44 @@
+{
+  "id": "2605.00321",
+  "title": "Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models",
+  "first_author": "Zhang",
+  "year": 2026,
+  "venue": "ICML 2026 (PMLR 306, per the paper header)",
+  "tier": "core",
+  "models": ["pi0.5 (fine-tuned from pi05 base on AGNOSTOS seen tasks, RLBench Franka)"],
+  "action_head": "flow/diffusion action expert",
+  "methods": ["Interventional Significance Score (ISS): RISE-style Monte Carlo Bernoulli masking with Gaussian-blur mixing, action L2 change as proxy for KL divergence", "Nuisance Mass Ratio (NMR): share of top-k% ISS saliency falling on segmented nuisance regions", "robustness and fidelity tests with soft (noise) and hard (texture, geometric, patch) interventions on nuisance regions", "baselines: attention-score saliency, token-norm saliency", "theory: unbiasedness and conditions for action error as divergence proxy"],
+  "question": "Can an interventional visual attribution score tell whether a VLA relies on task-relevant or nuisance regions, and does nuisance reliance predict generalization?",
+  "key_findings": [
+    "Task-level NMR@10 correlates with closed-loop success rate at r = -0.77 (41 AGNOSTOS tasks x 5 seeds, 25 trials each); k = 10 was chosen because it gave the strongest correlation among k in {1, 5, 10, 15, 20}.",
+    "Fidelity: correlation between saliency change and action change under texture / geometric / patch perturbations of nuisance regions is r = 0.78 / 0.64 / 0.72 for ISS vs 0.64 / 0.49 / 0.56 for attention and 0.47 / 0.33 / 0.40 for token norm; on unseen geometric perturbations ISS r = 0.79 vs 0.60 (ATT) and 0.48 (NORM).",
+    "Robustness to Gaussian noise in nuisance regions (200 episodes): ISS saliency cosine 0.995 with action MSE 0.002, attention 0.959, token norm 0.999 (with higher action MSE 0.011).",
+    "Wrist view attributions stay on manipulation-relevant parts (nuisance ratio 0.02-0.15) while front (0.24-0.56) and overhead (0.21-0.38) views spread to robot links and background.",
+    "pi0.5 success after fine-tuning: 59.07 +/- 0.58% on seen tasks, 24.00 +/- 1.92% on unseen (28.74% level-1, 16.96% level-2).",
+    "ISS cost: N = 100 masks, about 5.18 s per explanation (0.19 Hz), so offline only."
+  ],
+  "evidence": {
+    "setting": "simulation (RLBench via AGNOSTOS) for success rates; ISS/NMR computed offline on dataset episodes",
+    "benchmarks": ["AGNOSTOS (18 seen, 13 unseen level-1, 10 unseen level-2 tasks) in RLBench"],
+    "scale": "3,600 training episodes, 575 unseen evaluation episodes; success over 5 seeds x 41 tasks x 25 trials; fidelity on 1,000 sampled episodes; robustness on 200 episodes",
+    "statistics": "partial: Pearson correlations and mean +/- SD over seeds; no CIs on the correlations, no control for task split",
+    "baselines": "attention-score saliency and token-norm saliency"
+  },
+  "causal_validation": "At the input level only: ISS is defined by masking interventions and its fidelity is checked against perturbation-induced action changes. There is no intervention showing that reducing nuisance reliance improves generalization; the NMR-generalization link is correlational.",
+  "closed_loop": "Success rates are closed-loop (RLBench); attribution and fidelity analyses are open-loop on single-step predictions under teacher forcing.",
+  "limitations_stated": [
+    "Assumes a unimodal action distribution so that action error is a valid proxy for divergence.",
+    "Monte Carlo cost restricts ISS to offline analysis.",
+    "NMR depends on nuisance segmentation masks, which are costly and error-prone in the real world.",
+    "Only one model family evaluated."
+  ],
+  "critique": [
+    "The headline r = -0.77 pools seen and unseen tasks; seen tasks have both higher success and plausibly lower nuisance attribution, so the correlation may mostly separate the two splits. A within-split correlation or a regression controlling for split is needed; k was also chosen to maximize r.",
+    "Points from the 5 seeds of the same task are not independent, which inflates the apparent sample size behind r.",
+    "Flow-matching pi0.5 has stochastic, potentially multimodal outputs, the case the authors flag as violating their unimodality assumption; how noise is fixed across masked passes is not clear in the text read.",
+    "It is input saliency, not mechanistic interpretability despite the framing; the comparison against attention maps is useful because many VLA papers rely on attention as explanation.",
+    "No intervention test (e.g. masking nuisance regions at deployment or training to lower NMR) to show the relation is causal for generalization."
+  ],
+  "code": "https://github.com/robot-future/vla-explain",
+  "one_line": "A masking-based visual attribution score for pi0.5 is more faithful than attention or token-norm maps, and tasks where it puts more weight on background and other nuisance regions have lower success (r = -0.77 on AGNOSTOS)."
+}

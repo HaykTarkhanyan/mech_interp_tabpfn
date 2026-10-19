@@ -1,0 +1,45 @@
+{
+  "id": "2605.28527",
+  "title": "What Frozen VLAs Already Know About Success: A Probing Study of Value-Like Structure in Foundation Robot Policies",
+  "first_author": "Zhang",
+  "year": 2026,
+  "venue": "arXiv preprint (May 2026)",
+  "tier": "core",
+  "models": ["Pi0.5 (official LIBERO policy)", "Pi0", "OpenVLA", "OpenVLA-OFT", "OpenVLA-v0.1", "SmolVLA", "DINOv2", "CLIP"],
+  "action_head": "mixed: flow/diffusion action expert (Pi0.5, Pi0, SmolVLA), discrete tokens (OpenVLA), parallel regression/L1 head (OpenVLA-OFT); online experiments use Pi0.5 only",
+  "methods": ["ridge probes on frozen features for a Monte-Carlo outcome target (gamma^(T-1-t) for successes, 0 for failures)", "same-task same-timestep matched-pair ordering control with label shuffle", "goal-swap language control", "simulator-backed best-of-K action-prefix selection using the probe score"],
+  "question": "Do frozen VLA representations encode a value-like signal about eventual task success that survives task/time shortcut controls, and can that readout improve action choice at test time?",
+  "key_findings": [
+    "Task-split R2 for the outcome target on LIBERO-Goal (311,719 frames from 1,400 mixed trajectories): Pi0.5 vision encoder 0.551, OpenVLA-OFT 0.551, OpenVLA 0.549, SmolVLA 0.526, DINOv2 0.510, CLIP 0.510, random projection 0.392, proprioception 0.111, Pi0 0.070, progress 0.030, task one-hot -0.002 (Table 1).",
+    "Pi0 is the exception: near the scalar baselines (task-split R2 0.070), while Pi0.5 in the same lineage is at 0.551.",
+    "Matched pairs (same task, same timestep, label gap >= 0.20): Pi0.5 probe orders 94.22% of 4,605 pairs correctly vs 50.05% label-shuffled; across 10 runs 89.58-94.22% vs 49.01-50.05% (Table 2).",
+    "Online (Pi0.5, K=16 candidates, 5-action prefix): hard-3 aggregate greedy 31.1%, random 36.9%, value-guided 42.4% (McNemar vs random p=0.061); push-plate 26.7 / 33.7 / 44.3% (p=0.003); wine-rack 35.7 / 36.0 / 44.0% (p=0.026); open-middle-drawer no gain (Table 3).",
+    "Value-guided selection costs ~2x random and >20x greedy wall time (~39 min extra compute per extra success on push-plate).",
+    "Cross-benchmark: CALVIN-D OpenVLA demo-split R2 0.30 but task split 0.04; RobotWin Pi0.5 demo-split 0.83-0.87 but task-split R2 -0.78 to -0.93 (Table 5).",
+    "Goal swap moves Pi0.5 VLM features (mean L2 1.96, cosine 0.9985), but the probe score shift is inconsistent in sign (+0.12, -0.08, -0.02 across seeds/layers)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Goal (main)", "CALVIN-D", "RobotWin"],
+    "scale": "offline 311,719 frames / 1,400 trajectories; probes over 5 seeds; online 300 paired episodes per task for push-plate and wine-rack, 150 for drawer (450 hard-3 aggregate), seeds fixed per server across 3 servers",
+    "statistics": "yes: Wilson 95% CIs, paired bootstrap CIs, exact McNemar tests, Fisher sensitivity checks; exploratory runs reported separately and not pooled",
+    "baselines": "progress, time-to-go, task one-hot, proprioception, random projection, label-shuffle; greedy and random selection online"
+  },
+  "causal_validation": "Partial and behavioral, not representational: the probe is used to choose among the policy's own sampled actions, which changes outcomes. No activation is ablated or steered, so it is not shown that the policy itself uses this signal. The selector also mixes in simulator success and reward.",
+  "closed_loop": "Yes for the selection experiments (closed-loop LIBERO episodes), but each step uses simulator look-ahead (restore snapshot, roll out each candidate prefix), so it is not deployable as is.",
+  "limitations_stated": [
+    "Target is outcome-derived, not a Bellman-consistent value function.",
+    "Online gains are task-dependent (no gain on drawer).",
+    "Selector relies on simulator rollouts; ~2x random and >10x greedy cost; diagnostic, not a deployable controller.",
+    "Cross-task transfer weak outside LIBERO-Goal (CALVIN-D, RobotWin task splits)."
+  ],
+  "critique": [
+    "The online selector first keeps candidates that succeed in the simulator rollout and otherwise ranks by z(simulator reward) + z(probe). Without a reward-only selector baseline, the probe's own contribution to the +10.67 pp gain is not isolated. This is the main weakness of the 'behaviorally usable' claim.",
+    "DINOv2 and CLIP reach almost the same R2 as the VLAs (0.51 vs 0.55). So the signal looks like a generic visual readout of scene state (is the object where it should be), not something specific to the policy's internal value. 'What frozen VLAs already know' overstates the VLA-specific part.",
+    "The matched-pair control fixes task and time, but success and failure frames at the same timestep can differ visibly (dropped object, stuck arm). Ordering them is close to visual failure detection, not evidence of anticipatory value.",
+    "Pi0's near-zero R2 against Pi0.5's 0.55 is striking and unexplained. It could be a feature-extraction choice ('VLM final' vs 'vision encoder') rather than a model property.",
+    "Strong demo-split but negative task-split R2 on RobotWin shows the probe largely memorizes per-task structure outside LIBERO-Goal."
+  ],
+  "code": "not reported",
+  "one_line": "Linear probes on frozen VLA (and plain DINOv2/CLIP) features predict eventual task success even within the same task and timestep, and a simulator-backed selector using the probe raises Pi0.5 success on two hard LIBERO tasks, though the probe's own share of that gain is not isolated."
+}

@@ -1,0 +1,42 @@
+{
+  "id": "2603.06001",
+  "title": "Restoring Linguistic Grounding in VLA Models via Train-Free Attention Recalibration",
+  "first_author": "Zhang",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0", "pi0.5", "OpenVLA-OFT"],
+  "action_head": "mixed: flow/diffusion action expert (pi0, pi0.5) and regression head (OpenVLA-OFT parallel decoding)",
+  "methods": ["ICBench: LIBERO tasks with contradictory instructions (operand attribute, target attribute, both, spatial relation) and unchanged scenes", "Linguistic Grounding Score LGS = SR(normal) - SR(contradictory)", "IGAR: attention-sink detection via hidden-state spike ratio, head selection by visual-sink share, redistribution of attention from sink tokens to non-sink instruction tokens in the first 16 layers", "a different 'contrastive' variant for pi0", "component ablation and hyperparameter sweep"],
+  "question": "Do VLAs ignore language when the instruction contradicts the scene, and can rebalancing attention toward instruction tokens restore language influence without retraining?",
+  "key_findings": [
+    "Linguistic blindness: under contradictory instructions success often stays above 90%; e.g. pi0.5 Spatial V1 96.2% (LGS 1.2), OpenVLA-OFT Object V3 99.8% (LGS -1.4); pi0 is least blind (Goal V4 SR 76.4%, LGS 19.4) (Table 1, 50 rollouts per task variant).",
+    "IGAR raises LGS most for pi0 and OpenVLA-OFT on LIBERO-Goal: pi0 V4 SR 36.4%, LGS 59.4; OpenVLA-OFT V4 SR 58.4%, LGS 39.6; on Spatial and Object, LGS mostly stays in the 2-20 range (Table 2).",
+    "pi0.5 barely changes: Goal V1 LGS 3.8 -> 7.4; Spatial V4 LGS -2.2 after IGAR.",
+    "Normal-instruction success is largely preserved: average change -0.4 (pi0), -1.5 (pi0.5, including -4.0 on Object), +0.5 (OpenVLA-OFT) points (Table 3).",
+    "Component ablation (pi0.5, Goal V1): attention-to-text 0.08 -> 0.15 and LGS 3.8 -> 7.4 with full IGAR; removing sink detection gives 4.6, removing head selection 4.2.",
+    "Latency for OpenVLA-OFT rises from 98.7 to 105.6 ms per step.",
+    "Real Franka (pi0, one cube-in-drawer task): baseline completes contradicted instructions ('fake success'), IGAR produces hovering or empty grasps; reported qualitatively."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO simulation; one real Franka task, qualitative)",
+    "benchmarks": ["ICBench built on LIBERO-Spatial, -Object, -Goal (30 tasks, 4 contradiction types)", "real Franka Research 3 cube-in-drawer task"],
+    "scale": "50 rollouts per task variant; real-robot trial count not reported",
+    "statistics": "no tests or CIs",
+    "baselines": "unmodified VLAs; component ablations of IGAR; no competing grounding or attention-intervention baseline"
+  },
+  "causal_validation": "Yes in a limited sense: modifying attention weights changes closed-loop behavior under contradictory instructions, and a component ablation is reported. But the outcome metric (lower success) cannot distinguish restored grounding from generic disruption of the policy when instructions are unusual.",
+  "closed_loop": "Yes, all success rates are closed-loop LIBERO rollouts.",
+  "limitations_stated": [
+    "Not stated as a separate section in the text read; the hyperparameter section notes that intervening in too many layers (L > 24) corrupts action representations."
+  ],
+  "critique": [
+    "LGS rewards any failure under contradiction, so a perturbation that makes the policy fragile under unfamiliar instructions would also score well. A 'correct' grounded behavior (abstain, stop, ask) is never measured; the real-robot 'hovering or empty grasps' is closer to breakage than refusal.",
+    "The method applied to pi0 is a different 'contrastive' formulation from the sink-redistribution IGAR used for pi0.5 and OpenVLA-OFT, yet pi0 provides the headline gains.",
+    "Hyperparameters were tuned on OpenVLA-OFT LIBERO-Goal, the same benchmark used for evaluation; gains are concentrated on Goal and weak on Spatial/Object.",
+    "No random-head or random-redistribution control, so it is unclear whether attending more to text specifically, or just perturbing attention, drives the LGS increase.",
+    "The diagnostic finding (VLAs often complete tasks under impossible instructions on LIBERO) is the stronger contribution and agrees with other papers that report weak language dependence on LIBERO (2610.10178, 2604.18000)."
+  ],
+  "code": "project page https://ray-nh.github.io/igar/ (code status not stated)",
+  "one_line": "On LIBERO, pi0, pi0.5 and OpenVLA-OFT still complete tasks when the instruction names absent objects or impossible relations, and shifting attention mass from sink tokens to instruction tokens makes pi0 and OpenVLA-OFT fail more often under such contradictions with little cost on normal instructions."
+}

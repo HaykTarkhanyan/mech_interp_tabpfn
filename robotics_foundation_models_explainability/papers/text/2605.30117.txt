@@ -1,0 +1,5964 @@
+VLA-Trace: Diagnosing Vision-Language-Action Models through Representation and Behavior Tracing
+
+Haoyuan Shi1,2*†, Xiancong Ren2*, Yingji Zhang2,3*†, Qinfan Zhang2,4*†, Jiayu Hu2, Haozhe Shan2,5, Han Dong2,6, Jinpeng Lu1,2, Yinda Chen1,2, Yi Zhang2, Yong Dai2‡, Xiaozhu Ju2§ 1 University of Science and Technology of China, 2 X-Humanoid, 3 Harbin Engineering University
+4 Beihang University, 5 Fudan University, 6 University of New South Wales
+
+Project Page
+
+Github Code
+
+arXiv:2605.30117v2 [cs.AI] 30 Aug 2026
+
+Abstract
+Understanding how Vision-Language-Action (VLA) models transform multimodal knowledge into embodied control remains an open challenge. We present VLA-Trace, a progressive diagnostic framework that analyzes VLA models through a unified evidence chain from representation dynamics to causal control attribution and behavioral manifestation. It specifically combines cross-modal and checkpointdrift centered kernel alignment (CKA) to trace representation evolution, attention knockout interventions to identify modality-specific control pathways, and rollout-level behavioral probes to examine grounding, shortcut dependence, and semantic following. Experiments on π0.5 and OpenVLA reveal three key findings. First, the two models exhibit distinct modality-specific adaptation dynamics during VLA finetuning. Second, they rely on different multimodal routing strategies and layer-wise dependencies during action decoding. Third, although VLA policies excel at visually grounded trajectory generation, they remain limited in fine-grained semantic following. These findings highlight future directions for representation-preserving adaptation, causal VLA circuits, and compositional semantic control.
+1 Introduction
+Vision-Language-Action (VLA) models have become a promising paradigm for advancing embodied intelligence in real-world environments. Built upon large-scale pretrained vision-language models (VLMs) (Beyer et al., 2024; Touvron et al., 2023; Xiao et al., 2024; Shan et al., 2026; Bai et al., 2025), recent systems, including X-VLA (Zheng et al., 2026), OpenVLA-style models (Kim et al.,
+*Core contributors. †Work done during the internship at X-Humanoid. ‡Project leader. §Corresponding author.
+
+2024, 2025), and π-style models (Black et al., 2026; Pertsch et al., 2025; Intelligence et al., 2025b,a), achieve strong robotic control performance by unifying visual-language perception and action generation within a single policy framework. However, despite these successes, the internal mechanisms underlying action generation remain poorly understood. This issue is critical because, without understanding how robotic policy learning reshapes internal representations, it is difficult to diagnose model failures and, consequently, to design more effective VLA architectures. In particular, it remains unclear whether multimodal knowledge is preserved, how visual and linguistic signals are aligned during policy learning, and which modalities govern action decoding.
+To answer these questions, we propose VLATrace, a systematic three-stage analysis framework that progressively investigates VLA models from latent representation evolution to causal control attribution and finally to behavioral dependence. As illustrated in Fig. 1, instead of treating the policy as an end-to-end system, we construct a unified evidence chain for interpreting VLA adaptation. First, we employ cross-modal and checkpoint-drift centered kernel alignment (CKA) (Kornblith et al., 2019) to identify whether vision-language prior is preserved or reshaped during fine-tuning. Second, we perform targeted attention knockouts to examine whether vision-language information is functionally utilized. Third, we combine attention localization and input editing to assess whether the resulting routing patterns reflect robust visionlanguage grounding or shallow visual shortcuts. Through this framework, we uncover the following key observations: π0.5 and OpenVLA exhibit distinct modalityspecific adaptation dynamics during VLA finetuning. Specifically, our CKA analysis reveals that π0.5 exhibits highly unstable layer-wise crossmodal fusion dynamics, primarily reorganizing tex-
+
+Input
+
+Image
+
+Encoder
+
+…
+
+Visual token
+
+turn on the stove
+
+and put the moka Tokenizer pot on it
+
+…
+
+Text token
+
+Text Instruction
+
+Model Evolution from VLM to VLA
+
+Stage 0: Pretrained VLM
+Text VLM
+Visual Text
+
+pretrain
+
+Stage 1: Pretrained VLA
+
+Action
+
+…
+
+VLM
+
+Visual
+
+Text
+
+Action Expert …
+Noised Action
+
+finetune
+
+Stage 2: Finetuned VLA
+
+Action
+
+…
+
+VLM
+Visual Text
+
+Action Expert task-specific weights
+…
+Noised Action
+
+Closed-loop Rollout
+
+… …
+…
+
+Representation Shifts under VLA Adaptation
+
+(A) Cross-modal CKA
+
+Layer 0
+
+Layer L
+
+Visual token
+
+Cross-modal CKA
+output
+
+Text token
+
+(B) Checkpoint Drift CKA
+
+C0 VLM
+
+C1 VLA(Pretrain)
+
+C2 VLA(Finetune)
+
+…
+
+…
+
+0
+
+1
+
+C0|C1 C2|C1 C2|C0
+
+vision
+
+1.0
+
+text
+
+joint
+
+0.0
+
+Causal Pathways for Action Decoding
+
+(A) Prefill: block V & L interaction
+
+V
+
+L
+
+S
+
+A
+
+V
+
+-inf
+
+allowed
+
+self
+
+masked(-inf)
+
+L -inf
+
+S
+
+A
+
+Context State
+
+(B) Generation: block action access
+
+Queries (A)
+
+V
+
+L
+
+(image) (instruction)
+
+…
+
+…
+
+S (state)
+…
+
+A (action)
+…
+
+-inf
+
+-inf
+
+-inf
+
+AV
+
+AL
+
+(no image) (no text)
+
+Analysis & Output
+
+Behavioral Probes of Shortcut Dependence (a) Attention IoU
+
+(B) Visual Patch Masking
+
+(C) Input Editing
+Turn on the stove and put the moka pot on it
+put both the alphabet soup and the tomato sauce in the basket
+
+Turn on the stove and put the frypan on it
+put both the alphabet soup and the ketchup in
+the basket
+
+Figure 1: Overview of VLA-Trace. The framework progressively diagnoses VLA models by tracing representation dynamics, identifying causal pathways for action decoding, and probing behavioral reliance on shortcut dependence.
+
+tual representations into task-conditioned control features. In contrast, OpenVLA exhibits smoother but often weaker intermediate-layer image–text alignment, while preserving its text-pooled representations and reorganizing primarily visionpooled and joint-pooled subspaces.
+π0.5 and OpenVLA exhibit distinct multimodal routing strategies and layer-wise dependency during action decoding. Attention knockout experiment across visual and textual pathways illustrates that π0.5 is dominated by a concentrated visual-to-action routing pathway during decoding, which limits the functional role of language. Conversely, OpenVLA distributes control-relevant information across both visual and textual access.
+VLA policies excel at visually grounded trajectory but remain limited in fine-grained semantic following. Attention localization and input editing reveal a gap between visual grounding and semantic following. Although policies localize to manipulation-relevant regions, they often ignore fine-grained semantic modifications, suggesting strong visually grounded trajectory imitation and weak compositional language control.
+These observations highlight future directions for effective representation preservation and adaptation, causal VLA circuits, and compositional semantic control in VLA systems. Overall, this work
+
+proposes a systematic framework for probing how vision-language prior knowledge influences action control in VLA models. By identifying these bottlenecks in multimodal adaptation, causal routing, and semantic grounding, our progressive diagnosis provides guidance for developing more interpretable and robust next-generation VLA models.
+2 Related Work
+In this section, we review related work around two topics: VLA models and mechanistic and representation analysis of VLA models. These areas motivate the design of VLA-Trace as a progressive analysis framework.
+2.1 Vision-Language-Action Models
+While large multimodal models have powered diverse agentic applications ranging from web navigation (Guo et al., 2026) and data visualization (Lu et al., 2026b) to video generation (Li et al., 2024c), VLA models specifically adapt the vision-language priors of VLMs to embodied control. Unlike world foundation models (NVIDIA et al., 2025; Liao et al., 2026; Ye et al., 2026; Lu et al., 2026a), which model environment dynamics through high-dimensional video generation, VLAs offer a more direct and lightweight paradigm by mapping multimodal representations to robot actions (Reed et al., 2022; Brohan et al., 2022; Zitkovich et al., 2023; Li et al., 2024b). Re-
+
+cent advances, including Octo (Team et al., 2024), OpenVLA (Kim et al., 2024), and π-style policies (Black et al., 2026; Intelligence et al., 2025b,a, 2026), have shown strong generalization across tasks and embodiments, while systems such as Gemini Robotics (Team et al., 2025b,a) and GR00T N1 (Bjorck et al., 2025) further extend VLA capabilities to complex manipulation and control.
+Despite these advances, it remains unclear how VLM representations are reshaped during VLA adaptation and whether pretrained knowledge is preserved and functionally utilized during action generation. Prior work shows that direct VLM-toVLA finetuning can degrade visual and language representations (Grover et al., 2025; Hancock et al., 2026), motivating a closer examination of how representation changes influence embodied behavior.
+2.2 Mechanistic Analysis of VLA Models
+Recent studies investigate the underlying mechanisms of VLA models, which can be broadly categorized into three directions:
+Representation-level analysis investigates the information encoded in hidden states. Probing analyses show that hidden states can encode symbolic properties, relations, action states, and latent transition information, suggesting that semantically meaningful state information is present in VLA representations (Fang et al., 2025; Hancock et al., 2026; Grant et al., 2026). Causal mechanism analysis moves toward mechanistic interpretability by steering activations, identifying task-relevant attention heads, and extracting sparse features that influence policy behavior (Mitra et al., 2025; Haon et al., 2025; Swann et al., 2026). Input intervention analysis examines grounding and robustness at input levels, revealing that VLA policies remain sensitive to distractors, background changes, object grounding errors, and failures to follow language instructions (Kerr et al., 2023; Li et al., 2024a; Hancock et al., 2025; Xie et al., 2026; Fei et al., 2025; Zhang et al., 2026).
+Nevertheless, existing analyses remain fragmented. Representation-level studies reveal what information is encoded, but not whether it is causally used during action decoding. Input intervention analyses expose behavioral failures, yet often leave the internal pathway from representation shifts to failure modes unclear. To bridge this gap, we propose VLA-Trace, a unified diagnostic framework that integrates representation geometry analysis, causal analysis, and input intervention
+
+Stage Analysis Probe
+
+Benchmarks
+
+Cross-Modal CKA S1 vision–language alignment
+
+LI/CO
+
+Checkpoint-Drift CKA stage-wise drift
+
+LI
+
+Attention Knockout S2 modality reliance
+Layer-Wise Knockout layerwise control
+
+LI/CV/RT LI/CV/RT
+
+Attention IoU region overlap
+
+L10
+
+S3
+
+Visual Patch Mask object/spatial/background
+
+LI/CV/RT/SP
+
+Input Editing image/prompt sensitivity
+
+L10
+
+Models P/O P/O P/O/F P/O/F P/O
+P/O/F/X P/O
+
+Table 1: Overview of the VLA-Trace framework. Probes progress from representation geometry to causal attribution and behavioral manifestation; italic text summarizes each probe’s target. Blue benchmark tags: LI =LIBERO, CO =COCO, CV =CALVIN,
+RT =RoboTwin2.0, SP =Simpler, L10 =LIBERO-10. Green model tags: P =π0.5, O =OpenVLA, F =OFT, X =X-VLA.
+
+into a stage-wise progressive pipeline to understand embodied control behavior.
+
+3 Representation Analysis Framework
+Overview. We investigate three stage-wise representations: C0, the pretrained VLM; C1, the pretrained VLA; and C2, the task-finetuned VLA. This staged formulation enables us to trace how general vision-language knowledge is preserved or reorganized during robotic policy learning. Built upon this progression, our framework integrates three complementary analyses. First, representationlevel analysis uses CKA to examine whether visual, textual, and joint representation geometries are preserved or reshaped across three stages. Second, causal analysis (stage 2) employs attention knockouts to evaluate whether these representations are functionally required for action decoding. Third, input intervention analysis (stages 1-2), including attention localization, visual masking, and input editing, investigates whether the identified pathways lead to robust spatial grounding, shortcut dependence, or limited semantic control in behavior. Tab. 1 summarizes the probing design, while Tab. 12 presents the evaluated models and designed benchmarks, with additional results in the Appendix.
+Experiment Setup. We primarily focus on π0.5 and OpenVLA, as they present contrasting struc-
+
+tures that are highly diagnostic for language and vision utilization. π0.5 employs a PaliGemma (Beyer et al., 2024) with an action expert under flowmatching action generation. Its transformer input consists of multi-view images, a BOS token, the task instruction, and a newline token, allowing bidirectional visual-language interaction during context formation. Conversely, OpenVLA utilizes an autoregressive Llama-based architecture (Touvron et al., 2023) where image patches are followed by a prompt template (e.g., “In: What action should the robot take to {instruction}? Out:”). For evaluation, we use COCO (Lin et al., 2014) as a generationdomain image-text reference and LIBERO (Liu et al., 2023) as the robot-domain benchmark.
+
+3.1 Representation Shifts under VLA Adaptation
+
+Evaluation Metrics. First, we investigate the
+
+evolution of latent representations across training
+
+stages to analyze the impact of robot-domain train-
+
+ing on vision–language alignment. Specifically, we
+
+measure CKA similarity (Kornblith et al., 2019)
+
+between pooled visual and textual representations
+
+across layers and stages using COCO and LIBERO
+
+as evaluation datasets. We focus on two comple-
+
+mentary analyses:
+
+(1) Cross-modal CKA measures the alignment
+
+between visual and textual representations within
+
+a model. Given two representation matrices X ∈
+
+RN×dx and Y ∈ RN×dy , the linear CKA similarity
+
+is
+
+defined
+
+as:
+
+CKA(X, Y
+
+)
+
+=
+
+∥X⊤Y ∥F2 ∥X⊤X∥F ∥Y ⊤Y ∥F
+
+(2) Checkpoint Drift CKA characterizes repre-
+
+sentational changes across training stages. Specifi-
+
+cally, for each layer, we keep three pooled views: vision pooled, text pooled, and joint pooled. For a given view v, we first compute the CKA be-
+
+tween the same layer of an anchor checkpoint
+
+ca and a target checkpoint ct, and then average these layer-wise values: DriftCKAv(ct | ca) =
+
+1 |L|
+
+l∈L CKA Hcva,l, Hcvt,l where Hcv,l ∈ RN×d
+
+denotes the sample-by-feature matrix of view v at
+
+layer l from checkpoint c, and L denotes the set
+
+of evaluated layers. Therefore, Drift CKA mea-
+
+sures the geometric similarity of representations
+
+across different training stages. Higher values indi-
+
+cate stronger geometric preservation across check-
+
+points, whereas lower values reflect greater repre-
+
+sentational reorganization. Further experimental
+
+details are provided in the Appendix A.2.
+
+3.1.1 CKA Alignment Analysis
+Vision-Language Alignment. Fig. 2 reveals different layer-wise cross-modal organization patterns in π0.5 and OpenVLA. For π0.5, cross-modal CKA is broadly distributed across intermediate layers and varies substantially across checkpoints and datasets, suggesting active cross-modal reorganization during VLA pretraining and task finetuning. OpenVLA, in contrast, often shows smoother but weaker image–text CKA across intermediate layers, with high alignment frequently concentrated near the boundary or terminal layers. This observation may stem from differences in architectural design, particularly the contrast between bidirectional and unidirectional attention mechanisms. Specifically, the bidirectional attention mechanism in π0.5 may induce more complex and fluctuating cross-modal fusion dynamics, resulting in less stable alignment patterns across layers (Finding 1).
+Checkpoint Drift and Adaptation. Next, we analyze checkpoint-drift CKA to identify preserved and reorganized subspaces during robot adaptation. In Fig. 3, π0.5 exhibits substantially stronger drift in textual representations, suggesting that language representations are heavily reorganized into taskconditioned control features. In contrast, OpenVLA primarily restructures visual and joint representation spaces. These results reveal distinct modality-specific preservation and adaptation dynamics across the two models (Finding 2).
+3.2 Causal Pathways for Action Decoding
+Evaluation Metrics. Second, we probe how latent representations causally influence action generation. Specifically, we decompose inference into representation formation and action decoding, and perform targeted attention knockout. This allows us to determine whether a modality contributes by shaping the initial multimodal context, by directly conditioning the action tokens during decoding, or by both mechanisms. Further experimental details are provided in the Appendix A.3.
+(1) Cross-modal Interaction (Prefill). The prefill stage encodes all input modalities (vision and language) to construct the initial internal representations. To isolate the role of cross-modal interaction, we block the attention between vision and language tokens (V–L attention), thereby enforcing independent modality processing. This allows us to assess how cross-modal integration during representation formation influences action generation.
+
+1.0
+
+COCO
+
+C0
+LIBERO-10
+
+C1
+
+C2
+
+Goal
+
+Spatial
+
+Object
+
+¼0:5 Cross-modal CKA
+
+0.5
+
+0.0 1
+1.0
+
+7
+
+13
+
+19 1
+
+7
+
+13
+
+19 1
+
+7
+
+13
+
+19 1
+
+7
+
+13
+
+19 1
+
+7
+
+13
+
+19
+
+OpenVLA Cross-modal CKA
+
+0.5
+
+0.0
+
+1
+
+11
+
+22
+
+33 1
+
+11
+
+22
+
+33 1
+
+11
+
+22
+
+33 1
+
+11
+
+22
+
+33 1
+
+11
+
+22
+
+33
+
+Layer
+
+Figure 2: Layer-wise image–text CKA across datasets and training stages. The panels compare cross-modal
+
+alignment for π0.5 and OpenVLA. Each curve denotes one checkpoint: C0, the pretrained VLM; C1, the pretrained
+
+VLA; and C2, the task-finetuned VLA.
+
+π0.5 C2 vs C0
+
+OpenVLA C2 vs C0
+1.0
+
+Vision 0.36 0.48 0.22 0.23 0.23 0.57 0.86 0.44 0.43 0.35
+
+Text 0.05 0.32 0.12 0.14 0.13 0.80 0.96 0.96 0.92 0.94
+0.8
+Joint 0.34 0.47 0.23 0.25 0.21 0.26 0.86 0.42 0.42 0.35
+
+π0.5 C1 vs C0
+
+OpenVLA C1 vs C0
+
+Vision 0.57 0.74 0.20 0.51 0.52 0.58 0.93 0.48 0.61 0.60 0.6
+
+Text 0.07 0.58 0.46 0.39 0.48 0.89 0.95 0.98 0.95 0.95
+
+Joint 0.49 0.78 0.25 0.46 0.53 0.40 0.92 0.48 0.61 0.59 0.4
+
+π0.5 C2 vs C1
+
+OpenVLA C2 vs C1
+
+Vision 0.38 0.48 0.36 0.32 0.27 0.72 0.88 0.45 0.59 0.54
+0.2
+Text 0.31 0.34 0.14 0.20 0.12 0.92 0.99 0.98 0.96 0.98
+
+Joint 0.38 0.47 0.31 0.32 0.23 0.74 0.88 0.44 0.60 0.54
+
+COCO
+
+LIB1E0RO-
+
+Goal
+
+Spatial Object
+
+COCO
+
+LIB1E0RO-
+
+Goal
+
+Spatial Object
+
+0.0
+
+Dataset
+
+Dataset
+
+Figure 3: Stage-wise checkpoint-drift CKA for π0.5 and OpenVLA. Each cell reports the mean matched-layer CKA for vision, text, and joint representations.
+
+(2) Modality Dependency (Gen). During generation, actions are produced autoregressively. We perform a modality knockout by blocking attention from action tokens to vision or language tokens, isolating the dependence of action decoding on multimodal context.
+This design disentangles two roles of multimodal information in VLAs: (i) cross-modal interaction during representation encoding, and (ii) modality dependency during action decoding. By intervening at these two stages, we can distinguish whether performance gains arise from better multimodal understanding or more effective utilization of modality-specific information during generation.
+
+Model P G-T G-I LIBERO-10 Goal Spatial Object
+
+✓ ✓ ✓ 93.5 96.0 98.5 99.5
+
+✗✓ ✓
+
+0.0 11.5 77.0 71.5
+
+π0.5
+
+✓✗ ✓ ✓✓ ✗
+
+39.0 96.5 99.0 98.0 0.0 4.0 0.0 0.0
+
+✗ ✗ ✓ 71.5 10.5 70.5 46.0
+
+✗✓ ✗
+
+0.0
+
+0.0 0.0 0.0
+
+✓✓ ✓
+
+✗✓ ✓
+
+OpenVLA
+
+✓ ✓
+
+✗ ✓
+
+✓ ✗
+
+✗✗ ✓
+
+✗✓ ✗
+
+58.0 74.5 75.5 74.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 16.0 44.0 32.5 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+
+Table 2: All-layer attention knockout results. Values show success rates. Rows correspond to the original settings used throughout the paper: Baseline, Prefill, Gen: no text, Gen: no image, Comb. + gen no text, and Comb. + gen no image. Here, ‘P’ denotes the prefill pathway, while ‘G-T’ and ‘G-I’ denote text and image availability during generation, respectively. Each rate is computed over 200 episodes per suite.
+
+Three attention configurations are considered: i. Baseline, where all modalities are provided; ii. No Image, where visual attention is removed; iii. No Text, where language attention is excluded. In this experiment, model performance is evaluated using success rate (%) over 200 episodes (20 trials across 10 LIBERO-10 tasks).
+
+3.2.1 Attention Knockout
+We first apply all-layer attention knockout to measure the global necessity of each pathway, and then use layer-wise knockout to localize where the dependency is concentrated. Tab 2 reports the alllayer results across four LIBERO suites. For π0.5,
+
+a
+
+b
+
+100
+
+base
+
+c base
+
+d base
+
+e base
+
+base
+
+π0.5 Success rate (%)
+
+75
+
+50
+
+25
+
+00
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17
+
+f
+
+g
+
+h
+
+i
+
+j
+
+100
+
+OpenVLA Success rate (%)
+
+75 base
+50
+
+base
+
+base
+
+base
+
+base
+
+25
+
+0
+
+0
+
+8 16 24 31 0
+
+8 16 24 31 0
+
+8 16 24 31 0
+
+8 16 24 31 0
+
+8 16 24 31
+
+Prefill knockout
+
+Generation knockout no text
+
+Generation knockout no image
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+Figure 4: Attention knockout for π0.5 (top) and OpenVLA (bottom) on LIBERO-10. Similar observations for LIBERO-Goal, Object, and Spatial are provided in Figure 8 and 10.
+
+removing visual access during generation is consistently destructive. Gen:no image reduces success to nearly zero across all datasets. In contrast, Gen:no text largely preserves performance on Goal, Object, and Spatial, although LIBERO-10 remains more sensitive. The prefill-stage interventions further reinforce this interpretation. Moreover, combining prefill no-V–L with generation noimage completely collapses performance. These results suggest that the most fragile decoding-time pathway in π0.5 is the visual-to-action route.
+OpenVLA exhibits a different dependency pattern. All-layer Gen:no text reduces success to 0.00% on every LIBERO suite, and prefill-stage image removal is equally destructive. In contrast, Gen:no image is harmful but does not uniformly collapse all datasets, suggesting that OpenVLA depends strongly on prompt-region access during decoding while also requiring visual grounding formed during prefill. Overall, these results indicate that π0.5 and OpenVLA exhibit distinct multimodal routing strategies during action generation: π0.5 primarily depends on visual-to-action pathways, whereas OpenVLA relies on both visual and language modalities (Finding 3).
+Crucially, the same intervention is harmless on non-essential pathways: during generation, dropping the instruction tokens costs π0.5 only 1.3 points and dropping the newline token costs OpenVLA 0.4 points, against 95.9 and 70.5 points for the image and prompt pathways (Tab. 6). The collapses are therefore pathway-specific, and we read all knockout results as necessary under this defined intervention. We then use layer-wise knockout to localize these global effects. Fig. 4 shows that, on the LIBERO-10 task, π0.5 has a narrow
+
+visual bottleneck. Gen:no image drops to 4.00% at the most vulnerable layer, while Gen:no text remains close to baseline across layers. Combining prefill with Gen:no image further sharpens this collapse around the same critical region. By contrast, OpenVLA shows broader vulnerable regions. Gen:no text, prefill, and their combined intervention reach 0.00% across multiple layers. The full layer-wise results over window sizes and LIBERO suites are reported in the supplementary material. These results indicate that critical information is more broadly distributed in OpenVLA than in π0.5, whereas π0.5 routes action-critical visual information through a narrower bottleneck (Finding 4).
+3.3 Behavioral Probes of Grounding and Shortcut Dependence
+Evaluation Metrics. Finally, we investigate whether the previously identified representation shifts and causal pathways translate into observable rollout behavior. Specifically, while Sec. 3.1 examines how multimodal representations are reorganized and Sec. 3.2 identifies the pathways required for action decoding, this section evaluates whether such pathways support robust grounding and instruction-conditioned behavior during closedloop execution. We focus on three complementary behavioral probes:
+(1) Attention IoU and Patterns. We first analyze action-to-image attention during LIBERO-10 rollouts. For each rollout step, we average action-query attention over visual patches to obtain an actionconditioned heatmap A¯. Given a simulator-derived mask M for task-relevant objects, robot regions, or their union, we compute three localization met-
+
+Model OpenVLA π0.5
+
+Stage
+Phase 1 Phase 2 Full
+Phase 1 Phase 2 Full
+
+Mass
+0.5437 0.5563 0.5882
+0.6100 0.5805 0.6328
+
+IoU90
+
+Object Robot+Object
+
+0.1374 0.1294 0.1504
+
+0.1830 0.1965 0.1965
+
+0.1312 0.1421 0.1379
+
+0.2303 0.2265 0.2233
+
+Hit
+0.9204 0.9433 0.9597
+0.6225 0.6259 0.6349
+
+Table 3: LIBERO-10 attention localization across temporal task phases. Metrics compare grounding on isolated target objects (Object) versus broader interaction regions (Robot+Object). Mass and Hit use the Robot+Object mask.
+
+rics. The high-attention patch IoU measures (Jac-
+
+card, 1912) whether thresholded high-confidence
+
+attention patches overlap with task-relevant regions:
+
+IoU90(M )
+
+=
+
+|H90 |H90
+
+(A¯)∩M (A¯)∪M
+
+| |
+
+,
+
+where
+
+H90(A¯)
+
+=
+
+{j
+
+:
+
+A¯j ≥ q0.9(A¯)} denotes patches whose attention
+
+is larger than the 90th percentile. The continuous
+
+attention mass measures how much attention is
+
+allocated to the region: Mass(M ) =
+
+. j∈M A¯j
+j A¯j
+
+Finally, the peak-hit rate measures whether the
+
+maximum-attention patch lies inside the target mask: Hit(M ) = 1 arg maxj A¯j ∈ M . Because
+
+LIBERO-10 tasks are long-horizon instructions
+
+that typically contain two sequential subgoals, we
+
+further divide each rollout into two temporal phases
+
+by the first and second halves of the executed steps.
+
+This phase split provides an approximate but con-
+
+sistent proxy for the first and second instruction
+
+subgoals, allowing us to test whether visual atten-
+
+tion evolves with the temporal structure of the task.
+
+(2) Visual Patch Masking. We mask target
+
+objects, gripper regions, robot bodies, and back-
+
+grounds using background replacement, black
+
+masking, and mosaic masking. Comparing success
+
+rates under these perturbations reveals whether the
+
+policy depends on target-object appearance, robot-
+
+object spatial relations, or broader scene context.
+
+(3) Input Editing. We edit the language instruc-
+
+tion while preserving the task template, testing
+
+whether language can redirect policy behavior to-
+
+ward new targets. Failure to adapt indicates rigid
+
+dependence on the original visual-task configura-
+
+tion.
+
+3.3.1 Attention IoU and Patterns
+As shown in Tab. 3, both models exhibit consistent overlap between high-attention patches and Robot+Object regions. Importantly, Robot+Object IoU90 is consistently higher than Object-only IoU90 for both models, suggesting that action attention is not routed solely to semantic object regions,
+
+but to broader robot-object interaction regions that include the gripper, robot arm, manipulated object, and task-relevant affordances. Beyond spatial localization, Fig. 5 demonstrates that policies implicitly encode temporal task semantics. By splitting the two-subgoal LIBERO-10 tasks into Phase 1 and Phase 2, we observe that attention shifts consistently align with task progression. E.g., in the task “turn on the stove and put the moka pot on it,” the model’s focus correctly transitions from the stove to the moka pot across phases. Further experimental details are provided in Appendix A.4.
+Despite both exhibiting spatial grounding, their routing mechanisms differ (as shown in Tab. 3). π0.5 distributes attention broadly (higher mass, lower peak-hit rates), while OpenVLA concentrates it sparsely (higher peak-hit rates, lower mass and IoU). Corroborating Sec. 3.2, this reflects π0.5’s dominant visual-to-action pathway compared to OpenVLA’s reliance on both visual and prompt regions. Overall, these observations indicate that the models exhibit spatially grounded and temporally structured action attention, routing action generation through robot-object interaction regions and shifting object-level attention across rollout phases (Finding 5).
+3.3.2 Visual Patch Masking
+Next, we investigate visual perturbations. In Tab. 4, target-object background replacement causes the largest average drop for π0.5 (76.45) and OpenVLA-OFT (60.25). For OpenVLA, fullrobot background replacement is more destructive (69.42) than target-object masking (47.75). These results indicate that target objects act as causal visual anchors for π0.5 and OpenVLA-OFT, whereas OpenVLA depends more critically on full-robot visibility.
+Further perturbations expose model-specific visual shortcut dependencies. For π0.5, masking the gripper or full robot with background replacement causes substantial performance degradation, whereas masking the robot without the gripper is much less destructive, suggesting a stronger reliance on gripper-centered interaction geometry. Conversely, OpenVLA exhibits a brittle dependence on full-robot visibility. In addition, background masking reduces average success for all models, indicating that policies exploit broader scene layouts. And further experimental details and results are provided in Appendix A.5. Together, these results reveal that VLA policies rely on tar-
+
+(a)
+
+(b)
+
+Figure 5: π0.5 attention IoU and mass on LIBERO-10. (a) Object IoU dynamically shifts between the first (Phase 1) and second (Phase 2) instruction subgoals. (b) Attention mass allocation over robot and object regions. These results indicate that VLA policies successfully generate visually grounded trajectories by tracking task-relevant objects over time. See similar observations in Fig. 22 for OpenVLA and Tab. 15 for instructions.
+
+get objects, robot-object interaction regions, and scene-layout cues as causal visual anchors for action execution, revealing strong visual grounding but also model-specific visual shortcut dependence (Finding 6).
+3.3.3 Input Editing
+Finally, we evaluate whether the model follows fine-grained vision-language instruction variations. For text editing, Tab. 5 shows that replacing target objects in instructions does not consistently redirect policy behavior. Some edits cause large performance drops (e.g., moka pot→frypan, 75%→30%), while others have limited effect. Overall, the results suggest that text exerts a non-negligible but limited influence on action execution, and the policy often remains biased toward the original visual-task configuration even when edited semantics dictate a behavioral shift (Finding 7).
+4 Discussion and Outlook
+In this section, we summarize the main experimental findings and discuss their implications for future research directions in the VLA domain.
+Representation preservation and embodied modality adaptation. First, our CKA alignment experiment reveals that π0.5 and OpenVLA exhibit distinct modality-specific adaptation dynamics at different stages. π0.5 induces more fluctuating cross-modal fusion dynamics than OpenVLA, resulting in less stable alignment patterns across layers. In addition, π0.5 primarily reorganizes textual representations into task-conditioned control features, whereas OpenVLA mainly restructures visual and cross-modal fusion representations.
+Future VLA training should balance preserving vision-language priors with adapting them for
+
+robotic control. Insufficient adaptation limits visuomotor learning, while excessive adaptation may degrade semantic grounding and increase reliance on visual shortcuts.
+Designing causal visual-language circuits for action decoding. Second, attention knockout experiments reveal distinct control dependencies: π0.5 primarily relies on visual-to-action pathways, whereas OpenVLA depends on both visual grounding and prompt-region access. Layer-wise interventions further show that OpenVLA distributes control information more broadly across layers, highlighting the importance of reliable multimodal pathways for action generation.
+Future VLA architectures may benefit from explicit VLA routing modules that regulate when and how visual and textual features are passed to action tokens. For example, informed by analyses of encoder layer fusion in sequence-to-sequence models (Liu et al., 2020), mid-to-late layer fusion gates could preserve high-level semantic constraints until the action generation stage, while action-conditioned cross-attention modules could dynamically select task-relevant visual regions and instruction tokens.
+From visual grounding to compositional semantic control. Third, the model’s attention is both spatially grounded in manipulation-relevant regions and temporally aligned with the sequential structure of the instruction. Besides, the policy often remains biased toward the original visual-task configuration even when edited semantics dictate a behavioral shift. These findings reveal a limitation in fine-grained instruction following: current VLA models can capture high-level task semantics, yet struggle to reliably incorporate subtle seman-
+
+tic modifications into low-level control behavior. As a result, edited instructions may fail to induce consistent compositional behavioral changes, particularly when they conflict with dominant visual or task-specific priors.
+A natural future direction is to train VLA models with semantic-edit objectives, counterfactual instruction-image pairs, object-swap interventions, and contrastive behavior supervision, so that small but meaningful language changes become causally actionable in low-level control.
+5 Conclusion
+We present VLA-Trace, a systematic framework for analyzing representation and control in VLA models. By combining CKA, attention knockouts, attention localization, visual patch masking, and input editing, VLA-Trace connects representation dynamics with causal action dependencies and rollout behavior. Experiments on π0.5 and OpenVLA reveal divergent adaptation strategies and a shared limitation: semantic control remains partial and architecture-dependent despite strong benchmark performance. These findings suggest that future VLA models should better preserve visual, language, and cross-modal semantic pathways, and integrate them more reliably into action decoding for robust compositional control.
+Limitations
+This study has several limitations. First, attention knockout is a controlled necessity probe, and its induced failures should not be directly equated with natural out-of-distribution failures. It reveals which pathways are required under a specific intervention design, but it does not define all forms of robustness. Complementary interventions such as activation patching and representation restoration instead test sufficiency and mediation, which we leave to future work. Second, CKA measures sample-level representation geometry and should not be interpreted as an absolute score of grounding, perception, or language understanding. Its values depend on the selected dataset, pooling strategy, and checkpoint comparison; therefore, our claims emphasize relative layer profiles and checkpoint drift rather than absolute CKA magnitudes. Third, the current analysis does not include random-feature or permutation CKA baselines. Fourth, attention IoU depends on simulator masks and patch resolution, so it is best interpreted as a conservative localization
+
+measure rather than a complete account of visual grounding. Fifth, VLM-style grounding probes can be confounded by whether a VLA checkpoint still supports natural language localization outputs; degraded text generation can reflect output-format mismatch as well as grounding degradation. Sixth, π0.5 C2 is evaluated as a shared LIBERO-finetuned checkpoint across multiple suites, so suite-level differences reflect evaluation distribution effects rather than separate per-suite weight changes. Finally, this work focuses its complete evidence chain on π0.5 and OpenVLA; our broader implementation protocol defines extensions to X-VLA, OpenVLAOFT, Calvin, SimplerEnv, LIBERO-Plus/Pro, and RoboTwin, but future work should complete these settings before making broader claims across the full VLA design space.
+Ethics Statement
+This work analyzes existing VLA models using publicly available models and evaluation resources, without collecting personal data or involving human-subject studies. While our framework is intended to improve transparency and diagnosis, the analyzed models may still inherit biases, safety risks, and failure modes from their training data and design; therefore, real-world deployment requires careful evaluation, human oversight, and appropriate safety constraints.
+References
+Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, et al. 2025. Qwen3vl technical report. arXiv preprint arXiv:2511.21631.
+Lucas Beyer, Andreas Steiner, André Susano Pinto, Alexander Kolesnikov, Xiao Wang, Daniel Salz, Maxim Neumann, Ibrahim Alabdulmohsin, Michael Tschannen, Emanuele Bugliarello, Thomas Unterthiner, Daniel Keysers, Skanda Koppula, Fangyu Liu, Adam Grycner, Alexey Gritsenko, Neil Houlsby, Manoj Kumar, Keran Rong, and 16 others. 2024. Paligemma: A versatile 3b vlm for transfer. Preprint, arXiv:2407.07726.
+Johan Bjorck, Fernando Castañeda, Nikita Cherniadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, et al. 2025. Gr00t n1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734.
+Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey
+
+Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, and 5 others. 2026. π0: A vision-language-action flow model for general robot control. Preprint, arXiv:2410.24164.
+Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, et al. 2022. Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817.
+Irving Fang, Juexiao Zhang, Shengbang Tong, and Chen Feng. 2025. From intention to execution: Probing the generalization boundaries of vision-language-action models. arXiv preprint arXiv:2506.09930.
+Senyu Fei, Siyin Wang, Junhao Shi, Zihao Dai, Jikun Cai, Pengfang Qian, Li Ji, Xinzhe He, Shiduo Zhang, Zhaoye Fei, et al. 2025. Libero-plus: In-depth robustness analysis of vision-language-action models. arXiv preprint arXiv:2510.13626.
+Bryce Grant, Xijia Zhao, and Peng Wang. 2026. Not all features are created equal: A mechanistic study of vision-language-action models. In International Conference on Learning Representations.
+Shresth Grover, Akshay Gopalkrishnan, Bo Ai, Henrik I. Christensen, Hao Su, and Xuanlin Li. 2025. Enhancing generalization in vision-language-action models by preserving pretrained representations. arXiv preprint arXiv:2509.11417.
+Yuhan Guo, Aiwen Sun, Hongliang He, Xinyu Yang, Yue Lu, Yingji Zhang, Xuntao Guo, Dong Zhang, Jianzhuang Liu, Jiang Duan, et al. 2026. Web-cogreasoner: Towards multimodal knowledgeinduced cognitive reasoning for web agents. In International Conference on Learning Representations, volume 2026, pages 36186–36210.
+Asher Hancock, Xindi Wu, Lihan Zha, Olga Russakovsky, and Anirudha Majumdar. 2026. Actions as language: Fine-tuning vlms into vlas without catastrophic forgetting. In International Conference on Learning Representations, volume 2026, pages 75333–75360.
+Asher J Hancock, Allen Z Ren, and Anirudha Majumdar. 2025. Run-time observation interventions make vision-language-action models more visually robust. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 9499–9506. IEEE.
+Bear Haon, Kaylene Stocking, Ian Chuang, and Claire Tomlin. 2025. Mechanistic interpretability for steering vision-language-action models. arXiv preprint arXiv:2509.00328.
+Physical Intelligence, Bo Ai, Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Greg Balke, Kevin Black, George Bokinsky, Shihao Cao, Thomas Charbonnier, Vedant Choudhary, Foster Collins, Ken Conley, Grace Connors, James Darpinian, Karan Dhabalia, Maitrayee Dhaka, Jared DiCarlo, Danny Driess, and 69 others. 2026. π0.7: a steerable generalist
+
+robotic foundation model with emergent capabilities. Preprint, arXiv:2604.15483.
+Physical Intelligence, Ali Amin, Raichelle Aniceto, Ashwin Balakrishna, Kevin Black, Ken Conley, Grace Connors, James Darpinian, Karan Dhabalia, Jared DiCarlo, Danny Driess, Michael Equi, Adnan Esmail, Yunhao Fang, Chelsea Finn, Catherine Glossop, Thomas Godden, Ivan Goryachev, Lachy Groom, and 37 others. 2025a. π0∗.6: a vla that learns from experience. Preprint, arXiv:2511.14759.
+Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al. 2025b. pi0.5: a vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054.
+Paul Jaccard. 1912. The distribution of the flora in the alpine zone. 1. New phytologist, 11(2):37–50.
+Justin Kerr, Chung Min Kim, Ken Goldberg, Angjoo Kanazawa, and Matthew Tancik. 2023. Lerf: Language embedded radiance fields. In Proceedings of the IEEE/CVF international conference on computer vision, pages 19729–19739.
+Moo Jin Kim, Chelsea Finn, and Percy Liang. 2025. Fine-tuning vision-language-action models: Optimizing speed and success. arXiv preprint arXiv:2502.19645.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. 2024. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246.
+Simon Kornblith, Mohammad Norouzi, Honglak Lee, and Geoffrey Hinton. 2019. Similarity of neural network representations revisited. In International conference on machine learning, pages 3519–3529. PMlR.
+Samuel Li, Sarthak Bhagat, Joseph Campbell, Yaqi Xie, Woojun Kim, Katia Sycara, and Simon Stepputtis. 2024a. Shapegrasp: Zero-shot task-oriented grasping with large language models through geometric decomposition. In 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 10527–10534. IEEE.
+Xinghang Li, Minghuan Liu, Hanbo Zhang, Cunjun Yu, Jie Xu, Hongtao Wu, Chilam Cheang, Ya Jing, Weinan Zhang, Huaping Liu, et al. 2024b. Visionlanguage foundation models as effective robot imitators. In International Conference on Learning Representations, volume 2024, pages 26703–26721.
+Yunxin Li, Haoyuan Shi, Baotian Hu, Longyue Wang, Jiashun Zhu, Jinyi Xu, Zhen Zhao, and Min Zhang. 2024c. Anim-director: A large multimodal model powered agent for controllable animation video generation. In SIGGRAPH Asia 2024 Conference Papers, pages 1–11.
+
+Yue Liao, Pengfei Zhou, Siyuan Huang, Donglin Yang, Shengcong Chen, Yuxin Jiang, Yue Hu, Si Liu, Jianlan Luo, Liliang Chen, et al. 2026. Genie envisioner: A unified world foundation platform for robotic manipulation. In International Conference on Learning Representations, volume 2026, pages 88446–88463.
+Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Dollár, and C Lawrence Zitnick. 2014. Microsoft coco: Common objects in context. In European conference on computer vision, pages 740–755. Springer.
+Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. 2023. Libero: Benchmarking knowledge transfer for lifelong robot learning. Advances in Neural Information Processing Systems, 36:44776–44791.
+Xuebo Liu, Longyue Wang, Derek F Wong, Liang Ding, Lidia S Chao, and Zhaopeng Tu. 2020. Understanding and improving encoder layer fusion in sequence-to-sequence learning. arXiv preprint arXiv:2012.14768.
+Jinpeng Lu, Dexu Zhu, Haoyuan Shi, Linghan Cai, Guo Tang, Yinda Chen, Jie Cao, Duyu Tang, Yi Zhang, Yong Dai, et al. 2026a. Current world models lack a persistent state core. arXiv preprint arXiv:2606.20545.
+Jinwei Lu, Yuanfeng Song, Chen Zhang, and Raymond Chi-Wing Wong. 2026b. Multivis-agent: A multiagent framework with logic rules for reliable and comprehensive cross-modal data visualization. Proceedings of the ACM on Management of Data, 4(1 (SIGMOD):1–25.
+Chancharik Mitra, Yusen Luo, Raj Saravanan, Dantong Niu, Anirudh Pai, Jesse Thomason, Trevor Darrell, Abrar Anwar, Deva Ramanan, and Roei Herzig. 2025. Mechanistic finetuning of vision-languageaction models via few-shot demonstrations. arXiv preprint arXiv:2511.22697.
+NVIDIA, :, Niket Agarwal, Arslan Ali, Maciej Bala, Yogesh Balaji, Erik Barker, Tiffany Cai, Prithvijit Chattopadhyay, Yongxin Chen, Yin Cui, Yifan Ding, Daniel Dworakowski, Jiaojiao Fan, Michele Fenzi, Francesco Ferroni, Sanja Fidler, Dieter Fox, Songwei Ge, and 60 others. 2025. Cosmos world foundation model platform for physical ai. Preprint, arXiv:2501.03575.
+Karl Pertsch, Kyle Stachowicz, Brian Ichter, Danny Driess, Suraj Nair, Quan Vuong, Oier Mees, Chelsea Finn, and Sergey Levine. 2025. Fast: Efficient action tokenization for vision-language-action models. Preprint, arXiv:2501.09747.
+Scott Reed, Konrad Zolna, Emilio Parisotto, Sergio Gomez Colmenarejo, Alexander Novikov, Gabriel Barth-Maron, Mai Gimenez, Yury Sulsky, Jackie Kay, Jost Tobias Springenberg, et al. 2022. A generalist agent. arXiv preprint arXiv:2205.06175.
+
+Haozhe Shan, Xiancong Ren, Han Dong, Haoyuan Shi, Yingji Zhang, Jiayu Hu, Yi Zhang, Yong Dai, Bin Shen, Lizhen Qu, et al. 2026. Epic-bench: A perception-centric benchmark for fine-grained embodied visual grounding in vision-language models. arXiv preprint arXiv:2605.17070.
+Aiden Swann, Lachlain McGranahan, Hugo Buurmeijer, Monroe Kennedy III, and Mac Schwager. 2026. Sparse autoencoders reveal interpretable and steerable features in vla models. arXiv preprint arXiv:2603.19183.
+Gemini Robotics Team, Abbas Abdolmaleki, Saminda Abeyruwan, Joshua Ainslie, Jean-Baptiste Alayrac, Montserrat Gonzalez Arenas, Ashwin Balakrishna, Nathan Batchelor, Alex Bewley, Jeff Bingham, et al. 2025a. Gemini robotics 1.5: Pushing the frontier of generalist robots with advanced embodied reasoning, thinking, and motion transfer. arXiv preprint arXiv:2510.03342.
+Gemini Robotics Team, Saminda Abeyruwan, Joshua Ainslie, Jean-Baptiste Alayrac, Montserrat Gonzalez Arenas, Travis Armstrong, Ashwin Balakrishna, Robert Baruch, Maria Bauza, Michiel Blokzijl, et al. 2025b. Gemini robotics: Bringing ai into the physical world. arXiv preprint arXiv:2503.20020.
+Octo Model Team, Dibya Ghosh, Homer Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, et al. 2024. Octo: An open-source generalist robot policy. arXiv preprint arXiv:2405.12213.
+Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, Dan Bikel, Lukas Blecher, Cristian Canton Ferrer, Moya Chen, Guillem Cucurull, David Esiobu, Jude Fernandes, Jeremy Fu, Wenyin Fu, and 49 others. 2023. Llama 2: Open foundation and fine-tuned chat models. Preprint, arXiv:2307.09288.
+Bin Xiao, Haiping Wu, Weijian Xu, Xiyang Dai, Houdong Hu, Yumao Lu, Michael Zeng, Ce Liu, and Lu Yuan. 2024. Florence-2: Advancing a unified representation for a variety of vision tasks. In 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 4818–4829. IEEE.
+Yuhan Xie, Yuping Yan, Yunqi Zhao, Handing Wang, and Yaochu Jin. 2026. Strong-vla: Decoupled robustness learning for vision-language-action models under multimodal perturbations. arXiv e-prints, pages arXiv–2604.
+Seonghyeon Ye, Yunhao Ge, Kaiyuan Zheng, Shenyuan Gao, Sihyun Yu, George Kurian, Suneel Indupuru, You Liang Tan, Chuning Zhu, Jiannan Xiang, Ayaan Malik, Kyungmin Lee, William Liang, Nadun Ranawaka, Jiasheng Gu, Yinzhen Xu, Guanzhi Wang, Fengyuan Hu, Avnish Narayan, and 17 others. 2026. World action models are zero-shot policies. Preprint, arXiv:2602.15922.
+
+Shuai Zhang, Jiayu Hu, Zijie Chen, Zeyuan Ding, Yi Zhang, Yingji Zhang, Ziyi Zhou, Junwei Liao, Shengjie Zhou, Yong Dai, et al. 2026. A2eval: Agentic and automated evaluation for embodied brain. arXiv preprint arXiv:2602.01640.
+Jinliang Zheng, Jianxiong Li, Zhihao Wang, Dongxiu Liu, Xirui Kang, Yuchun Feng, Yinan Zheng, Jiayin Zou, Yilun Chen, Jia Zeng, et al. 2026. X-vla: Softprompted transformer as scalable cross-embodiment vision-language-action model. In International Conference on Learning Representations, volume 2026, pages 60580–60606.
+Brianna Zitkovich, Tianhe Yu, Sichun Xu, Peng Xu, Ted Xiao, Fei Xia, Jialin Wu, Paul Wohlhart, Stefan Welker, Ayzaan Wahid, et al. 2023. Rt-2: Visionlanguage-action models transfer web knowledge to robotic control. In Conference on Robot Learning, pages 2165–2183. PMLR.
+A Implementation Protocol Details
+A.1 Model Interfaces and Input Templates
+The VLA-Trace protocol tracks several VLA model families, including π0.5, X-VLA, OpenVLA, and OpenVLA-OFT. The main paper focuses on π0.5 and OpenVLA because they instantiate two distinct action-generation interfaces. π0.5 builds on a PaliGemma-style VLM and uses an action expert with flow-matching action generation. In the evaluated configuration, the transformer input contains visual tokens from the image observation, a BOS token, the task instruction, and a newline token. Although the original model interface includes proprioceptive state fields, the analyzed representation stream does not tokenize proprioceptive state into the transformer prompt. OpenVLA instead formulates action prediction autoregressively over action tokens, using image patches followed by a prompt template of the form “In: What action should the robot take to {instruction}? Out:”. This interface distinction is important for rollout and attentionknockout experiments, where semantic instruction tokens must be separated from structural tokens such as BOS, newline markers, and system prompts. OpenVLA-OFT extends OpenVLA by replacing autoregressive action-token generation with continuous action regression during fine-tuning. This modification changes the action prediction interface and reduces dependence on sequential token decoding, making OpenVLA-OFT a useful supplementary setting for comparing how decoding paradigms influence representation dynamics and causal pathways.
+
+A.2 CKA Protocol
+Prompt templates for CKA probes. For representation CKA, we use separate neutral text templates rather than the action-generation prompts used during rollout. This choice makes the opendomain and robot-domain probes share a comparable image-description form and avoids conflating representational alignment with action-query formatting. For COCO, captions are rendered as A photo of <caption>. For LIBERO, task instructions are rendered as A photo of a robot <instruction>, where the instruction is inserted after the word “robot”. For OpenVLA, the same neutral textual content is wrapped with the modelrequired input format, yielding “In: ... Out:”; for π0.5, the neutral text is used directly, with the PaliGemma loader adding the required image token internally. These templates are used only for the representation-alignment probe and should not be confused with the action-generation prompt templates used by π0.5 or OpenVLA during policy rollout and knockout experiments.
+Pooled token views. For each sample and transformer layer, we extract hidden states over the full image–text sequence and partition them into visual and textual spans according to the model-specific token layout. Let hℓi,t denote the hidden state of token t at layer ℓ for sample i, and let I and T denote the image-token and text-token index sets. We define three pooled views:
+
+viℓ
+
+=
+
+1 |I |
+
+hℓi,t,
+
+t∈I
+
+qiℓ
+
+=
+
+1 |T |
+
+hℓi,t,
+
+t∈T
+
+jiℓ
+
+=
+
+|I |
+
+1 +
+
+|T
+
+|
+
+hℓi,t.
+
+t∈I∪T
+
+We refer to these vectors as vision_pooled, text_pooled, and joint_pooled, respectively. Stacking them over all probe samples gives layerwise representation matrices V ℓ, Qℓ, Jℓ ∈ RN×d, where N is the number of probe examples and d is the hidden dimension. For OpenVLA, the image span corresponds to the image-patch tokens and the text span corresponds to the subsequent textual prompt tokens. For PaliGemma-style π0.5 C0 extraction, the text span skips the BOS token following the image tokens.
+
+CKA computation. We compute linear CKA distributed pathways from localized bottlenecks:
+
+over sample-wise pooled representations. Given if all-layer removal is destructive but every local two representation matrices X, Y ∈ RN×d, we window is mild, the pathway is likely distributed;
+
+first center them along the sample dimension and if a narrow window causes a large drop, the cor-
+
+compute
+
+responding layer range is treated as a candidate
+
+CKA(X, Y )
+
+=
+
+∥Xc⊤Yc∥2F ∥Xc⊤Xc∥F ∥Yc⊤Yc∥F
+
+.
+
+For layer-wise image–text alignment, we compute CKA(V ℓ, Qℓ) independently at each layer ℓ within the same checkpoint. For checkpoint-drift analysis, we compare matched layers across two checkpoints for each pooled view:
+
+causal bottleneck.
+Token partitions. The knockout masks are defined over role-specific token sets. Let V denote visual tokens, L semantic language tokens, S structural prompt tokens, and A action-query or actiontoken positions. For π0.5, V contains visual tokens from the agent and wrist views, L contains the taskinstruction tokens, S contains BOS and newline
+
+CKA(Vaℓ, Vbℓ),
+
+CKA(Qℓa, Qℓb),
+
+CKA(Jaℓ, Jbℓ),
+
+tokens, and A contains action-query or action-slot tokens used by the action expert. For OpenVLA
+
+and report the mean diagonal CKA over layers. Thus, high checkpoint-drift CKA indicates preservation of the corresponding representation subspace, whereas low CKA indicates stronger representational reorganization.
+A.3 Attention Knockout Protocol
+
+and OpenVLA-OFT, V contains image patch tokens, L contains the natural-language task span, S contains system prompt and special tokens such as “In:”, “Out:”, question text, newline, BOS, and EOS where applicable, and A contains autoregressive action tokens.
+
+We use attention knockout to test whether specific token pathways are causally required for action generation. All interventions are implemented by adding a large negative mask to selected attention logits before the softmax, while keeping model weights, input observations, and decoded action heads unchanged. For an attention layer with queries Q, keys K, values V , and hidden dimension d, the modified attention is
+
+Prefill-stage knockout. We separate inference into a prefill stage and a generation stage. The prefill stage builds the internal multimodal context before action decoding. For π0.5, whose VLM backbone uses bidirectional attention, we test N0 V–L prefill blocking by preventing visual and language tokens from directly attending to each other. With token groups ordered as [L; V; A], this can be represented as
+
+QK ⊤ Attn(Q, K, V ; M ) = softmax √ + M V,
+d (1)
+where Mij = 0 preserves attention from query token i to key token j, and Mij = −∞ blocks that attention edge.
+Intervention granularity. We evaluate three levels of knockout. First, all-layer knockout applies the same source-blocking rule to every transformer layer, measuring the global necessity of a pathway. Second, single-layer knockout applies the mask only at one target layer, measuring whether the dependency is localized. Third, to reduce the possibility that information bypasses a single blocked layer through residual connections, we use centered window knockout. For a target layer ℓ and window size w, w = 3 blocks layers ℓ − 1 to ℓ + 1, w = 5 blocks ℓ − 2 to ℓ + 2, and w = 7 blocks ℓ − 3 to ℓ + 3. We use these windows to distinguish
+
+ LL −∞ −− Mpℓrefill:no-V-L = −∞ VV −−  , (2)
+AL AV AA
+where unmasked blocks preserve the original attention pattern and −∞ blocks suppress direct vision– language exchange. For OpenVLA-style autoregressive models, the main prefill intervention removes image access during context construction, testing whether visual grounding must be established before action-token decoding.
+Generation-stage knockout. In the generation stage, action tokens are decoded from the prefilled multimodal context. We perform modality knockout by blocking attention from action positions to selected source tokens, thereby preventing the decoder from conditioning on a specific modality during action prediction. This intervention measures the extent to which generation depends on
+
+visual tokens, semantic instruction tokens, structural prompt tokens, or their combinations.
+Let the token groups be ordered as [L; V; A], where L denotes language tokens, V denotes visual tokens, and A denotes action tokens. For example, the generation-time no-text intervention blocks action-to-language attention while preserving the remaining attention structure:
+ LL LV −− Mgℓen:no-text =  VL VV −−  . (3)
+−∞ AV AA
+Here, the −∞ block suppresses attention from action queries to language keys. Analogously, the no-image intervention replaces the AV block with −∞, blocking action-to-vision attention:
+LL LV −− Mgℓen:no-image = VL VV −−  . (4)
+AL −∞ AA
+For autoregressive OpenVLA-style models, these knockout masks are applied on top of the original causal mask, so they only remove source positions that would otherwise be visible to the current action token.
+Additional experimental results. Beyond the all-layer knockout results reported in the main paper, we provide full layer-wise (Tab. 6) and windowed knockout sweeps to assess whether each dependency is distributed across the network or concentrated in a narrow layer range. We use all-layer knockout to establish global pathway necessity, layer-wise and centered-window knockout to localize vulnerable regions, and semantic/structural token splits to avoid conflating task-language grounding with dependence on prompt-formatting tokens. Fig. 6–8 report π0.5 the results of the four LIBERO suites under 3-, 5-, and 7-layer windows; Figures 9– 10 report OpenVLA’s results; Fig. 11–13 extend the analysis to OpenVLA-OFT; and Fig. 14–15 show OpenVLA-OFT results on RoboTwin tasks. Together, these results provide consistent evidence about whether action generation depends primarily on visual tokens, semantic language tokens, structural prompt tokens, prefill-stage visual grounding, or localized layer bottlenecks across model families and evaluation suites.
+A.4 Attention Localization Metrics and Visualizations
+We complement the knockout analysis with attention-localization diagnostics that measure
+
+where action-relevant attention is spatially allo-
+
+cated during policy execution. All localization
+
+metrics are computed on simulator-aligned image
+
+patch grids. For each rollout step, we extract atten-
+
+tion from action-query or action-token positions to
+
+image patches and average over action positions to obtain an action-conditioned heatmap A¯. Let A¯j
+denote the attention assigned to image patch j, and
+
+let M denote a simulator-derived binary mask for
+
+task-relevant objects, gripper/robot regions, or their
+
+union. We report three complementary localization
+
+metrics.
+
+First, continuous attention mass measures the
+
+fraction of action attention assigned to the target
+
+region:
+
+Mass(M ) =
+
+j∈M A¯j j A¯j
+
+.
+
+(5)
+
+Second, to evaluate whether high-confidence attention regions spatially overlap with task-relevant regions, we compute a 90th-percentile thresholded attention IoU. Let
+
+τ90 = q0.9(A¯),
+
+(6)
+
+where q0.9(A¯) denotes the 90th percentile of the
+
+heatmap values. We define the high-attention patch
+
+set as
+
+H90(A¯) = {j : A¯j ≥ τ90}.
+
+(7)
+
+The thresholded IoU is then
+
+IoU90(M )
+
+=
+
+|H90(A¯) |H90(A¯)
+
+∩ ∪
+
+M| .
+M|
+
+(8)
+
+Third, peak-hit rate measures whether the single maximum-attention patch falls inside the target mask:
+
+Hit(M ) = 1 arg max A¯j ∈ M . (9)
+j
+These metrics capture different aspects of visual grounding: Mass measures total attention allocation to a region, IoU90 measures spatial overlap between the target mask and attention regions above the 90th-percentile threshold, and Hit measures whether the strongest attended patch is taskrelevant.
+Temporal phase split. LIBERO-10 tasks often involve long-horizon instructions with multiple sequential subgoals. To analyze whether visual attention evolves with the temporal structure of the task, we divide each rollout into two phases using
+
+the first and second halves of the executed trajectory. This split provides a simple and consistent proxy for early versus late subgoals without requiring manual step-level annotation. We compute all localization metrics separately for each phase and for each mask type.
+IoU visualization schematic. To make the localization metrics visually interpretable, we include a schematic visualization of the IoU computation in Fig. 16. The action-conditioned attention map is first projected onto the image patch grid. We then threshold the map at the 90th percentile to obtain the high-attention patch set H90(A¯) and compare it with the simulator-derived target mask M . The overlap region contributes to the numerator of IoU90, while the union of high-attention and target patches forms the denominator.
+Qualitative action-to-image attention. In addition to the quantitative localization metrics, we visualize action-conditioned image attention across execution stages. Fig. 17 compares pretrained and fine-tuned π0.5 and OpenVLA checkpoints over early, middle, and final rollout steps. And Figures 20 and 21 provide more qualitative attention visualizations, showing the temporal evolution of action-to-text attention and the layer-wise redistribution of modality attention before and after fine-tuning. These visualizations are intended as qualitative complements to the mask-based metrics, which show how action attention moves over the scene during manipulation, while the IoU, mass, and hit-rate metrics quantify whether this attention overlaps with simulator-derived task regions.
+Token-wise text-to-image attention. We also visualize text-to-image attention to inspect how individual instruction tokens attend to visual patches. For each displayed instruction token, we project its attention over image patches back to the image grid. Fig. 18 and 19 compare pretrained and finetuned checkpoints for π0.5 and OpenVLA, respectively. These plots help separate action-conditioned visual grounding from token-level language-toimage grounding: action-to-image attention measures which visual regions are used for decoding actions, whereas text-to-image attention shows how instruction tokens are visually grounded during representation formation.
+
+A.5 Visual Perturbation and Editing Protocol
+We use visual perturbation to test whether the image regions highlighted by attention analyses are also causally required for action execution. For each evaluation episode, we construct region masks over the input observation and replace selected regions before feeding the edited image to the policy. Model weights, task instructions, and the rollout environment are otherwise unchanged. We evaluate four primary region types: target objects, gripper regions, robot body regions, and background. Target-object masks are derived from task-relevant object annotations or simulator-aligned segmentation masks. Gripper masks cover the end-effector region, robot-body masks cover the visible robot morphology, and full-robot masks combine gripper and body regions. Background masks cover image regions outside the annotated task objects and robot regions. When multiple camera views are used, the same perturbation type is applied to the corresponding visible regions in each view.
+Mask replacement styles. We consider multiple replacement styles because they remove different visual cues. In background-color replacement, pixels inside the selected mask are replaced by a local or estimated background color. This removes object appearance and weakens boundary cues, making it the most aggressive test of whether the policy depends on the removed region. In black masking, pixels are replaced by a uniform black value. This removes texture and color but can preserve a coarse silhouette through the artificial mask boundary. In mosaic masking, the selected region is replaced by a low-resolution or block-wise mosaic pattern. This disrupts fine-grained appearance while preserving partial spatial occupancy and coarse geometry. Comparing these styles helps distinguish dependence on visual identity, object geometry, gripper-object spatial relations, and broader scenelayout cues.
+Region-specific perturbations. Target-object masking tests whether the manipulated object is a causal visual anchor rather than merely an attended region. Gripper masking tests whether the policy depends on end-effector pose and local contact geometry. Robot-body and full-robot masking test whether policies use broader robot configuration cues beyond the gripper. Background masking tests whether policies rely on global scene layout, support surfaces, or contextual correlations outside
+
+explicitly task-relevant objects. Because these regions are not semantically equivalent, we interpret performance drops relative to the masked region and replacement style rather than treating all perturbations as generic image corruption.
+Additional experimental results. The main paper reports averaged perturbation effects across masking strategies. In the supplement, we provide task-level success rates for all evaluated model families, including π0.5, OpenVLA, OpenVLA-OFT, and X-VLA, to show how visual perturbation sensitivity varies across architectures and task distributions. Tab. 7 reports results on LIBERO-10, Tab. 8 reports results on LIBERO-Object, Tab. 9 reports results on LIBERO-Spatial, and Tab. 10 reports results on LIBERO-Goal. We additionally report X-VLA perturbation results on the Simpler benchmark in Tab. 11, providing an out-of-LIBERO check of the same masking protocol. Together, these tables provide a task-level view of how targetobject, gripper, robot, and background perturbations affect different VLA architectures across the LIBERO benchmark suites.
+B Instruction
+We provide the full set of task instructions used in our benchmark evaluation to make the experimental coverage explicit and reproducible. Tab. 15 summarizes the instructions for LIBERO, RoboTwin2.0, and SimplerEnv-BridgeV2. The LIBERO suites cover complementary manipulation capabilities: LIBERO-10 evaluates long-horizon compositional manipulation, LIBERO-Object focuses on object-centric understanding, LIBEROSpatial probes spatial reasoning, and LIBEROGoal evaluates goal-conditioned control. For RoboTwin2.0, we evaluate a subset of 5 out of 50 tasks, focusing on representative bimanual manipulation scenarios. SimplerEnv-BridgeV2 evaluates real-to-sim transfer on Bridge-style manipulation tasks. Tab. 16 separately lists the CALVIN tasks, which cover sequential multi-skill manipulation, including object rotation, pushing, grasping, lifting, stacking, container interaction, drawer operation, and light control.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+4
+
+8 12
+
+17
+
+0
+
+j
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+r base
+
+4
+
+8 12
+
+17
+
+0
+
+z
+
+base
+
+4
+
+8 12
+
+Prefill knockout
+
+17
+
+0
+
+c base
+
+4
+
+8 12
+
+17
+
+0
+
+k
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+s base
+
+4
+
+8 12
+
+17
+
+0
+
+aa
+
+base
+
+4
+
+8 12
+
+Generation knockout no text
+
+17
+
+0
+
+d base
+
+e base
+
+f base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+l
+
+m
+
+n
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+t base
+
+u base
+
+v base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+ab
+
+ac
+
+ad
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+Generation knockout no image
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+h base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+o
+
+p
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+w base
+
+x base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+ae
+
+af
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+Generation knockout
+drop BOS+NL
+
+Generation knockout
+drop instruction
+
+Generation knockout
+keep BOS+NL only
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 6: Layer-wise knockout results for π0.5 on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 3-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+4
+
+8 12
+
+17
+
+0
+
+j
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+r base
+
+4
+
+8 12
+
+17
+
+0
+
+z
+
+base
+
+4
+
+8 12
+
+Prefill knockout
+
+17
+
+0
+
+c base
+
+4
+
+8 12
+
+17
+
+0
+
+k
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+s base
+
+4
+
+8 12
+
+17
+
+0
+
+aa
+
+base
+
+4
+
+8 12
+
+Generation knockout no text
+
+17
+
+0
+
+d base
+
+e base
+
+f base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+l
+
+m
+
+n
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+t base
+
+u base
+
+v base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+ab
+
+ac
+
+ad
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+Generation knockout no image
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+h base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+o
+
+p
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+w base
+
+x base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+ae
+
+af
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+Generation knockout
+drop BOS+NL
+
+Generation knockout
+drop instruction
+
+Generation knockout
+keep BOS+NL only
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 7: Layer-wise knockout results for π0.5 on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 5-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+4
+
+8 12
+
+17
+
+0
+
+j
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+r base
+
+4
+
+8 12
+
+17
+
+0
+
+z base
+
+4
+
+8 12
+
+Prefill knockout
+
+17
+
+0
+
+c base
+
+4
+
+8 12
+
+17
+
+0
+
+k
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+s base
+
+4
+
+8 12
+
+17
+
+0
+
+aa base
+
+4
+
+8 12
+
+Generation knockout no text
+
+17
+
+0
+
+d base
+
+e base
+
+f base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+l
+
+m
+
+n
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+t base
+
+u base
+
+v base
+
+4
+
+8 12
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+ab base
+
+ac base
+
+ad base
+
+4
+
+8 12
+
+Generation knockout no image
+
+17
+
+0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+h base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+o
+
+p
+
+base
+
+base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+w base
+
+x base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+ae base
+
+af base
+
+base
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17 0
+
+4
+
+8 12
+
+17
+
+Generation knockout
+drop BOS+NL
+
+Generation knockout
+drop instruction
+
+Generation knockout
+keep BOS+NL only
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 8: Layer-wise knockout results for π0.5 on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 7-layer knockout window centered at the indicated layer.
+
+Model π0.5 OpenVLA OpenVLA-OFT
+
+Setting
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+
+LIBERO-10
+75.00
+0.00 19.60 47.20
+8.40 52.60 53.20
+3.40 30.20 39.20
+52.60 58.40 64.40
+41.00 57.80
+54.33
+5.00 20.67 25.00
+10.67 31.33 20.33
+0.00 0.67 0.33
+10.00 11.67 16.00
+26.33 48.00
+94.80
+10.40 15.20 48.20
+89.80 89.80 95.00
+66.80 79.00 84.40
+85.40 84.00 91.20
+73.80 84.60
+
+LIBERO-Object
+95.60
+13.00 61.60 74.00
+3.20 97.40 79.40
+26.40 93.60 74.60
+91.80 92.80 96.60
+79.40 86.60
+70.00
+0.33 55.67 59.67
+1.00 72.00 3.67
+0.00 4.00 0.00
+34.33 17.33 15.67
+42.67 65.67
+99.80
+57.00 84.80 98.40
+94.20 98.80 100.00
+96.00 96.80 97.60
+98.60 99.80 98.80
+47.40 95.00
+
+LIBERO-Spatial
+95.80
+7.80 23.00 50.20
+64.00 94.80 89.80
+47.60 95.00 89.60
+97.40 99.00 96.40
+67.20 93.00
+79.67
+36.67 63.33 70.00
+19.00 70.67 53.00
+0.00 3.33 2.00
+22.00 31.67 49.67
+47.33 82.33
+92.80
+26.80 35.40 76.00
+92.40 92.80 93.80
+81.40 86.80 91.60
+90.40 91.00 91.20
+83.20 88.20
+
+LIBERO-Goal
+80.00
+19.80 58.80 58.40
+59.20 74.80 74.20
+44.00 69.80 68.60
+76.80 76.40 79.00
+57.80 78.00
+74.00
+45.00 73.00 67.67
+38.00 69.33 63.00
+0.33 6.00 8.00
+25.67 26.00 38.33
+41.67 70.67
+97.40
+49.60 60.20 88.40
+96.00 97.00 97.60
+67.20 87.20 94.60
+90.60 92.60 96.40
+72.20 97.60
+
+Avg. Drop
+-
+76.45 45.85 29.15
+52.90 6.70 12.45
+56.25 14.45 18.60
+6.95 4.85 2.50
+25.25 7.75
+-
+47.75 16.33 13.92
+52.33 8.67 34.50
+69.42 66.00 66.92
+46.50 47.83 39.58
+30.00 2.83
+-
+60.25 47.30 18.45
+3.10 1.60 -0.40
+18.35 8.75 4.15
+4.95 4.35 1.80
+27.05 4.85
+
+Table 4: Average success rates (%) across LIBERO datasets for π0.5, OpenVLA, and OpenVLA-OFT under each masking strategy.
+
+Original Prompt
+
+Orig. Edit Edited Prompt
+
+put both the alphabet soup and the tomato sauce 55
+
+in the basket
+
+put both the cream cheese box and the butter in 100
+
+the basket
+
+turn on the stove and put the moka pot on it
+
+75
+
+put the black bowl in the bottom drawer of the 90
+
+cabinet and close it
+
+put the white mug on the left plate and put the 80
+
+yellow and white mug on the right plate
+
+pick up the book and place it in the back com- 90
+
+partment of the caddy
+
+put the white mug on the plate and put the choco- 75
+
+late pudding to the right of the plate
+
+60 put both the alphabet soup and the ketchup in the basket
+90 put both the cream cheese box and the milk in the basket
+30 turn on the stove and put the frypan on it 30 put the white bottle in the bottom drawer of the cabinet
+and close it 70 put the red coffee mug on the left plate and put the yellow
+coffee mug on the right plate 30 pick up the mug and place it in the back compartment of
+the caddy 100 put the red mug on the plate and put the chocolate pud-
+ding to the right of the plate
+
+Table 5: Success rate (%) comparison between original and edited prompts.
+
+Model Setting
+
+LIBERO-10 Goal
+
+Spatial
+
+Object
+
+Avg.
+
+Baseline
+
+93.5 (0.0) 96.0 (0.0) 98.5 (0.0) 99.5 (0.0) 96.9 (0.0)
+
+Gen: drop BOS+newline
+
+57.5 (-36.0) 97.5 (+1.5) 99.0 (+0.5) 99.5 (0.0) 88.4 (-8.5)
+
+Gen: drop instruction
+
+86.0 (-7.5) 97.0 (+1.0) 100.0 (+1.5) 99.5 (0.0) 95.6 (-1.3)
+
+Gen: keep BOS+newline only 0.0 (-93.5) 1.5 (-94.5) 0.0 (-98.5) 0.0 (-99.5) 0.4 (-96.5)
+
+π0.5
+
+Gen: no image
+
+0.0 (-93.5) 4.0 (-92.0) 0.0 (-98.5) 0.0 (-99.5) 1.0 (-95.9)
+
+Gen: no text
+
+39.0 (-54.5) 96.5 (+0.5) 99.0 (+0.5) 98.0 (-1.5) 83.1 (-13.8)
+
+Prefill
+
+0.0 (-93.5) 11.5 (-84.5) 77.0 (-21.5) 71.5 (-28.0) 40.0 (-56.9)
+
+Comb. + gen no image
+
+0.0 (-93.5) 0.0 (-96.0) 0.0 (-98.5) 0.0 (-99.5) 0.0 (-96.9)
+
+Comb. + gen no text
+
+71.5 (-22.0) 10.5 (-85.5) 70.5 (-28.0) 46.0 (-53.5) 49.6 (-47.3)
+
+OpenVLA
+
+Baseline Gen: drop newline Gen: drop prompt, keep newline Gen: no image Gen: no text Prefill Comb. + gen no image Comb. + gen no text
+
+58.0 (0.0) 53.5 (-4.5) 0.0 (-58.0) 1.0 (-57.0) 0.0 (-58.0) 0.0 (-58.0) 0.0 (-58.0) 0.0 (-58.0)
+
+74.5 (0.0) 75.5 (+1.0) 0.0 (-74.5) 16.0 (-58.5) 0.0 (-74.5) 0.0 (-74.5) 0.0 (-74.5) 0.0 (-74.5)
+
+75.5 (0.0) 80.0 (+4.5) 0.0 (-75.5) 44.0 (-31.5) 0.0 (-75.5) 0.0 (-75.5) 0.0 (-75.5) 0.0 (-75.5)
+
+74.0 (0.0) 71.5 (-2.5) 0.0 (-74.0) 32.5 (-41.5) 0.0 (-74.0) 0.0 (-74.0) 0.0 (-74.0) 0.0 (-74.0)
+
+70.5 (0.0) 70.1 (-0.4) 0.0 (-70.5) 23.4 (-47.1) 0.0 (-70.5) 0.0 (-70.5) 0.0 (-70.5) 0.0 (-70.5)
+
+Table 6: All-layer attention knockout results across LIBERO suites. Each cell reports success rate (%) and the absolute change relative to the suite-specific all-layer baseline in parentheses. For π0.5, Prefill blocks V–L attention; for OpenVLA, Prefill removes image access. Comb. combines the corresponding prefill intervention with the specified generation-stage intervention.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+h 100
+75
+50
+25
+0 0
+o 100
+75
+50
+25
+0 0
+v 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+i
+
+base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+w
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+q
+
+base
+
+8
+
+16 24 31 0
+
+x
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+e base
+
+f base
+
+8
+
+16 24 31 0
+
+k
+
+8
+
+16 24 31 0
+
+l
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+base
+
+base
+
+8
+
+16 24 31 0
+
+r
+
+8
+
+16 24 31 0
+
+s
+
+8
+
+16 24 31 0
+
+t
+
+base
+
+base
+
+base
+
+8
+
+16 24 31 0
+
+y
+
+base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+Generation knockout no image
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+u
+
+base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout
+drop prompt
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 9: Layer-wise knockout results for OpenVLA on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 3-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+h 100
+75
+50
+25
+0 0
+o 100
+75
+50
+25
+0 0
+v 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+i
+
+base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+w
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+q
+
+base
+
+8
+
+16 24 31 0
+
+x
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+e base
+
+f base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+r
+
+8
+
+16 24 31 0
+
+s
+
+8
+
+16 24 31 0
+
+t
+
+base
+
+base
+
+base
+
+8
+
+16 24 31 0
+
+y
+
+base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+Generation knockout no image
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+u
+
+base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout
+drop prompt
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 10: Layer-wise knockout results for OpenVLA on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 7-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+r base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+s base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+e base
+
+f base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+t base
+
+8
+
+16 24 31 0
+
+u base
+
+8
+
+16 24 31 0
+
+v base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+ac
+
+base
+
+8
+
+16 24 31 0
+
+ad
+
+base
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+Generation knockout no image
+
+Combined knockout prefill + gen no text
+
+Combined knockout prefill + gen no image
+
+g base
+
+h base
+
+base
+
+8
+
+16 24 31 0
+
+o
+
+base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31 0
+
+w base
+
+8
+
+16 24 31 0
+
+x base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31 0
+
+ae
+
+base
+
+8
+
+16 24 31 0
+
+af
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31 0
+
+8
+
+16 24 31
+
+Generation knockout
+drop newline
+
+Generation knockout
+drop instruction
+
+Generation knockout
+keep newline only
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 11: Layer-wise knockout results for OpenVLA-OFT on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 3-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+r base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+s base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+t base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text full
+
+e base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+u base
+
+8
+
+16 24 31 0
+
+ac
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no vision
+
+f base
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+o
+
+base
+
+8
+
+16 24 31 0
+
+v base
+
+8
+
+16 24 31 0
+
+w base
+
+8
+
+16 24 31 0
+
+ad
+
+base
+
+8
+
+16 24 31 0
+
+ae
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no proprio
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop all special
+
+h base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+x base
+
+8
+
+16 24 31 0
+
+af
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout drop BOS
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 12: Layer-wise knockout results for OpenVLA-OFT on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 5-layer knockout window centered at the indicated layer.
+
+LIBERO-10 Success rate (%)
+
+Goal Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+r base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+s base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+t base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text full
+
+e base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+u base
+
+8
+
+16 24 31 0
+
+ac
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no vision
+
+f base
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+o
+
+base
+
+8
+
+16 24 31 0
+
+v base
+
+8
+
+16 24 31 0
+
+w base
+
+8
+
+16 24 31 0
+
+ad
+
+base
+
+8
+
+16 24 31 0
+
+ae
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no proprio
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop all special
+
+h base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+x base
+
+8
+
+16 24 31 0
+
+af
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout drop BOS
+
+Object Success rate (%)
+
+Spatial Success rate (%)
+
+Figure 13: Layer-wise knockout results for OpenVLA-OFT on LIBERO-10, Goal, Object, and Spatial. Each point reports the success rate under a 7-layer knockout window centered at the indicated layer.
+
+Click Alarm Clock Success rate (%)
+
+Click Bell Success rate (%)
+
+Grab Roller Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+ag 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+r
+
+base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+ah
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+s
+
+base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+ai
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+t
+
+base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+aj
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text full
+
+e base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+u
+
+base
+
+8
+
+16 24 31 0
+
+ac
+
+base
+
+8
+
+16 24 31 0
+
+ak
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no vision
+
+f base
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+o
+
+base
+
+8
+
+16 24 31 0
+
+v
+
+base
+
+8
+
+16 24 31 0
+
+w
+
+base
+
+8
+
+16 24 31 0
+
+ad
+
+base
+
+8
+
+16 24 31 0
+
+ae
+
+base
+
+8
+
+16 24 31 0
+
+al
+
+8
+
+16 24 31 0
+
+am
+
+base
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no proprio
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop all special
+
+h base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+x
+
+base
+
+8
+
+16 24 31 0
+
+af
+
+base
+
+8
+
+16 24 31 0
+
+an
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout drop BOS
+
+Lift Pot Success rate (%)
+
+Press Stapler Success rate (%)
+
+Figure 14: Layer-wise knockout results for OpenVLA-OFT on RoboTwin tasks. Each row corresponds to one RoboTwin task, and each point reports the success rate under a 1-layer knockout window at the indicated layer.
+
+Click Alarm Clock Success rate (%)
+
+Click Bell Success rate (%)
+
+Grab Roller Success rate (%)
+
+a 100
+75
+50
+25
+0 0
+i 100
+75
+50
+25
+0 0
+q 100
+75
+50
+25
+0 0
+y 100
+75
+50
+25
+0 0
+ag 100
+75
+50
+25
+0 0
+
+b base
+
+8
+
+16 24 31 0
+
+j
+
+base
+
+8
+
+16 24 31 0
+
+r
+
+base
+
+8
+
+16 24 31 0
+
+z
+
+base
+
+8
+
+16 24 31 0
+
+ah
+
+base
+
+8
+
+16 24 31 0
+
+Prefill knockout
+
+c base
+
+8
+
+16 24 31 0
+
+k
+
+base
+
+8
+
+16 24 31 0
+
+s
+
+base
+
+8
+
+16 24 31 0
+
+aa
+
+base
+
+8
+
+16 24 31 0
+
+ai
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text
+
+d base
+
+8
+
+16 24 31 0
+
+l
+
+base
+
+8
+
+16 24 31 0
+
+t
+
+base
+
+8
+
+16 24 31 0
+
+ab
+
+base
+
+8
+
+16 24 31 0
+
+aj
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no text full
+
+e base
+
+8
+
+16 24 31 0
+
+m
+
+base
+
+8
+
+16 24 31 0
+
+u
+
+base
+
+8
+
+16 24 31 0
+
+ac
+
+base
+
+8
+
+16 24 31 0
+
+ak
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no vision
+
+f base
+
+g base
+
+8
+
+16 24 31 0
+
+n
+
+base
+
+8
+
+16 24 31 0
+
+o
+
+base
+
+8
+
+16 24 31 0
+
+v
+
+base
+
+8
+
+16 24 31 0
+
+w
+
+base
+
+8
+
+16 24 31 0
+
+ad
+
+base
+
+8
+
+16 24 31 0
+
+ae
+
+base
+
+8
+
+16 24 31 0
+
+al
+
+8
+
+16 24 31 0
+
+am
+
+base
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout no proprio
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop all special
+
+h base
+
+8
+
+16 24 31 0
+
+p
+
+base
+
+8
+
+16 24 31 0
+
+x
+
+base
+
+8
+
+16 24 31 0
+
+af
+
+base
+
+8
+
+16 24 31 0
+
+an
+
+base
+
+8
+
+16 24 31 0
+
+Generation knockout
+drop newline
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+base
+
+8
+
+16 24 31
+
+Generation knockout drop BOS
+
+Lift Pot Success rate (%)
+
+Press Stapler Success rate (%)
+
+Figure 15: Layer-wise knockout results for OpenVLA-OFT on RoboTwin tasks. Each row corresponds to one RoboTwin task, and each point reports the success rate under a 3-layer knockout window at the indicated layer.
+
+Task 1
+
+Subgoal 1
+
+Task 2
+
+Subgoal 2
+
+Task 3
+
+Task 4
+
+Task 5
+
+Task 6
+Figure 16: Schematic illustration of attention-IoU computation. We project action-conditioned attention onto the image patch grid, keep the top 10% highest-attention patches, and compute IoU against a simulator-derived target mask. The same mask is also used to compute continuous attention mass and peak-hit rate.
+
+Figure 17: Qualitative action-to-image attention visualizations across rollout stages. We compare pretrained and fine-tuned π0.5 and OpenVLA models across early, middle, and final execution stages. Finetuning shifts action attention from diffuse or background-biased regions toward task-relevant robot-object interaction regions, indicating stronger visually grounded action generation during manipulation.
+
+Figure 18: Token-wise text-to-image attention for pretrained and fine-tuned π0.5 across execution steps. Columns correspond to instruction tokens, and rows compare checkpoints. Each heatmap shows how the selected text token attends to image patches.
+
+Figure 19: Token-wise text-to-image attention for pretrained and fine-tuned OpenVLA across execution steps. Columns correspond to instruction tokens, and rows compare checkpoints. Each heatmap shows how the selected text token attends to image patches.
+
+Figure 20: Visualization of action-to-text attention at different timesteps (top to bottom: steps 0, 30, 60, 100, and 250).
+Figure 21: Visualization of layer-wise modality attention (left: step 30, right: step 150) (Top: pretrained, bottom: fine-tuned).
+
+(a)
+
+(b)
+
+Figure 22: OpenVLA attention IoU and mass on LIBERO-10. (a) Object IoU dynamically shifts between the first (Phase 1) and second (Phase 2) instruction subgoals. (b) Attention mass allocation over robot and object regions. These results indicate that VLA policies successfully generate visually grounded trajectories by tracking task-relevant objects over time.
+
+Model π0.5 OpenVLA OpenVLA-OFT X-VLA
+
+Setting
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+
+Avg
+75.00
+0.00 19.60 47.20
+8.40 52.60 53.20
+3.40 30.20 39.20
+52.60 58.40 64.40
+41.00 57.80
+54.33
+5.00 20.67 25.00
+10.67 31.33 20.33
+0.00 0.67 0.33
+10.00 11.67 16.00
+26.33 48.00
+94.80
+10.40 15.20 48.20
+89.80 89.80 95.00
+66.80 79.00 84.40
+85.40 84.00 91.20
+73.80 84.60
+96.00
+46.40 78.60 91.40
+90.80 96.60 95.60
+43.33 83.40 96.20
+80.40 88.20 96.80
+89.00 89.40
+
+t0
+56.00
+0.00 12.00 82.00
+6.00 60.00 62.00
+0.00 50.00 54.00
+70.00 80.00 66.00
+56.00 60.00
+50.00
+0.00 33.33 16.67
+10.00 23.33 33.33
+0.00 0.00 3.33
+10.00 13.33 30.00
+30.00 46.67
+98.00
+0.00 10.00 86.00
+92.00 92.00 98.00
+68.00 86.00 90.00
+88.00 92.00 92.00
+100.00 92.00
+92.00
+70.00 82.00 94.00
+80.00 98.00 94.00
+60.00 78.00 96.00
+90.00 92.00 98.00
+94.00 94.00
+
+t1
+98.00
+0.00 64.00 96.00
+0.00 96.00 90.00
+0.00 90.00 64.00
+96.00 94.00 98.00
+70.00 98.00
+83.33
+0.00 43.33 60.00
+6.67 46.67 23.33
+0.00 0.00 0.00
+13.33 16.67 23.33
+46.67 73.33
+96.00
+0.00 16.00 98.00
+100.00 98.00 94.00
+66.00 92.00 96.00
+88.00 94.00 96.00
+92.00 98.00
+98.00
+46.00 98.00 100.00
+90.00 100.00 98.00
+66.67 100.00 100.00
+100.00 100.00 100.00
+92.00 98.00
+
+t2
+64.00
+0.00 20.00 34.00
+0.00 6.00 2.00
+0.00 0.00 0.00
+0.00 0.00 4.00
+0.00 8.00
+56.67
+0.00 10.00 6.67
+23.33 36.67 50.00
+0.00 0.00 0.00
+0.00 0.00 0.00
+10.00 30.00
+100.00
+0.00 2.00 0.00
+92.00 98.00 92.00
+54.00 66.00 70.00
+94.00 96.00 94.00
+86.00 80.00
+100.00
+86.00 92.00 92.00
+96.00 100.00 100.00
+23.33 80.00 100.00
+92.00 92.00 100.00
+96.00 98.00
+
+t3
+90.00
+0.00 2.00 8.00
+4.00 60.00 56.00
+2.00 32.00 32.00
+36.00 84.00 92.00
+14.00 94.00
+36.67
+0.00 0.00 3.33
+10.00 16.67 6.67
+0.00 0.00 0.00
+0.00 0.00 0.00
+16.67 36.67
+94.00
+0.00 0.00 78.00
+94.00 90.00 98.00
+82.00 86.00 100.00
+90.00 84.00 100.00
+90.00 92.00
+92.00
+26.00 72.00 96.00
+88.00 92.00 88.00
+16.67 80.00 96.00
+82.00 80.00 100.00
+84.00 92.00
+
+t4
+76.00
+0.00 0.00 22.00
+18.00 46.00 72.00
+12.00 8.00 64.00
+66.00 58.00 72.00
+52.00 56.00
+50.00
+0.00 26.67 16.67
+10.00 30.00 20.00
+0.00 0.00 0.00
+26.67 23.33 16.67
+20.00 56.67
+98.00
+0.00 0.00 14.00
+100.00 96.00 98.00
+88.00 96.00 92.00
+96.00 98.00 98.00
+92.00 84.00
+96.00
+22.00 26.00 76.00
+96.00 92.00 98.00
+36.67 92.00 100.00
+100.00 96.00 98.00
+96.00 94.00
+
+t5
+86.00
+0.00 60.00 94.00
+54.00 68.00 84.00
+20.00 34.00 38.00
+44.00 58.00 62.00
+84.00 88.00
+70.00
+50.00 73.33 76.67
+3.33 36.67 30.00
+0.00 6.67 0.00
+43.33 46.67 36.67
+53.33 76.67
+100.00
+100.00 100.00 100.00
+98.00 94.00 96.00
+80.00 84.00 88.00
+98.00 96.00 98.00
+84.00 100.00
+96.00
+80.00 94.00 84.00
+92.00 92.00 90.00
+53.33 84.00 86.00
+84.00 84.00 88.00
+36.00 34.00
+
+t6
+70.00
+0.00 0.00 22.00
+0.00 52.00 82.00
+0.00 34.00 72.00
+44.00 52.00 78.00
+52.00 54.00
+36.67
+0.00 3.33 10.00
+40.00 30.00 13.33
+0.00 0.00 0.00
+6.67 3.33 23.33
+10.00 56.67
+82.00
+0.00 0.00 4.00
+86.00 84.00 92.00
+50.00 52.00 92.00
+54.00 46.00 94.00
+62.00 76.00
+94.00
+38.00 72.00 94.00
+86.00 98.00 94.00
+46.67 96.00 92.00
+92.00 94.00 92.00
+94.00 92.00
+
+t7
+96.00
+0.00 38.00 58.00
+2.00 78.00 60.00
+0.00 34.00 66.00
+94.00 90.00 86.00
+76.00 44.00
+76.67
+0.00 16.67 50.00
+3.33 53.33 20.00
+0.00 0.00 0.00
+0.00 10.00 30.00
+36.67 53.33
+100.00
+4.00 24.00 96.00
+86.00 98.00 98.00
+88.00 94.00 98.00
+100.00 98.00 98.00
+96.00 100.00
+98.00
+28.00 86.00 90.00
+96.00 96.00 96.00
+76.67 90.00 96.00
+98.00 100.00 100.00
+100.00 98.00
+
+t8
+58.00
+0.00 0.00 54.00
+0.00 24.00 14.00
+0.00 0.00 2.00
+44.00 26.00 58.00
+0.00 42.00
+43.33
+0.00 0.00 6.67
+0.00 3.33 6.67
+0.00 0.00 0.00
+0.00 3.33 0.00
+6.67 20.00
+88.00
+0.00 0.00 0.00
+64.00 60.00 88.00
+30.00 52.00 30.00
+58.00 56.00 50.00
+8.00 40.00
+96.00
+40.00 100.00 90.00
+94.00 100.00 98.00
+6.67 68.00 100.00
+14.00 86.00 94.00
+100.00 96.00
+
+t9
+56.00
+0.00 0.00 2.00
+0.00 36.00 10.00
+0.00 20.00 0.00
+32.00 42.00 28.00
+6.00 34.00
+40.00
+0.00 0.00 3.33
+0.00 36.67 0.00
+0.00 0.00 0.00
+0.00 0.00 0.00
+33.33 30.00
+92.00
+0.00 0.00 6.00
+86.00 88.00 96.00
+62.00 82.00 88.00
+88.00 80.00 92.00
+28.00 84.00
+98.00
+28.00 64.00 98.00
+90.00 98.00 100.00
+46.67 66.00 96.00
+52.00 58.00 98.00
+98.00 98.00
+
+Table 7: Success rates (%) across tasks and masking strategies on LIBERO-10 for π0.5, OpenVLA, OpenVLA-OFT and X-VLA. The instruction is provided in Tab. 15.
+
+Model π0.5 OpenVLA OpenVLA-OFT X-VLA
+
+Setting
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+
+Avg
+95.60
+13.00 61.60 74.00
+3.20 97.40 79.40
+26.40 93.60 74.60
+91.80 92.80 96.60
+79.40 86.60
+70.00
+0.33 55.67 59.67
+1.00 72.00 3.67
+0.00 4.00 0.00
+34.33 17.33 15.67
+42.67 65.67
+99.80
+57.00 84.80 98.40
+94.20 98.80 100.00
+96.00 96.80 97.60
+98.60 99.80 98.80
+47.40 95.00
+98.60
+94.20 97.40 98.40
+95.60 97.80 97.20
+63.20 97.80 97.40
+93.20 98.40 98.40
+91.00 98.40
+
+t0
+96.00
+8.00 16.00 58.00
+2.00 100.00 100.00
+8.00 94.00 100.00
+94.00 94.00 100.00
+66.00 96.00
+63.33
+0.00 83.33 70.00
+0.00 73.33 0.00
+0.00 0.00 0.00
+73.33 0.00 50.00
+63.33 76.67
+100.00
+94.00 70.00 94.00
+100.00 96.00 100.00
+98.00 98.00 100.00
+100.00 100.00 100.00
+96.00 100.00
+100.00
+98.00 100.00 100.00
+98.00 100.00 100.00
+96.00 100.00 100.00
+100.00 100.00 100.00
+100.00 98.00
+
+t1
+98.00
+0.00 94.00 94.00
+2.00 100.00 96.00
+52.00 98.00 96.00
+98.00 100.00 98.00
+100.00 96.00
+76.67
+0.00 46.67 50.00
+0.00 40.00 0.00
+0.00 0.00 0.00
+33.33 16.67 13.33
+23.33 56.67
+100.00
+0.00 32.00 96.00
+100.00 100.00 100.00
+100.00 98.00 92.00
+100.00 100.00 98.00
+2.00 86.00
+100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+42.00 100.00 100.00
+92.00 100.00 100.00
+82.00 100.00
+
+t2
+78.00
+0.00 44.00 22.00
+0.00 86.00 24.00
+8.00 90.00 26.00
+90.00 90.00 80.00
+80.00 22.00
+70.00
+0.00 73.33 56.67
+6.67 80.00 0.00
+0.00 0.00 0.00
+43.33 36.67 10.00
+43.33 83.33
+98.00
+16.00 100.00 98.00
+100.00 100.00 100.00
+100.00 96.00 100.00
+98.00 100.00 100.00
+2.00 98.00
+100.00
+64.00 100.00 100.00
+100.00 100.00 100.00
+96.00 100.00 100.00
+98.00 98.00 100.00
+40.00 98.00
+
+t3
+98.00
+0.00 94.00 86.00
+0.00 96.00 76.00
+24.00 84.00 76.00
+76.00 88.00 98.00
+78.00 78.00
+46.67
+0.00 43.33 26.67
+3.33 56.67 0.00
+0.00 0.00 0.00
+56.67 26.67 30.00
+40.00 53.33
+100.00
+46.00 96.00 98.00
+94.00 98.00 100.00
+98.00 98.00 98.00
+100.00 100.00 96.00
+16.00 100.00
+96.00
+100.00 98.00 94.00
+98.00 96.00 100.00
+82.00 96.00 100.00
+92.00 94.00 96.00
+92.00 94.00
+
+t4
+90.00
+0.00 94.00 96.00
+24.00 100.00 100.00
+64.00 92.00 100.00
+66.00 66.00 96.00
+100.00 100.00
+83.33
+0.00 63.33 76.67
+0.00 80.00 0.00
+0.00 0.00 0.00
+33.33 0.00 3.33
+66.67 93.33
+100.00
+38.00 100.00 100.00
+66.00 100.00 100.00
+92.00 96.00 96.00
+100.00 100.00 100.00
+86.00 96.00
+98.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+62.00 100.00 98.00
+100.00 100.00 100.00
+100.00 100.00
+
+t5
+100.00
+0.00 24.00 14.00
+0.00 98.00 26.00
+0.00 98.00 20.00
+98.00 98.00 100.00
+68.00 88.00
+73.33
+0.00 80.00 63.33
+0.00 80.00 0.00
+0.00 36.67 0.00
+6.67 23.33 6.67
+0.00 63.33
+100.00
+80.00 100.00 98.00
+100.00 100.00 100.00
+100.00 98.00 100.00
+98.00 100.00 98.00
+52.00 88.00
+94.00
+88.00 76.00 90.00
+62.00 84.00 74.00
+30.00 82.00 78.00
+90.00 96.00 90.00
+98.00 96.00
+
+t6
+100.00
+52.00 72.00 90.00
+0.00 98.00 100.00
+10.00 90.00 100.00
+100.00 96.00 98.00
+62.00 92.00
+63.33
+3.33 50.00 63.33
+0.00 86.67 0.00
+0.00 0.00 0.00
+0.00 0.00 0.00
+6.67 40.00
+100.00
+94.00 98.00 100.00
+96.00 96.00 100.00
+92.00 92.00 96.00
+98.00 98.00 98.00
+70.00 94.00
+100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+42.00 100.00 100.00
+80.00 100.00 100.00
+100.00 100.00
+
+t7
+96.00
+0.00 90.00 90.00
+0.00 96.00 100.00
+58.00 100.00 100.00
+96.00 100.00 98.00
+68.00 98.00
+76.67
+0.00 73.33 86.67
+0.00 96.67 0.00
+0.00 0.00 0.00
+6.67 0.00 6.67
+73.33 76.67
+100.00
+12.00 80.00 100.00
+88.00 100.00 100.00
+86.00 96.00 96.00
+100.00 100.00 100.00
+24.00 98.00
+98.00
+98.00 100.00 100.00
+98.00 98.00 98.00
+78.00 100.00 98.00
+98.00 98.00 98.00
+98.00 98.00
+
+t8
+100.00
+70.00 88.00 92.00
+4.00 100.00 98.00
+40.00 96.00 94.00
+100.00 100.00 100.00
+88.00 100.00
+60.00
+0.00 20.00 60.00
+0.00 43.33 0.00
+0.00 0.00 0.00
+10.00 0.00 0.00
+50.00 40.00
+100.00
+96.00 74.00 100.00
+100.00 98.00 100.00
+96.00 100.00 98.00
+100.00 100.00 100.00
+100.00 100.00
+100.00
+98.00 100.00 100.00
+100.00 100.00 100.00
+22.00 100.00 100.00
+88.00 100.00 100.00
+100.00 100.00
+
+t9
+100.00
+0.00 0.00 98.00
+0.00 100.00 74.00
+0.00 94.00 34.00
+100.00 96.00 98.00
+84.00 96.00
+86.67
+0.00 23.33 43.33
+0.00 83.33 36.67
+0.00 3.33 0.00
+80.00 70.00 36.67
+60.00 73.33
+100.00
+94.00 98.00 100.00
+98.00 100.00 100.00
+98.00 96.00 100.00
+92.00 100.00 98.00
+26.00 90.00
+100.00
+96.00 100.00 100.00
+100.00 100.00 100.00
+82.00 100.00 100.00
+94.00 98.00 100.00
+100.00 100.00
+
+Table 8: Success rates (%) across tasks and masking strategies on LIBERO-Object for π0.5, OpenVLA, OpenVLAOFT, and X-VLA. The instruction is provided in Tab. 15.
+
+Model π0.5 OpenVLA OpenVLA-OFT X-VLA
+
+Setting
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+
+Avg
+95.80
+7.80 23.00 50.20
+64.00 94.80 89.80
+47.60 95.00 89.60
+97.40 99.00 96.40
+67.20 93.00
+79.67
+36.67 63.33 70.00
+19.00 70.67 53.00
+0.00 3.33 2.00
+22.00 31.67 49.67
+47.33 82.33
+92.80
+26.80 35.40 76.00
+92.40 92.80 93.80
+81.40 86.80 91.60
+90.40 91.00 91.20
+83.20 88.20
+98.00
+79.80 90.20 89.80
+97.00 97.20 96.80
+80.80 96.40 96.20
+98.00 97.60 97.20
+97.60 97.60
+
+t0
+100.00
+0.00 44.00 74.00
+76.00 100.00 100.00
+78.00 100.00 100.00
+98.00 98.00 100.00
+96.00 100.00
+86.67
+26.67 60.00 83.33
+23.33 80.00 56.67
+0.00 0.00 0.00
+13.33 46.67 43.33
+43.33 96.67
+100.00
+26.00 14.00 92.00
+100.00 100.00 100.00
+86.00 88.00 98.00
+90.00 96.00 98.00
+96.00 100.00
+98.00
+66.00 56.00 92.00
+92.00 100.00 100.00
+86.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+
+t1
+92.00
+0.00 12.00 64.00
+66.00 94.00 94.00
+2.00 98.00 98.00
+100.00 98.00 96.00
+46.00 96.00
+90.00
+83.33 93.33 93.33
+0.00 70.00 73.33
+0.00 13.33 0.00
+16.67 46.67 76.67
+3.33 96.67
+98.00
+0.00 54.00 90.00
+100.00 100.00 98.00
+84.00 94.00 100.00
+100.00 100.00 100.00
+88.00 86.00
+100.00
+84.00 94.00 90.00
+100.00 100.00 100.00
+88.00 100.00 98.00
+100.00 100.00 100.00
+98.00 100.00
+
+t2
+100.00
+0.00 64.00 46.00
+100.00 100.00 100.00
+92.00 98.00 100.00
+98.00 100.00 96.00
+94.00 100.00
+80.00
+43.33 63.33 76.67
+10.00 93.33 46.67
+0.00 0.00 0.00
+46.67 33.33 73.33
+46.67 80.00
+100.00
+10.00 0.00 92.00
+100.00 98.00 100.00
+100.00 98.00 100.00
+100.00 100.00 96.00
+100.00 100.00
+100.00
+64.00 100.00 74.00
+98.00 100.00 100.00
+94.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+
+t3
+100.00
+0.00 6.00 62.00
+64.00 96.00 92.00
+44.00 94.00 82.00
+100.00 100.00 100.00
+58.00 96.00
+100.00
+36.67 86.67 83.33
+26.67 86.67 90.00
+0.00 0.00 0.00
+43.33 70.00 60.00
+100.00 86.67
+100.00
+26.00 58.00 84.00
+100.00 100.00 100.00
+94.00 98.00 100.00
+96.00 100.00 100.00
+100.00 98.00
+100.00
+92.00 100.00 100.00
+100.00 98.00 100.00
+98.00 100.00 100.00
+100.00 100.00 98.00
+98.00 100.00
+
+t4
+88.00
+8.00 0.00 20.00
+20.00 78.00 58.00
+4.00 84.00 66.00
+92.00 98.00 92.00
+54.00 68.00
+76.67
+3.33 63.33 60.00
+13.33 56.67 6.67
+0.00 3.33 0.00
+26.67 46.67 66.67
+56.67 66.67
+96.00
+56.00 42.00 90.00
+100.00 100.00 98.00
+88.00 98.00 90.00
+94.00 98.00 98.00
+82.00 92.00
+90.00
+84.00 90.00 96.00
+94.00 90.00 90.00
+88.00 96.00 88.00
+94.00 90.00 88.00
+94.00 84.00
+
+t5
+100.00
+0.00 2.00 16.00
+72.00 98.00 94.00
+68.00 98.00 94.00
+96.00 100.00 96.00
+30.00 100.00
+46.67
+0.00 3.33 30.00
+0.00 13.33 0.00
+0.00 0.00 0.00
+0.00 0.00 0.00
+3.33 46.67
+46.00
+0.00 2.00 6.00
+36.00 46.00 54.00
+30.00 30.00 38.00
+48.00 40.00 34.00
+0.00 24.00
+98.00
+86.00 98.00 88.00
+98.00 96.00 96.00
+12.00 92.00 96.00
+100.00 96.00 100.00
+98.00 98.00
+
+t6
+100.00
+0.00 24.00 78.00
+84.00 100.00 100.00
+94.00 100.00 98.00
+100.00 100.00 100.00
+100.00 98.00
+86.67
+66.67 80.00 86.67
+23.33 90.00 73.33
+0.00 0.00 0.00
+10.00 33.33 33.33
+83.33 93.33
+100.00
+30.00 44.00 96.00
+98.00 98.00 100.00
+82.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+100.00
+90.00 98.00 100.00
+100.00 100.00 98.00
+80.00 98.00 98.00
+92.00 100.00 100.00
+100.00 100.00
+
+t7
+96.00
+52.00 64.00 76.00
+98.00 100.00 98.00
+86.00 96.00 100.00
+100.00 100.00 94.00
+92.00 94.00
+76.67
+70.00 90.00 80.00
+40.00 80.00 60.00
+0.00 0.00 0.00
+0.00 6.67 43.33
+23.33 90.00
+94.00
+18.00 18.00 38.00
+96.00 96.00 92.00
+90.00 94.00 94.00
+92.00 92.00 96.00
+94.00 94.00
+94.00
+58.00 78.00 74.00
+94.00 94.00 92.00
+72.00 88.00 96.00
+96.00 90.00 92.00
+92.00 94.00
+
+t8
+86.00
+0.00 0.00 20.00
+60.00 90.00 90.00
+8.00 94.00 88.00
+92.00 96.00 92.00
+26.00 84.00
+83.33
+16.67 50.00 63.33
+53.33 73.33 76.67
+0.00 16.67 16.67
+23.33 23.33 63.33
+70.00 90.00
+96.00
+10.00 32.00 76.00
+96.00 94.00 96.00
+66.00 74.00 96.00
+90.00 90.00 94.00
+86.00 94.00
+100.00
+82.00 94.00 94.00
+100.00 98.00 98.00
+100.00 98.00 94.00
+98.00 100.00 98.00
+100.00 100.00
+
+t9
+96.00
+18.00 14.00 46.00
+0.00 92.00 72.00
+0.00 88.00 70.00
+98.00 100.00 98.00
+76.00 94.00
+70.00
+20.00 43.33 43.33
+0.00 63.33 46.67
+0.00 0.00 3.33
+40.00 10.00 36.67
+43.33 76.67
+98.00
+92.00 90.00 96.00
+98.00 96.00 100.00
+94.00 94.00 100.00
+94.00 94.00 96.00
+86.00 94.00
+100.00
+92.00 94.00 90.00
+94.00 96.00 94.00
+90.00 92.00 92.00
+100.00 100.00 96.00
+96.00 100.00
+
+Table 9: Success rates (%) across tasks and masking strategies on LIBERO-Spatial for π0.5, OpenVLA, OpenVLAOFT, and X-VLA. The instruction is provided in Tab. 15.
+
+Model π0.5 OpenVLA OpenVLA-OFT X-VLA
+
+Setting
+Baseline
+Target(BG) Target(Black) Target(Mosaic)
+Gripper(BG) Gripper(Black) Gripper(Mosaic)
+Robot(BG) Robot(Black) Robot(Mosaic)
+Robot w/o Gripper(BG) Robot w/o Gripper(Black) Robot w/o Gripper(Mosaic)
+Background(Black) Background(Mosaic)
+Baseline
+Target(BG) Target(Black) Target(Mosaic)
+Gripper(BG) Gripper(Black) Gripper(Mosaic)
+Robot(BG) Robot(Black) Robot(Mosaic)
+Robot w/o Gripper(BG) Robot w/o Gripper(Black) Robot w/o Gripper(Mosaic)
+Background(Black) Background(Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+Baseline
+Target (BG) Target (Black) Target (Mosaic)
+Gripper (BG) Gripper (Black) Gripper (Mosaic)
+Robot (BG) Robot (Black) Robot (Mosaic)
+Robot w/o Gripper (BG) Robot w/o Gripper (Black) Robot w/o Gripper (Mosaic)
+Background (Black) Background (Mosaic)
+
+Avg
+80.00
+19.80 58.80 58.40
+59.20 74.80 74.20
+44.00 69.80 68.60
+76.80 76.40 79.00
+57.80 78.00
+74.00
+45.00 73.00 67.67
+38.00 69.33 63.00
+0.33 6.00 8.00
+25.67 26.00 38.33
+41.67 70.67
+97.40
+49.60 60.20 88.40
+97.20 97.00 97.60
+67.20 87.20 94.60
+90.60 92.60 96.40
+72.20 97.60
+97.20
+83.80 84.40 95.60
+96.20 97.40 98.40
+55.80 93.40 95.20
+92.40 94.00 95.80
+94.60 98.00
+
+t0
+8.00
+6.00 4.00 6.00
+0.00 0.00 2.00
+0.00 6.00 6.00
+2.00 8.00 18.00
+16.00 2.00
+53.33
+53.33 73.33 50.00
+33.33 50.00 20.00
+0.00 0.00 0.00
+10.00 13.33 6.67
+33.33 56.67
+98.00
+98.00 98.00 98.00
+100.00 98.00 98.00
+94.00 100.00 98.00
+90.00 100.00 92.00
+86.00 98.00
+100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+28.00 96.00 98.00
+96.00 94.00 100.00
+100.00 100.00
+
+t1
+100.00
+12.00 70.00 32.00
+96.00 100.00 100.00
+92.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+93.33
+60.00 83.33 80.00
+26.67 73.33 60.00
+3.33 3.33 0.00
+63.33 70.00 70.00
+56.67 100.00
+100.00
+82.00 90.00 96.00
+100.00 98.00 100.00
+50.00 76.00 90.00
+96.00 94.00 100.00
+98.00 100.00
+100.00
+94.00 100.00 96.00
+100.00 98.00 100.00
+78.00 98.00 98.00
+100.00 98.00 98.00
+100.00 100.00
+
+t2
+94.00
+52.00 92.00 92.00
+68.00 90.00 92.00
+10.00 78.00 40.00
+76.00 90.00 76.00
+20.00 90.00
+80.00
+30.00 83.33 73.33
+33.33 83.33 63.33
+0.00 0.00 3.33
+13.33 30.00 53.33
+3.33 63.33
+94.00
+68.00 94.00 96.00
+90.00 98.00 98.00
+96.00 92.00 100.00
+94.00 96.00 100.00
+34.00 96.00
+94.00
+76.00 94.00 94.00
+100.00 98.00 98.00
+80.00 92.00 96.00
+92.00 98.00 92.00
+100.00 100.00
+
+t3
+46.00
+2.00 2.00 8.00
+6.00 28.00 16.00
+0.00 18.00 18.00
+46.00 32.00 44.00
+16.00 36.00
+43.33
+46.67 46.67 63.33
+3.33 13.33 30.00
+0.00 0.00 0.00
+0.00 0.00 10.00
+13.33 30.00
+96.00
+38.00 46.00 82.00
+90.00 90.00 90.00
+16.00 62.00 80.00
+72.00 78.00 92.00
+52.00 94.00
+96.00
+98.00 90.00 94.00
+96.00 96.00 96.00
+34.00 98.00 96.00
+94.00 98.00 92.00
+98.00 94.00
+
+t4
+100.00
+10.00 76.00 12.00
+96.00 100.00 100.00
+94.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+93.33
+73.33 83.33 80.00
+86.67 90.00 100.00
+0.00 3.33 40.00
+50.00 26.67 80.00
+63.33 96.67
+100.00
+72.00 86.00 98.00
+100.00 98.00 100.00
+100.00 98.00 100.00
+98.00 96.00 98.00
+96.00 100.00
+98.00
+96.00 92.00 98.00
+96.00 98.00 98.00
+72.00 100.00 98.00
+100.00 100.00 98.00
+100.00 98.00
+
+t5
+100.00
+6.00 54.00 98.00
+44.00 100.00 100.00
+34.00 98.00 92.00
+100.00 100.00 100.00
+40.00 100.00
+80.00
+73.33 73.33 76.67
+63.33 73.33 70.00
+0.00 0.00 10.00
+0.00 10.00 30.00
+86.67 86.67
+96.00
+0.00 0.00 68.00
+96.00 100.00 98.00
+70.00 96.00 98.00
+92.00 94.00 98.00
+96.00 100.00
+92.00
+4.00 0.00 82.00
+94.00 94.00 98.00
+6.00 62.00 74.00
+52.00 58.00 82.00
+56.00 92.00
+
+t6
+100.00
+14.00 54.00 92.00
+90.00 100.00 100.00
+58.00 98.00 98.00
+100.00 100.00 96.00
+58.00 96.00
+63.33
+3.33 50.00 43.33
+50.00 80.00 80.00
+0.00 16.67 6.67
+23.33 16.67 13.33
+43.33 50.00
+94.00
+4.00 2.00 74.00
+98.00 96.00 94.00
+60.00 70.00 88.00
+78.00 78.00 90.00
+56.00 90.00
+100.00
+84.00 86.00 98.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+98.00 100.00
+
+t7
+100.00
+68.00 100.00 100.00
+100.00 100.00 100.00
+52.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+93.33
+46.67 93.33 100.00
+20.00 86.67 96.67
+0.00 36.67 20.00
+66.67 76.67 66.67
+80.00 96.67
+100.00
+34.00 86.00 78.00
+100.00 98.00 100.00
+18.00 96.00 100.00
+96.00 100.00 100.00
+22.00 98.00
+100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+
+t8
+100.00
+20.00 56.00 94.00
+88.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00 100.00
+100.00 100.00
+83.33
+26.67 76.67 66.67
+43.33 86.67 63.33
+0.00 0.00 0.00
+30.00 16.67 53.33
+26.67 76.67
+100.00
+18.00 0.00 96.00
+100.00 96.00 100.00
+92.00 96.00 100.00
+100.00 96.00 100.00
+100.00 100.00
+98.00
+98.00 88.00 100.00
+94.00 98.00 100.00
+52.00 96.00 98.00
+98.00 100.00 100.00
+100.00 100.00
+
+t9
+52.00
+8.00 80.00 50.00
+4.00 30.00 32.00
+0.00 0.00 32.00
+44.00 34.00 56.00
+28.00 56.00
+56.67
+36.67 66.67 43.33
+20.00 56.67 46.67
+0.00 0.00 0.00
+0.00 0.00 0.00
+10.00 50.00
+96.00
+82.00 100.00 98.00
+98.00 98.00 98.00
+76.00 86.00 92.00
+90.00 94.00 94.00
+82.00 100.00
+94.00
+88.00 94.00 94.00
+82.00 92.00 94.00
+8.00 92.00 94.00
+92.00 94.00 96.00
+94.00 96.00
+
+Table 10: Success rates (%) across tasks and masking strategies on LIBERO-Goal for π0.5, OpenVLA, OpenVLAOFT, X-VLA. The instruction is provided in Tab. 15.
+
+Setting
+
+Avg t1 t2 t3 t4
+
+Baseline
+
+79.17 79.17 70.83 95.83 70.83
+
+Target(BG)
+
+27.08 50.00 8.33 50.00 0.00
+
+Target(Black)
+
+44.79 50.00 33.33 95.83 0.00
+
+Target(Mosaic)
+
+72.92 66.67 70.83 87.50 66.67
+
+Gripper(BG)
+
+78.12 79.17 75.00 91.67 66.67
+
+Gripper(Black)
+
+75.00 83.33 66.67 91.67 58.33
+
+Gripper(Mosaic) 75.00 83.33 70.83 91.67 54.17
+
+Robot(BG)
+
+76.04 75.00 70.83 95.83 62.50
+
+Robot(Black)
+
+76.04 87.50 70.83 87.50 58.33
+
+Robot(Mosaic)
+
+77.08 83.33 66.67 91.67 66.67
+
+Background(BG) 59.38 83.33 0.00 100.00 54.17
+
+Background(Black) 58.33 66.67 0.00 95.83 70.83
+
+Background(Mosaic) 71.88 70.83 54.17 87.50 75.00
+
+Table 11: Performance of X-VLA under different masking strategies on Simpler.
+
+Model
+
+Backbone Size Layers Mask Decoding
+
+observation
+
+Bench Coverage
+
+π0.5
+
+PaliGemma 3B 18 Bi-dir Flow Matching RGB + Lang.
+
+LIBERO, Calvin
+
+X-VLA
+
+Florence-2 0.9B 24 Bi-dir Flow Matching RGB + Lang. + Soft_P. LIBERO, Clv, Simp., Rbt2
+
+OpenVLA
+
+Prismatic 7B 32 Causal AutoRegressive RGB + Lang.
+
+LIBERO, Clv, Simpler
+
+OpenVLA-OFT Prismatic 7B 32 Bi-dir L1 Regression RGB + Lang.+ Prop. LIBERO, Clv, RoboTwin2.0
+
+Table 12: Overview of main and supplementary VLA model and simulator coverage. We conduct the full mechanistic diagnosis on π0.5 and OpenVLA using LIBERO, and include X-VLA, OpenVLA-OFT, RoboTwin2.0, CALVIN, and Simpler as supplementary settings for broader validation. Lang. = language. LIB. = LIBERO; Cal. = CALVIN; Simp. = Simpler; Rbt2 = RoboTwin2.0.
+
+Model OpenVLA
+π0.5
+
+Stage Phase 1 Phase 2 Full Phase 1 Phase 2 Full
+
+Region
+Gripper Robot Arm Object
+Gripper Robot Arm Object
+Gripper Robot Arm Object
+Gripper Robot Arm Object
+Gripper Robot Arm Object
+Gripper Robot Arm Object
+
+Attention Mass
+0.2098 ± 0.0638 0.2406 ± 0.0592 0.2039 ± 0.0741
+0.1930 ± 0.0616 0.2708 ± 0.0646 0.1965 ± 0.0748
+0.2014 ± 0.0632 0.2557 ± 0.0638 0.2475 ± 0.0863
+0.2076 ± 0.1064 0.1812 ± 0.0863 0.2213 ± 0.0868
+0.1560 ± 0.0931 0.2042 ± 0.0649 0.2204 ± 0.0700
+0.1817 ± 0.1032 0.1927 ± 0.0772 0.2584 ± 0.0755
+
+IoU top-10%
+0.2198 ± 0.0702 0.1006 ± 0.0480 0.1374 ± 0.0902
+0.2166 ± 0.0700 0.1209 ± 0.0468 0.1294 ± 0.0796
+0.2182 ± 0.0701 0.1108 ± 0.0485 0.1504 ± 0.0842
+0.2650 ± 0.1395 0.1008 ± 0.0768 0.1312 ± 0.0884
+0.2057 ± 0.1324 0.1130 ± 0.0696 0.1421 ± 0.0793
+0.2353 ± 0.1392 0.1069 ± 0.0736 0.1379 ± 0.0738
+
+Peak Hit
+0.4903 0.3131 0.2975
+0.5148 0.3479 0.3389
+0.5026 0.3305 0.3599
+0.1887 0.0540 0.3798
+0.1487 0.0372 0.4401
+0.1687 0.0456 0.4206
+
+Table 13: LIBERO-10 attention grounding for gripper, robot arm, and object regions. All values are pooled over task-step samples. Gripper is the union of robot masks whose instance name contains “gripper”; Robot Arm is the union of the remaining robot masks; Object is the current subtask focus union. Full is recomputed over the full rollout using the union of both subtask focus sets.
+
+π0.5 evidence Rollout contrast View allocation
+Layer routing
+Attention sink
+Action slots
+
+Quantitative observation
+
+Interpretation
+
+Pretrained model: 0% success and 520-step failures; fine-tuned model: 100% success and 231-step completion on the representative rollout. In the layer-wise attention summary, action queries allocate roughly 19% mass to the wrist view and 9% to the agent view, after accounting for the BOS-dominated text sink. Early layers L0–L3 mainly perform coarse input reading; visual use increases through L8–L13; L14 shows the strongest image– action coupling; L15–L17 mainly propagate action information. BOS self-attention reaches 0.81, and query groups send approximately 28–45% of their mass to BOS; other text tokens allocate about 70% mass within the text/BOS loop and only about 28% to images. The ten action slots have nearly symmetric attention distributions under bidirectional self-attention.
+
+Finetuning changes attention from diffuse scene reading to executable manipulation tracking.
+π0.5 uses the closer manipulation view more strongly, consistent with reliance on local contact and affordance cues.
+The visual grounding signal is not monotonically stronger in later layers, but peaks near the layer where image removal is most damaging.
+Raw text attention can overstate semantic language use; special tokens must be separated before interpreting instruction grounding.
+π0.5 encodes the action chunk as a coupled block, so visual routing affects the whole action segment rather than a single scalar action.
+
+Table 14: Additional π0.5 attention-routing evidence from the layer-wise visualization analysis. These statistics complement the IoU and mass results by explaining where the attention signal is routed inside the transformer.
+
+Task Family
+
+ID
+
+t0
+
+t1
+
+t2
+
+t3
+
+LIBERO-10
+
+t4
+
+Long-horizon
+
+t5
+
+t6
+
+t7
+
+t8
+
+t9
+
+t0
+
+t1
+
+t2
+
+t3
+
+LIBERO-Object t4
+
+Object-centric
+
+t5
+
+t6
+
+t7
+
+t8
+
+t9
+
+t0 t1 t2 t3 LIBERO-Spatial t4 Spatial reasoning t5 t6 t7 t8 t9
+
+t0
+
+t1
+
+t2
+
+t3
+
+LIBERO-Goal t4
+
+Goal-directed
+
+t5
+
+t6
+
+t7
+
+t8
+
+t9
+
+t0
+
+RoboTwin2.0 Dual-arm
+
+t1 t2
+
+t3
+
+t4
+
+t0
+
+SimplerEnv
+
+t1
+
+Real-to-Sim
+
+t2
+
+t3
+
+Instruction
+Put both the alphabet soup and tomato sauce into the basket. Put both the cream cheese box and butter into the basket. Turn on the stove and put the moka pot on it. Put the black bowl into the bottom drawer and close it. Put mugs onto corresponding plates. Place the book into the back compartment of the caddy. Put mug on plate and pudding beside it. Put alphabet soup and cream cheese into basket. Put both moka pots on the stove. Put mug into microwave and close it.
+Pick up alphabet soup and place it in basket. Pick up cream cheese and place it in basket. Pick up salad dressing and place it in basket. Pick up BBQ sauce and place it in basket. Pick up ketchup and place it in basket. Pick up tomato sauce and place it in basket. Pick up butter and place it in basket. Pick up milk and place it in basket. Pick up chocolate pudding and place it in basket. Pick up orange juice and place it in basket.
+Pick bowl between plate and ramekin onto plate. Pick bowl next to ramekin onto plate. Pick bowl from table center onto plate. Pick bowl on cookie box onto plate. Pick bowl in top drawer onto plate. Pick bowl on ramekin onto plate. Pick bowl beside cookie box onto plate. Pick bowl on stove onto plate. Pick bowl beside plate onto plate. Pick bowl on cabinet onto plate.
+Open the middle drawer of cabinet. Put bowl on stove. Put wine bottle on cabinet. Open top drawer and put bowl inside. Put bowl on cabinet. Push plate to front of stove. Put cream cheese into bowl. Turn on stove. Put bowl on plate. Put wine bottle on rack.
+Click the alarm clock’s center of the top side button on the table. Click the bell’s top center on the table. Use both arms to grab the roller on the table. Use both arms to lift the pot. Use one arm to press the stapler.
+Put carrot on plate. Put eggplant into yellow basket. Put the spoon on the towel. Stack the green block on the yellow block.
+
+Capability
+Multi-object Multi-object Sequential reasoning Long-horizon Spatial planning Manipulation Spatial reasoning Compositional Multi-object Long-horizon
+Object recognition Object grounding Visual grounding Recognition Recognition Recognition Visual identification Category generalization Recognition Generalization
+Relative position Spatial reasoning Localization Spatial grounding 3D localization Relative relation Spatial grounding Spatial reasoning Relative relation Localization
+Goal execution Goal reaching Manipulation Multi-step planning Goal completion Motion control Object interaction Goal execution Goal reaching Target reaching
+Button clicking Target clicking Bimanual grasping Bimanual lifting Single-arm pressing
+Object placement Goal manipulation Spatial reasoning Stacking manipulation
+
+Table 15: Complete overview of LIBERO, RoboTwin2.0, Simpler benchmark tasks. LIBERO-10 evaluates longhorizon compositional manipulation, LIBERO-Object focuses on object-centric understanding, LIBERO-Spatial measures spatial reasoning, and LIBERO-Goal evaluates goal-conditioned control. RoboTwin2.0 subset (5/50 tasks) evaluates bimanual manipulation on five selected tasks. SimplerEnv-BridgeV2 tests real-to-sim transfer on Bridge-style manipulation tasks.
+
+Task Family
+Block Rotation
+Block Pushing
+Slider Drawer
+Grasp & Lift
+Lift from Cabinet
+Lift from Drawer Place Store Push into Drawer Stack Unstack
+Light Control
+
+ID Instruction
+t0 Take the red block and rotate it to the right. t1 Take the red block and rotate it to the left. t2 Take the blue block and rotate it to the right. t3 Take the blue block and rotate it to the left. t4 Take the pink block and rotate it to the right. t5 Take the pink block and rotate it to the left.
+t6 Push the red block to the right. t7 Push the red block to the left. t8 Push the blue block to the right. t9 Push the blue block to the left. t10 Push the pink block to the right. t11 Push the pink block to the left.
+t12 Push the sliding door to the left side. t13 Push the sliding door to the right side. t14 Pull the handle to open the drawer. t15 Push the handle to close the drawer.
+t16 Grasp and lift the red block. t17 Grasp and lift the blue block. t18 Grasp and lift the pink block.
+t19 Lift the red block from the sliding cabinet. t20 Lift the blue block from the sliding cabinet. t21 Lift the pink block from the sliding cabinet.
+t22 Take the red block from the drawer. t23 Take the blue block from the drawer. t24 Take the pink block from the drawer.
+t25 Store the grasped block in the sliding cabinet. t26 Store the grasped block in the drawer.
+t27 Slide the block until it falls into the drawer.
+t28 Stack the grasped block. t29 Remove the stacked block.
+t30 Use the switch to turn on the light bulb. t31 Use the switch to turn off the light bulb. t32 Press the button to turn on the LED light. t33 Press the button to turn off the LED light.
+
+Capability
+Block rotation Block rotation Block rotation Block rotation Block rotation Block rotation
+Object pushing Object pushing Object pushing Object pushing Object pushing Object pushing
+Slider manipulation Slider manipulation Drawer manipulation Drawer manipulation
+Grasp and lift Grasp and lift Grasp and lift
+Lift from container Lift from container Lift from container
+Lift from drawer Lift from drawer Lift from drawer
+Place into container Place into drawer
+Push into drawer
+Stacking Unstacking
+Light control Light control LED control LED control
+
+Table 16: Overview of CALVIN manipulation tasks. CALVIN evaluates sequential multi-skill manipulation abilities, including object rotation, pushing, grasping, lifting, stacking, container interaction, drawer operation, and light control.
+
+

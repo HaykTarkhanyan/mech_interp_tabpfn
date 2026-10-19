@@ -1,0 +1,42 @@
+{
+  "id": "2609.04277",
+  "title": "FailureSpot: Label-Efficient Timestamp-Level Failure Detection for Vision-Language-Action Models",
+  "first_author": "Ma",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0 (LIBERO-10)", "pi0-FAST (LIBERO-10)", "OpenVLA (LIBERO-10)"],
+  "action_head": "mixed: flow/diffusion action expert (pi0) and discrete action tokens (pi0-FAST, OpenVLA)",
+  "methods": ["MLP or LSTM detector on VLA internal representations (SAFE-style)", "pretraining on soft pseudo-labels from action-chunk consistency and action magnitude (with EMA)", "uncertainty-based active learning to pick 15% of seen-task trajectories for timestamp-level human annotation", "functional conformal thresholds", "manual frame-by-frame failure-onset and recovery annotation"],
+  "question": "Can a VLA failure detector be trained to localize failure onset at each timestep, using action-derived weak labels plus a small actively chosen set of dense human labels instead of trajectory-level labels?",
+  "key_findings": [
+    "pi0, unseen tasks (Table 1): timestamp-level AUROC 90.5 (FailureSpot-MLP) vs SAFE-MLP 76.6, LogpZO 69.8, and a plain MLP trained on the same 15% timestamp labels 61.8; trajectory-level AUROC 81.8 vs SAFE-MLP 67.7.",
+    "pi0-FAST, unseen: timestamp-level AUROC 85.8 (FailureSpot-MLP) vs 81.2-84.4 for strongest alternatives in the table; gains are smaller than on pi0.",
+    "OpenVLA gains are smallest; authors say trajectory-level AUROC is slightly worse than baselines because single-step actions give no chunk overlap for the consistency signal.",
+    "Ablation (Table 2): action-derived weak supervision alone gives below-chance AUROC on pi0 (timestamp-level 36.7 seen / 30.7 unseen for MLP; trajectory-level 42.1 / 30.4) and on OpenVLA trajectory-level (32.9 / 38.2); adding the 15% timestamp labels is what drives performance.",
+    "Trajectory-label pretraining plus active-learning fine-tuning nearly matches the full method on pi0 seen (93.8 vs 95.3 timestamp AUROC) but not unseen (80.1 vs 90.5).",
+    "Timestamp-level annotations give much larger gains than more weak-supervision pretraining data (Fig. 3).",
+    "Characteristic failure modes differ by model: pi0 repeated grasp attempts, pi0-FAST excessive swinging, OpenVLA stagnation (Fig. 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10"],
+    "scale": "500 rollouts per policy (50 per task); success rates 81.4% (pi0), 61.4% (pi0-FAST), 53.8% (OpenVLA); 3 seen tasks (60/40 train/eval) and 7 unseen tasks (350 trajectories); annotation budget 15% of seen-task trajectories; results averaged over 3 seeds",
+    "statistics": "no: means over 3 seeds, no std or tests in the main tables",
+    "baselines": "STAC-Single, LogpZO, SAFE-MLP, SAFE-LSTM, ActProbe (pi0 and OpenVLA only), MLP and LSTM trained on the same 15% timestamp labels"
+  },
+  "causal_validation": "None; correlational detector.",
+  "closed_loop": "Offline on recorded rollouts; no intervention or recovery experiment.",
+  "limitations_stated": [
+    "Future work: use the timestamp-level detector for intervention and recovery (no explicit limitations section in the text read)."
+  ],
+  "critique": [
+    "The 'weak supervision' story is weaker than presented: action-derived pseudo-labels alone are anti-correlated with failure on pi0 and OpenVLA, so the result mainly shows that a small amount of dense human labeling plus a good initialization works.",
+    "Timestamp labels are produced by the authors with one annotator protocol and no inter-annotator agreement reported, yet they define both training targets and the evaluation metric.",
+    "Comparisons with SAFE and LogpZO mix supervision types (they use only trajectory labels); the fairer comparison is the MLP/LSTM with the same 15% timestamp labels, where FailureSpot still wins clearly on pi0.",
+    "Only the internal representation input is shared with SAFE; which layer is used is not specified in the parts read, and there is no analysis of what in the representation encodes failure onset.",
+    "Single benchmark (LIBERO-10), simulation only, no variance reported."
+  ],
+  "code": "not reported",
+  "one_line": "Pretraining a SAFE-style detector on action-consistency pseudo-labels and fine-tuning it on 15% actively chosen, frame-annotated trajectories localizes failure onset in pi0, pi0-FAST and OpenVLA much better than trajectory-label detectors, though the pseudo-labels alone are worse than chance."
+}

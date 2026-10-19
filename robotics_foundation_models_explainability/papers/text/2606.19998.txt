@@ -1,0 +1,1903 @@
+arXiv:2606.19998v2 [cs.RO] 30 Sep 2026
+
+Tri-Info: Generalizable, Interpretable Failure Prediction for VLA Models via Information Theory
+Jinghan Yang ∗ Yunchao Zhang Wang Yuan Haolun Wang Jiaming Zhang Zhengyang Hu Yanchao Yang
+InfoBodied AI Lab, The University of Hong Kong
+Abstract
+Vision-Language-Action (VLA) models are increasingly deployed across diverse tasks, yet they remain black boxes whose physical interactions can cause irreversible harm, making generalizable and interpretable failure detection essential. We observe that successful and failed rollouts carry systematically different information-theoretic signatures. Building on this, we formalize VLA control as a closed-loop information pipeline and derive the Triple Information-theoretic (TriInfo) signals that capture whether actions remain diverse, temporally consistent, and coupled to state transitions. Across six VLA models and three benchmark environments, Tri-Info matches the strongest baselines in-domain. Moreover, TriInfo transfers across architectures, environments, and the sim-to-real gap without retraining with labeled data, reaching 70% accuracy on real-world tasks. This establishes Tri-Info as a simple yet powerful method that not only detects failures with strong cross-domain generalization, but also delivers interpretable diagnostics of the underlying failure modes.
+1 Introduction
+Building on large-scale vision-language pretraining [Radford et al., 2021, 2019, Brown et al., 2020], vision-language-action (VLA) models map multimodal inputs directly to robot actions via behavioral cloning [Brohan et al., 2022, 2023, Kim et al., 2024, O’Neill et al., 2024]. Yet they fail silently under distributional shift, such as unfamiliar objects [Zhu et al., 2025], lighting [Jin et al., 2025, Xie et al., 2024], or tasks [Zhou et al., 2025]. Unlike software errors, such failures are often irreversible: a misguided reach can injure a person or shatter a fragile object. Safe deployment therefore requires predicting failures before they unfold [Brunke et al., 2022, Xing et al., 2025]. Existing detectors either train classifiers on a policy’s internal representations [Gu et al., 2025, Xu et al., 2025, Römer et al., 2025], achieving strong in-domain accuracy, or monitor the temporal consistency of sampled actions [Agia et al., 2024]. The former are tied to one architecture’s feature space and must be retrained for each new policy; both compress a rollout into a single score that signals whether it fails but not how. Both also inspect the policy in isolation, whereas failure arises in the closed loop between the policy and its environment.
+We study failure from the closed-loop perspective, drawing on information theory: effective information transfer is a prerequisite for achieving a goal [Shannon and Weaver, 1949]. A closed-loop agent, animal or machine, can succeed only if its perception and action remain informationally coupled with its environment: observations must reduce uncertainty about what to do, and actions must in turn shape what is observed next [Wiener, 1948, Tishby and Polani, 2010]. In the perception–action loop St → At → St+1 → At+1, the entropy of each variable quantifies how much information it carries, and the mutual information (MI) between variables quantifies how much of it passes along the
+∗HKU Musketeers Foundation Institute of Data Science, email: jinghanyang@connect.hku.hk
+Preprint.
+
+Su cc es sfu l
+
+Timestep ������
+
+Fail in g
+
+Successful Phase
+
+Failing Phase
+
+Freeze
+
+Drift
+
+Phantom Grasp
+
+������
+
+������
+
+Figure 1: Information-theoretic metrics shift at failure onset. Representative PI0-LIBERO trajectories under three failure modes: freeze (H(At) ↓, I(At; At+1) ↓), drift (H(At) ↑, I(At; At+1) ↓), and phantom grasp (I(St, St+1; At) ↓, I(At; At+1) ↓). Left: 5-frame visual strips; right: the corresponding metrics, each shifting sharply as the trajectory crosses from its successful into its failing phase.
+Different modes leave distinct signatures, motivating the three complementary Tri-Info signals.
+
+loop. A successful rollout places three requirements on this flow. First, the agent must retain enough variety in its actions to counter variation in its environment [Ashby, 1956]. Second, its actions must remain coherent over time, since a physical skill unfolds as a sequence of related motions rather than a series of independent decisions [Zhao et al., 2023, Chi et al., 2025]. Third, its actions must stay grounded in what it observes, since a controller that ignores its observations can no longer correct its course [Touchette and Lloyd, 2000]. Failure breaks one of these requirements: action entropy collapses below or surges beyond what the task demands, consecutive actions lose coherence, or actions stop responding to observations. We therefore hypothesize: Success and failure rollouts differ in how these information-theoretic quantities evolve over time.
+To test this hypothesis, we formalize VLA-controlled systems as closed-loop information pipelines and derive eight metrics in four diagnostic categories: marginal statistics (H(St), H(At)), policy coupling (I(St; At)), dynamics (I(At; St+1), I(At, St; St+1), I(St, St+1; At)), and temporal coherence (I(St; St+1), I(At; At+1)), each estimated over a sliding window of the rollout. Removing redundancy and favoring action-centric metrics yields three complementary signals, the Triple Information-theoretic (Tri-Info) metrics {H(At), I(At; At+1), I(St, St+1; At)}. They describe action from three angles: how spread the policy’s actions are, how much of that uncertainty is explained by its own recent actions, and how much by what it observes. A healthy policy thus acts with moderate entropy that is grounded in both its history and its observations. On top of them, we build a Tri-Info detector that fuses one GRU per signal to model how these signals evolve over a rollout.
+Our experiments support the hypothesis and reveal two further properties. First, the metrics are interpretable: different failure modes shift different metrics (Figure 1). In a freeze, the robot stalls and H(At) collapses. In a drift, the robot abandons its goal and moves erratically, and H(At) surges instead. In a phantom grasp, the robot acts as if holding an object it never grasped, and I(St, St+1; At) drops. The pattern of shifts thus indicates not only that a rollout is failing but also how, and the detector’s alarms align with visually identifiable dangerous events (Figure 2). Second, the metrics are generalizable: Tri-Info matches the strongest baselines in domain and retains its accuracy across VLA architectures, task environments, and the sim-to-real gap, without labeled failure data from the target domain. We attribute this to the metrics summarizing statistical dependencies among states and actions. We evaluate Tri-Info on various VLA models, simulated benchmarks, and real-world robot tasks, and the summarized contributions are:
+1. Information-theoretic framework. We formalize VLA control as a closed-loop information pipeline and propose three complementary Tri-Info signals for failure prediction.
+
+2
+
+Time Slice A BB
+AA
+Time Slice B
+Figure 2: The Tri-Info detector raises P (Failure) ahead of each dangerous event on ACTALOHA-real. The fused score (blue) crosses the threshold (dashed) on two near-tipping events (t=97–117, 390–477, marked by image insets).
+2. Interpretable failure signatures. We show that freeze, drift, and phantom grasp leave corresponding signatures on the Tri-Info signals.
+3. Cross-domain generalization. We show that Tri-Info transfers across architectures, environments, and the sim-to-real gap without labeled failure data from the target domain.
+2 Related Work
+Information-Theoretic Analysis in Robotic Control. Information theory has long informed robotic control. Empowerment, the channel capacity between actions and future states [Klyubin et al., 2005], quantifies an agent’s ability to influence its environment; variational estimators made it tractable [Mohamed and Jimenez Rezende, 2015], enabling applications in exploration [Houthooft et al., 2016] and unsupervised skill discovery [Eysenbach et al., 2018, Sharma et al., 2019]. The information bottleneck [Tishby et al., 2000] has been used to identify decision states for structured exploration and transfer [Goyal et al., 2019].
+These ideas have recently entered robotic learning. Hejna et al. [2025] filters low-quality training trajectories using state–action mutual information, Bai et al. [2025] applies the information bottleneck to behavioral cloning, and the multimodal information bottleneck [You and Liu, 2024] preserves taskrelevant information across sensor modalities. Li et al. [2025] uses entropy and mutual information to identify kinematically active scene elements for dual-arm policy transfer, and contact-aware Fisher information maximization [Sathyanarayan and Abraham, 2025] synthesizes information-rich contact behaviors. These works apply information measures to training and representation learning; in contrast, we provide the first taxonomy of information-theoretic metrics for VLA failure prediction at deployment, organized around the perception–action loop and spanning marginal statistics, policy coupling, dynamics, and temporal coherence. This grounds detection in interpretable signals that remain comparable across architectures and yields mechanistic insight unavailable through black-box methods.
+Predictive Failure Detection for Robotic Systems. Work on safe reinforcement learning targets training-time safety through constrained optimization [Achiam et al., 2017], human intervention [Saunders et al., 2018], or learned recovery [Thananjeyan et al., 2021]. For VLA models trained by behavioral cloning, the challenge shifts to deployment-time monitoring [Brunke et al., 2022, Gu et al., 2024], where recent detectors divide by classifier input: embedding-based methods train on internal VLA representations, while score-based methods compute a scalar signal and detect on top of it. Among embedding-based methods, SAFE [Gu et al., 2025] trains classifiers on VLA latents with functional conformal calibration, generalizing across tasks but not architectures; Fail-Detect [Xu et al., 2025] casts detection as sequential out-of-distribution (OOD) detection without requiring failure data; and FIPER [Römer et al., 2025] fuses perception-level OOD via random network distillation with action-chunk entropy. All three attain strong in-domain accuracy but are tied to a specific architecture and cannot transfer without retraining. The score-based STAC [Agia et al., 2024] instead measures temporal consistency via the maximum mean discrepancy between overlapping segments of sampled action chunks. It is the closest in spirit to our I(At; At+1), but a distance captures
+3
+
+consistency alone, whereas I(At; At+1) = H(At+1) − H(At+1 | At) captures both action diversity and consistency on executed actions and remains compatible with deterministic VLA inference. Our metrics combine the cross-architecture comparability that embedding-based methods lack, with the diagnostic decomposition that a single consistency score cannot provide.
+
+3 Method
+3.1 Problem Formulation
+
+We model a VLA-controlled system as a tuple
+
+(S, A, T , p, πw): S is the observation space, where
+
+st comprises the camera images and the proprio-
+
+Dynamics
+
+Policy
+
+ception qt, A the space of low-level controls at,
+
+and T the space of language instructions τ . At
+
+each step t, the policy πw(at | st, τ ) emits an ac-
+
+tion and the environment transitions via p(st+1 |
+
+st, at). From (s0, τ ), interaction induces a trajec-
+tory ξ = {(s1, a1), . . . , (sT , aT )} with a failure label f ξ ∈ {0, 1} (f ξ=1 denotes failure).
+
+Figure 3: VLA control as a closedloop information processing pipeline over (St, At, St+1, At+1) – the scaffold for the
+
+We extract a state embedding st = ϕw(st) from eight derived element metrics.
+
+the state encoder and an action embedding at = ψw(st, τ ) from the layer preceding the action decoder; for flow-matching models, which lack a dis-
+
+crete decoder, we use the velocity field at the final integration step. Throughout, St, At, St+1, At+1
+
+denote the random variables of the current- and next-step embeddings.
+
+Online detection objective. At each step t the detector reads a scalar statistic xt and outputs a failure probability Ptξ(Failure | xt) ∈ [0, 1]. We seek a detector whose score stays below a time-varying threshold θ(t) throughout successful trajectories yet exceeds θ(t) as early as possible on failed ones,
+enabling timely intervention.
+
+3.2 Information dynamics in the perception–action loop
+
+Whether a robot completes its task depends on how it processes information at every step. We characterize this with an information profile: the entropy of each variable in the perception–action loop over (St, At, St+1, At+1) and the mutual information among them, i.e., how uncertain each variable is and how strongly the variables depend on one another (Figure 3). In a successful rollout, actions vary to a normal degree, stay consistent across steps, and respond to observations. Failure breaks one of these properties: action entropy collapses or surges, consecutive actions lose consistency, or actions stop responding to observations. Our central hypothesis is therefore that success and failure rollouts differ in how these information-theoretic quantities evolve over time. We thus estimate the information over a sliding time-step window and track how it changes during execution.
+
+Information Metrics over Sliding Window. At each step t ≥ W , we collect the W most recent
+
+executed transitions,
+
+Wt = {(si, ai, si+1, ai+1)}ti=−t1−W ,
+
+(1)
+
+and treat them as samples from the joint distribution of (St, At, St+1, At+1) at step t. Each entropy
+or mutual-information quantity is estimated from these samples; as the window slides, it yields
+an information-theoretic sequence x(tm) that traces the information change over the rollout. The window length W balances estimation variance against responsiveness to change (Appendix D). We
+
+derive entropy (H) and mutual-information (I) quantities over St, At, St+1, and At+1, yielding eight metrics, m = 1, . . . , 8, in four diagnostic categories:
+
+• Marginal statistics. H(St) and H(At) measure the diversity of visited states and executed actions within the window.
+• Policy coupling. I(St; At) [Hejna et al., 2025] measures how strongly actions depend on the current observation, diagnosing observation-independent behavior.
+• Dynamics. I(At; St+1), the quantity whose maximum over action distributions defines empowerment [Klyubin et al., 2005], measures the policy’s influence on the next state; I(St, At; St+1) measures forward predictability; and I(St, St+1; At) [Kim et al., 2018] measures how well actions
+
+4
+
+can be inferred from the state transitions they produce. These three metrics with I(St; At) form state-action coupling metrics.
+• Temporal coherence. I(St; St+1) [Zhou and Yang, 2024] measures dependence between consecutive states, and I(At; At+1) measures dependence between consecutive actions.
+
+From eight candidates to three complementary signals. The eight metrics are highly redundant,
+
+so we seek the smallest subset that still spans the failure modes, guided by the pooled correlation
+
+analysis (Figure 4). (i) Eliminate redundancy: the four state–action coupling metrics are near-
+
+perfectly correlated (r ≥ 0.95), so a single representative I(St, St+1; At) suffices for the whole
+
+cluster. (ii) Prefer action-centric metrics, since actions reflect policy behavior more directly than
+
+states; we therefore add H(At) and I(At; At+1), which lie outside this cluster, giving the Tri-Info
+
+metrics:
+
+H(At), I(At; At+1), I(St, St+1; At) .
+
+(2)
+
+These three signals are complementary because they describe action from three perspectives. H(At) measures how widely the executed actions spread within the window; I(At; At+1) measures how predictable each action is from the previous one; and I(St, St+1; At) measures how much of the action is explained by the observed state transition. A healthy pol-
+
+icy acts with moderate entropy that is grounded in both its history and its observations. Each failure mode breaks this in a different way. In a freeze, action entropy collapses. In a drift, entropy surges while the part explained by history falls, so the actions become erratic. In a phantom grasp, the robot moves continuously,
+
+but actions are no longer driven by the observations (Figure 1). An exhaustive search over all 28 − 1 nonempty subsets independently recovers this triplet as the top set of size 3 by area under the ROC curve (AUC), with no gain beyond (Appendix C).
+Estimation and normalization. For the highdimensional continuous embeddings we use the kNN MI estimator [Hejna et al., 2025, Kraskov et al., 2004] and the Kozachenko–Leonenko entropy estimator [Kozachenko, 1987]. Because k-NN estimators degrade as dimensionality grows, we do not estimate on the raw embeddings: we first compress st and at to a matched latent with a variational autoencoder (VAE) [Hejna et al., 2025], and estimate all quantities on its posterior means (details are in Appendix D). Since the read-out dimensionality is fixed by the architecture, this projection is fitted per model–dataset domain; its objective is purely a recon-
+
+Pearson Correlation
+
+H(St) 1.00 0.41 -0.16 -0.15 -0.14 -0.25 0.02 0.10 1.00
+
+H(At) 0.41 1.00 -0.82 -0.78 -0.72 -0.81 -0.56 0.72 0.75
+
+I(St; At) -0.16 -0.82 1.00 0.98 0.95 0.98 0.81 -0.60 0.50
+
+I(St+1; At) -0.15 -0.78 0.98 1.00 0.96 0.98 0.83 -0.58
+
+0.25
+
+0.00
+I(At, St; St+1) -0.14 -0.72 0.95 0.96 1.00 0.96 0.87 -0.56
+0.25
+
+I(St, St+1; At) -0.25 -0.81 0.98 0.98 0.96 1.00 0.83 -0.59
+
+0.50
+
+I(St; St+1) 0.02 -0.56 0.81 0.83 0.87 0.83 1.00 -0.51
+
+0.75
+
+I(At; At+1) 0.10 0.72 -0.60 -0.58 -0.56 -0.59 -0.51 1.00
+
+1.00
+
+H(S t)
+
+H(A
+
+t)
+
+I(S
+
+t;
+
+A t) I(S
+
+t
+
++
+
+1; A t) I(A t,
+
+S
+
+t;
+
+SI(tS+1t,)S
+
+t
+
++1;
+
+A
+
+t) I(S
+
+t;
+
+S
+
+t
+
++1) I(A
+
+t;
+
+A
+
+t
+
++1)
+
+Figure 4: Pearson correlation of the eight metrics, pooled over all model-environment combinations. The state-action coupling cluster is highly redundant (r >= 0.95).
+
+struction term plus a KL penalty, so it never sees a failure label. Each metric is finally z-normalized as zt = (xt − µ)/σ with statistics computed on the source training split alone.
+
+3.3 Online Detection Framework
+
+We turn the metrics into a real-time detector with two components: a per-metric temporal model and a time-varying threshold.
+
+Per-metric GRU detector. Failure signatures span many consecutive timesteps (Figure 1), so for each metric we train a single-input GRU over its normalized sequence {zt},
+
+ht = GRU(zt, ht−1), Ptξ(Failure | xt) = σ(MLP(ht)) ∈ [0, 1].
+
+(3)
+
+We supervise every timestep with the trajectory-level label f ξ via BCE,
+
+T
+
+L
+
+=
+
+1 T
+
+BCE Ptξ(Failure | xt), f ξ ,
+
+(4)
+
+t=1
+
+rather than per-segment, because precise failure onset is semantically ambiguous – a grasp may succeed or fail at sub-millimeter scales under a visually identical approach. Tying each timestep to the outcome pushes the score toward 1 as early as possible on failures; empirically, scores stay low at
+
+5
+
+Table 1: Single-metric failure prediction mean balanced accuracy (mean±std over three seeds). Every metric exceeds chance with per-timestep logistic regression (avg. 0.65–0.75); temporal modeling via GRU lifts all to 0.72–0.77. Shaded metrics are the components of Tri-Info. Best value per row in bold.
+
+Policy
+
+Dynamics
+
+Temporal
+
+Entropy
+
+Environment
+
+Model
+
+I(St; At) I(St+1; At) I(At, St; St+1) I(St, St+1; At) I(St; St+1) I(At; At+1) Logistic Regression
+
+H(St)
+
+H(At)
+
+LIBERO-10
+CALVIN
+ALOHA-transfer ALOHA-insertion ALOHA-real-cup ALOHA-real-drawer Average
+
+PI0 PI0.5 Flower UniVLA GR-1 ACT ACT ACT PI0.5
+
+0.53±0.01 0.83±0.03 0.55±0.02 0.81±0.03 0.81±0.10 0.59±0.06 0.60±0.01 0.64±0.02 0.63±0.08
+0.67
+
+0.55±0.03 0.81±0.03 0.57±0.01 0.67±0.03 0.81±0.13 0.59±0.06 0.61±0.09 0.64±0.03 0.60±0.10
+0.65
+
+0.56±0.03 0.81±0.03 0.90±0.02 0.64±0.01 0.91±0.02 0.50±0.00 0.57±0.05 0.81±0.01 0.56±0.13
+0.70
+
+0.55±0.03 0.84±0.03 0.93±0.02 0.57±0.02 0.97±0.01 0.58±0.11 0.57±0.05 0.66±0.01 0.60±0.13
+0.70
+
+0.71±0.02 0.78±0.02 0.53±0.03 0.73±0.03 0.68±0.02 0.91±0.03 0.66±0.01 0.69±0.04 0.64±0.01
+0.70
+
+0.82±0.00 0.79±0.00 0.50±0.01 0.54±0.01 0.74±0.02 0.91±0.05 0.57±0.02 0.70±0.01 0.63±0.04
+0.69
+
+0.83±0.01 0.81±0.03 0.61±0.04 0.68±0.07 0.76±0.05 0.68±0.09 0.58±0.01 0.83±0.02 0.71±0.00
+0.72
+
+0.86±0.02 0.88±0.01
+0.55±0.03 0.92±0.01 0.55±0.05
+0.61±0.03 0.80±0.07
+0.80±0.04 0.76±0.02
+0.75
+
+GRU
+
+LIBERO-10
+CALVIN
+ALOHA-transfer ALOHA-insertion ALOHA-real-cup ALOHA-real-drawer Average
+
+PI0 PI0.5 Flower UniVLA GR-1 ACT ACT ACT PI0.5
+
+0.70±0.03 0.89±0.02 0.82±0.03 0.88±0.03 0.89±0.03 0.53±0.02 0.53±0.04 0.71±0.06 0.50±0.13
+0.72
+
+0.71±0.02 0.86±0.02 0.80±0.02 0.85±0.01 0.92±0.03 0.80±0.06 0.53±0.04 0.80±0.08 0.58±0.12
+0.76
+
+0.72±0.04 0.87±0.01 0.88±0.07 0.81±0.06 0.91±0.03 0.56±0.06 0.52±0.03 0.83±0.01 0.57±0.12
+0.74
+
+0.73±0.01 0.90±0.01 0.94±0.01 0.90±0.01 0.87±0.04
+0.75±0.18
+0.50±0.00
+0.75±0.06
+0.58±0.13 0.77
+
+0.84±0.01 0.85±0.03 0.56±0.06 0.82±0.05 0.80±0.01 0.77±0.03 0.60±0.03 0.86±0.06 0.71±0.04
+0.76
+
+0.84±0.02 0.86±0.01 0.54±0.04 0.86±0.04 0.79±0.09 0.78±0.05 0.57±0.09 0.75±0.05 0.62±0.01
+0.73
+
+0.83±0.02 0.86±0.02 0.78±0.02 0.77±0.01 0.83±0.05 0.74±0.08 0.51±0.10 0.89±0.02 0.69±0.00
+0.77
+
+0.87±0.02 0.87±0.05 0.76±0.12 0.88±0.03 0.85±0.05 0.64±0.06 0.50±0.00 0.83±0.01 0.76±0.02
+0.77
+
+onset and rise only as signatures emerge (Figure 8), confirming that ambiguous early timesteps do not corrupt learning.
+Late mean-probability fusion. The three signals target different failure modes (Figure 1), so we train one GRU per signal independently and aggregate only at the output:
+
+P¯tξ
+
+=
+
+1 3
+
+Ptξ Failure | x(tm) ,
+
+m∈M
+
+M = {H(At), I(At; At+1), I(St, St+1; At)}. (5)
+
+Because the detectors share no parameters or gradients, each tunes its own hyperparameters and signals can be added or dropped at fusion time. The fused score is z-normalized again with training-set statistics before calibration.
+
+Threshold calibration. Failure is declared at the first timestep where the score exceeds a calibrated threshold θ(t): tdetect = min{t | fˆtξ > θ(t)}. A fixed threshold is inadequate because the successscore distribution shifts over execution. We adopt Functional Conformal Prediction [Diquigiovanni
+et al., 2021, Gu et al., 2025], which constructs time-varying thresholds by modeling the temporal
+distribution of scores from successful calibration trajectories. Score sequences from successful trajectories are interpolated to a common normalized time grid t ∈ [0, 1], and the threshold at each point is computed as the corrected (1 − α) quantile:
+
+θ(t) = Quantile1−α P¯tξ : ξ ∈ Dc+al
+
+(6)
+
+where Dc+al denotes the set of successful calibration trajectories. Intuitively, θ(t) answers how high can the score get at this stage in a successful trajectory? If a new trajectory’s score exceeds θ(t), it falls outside the (1 − α) statistical envelope at the current point for successful behavior and is flagged as a failure. We characterize the impact of α empirically in Appendix A.
+
+4 Experiment Setup
+Benchmarks. LIBERO [Liu et al., 2023] (the LIBERO-10 subset of 10 long-horizon manipulation tasks); CALVIN [Mees et al., 2022] (each subtask in a chained sequence treated as an independent success/failure instance); and ALOHA [Zhao et al., 2023], spanning simulated (transfer, insertion)
+
+6
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+1.0
+
+PI0-LIBERO (ID)
+
+1.0
+
+PI0.5-LIBERO (ID)
+
+1.0 PI0.5-ALOHA-Real-Drawer (ID)
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.6
+
+0.5
+
+0.5
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+PI10..05-LIBERO PI0.5-ALOHA-Real-Block (OOD1).0 PI0-LIBERO PI0.5-LIBERO (OOD)
+
+0.5
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100 P1I.00.5-LIBERO ACT-ALOHA-Real-Cup (OOD)
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.6
+
+0.4
+
+0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+0.2
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+Score-based: Tri-Info (ours) STAC GRU-STAC Embedding-based: SAFE Fail-Detect FIPER
+
+Figure 5: Baseline comparison. Failure detection accuracy across different trajectory progress. Our Tri-Info detector achieves competitive accuracy at both early and final time points, and transfers to OOD settings, where no baseline holds up consistently. Embedding-based baselines are omitted on PI0.5-LIBERO → ACT-ALOHA-real-cup, where latent dimensions do not match (a VAE-matched variant is evaluated in Appendix A).
+
+and real-world tasks, where we collect 120 cup-placement, 60 pick-cube, and 75 drawer-open-blockplacement trajectories on the physical platform. We also test the robustness of our method on policies trained with noisy demonstrations from Layman V1.0 [Sojib and Begum, 2024].
+Models. We evaluate six state-of-the-art VLAs: PI0 [Black et al., 2024] and PI0.5 [Intelligence et al., 2025] on LIBERO-10; FLOWER [Reuss et al., 2025], UNIVLA [Bu et al., 2025], and GR-1 [Wu et al., 2024] on CALVIN; and ACT [Zhao et al., 2023] and PI0.5 on ALOHA, collecting both successful and failed trajectories for each.
+Evaluation. We aggregate per-timestep scores by max-pooling, Pmξ ax = maxt Ptξ(Failure | xt), mirroring online deployment where an alarm fires once the score crosses θ(t). Because successful and failed rollouts end at different lengths, we truncate all trajectories to the shortest successful one before pooling, and report AUC on Pmξ ax. We also report balanced accuracy (BA) over trajectory progress.
+Baselines. We compare against embedding-based detectors that classify internal model representations (SAFE [Gu et al., 2025], Fail-Detect [Xu et al., 2025], FIPER [Römer et al., 2025]) and the score-based STAC [Agia et al., 2024], as well as its variant within our full GRU pipeline (denoted GRU-STAC). To isolate the contribution of MI itself, we also re-implement four alternative actioncontinuity measures (variance, KNN distance, dot-product similarity, temporal gradient) within our GRU framework. Dataset statistics, training and threshold-calibration details, and these alternatives are in Appendix A.
+
+5 Results
+5.1 Predictive Power of Information-Theoretic Metrics
+Every metric carries signal; temporal modeling matters. We feed each of the eight metrics as the sole input to two detectors: a memoryless logistic regression (LogReg) that scores it instantaneously, and a GRU that models its temporal evolution (Table 1). Under LogReg, all eight reach ≥ 0.65 average in-domain mBA, with the strongest, H(At), at 0.75, confirming that the predictive signal resides in the metrics themselves. Modeling temporal context with a GRU lifts all metrics to 0.72– 0.77, and the weakest metrics gain the most, so the gap between the best and worst metric closes from 0.10 to 0.05. In conclusion, the metrics are individually informative, and modeling their temporal evolution improves detection performance.
+7
+
+Qualitative behavior of the Tri-Info detector. On a representative ALOHA-real trajectory (Figure 2), the Tri-Info detector raises P (Failure) just before each of the two windows (t=97–117 and t=390–477) where the cup nearly tips or falls, demonstrating early warning ahead of the visible danger. Figure 8 corroborates this on LIBERO-10 (PI0.5): successful trajectories stay below the threshold throughout, whereas failed ones cross it.
+
+I(At; At+1) I(St, St+1; At)
+
+Interpretability: the metrics align with failure se-
+mantics. We annotate failed rollouts as freeze, drift,
+or phantom grasp (n=20 per mode) and examine each mode’s two signature metrics around the trigger t∗ along
+
+Freeze
+1.0 0.5
+
+Drift PhGarnatsopm
+
+H(At)
+
+H(At)
+
+two axes: the change from the trajectory’s own pretrigger level, and the gap to successful trajectories at matched progress (Figure 6). The two axes agree in all
+
+0.0 1.0
+
+I(At; At+1)
+
+I(At; At+1)
+
+six panels. The mutual information I(At; At+1) falls in 0.5
+
+every mode while that of successful trajectories holds or rises: consecutive commands no longer predict one another. The second metric separates the modes. In
+
+0.0 t * 0.2
+
+t * Tim0.e2
+
+t * 0.2
+
+freeze, H(At) also collapses as the arm issues less var-
+
+success traj
+
+before trigger
+
+after trigger
+
+ied actions. In drift, it surges compared with successful
+
+trajectories, reflecting erratic motion. In phantom grasp, Figure 6: Failure signatures at the
+
+I(St, St+1; At) steps down while that of successful trajectories rises, as the arm repeats a grasp that no longer
+
+alarm. Annotated failures (n=20 per mode) aligned at the detector’s trigger t∗,
+
+moves the objects.
+
+against successful trajectories at matched
+
+progress (black). Time is the lag from the
+
+Robustness to policies trained on non-expert demon- trigger as a fraction of the episode horizon,
+
+strations. Real-world data is often collected by non- (t − t∗)/T . The metric trends align with
+
+experts and therefore contains noisy, indirect trajectories the semantic meaning of each failure.
+
+that nonetheless reach the goal. We thus test whether
+
+our detector remains reliable for a policy fine-tuned on such noisy data, and can a detector trained
+
+only on clean-policy rollouts transfer to a noisy-policy one? We use Layman V1.0 [Sojib and Begum,
+
+2024], which provides non-expert demonstrations and a 20%-spoiled Can split: Clean (120 expert
+
+demos, 277 steps) vs. Noisy (120 expert + 30 lay-user demos in which operators struggle to control
+
+the robot but eventually complete the task, 503 steps). We fine-tune PI0.5 on each pool, obtaining SR
+
+0.670 (clean) and 0.700 (noisy), and sample rollouts from both. We report BA at each % of trajectory
+
+progress in Figure 7 with three seeds each. The detector remains reliable on the noisy-data policy
+
+(mBA 0.728), and a detector trained only on clean-policy rollouts can transfer to the noisy policy
+
+with good performance (mBA 0.716).
+
+5.2 Baseline Comparison
+
+We compare the Tri-Info detector against embedding-
+
+Clean → Clean
+
+Noise → Noise
+
+Clean → Noise
+
+based methods (SAFE [Gu et al., 2025], Fail-Detect [Xu 1.00
+
+Balanced Accuracy
+
+et al., 2025], FIPER [Römer et al., 2025]), the score- 0.90
+
+based STAC [Agia et al., 2024], and its GRU variant 0.80
+
+in our pipeline (GRU-STAC). Beyond the in-domain 0.70
+
+setting, we evaluate three transfers of increasing sever- 0.60
+
+ity: cross-model, cross-environment, and cross-model- 0.50
+
+environment. Because embedding-based latents are
+
+20
+
+40
+
+60
+
+80
+
+100
+
+Trajectory Progress (%)
+
+architecture-specific, the embedding-based detectors
+
+cannot be applied in the last setting, where the target Figure 7: Tri-Info detection BA ± std
+
+policy’s latent dimensionality differs from the source. across training-data sources under clean
+
+Figure 5 reports balanced accuracy versus trajectory and noisy conditions. Tri-Info remains ac-
+
+progress.
+
+curate on a policy trained on noisy demon-
+
+In-domain: Tri-Info is competitive with existing detectors. Tri-Info averages 0.83 balanced accuracy (BA)
+
+strations, and can transfer from cleanpolicy rollouts to noisy-policy rollouts.
+
+in domain, against 0.82 for SAFE and 0.81 for GRU-STAC. It reaches 0.84 and 0.89 on PI0- and
+
+PI0.5-LIBERO-10, where SAFE reaches 0.82 and 0.89, and 0.76 on PI0.5-ALOHA-real-drawer,
+
+where GRU-STAC is highest at 0.81. Raw STAC is the only method below 0.70 (0.61), which shows
+
+8
+
+Table 3: Estimator-input ablation. Mean balanced accuracy over t ∈ {0.1, . . . , 1.0}, three seeds.
+Splits and block means follow Table 2, with cross-model being PI0-LIBERO to PI0.5-LIBERO and sim-to-real being PI0.5-LIBERO to ACT-ALOHA-real. at, st are the VAE latents, st fusing image, wrist-image and proprioceptive features; at is the executed action and qt the raw proprioception, both used without a VAE.
+
+Inputs
+
+PI0-LIBERO PI0.5-LIBERO ID AVG. Cross-Model Sim-to-Real OOD AVG.
+
+at + st (ours)
+
+0.870
+
+0.893
+
+0.881
+
+0.906
+
+0.824
+
+0.865
+
+at + qt at + st at + qt (API-only)
+
+0.864 −0.006 0.907 +0.037 0.878 +0.008
+
+0.888 −0.005 0.887 −0.006 0.882 −0.011
+
+0.876 −0.005 0.897 +0.016 0.880 −0.001
+
+0.913 +0.007 0.771 −0.135 0.859 −0.047
+
+0.547 −0.277 0.752 −0.072 0.729 −0.095
+
+0.730 −0.135 0.761 −0.104 0.794 −0.071
+
+that the consistency statistic needs the temporal model to be predictive. All remaining methods fall within 0.07 BA of each other, so in-domain accuracy does not distinguish them. The distinguishing question is whether that accuracy survives a change of model or embodiment.
+
+Cross-domain: only Tri-Info retains accuracy under shift.
+
+We evalu-
+
+ate three transfers of increasing severity in Figure 5.
+
+Changing the pol-
+
+icy alone (PI0-LIBERO → PI0.5-LIBERO) already separates the methods:
+
+Tri-Info reaches 0.90 and GRU-STAC 0.80, while SAFE,
+
+Fail-Detect, and FIPER fall to 0.50, because their classifiers are fitted to the absolute geometry of one policy’s latent space. Changing the environment instead (→ PI0.5-ALOHA-real-block) leaves Tri-Info at 0.70 and SAFE at 0.60, with all other baselines at 0.50.
+
+Table 2: Multi-metric detector ablation on mean balanced accuracy. ID is pooled indomain; OOD averages cross-model and sim-to-real transfer.
+H(At) I(At; At+1) I(St, St+1; At) ID OOD
+
+Changing model, embodiment, action dimensionality, ✓
+
+✓
+
+and visual appearance at once (→ ACT-ALOHA-real-
+
+cup) makes the embedding-based detectors inapplicable,
+
+✓ ✓
+
+✓
+
+since their input dimensionality is fixed to the source
+
+✓
+
+✓
+
+.88 .87
+
+.87 .85
+
+✓
+
+.86 .70
+
+✓
+
+.86 .84
+
+policy; GRU-STAC reaches 0.76 and STAC falls to 0.33, ✓
+
+below chance, so its score anti-correlates with failure,
+
+✓
+
+whereas Tri-Info attains 0.82. A VAE projection that
+
+.87 .60
+
+.84 .77
+
+✓
+
+.82 .67
+
+matches latent dimensions restores partial applicability All 8 Features
+
+.87 .74
+
+for the embedding-based detectors (Appendix A).
+
+5.3 Ablation Study
+Metric ablation: Tri-Info’s three signals contribute to OOD performance. We compare the three-metric detector against all of its 2- and 1-metric subsets and the full 8-metric fusion (Table 2). The three-metric set improves over every smaller subset on both ID (0.88) and OOD (0.87), while expanding to eight metrics holds ID flat (0.87) and substantially degrades OOD to 0.74 – the additional five signals overfit in-distribution patterns and fail to transfer.
+Input ablation: how much of the signal needs model internals? Everything so far is estimated on VAE latents of the policy’s internal embeddings, which requires white-box access. We re-ran the pipeline changing only the estimator inputs, replacing at by the executed action at and st by the raw proprioception qt, both visible from outside the policy and low-dimensional enough to enter the estimators without a VAE, unlike the raw observation st. In domain, the internal representations make no difference to detection accuracy: the four choices lie between 0.876 and 0.897, and the highest is at + st. Under shift they do: the OOD mean falls from 0.865 with the embeddings to 0.794 for the black-box at + qt. Tri-Info therefore runs in a fully black-box setting, and the white-box requirement earns its cost only under domain shift.
+
+6 Conclusion
+We formalized VLA control as a closed-loop information pipeline and reduced eight derived metrics to three complementary Tri-Info metrics {H(At), I(At; At+1), I(St, St+1; At)} that diagnose action collapse, temporal incoherence, and action–state decoupling. Paired with a per-signal GRU detector, Tri-Info stays interpretable and generalizable, transferring across VLA models, benchmarks, and the sim-to-real gap to reach 70%+ on real-world tasks.
+
+9
+
+References
+Joshua Achiam, David Held, Aviv Tamar, and Pieter Abbeel. Constrained policy optimization. In ICML, pages 22–31, 2017.
+Christopher Agia, Rohan Sinha, Jingyun Yang, Zi-ang Cao, Rika Antonova, Marco Pavone, and Jeannette Bohg. Unpacking failure modes of generative policies: Runtime monitoring of consistency and progress. arXiv preprint arXiv:2410.04640, 2024.
+W Ross Ashby. Introduction to cybernetics.-chapman & hall. London, UK, 1956.
+Shuanghao Bai, Wanqi Zhou, Pengxiang Ding, Wei Zhao, Donglin Wang, and Badong Chen. Rethinking latent redundancy in behavior cloning: An information bottleneck approach for robot manipulation. arXiv preprint arXiv:2502.02853, 2025.
+Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. pi0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Joseph Dabis, Chelsea Finn, Keerthana Gopalakrishnan, Karol Hausman, Alex Herzog, Jasmine Hsu, et al. Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817, 2022.
+Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818, 2023.
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.
+Lukas Brunke, Melissa Greeff, Adam W Hall, Zhaocong Yuan, Siqi Zhou, Jacopo Panerati, and Angela P Schoellig. Safe learning in robotics: From learning-based control to safe reinforcement learning. Annual Review of Control, Robotics, and Autonomous Systems, 5(1):411–444, 2022.
+Qingwen Bu, Yanting Yang, Jisong Cai, Shenyuan Gao, Guanghui Ren, Maoqing Yao, Ping Luo, and Hongyang Li. Univla: Learning to act anywhere with task-centric latent actions. arXiv preprint arXiv:2505.06111, 2025.
+Cheng Chi, Zhenjia Xu, Siyuan Feng, Eric Cousineau, Yilun Du, Benjamin Burchfiel, Russ Tedrake, and Shuran Song. Diffusion policy: Visuomotor policy learning via action diffusion. The International Journal of Robotics Research, 44(10-11):1684–1704, 2025.
+Jacopo Diquigiovanni, Matteo Fontana, and Simone Vantini. The importance of being a band: Finitesample exact distribution-free prediction sets for functional data. arXiv preprint arXiv:2102.06746, 2021.
+Benjamin Eysenbach, Abhishek Gupta, Julian Ibarz, and Sergey Levine. Diversity is all you need: Learning skills without a reward function. arXiv preprint arXiv:1802.06070, 2018.
+Anirudh Goyal, Riashat Islam, Daniel Strouse, Zafarali Ahmed, Matthew Botvinick, Hugo Larochelle, Yoshua Bengio, and Sergey Levine. Infobot: Transfer and exploration via the information bottleneck. arXiv preprint arXiv:1901.10902, 2019.
+Qiao Gu, Yuanliang Ju, Shengxiang Sun, Igor Gilitschenski, Haruki Nishimura, Masha Itkina, and Florian Shkurti. Safe: Multitask failure detection for vision-language-action models. ArXiv, abs/2506.09937, 2025. URL https://api.semanticscholar.org/CorpusID:279306316.
+Shangding Gu, Long Yang, Yali Du, Guang Chen, Florian Walter, Jun Wang, and Alois Bhattacharjee. A review of safe reinforcement learning: Methods, theories and applications. IEEE Transactions on Pattern Analysis and Machine Intelligence, 2024.
+Joey Hejna, Suvir Mirchandani, Ashwin Balakrishna, Annie Xie, Ayzaan Wahid, Jonathan Tompson, Pannag Sanketi, Dhruv Shah, Coline Devin, and Dorsa Sadigh. Robot data curation with mutual information estimators. arXiv preprint arXiv:2502.08623, 2025.
+10
+
+Rein Houthooft, Xi Chen, Yan Duan, John Schulman, Filip De Turck, and Pieter Abbeel. Vime: Variational information maximizing exploration. Advances in neural information processing systems, 29, 2016.
+Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Manuel Y. Galliker, Dibya Ghosh, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Devin LeBlanc, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Allen Z. Ren, Lucy Xiaoyang Shi, Laura Smith, Jost Tobias Springenberg, Kyle Stachowicz, James Tanner, Quan Vuong, Homer Rich Walke, Anna Walling, Haohuan Wang, Lili Yu, and Ury Zhilinsky. π0.5: a vision-language-action model with open-world generalization. ArXiv, abs/2504.16054, 2025. URL https://api.semanticscholar.org/CorpusID:277993634.
+Shutong Jin, Lezhong Wang, Ben Temming, and Florian T Pokorny. Physically-based lighting augmentation for robotic manipulation. arXiv preprint arXiv:2508.01442, 2025.
+Hyoungseok Kim, Jaekyeom Kim, Yeonwoo Jeong, Sergey Levine, and Hyun Oh Song. Emi: Exploration with mutual information. arXiv preprint arXiv:1810.01176, 2018.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+Alexander S Klyubin, Daniel Polani, and Chrystopher L Nehaniv. Empowerment: A universal agent-centric measure of control. In 2005 ieee congress on evolutionary computation, volume 1, pages 128–135. IEEE, 2005.
+Leonenko Kozachenko. Sample estimate of the entropy of a random vector. Probl. Pered. Inform., 23:9, 1987.
+Alexander Kraskov, Harald Stögbauer, and Peter Grassberger. Estimating mutual information. Physical Review E—Statistical, Nonlinear, and Soft Matter Physics, 69(6):066138, 2004.
+Shunlei Li, Longsen Gao, Jin Wang, Chang Che, Xi Xiao, Jiuwen Cao, Yingbai Hu, and Hamid Reza Karimi. Information-theoretic graph fusion with vision-language-action model for policy reasoning and dual robotic control. ArXiv, abs/2508.05342, 2025. URL https://api.semanticscholar. org/CorpusID:280546283.
+Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. Advances in Neural Information Processing Systems, 36:44776–44791, 2023.
+Oier Mees, Lukas Hermann, Erick Rosete-Beas, and Wolfram Burgard. Calvin: A benchmark for language-conditioned policy learning for long-horizon robot manipulation tasks. IEEE Robotics and Automation Letters, 7(3):7327–7334, 2022.
+Shakir Mohamed and Danilo Jimenez Rezende. Variational information maximisation for intrinsically motivated reinforcement learning. Advances in neural information processing systems, 28, 2015.
+Abby O’Neill, Abdul Rehman, Abhiram Maddukuri, Abhishek Gupta, Abhishek Padalkar, Abraham Lee, Acorn Pooley, Agrim Gupta, Ajay Mandlekar, Ajinkya Jain, et al. Open x-embodiment: Robotic learning datasets and rt-x models: Open x-embodiment collaboration 0. In 2024 IEEE International Conference on Robotics and Automation (ICRA), pages 6892–6903. IEEE, 2024.
+Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. Language models are unsupervised multitask learners. OpenAI blog, 1(8):9, 2019.
+Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervision. In International conference on machine learning, pages 8748–8763. PmLR, 2021.
+11
+
+Moritz Reuss, Hongyi Zhou, Marcel Rühle, Ömer Erdinç Yag˘murlu, Fabian Otto, and Rudolf Lioutikov. Flower: Democratizing generalist robot policies with efficient vision-language-action flow policies. arXiv preprint arXiv:2509.04996, 2025.
+Ralf Römer, Adrian Kobras, Luca Worbis, and Angela P Schoellig. Failure prediction at runtime for generative robot policies. arXiv preprint arXiv:2510.09459, 2025.
+Hrishikesh Sathyanarayan and Ian Abraham. Behavior synthesis via contact-aware fisher information maximization. arXiv preprint arXiv:2505.12214, 2025.
+William Saunders, Girish Sastry, Andreas Stuhlmüller, and Owain Evans. Trial without error: Towards safe reinforcement learning via human intervention. In AAMAS, pages 2067–2069, 2018.
+Claude E. Shannon and Warren Weaver. The Mathematical Theory of Communication. University of Illinois Press, Urbana, IL, 1949.
+Archit Sharma, Shixiang Gu, Sergey Levine, Vikash Kumar, and Karol Hausman. Dynamics-aware unsupervised discovery of skills. arXiv preprint arXiv:1907.01657, 2019.
+Noushad Sojib and Momotaz Begum. Self supervised detection of incorrect human demonstrations: A path toward safe imitation learning by robots in the wild. In 2024 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pages 2862–2869, 2024. doi: 10.1109/ IROS58592.2024.10802106.
+Brijen Thananjeyan, Ashwin Balakrishna, Suraj Nair, Michael Luo, Krishnan Srinivasan, Minho Hwang, Joseph E Gonzalez, Julian Ibarz, Chelsea Finn, and Ken Goldberg. Recovery rl: Safe reinforcement learning with learned recovery zones. IEEE Robotics and Automation Letters, 6(3): 4915–4922, 2021.
+Naftali Tishby and Daniel Polani. Information theory of decisions and actions. In Perception-action cycle: Models, architectures, and hardware, pages 601–636. Springer, 2010.
+Naftali Tishby, Fernando C Pereira, and William Bialek. The information bottleneck method. arXiv preprint physics/0004057, 2000.
+Hugo Touchette and Seth Lloyd. Information-theoretic limits of control. Physical review letters, 84 (6):1156, 2000.
+Norbert Wiener. Cybernetics: Or Control and Communication in the Animal and the Machine. The Technology Press; John Wiley & Sons, Cambridge, MA; New York, 1948.
+Hongtao Wu, Ya Jing, Chilam Cheang, Guangzeng Chen, Jiafeng Xu, Xinghang Li, Minghuan Liu, Hang Li, and Tao Kong. Unleashing large-scale video generative pre-training for visual robot manipulation. In International Conference on Learning Representations, volume 2024, pages 10641–10662, 2024.
+Annie Xie, Lisa Lee, Ted Xiao, and Chelsea Finn. Decomposing the generalization gap in imitation learning for visual robotic manipulation. In 2024 IEEE International Conference on Robotics and Automation (ICRA), pages 3153–3160. IEEE, 2024.
+Wenpeng Xing, Minghao Li, Mohan Li, and Meng Han. Towards robust and secure embodied ai: A survey on vulnerabilities and attacks. arXiv preprint arXiv:2502.13175, 2025.
+Chen Xu, Tony Khuong Nguyen, Emma Dixon, Christopher Rodriguez, Patrick Miller, Robert Lee, Paarth Shah, Rares Ambrus, Haruki Nishimura, and Masha Itkina. Can we detect failures without failure data? uncertainty-aware runtime failure detection for imitation learning policies. arXiv preprint arXiv:2503.08558, 2025.
+Bang You and Huaping Liu. Multimodal information bottleneck for deep reinforcement learning with multiple sensors. Neural Networks, 176:106347, 2024.
+Tony Z Zhao, Vikash Kumar, Sergey Levine, and Chelsea Finn. Learning fine-grained bimanual manipulation with low-cost hardware. arXiv preprint arXiv:2304.13705, 2023.
+12
+
+Jiaming Zhou, Ke Ye, Jiayi Liu, Teli Ma, Zifan Wang, Ronghe Qiu, Kun-Yu Lin, Zhilin Zhao, and Junwei Liang. Exploring the limits of vision-language-action manipulations in cross-task generalization. arXiv preprint arXiv:2505.15660, 2025.
+Pei Zhou and Yanchao Yang. Maxmi: A maximal mutual information criterion for manipulation concept discovery. In European Conference on Computer Vision, pages 88–105. Springer, 2024.
+Minjie Zhu, Yichen Zhu, Jinming Li, Zhongyi Zhou, Junjie Wen, Xiaoyu Liu, Chaomin Shen, Yaxin Peng, and Feifei Feng. Objectvla: End-to-end open-world object manipulation without demonstration. arXiv preprint arXiv:2502.19250, 2025.
+13
+
+Table 4: Dataset statistics.
+
+Dataset
+
+Success Fail
+
+PI0-LIBERO
+
+245 55
+
+PI0.5-LIBERO
+
+875 75
+
+ACT-ALOHA-real
+
+60
+
+60
+
+PI0.5-ALOHA-real-block
+
+26
+
+34
+
+PI0.5-ALOHA-real-drawer
+
+31
+
+44
+
+FLOWER-CALVIN
+
+224 76
+
+ACT-ALOHA-sim-insertion 65 235
+
+ACT-ALOHA-sim-transfer 259 41
+
+GR-1-CALVIN
+
+360 50
+
+UniVLA-CALVIN
+
+215 35
+
+Total
+
+2360 705
+
+Total
+300 950 120 60 75 300 300 300 410 250
+3065
+
+Suc%
+81.7% 92.1% 50.0% 43.3% 41.3% 74.7% 21.7% 86.3% 87.8% 86.0%
+77.0%
+
+A Experiment Details
+
+We describe the datasets (Appendix A.1), the training and evaluation protocol (Appendix A.2), the baselines (Appendix A.3), and additional results and sensitivity analyses (Appendix A.5).
+
+A.1 Datasets
+
+Table 4 summarizes the data collected for each
+
+model–environment combination.
+
+1.0
+
+Real-world data collection. Real-world demon- 0.8
+
+P(Failure)
+
+strations were collected on the ALOHA platform (AgileX cobot_magic variant) using a
+
+0.6
+
+single 6-DoF arm with a parallel gripper and 0.4 three RGB cameras (one global and two wristmounted). We recorded demonstrations via 0.2 master–puppet teleoperation after sensor synchronization. Each trajectory logs the arm’s 0.0 7-dimensional joint positions (six joints plus the
+
+Success Fail CP Threshold
+
+20 Traje4c0tory Prog6r0ess (%) 80
+
+100
+
+gripper), the master-side control commands, and
+
+synchronized 480 × 640 RGB observations, all Figure 8: Tri-Info detector per-timestep
+
+sampled at 50 Hz.
+
+P (Failure) on PI0.5-LIBERO over 60 random
+
+samples. Failed trajectories (red) cross the thresh-
+
+Real-world task 1: Cup on plate (ACT). The old θ(t); successful ones (blue) stay below it.
+
+task is to place a red cup onto a small blue plate.
+
+A trial succeeds if the cup comes to rest within the plate boundary without toppling; all other outcomes
+
+count as failures. We collected 100 teleoperated demonstrations, combined them with simulated
+
+data, and trained ACT with batch size 4 for 10,000 epochs. For evaluation, we collected 120 rollout
+
+trajectories from the trained policy. More trajectories with Tri-Info detector score are shown in
+
+Figure 9.
+
+Real-world task 2: Block in cup (PI0.5). The task is to place a yellow block into a cup. A trial succeeds if the block comes to rest inside the cup; missed grasps, releases above the rim, and toppled cups; or put into other containers all count as failures. We collected 50 teleoperated demonstrations (about 400 frames each), converted them to the LeRobot v2.0 format, and fine-tuned the pretrained PI0.5 base model with openpi for 100,000 steps (global batch size 64, cosine schedule peaking at 5 × 10−5), reusing the Trossen normalization statistics. For evaluation, we collected 60 rollout trajectories from the trained policy. Trajectories with Tri-Info detector score are shown in Figure 9.
+
+Real-world task 3: Block into drawer (PI0.5). The task is a four-stage sequence: open the drawer, pick up the red block, place it inside, and close the drawer. A trial counts as a failure if the block is not placed inside the drawer, or if the drawer cannot be closed afterwards. We collected 56
+
+14
+
+teleoperated demonstrations of roughly 650 frames each, converted them to the LeRobot v2.0 format, and fine-tuned the pretrained PI0.5 base model with openpi for 30,000 steps (global batch size 32, cosine schedule peaking at 2.5 × 10−5); normalization statistics were computed from the same 56 demonstrations. For evaluation we collected 75 rollout trajectories from the trained policy, of which 31 succeeded and 44 failed (41.3% success rate). Trajectories with their Tri-Info detector scores are shown in Figure 10.
+A.2 Training and Evaluation Protocol
+This section describes how data are split, how the detectors are trained, and where each component of the pipeline is fitted.
+Trajectory-level splits. Every split is made over whole trajectories, before any sliding window is formed, and is stratified by the outcome label f ξ. A window Wt therefore never spans two trajectories, and no trajectory contributes windows to more than one split, so near-duplicate windows cannot straddle the split boundary. In-domain experiments split each dataset 70/30 into a training and a test split; transfer experiments fit everything on the source domain and evaluate on target-domain trajectories the detector has never seen. The calibration set Dc+al is the success subset of the source training split, so calibration consumes no target trajectory. Because those successes also train the GRUs, θ(t) is calibrated in-sample, and we therefore read α as an operating-point knob (Section 5.3) rather than an exact finite-sample coverage guarantee.
+Failure detector training. We train classifiers at the timestep level, where each timestep inherits the trajectory-level label f ξ ∈ {0, 1}. The GRU model consists of a single-layer GRU mapping the per-timestep metric scalar (input dimension one) to a hidden state, followed by a two-layer MLP head that halves the hidden size before a single output, with ReLU activation, dropout 0.1, and a sigmoid output. It is trained with Adam (learning rate 10−3, weight decay 10−5); the hidden size and the number of epochs are not fixed but selected per domain by the search of Appendix A.4 (Table 12). The logistic regression baseline uses a single linear layer with sigmoid activation, trained with the L-BFGS solver at an inverse regularization strength of 1.0. Both models receive the per-timestep metrics, normalized using global statistics computed across the entire training set. Unless otherwise noted, every experiment is run with three random seeds, and we report the average across seeds.
+VAE training data and leakage. The projection of Appendix D is fitted once per model–dataset domain, on all of that domain’s per-step embeddings – test trajectories included – using reconstruction plus a weak KL penalty. A target domain therefore contributes only unlabelled embeddings to its own projection, and no failure label enters the VAE training pipeline anywhere. The projection does stay transductive in the unlabelled data; fitting it on a disjoint unlabelled pool would remove even that.
+Where each component is fitted. Table 5 summarizes where each component is fitted. Only the label-free front end is refitted for a new model or embodiment; the GRU weights, the normalization constants (µ, σ), and the threshold θ(t) are fitted once on the source training split and applied unchanged, with target sequences z-normalized by source statistics rather than their own.
+
+Table 5: Where each component of the pipeline is fitted. Only the label-free front end is refitted for a new model or embodiment.
+
+Component
+
+Fitted on
+
+Uses label Refit per domain
+
+VAE ES, EA
+
+unlabelled rollouts of that domain
+
+no
+
+yes
+
+Normalization (µ, σ) source training split
+
+no
+
+no
+
+Per-metric GRUs
+
+source training split
+
+yes
+
+no
+
+Threshold θ(t)
+
+successes of the source training split yes
+
+no
+
+A.3 Baselines
+This section describes the baseline failure detection methods used in our comparisons, as well as the alternative action continuity metrics we evaluate to validate our design choices. We compare against four recent failure detection methods, which we categorize based on their input modality into the
+15
+
+Succeed
+
+Succeed
+
+Fail
+
+Successful Phase
+
+Failing Phase
+
+Successful Phase
+
+Failing Phase
+
+Succeed
+
+Fail
+
+Successful Phase
+
+Failing Phase
+
+Successful Phase
+
+Failing Phase
+
+Figure 9: Tri-Info detector results for two real-world platforms (top: ACT-ALOHA-real; bottom: PI0.5-ALOHA-real-block). Each platform shows four rollouts – three failed and one successful – and each rollout pairs five trajectory frames with the corresponding classifier score and CP threshold (α = 0.05).
+16
+
+Succeed
+
+Fail
+
+Successful Phase
+
+Failing Phase
+
+Successful Phase
+
+Failing Phase
+
+Figure 10: Tri-Info detector results for PI0.5-ALOHA-real-drawer. It shows four rollouts – three failed and one successful – and each rollout pairs five trajectory frames with the corresponding classifier score and CP threshold (α = 0.05).
+classifier: embedding-based methods that use model representations, and score-based methods that operate on computed scalar signals. This distinction is important, as embedding-based approaches are inherently tied to specific model architectures and cannot generalize across different policies without retraining.
+Embedding-based methods. SAFE [Gu et al., 2025] trains a classifier on VLA latent representations to distinguish successful from failed executions, so both its input dimensionality and its decision geometry are fixed to that of embedding space, and it is bound to the architecture by construction. Fail-Detect [Xu et al., 2025] distills the policy’s inputs and outputs into a scalar signal, which makes it look model-agnostic. But its strongest score (logpZO) is a density estimator trained on one policy’s observation embeddings. On a different model or task, the embeddings no longer match what it learned, so almost every trajectory looks out-of-distribution; the score saturates and can no longer tell success from failure. FIPER [Römer et al., 2025] combines two signals: (i) out-of-distribution observations via Random Network Distillation in the policy’s embedding space (RND-OE), and (ii) action-chunk entropy (ACE) over sampled actions. The RND-OE branch detects novelty using a predictor network trained on one policy’s embeddings, so it is tied to that embedding space and fails once the model or task changes, for the same reason as Fail-Detect. The ACE branch, however, reads only the sampled action chunks and trains no model bound to the source policy, so it does carry over. We therefore take ACE as FIPER’s transferable component and compare against it in Figure 12.
+Score-based methods. STAC [Agia et al., 2024] computes the statistical divergence between overlapping segments of sampled action chunks to measure temporal consistency in generative policies. The original method requires generating multiple samples per timestep; our I(At; At+1) shares a similar spirit but differs in two respects: (i) it operates on executed actions over a sliding window, compatible with deterministic VLA inference and adding much less overhead, whereas STAC compares only an overlapping sub-window of 32+ sampled futures; (ii) the decomposition
+17
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+1.0
+
+PI0-LIBERO (ID)
+
+1.0
+
+PI0.5-LIBERO (ID)
+
+1.0 PI0.5-ALOHA-Real-Drawer (ID)
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.6
+
+0.5
+
+0.5
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+PI10..05-LIBERO PI0.5-ALOHA-Real-Block (OOD1).0 PI0-LIBERO PI0.5-LIBERO (OOD)
+
+0.5
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100 P1I.00.5-LIBERO ACT-ALOHA-Real-Cup (OOD)
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.6
+
+0.4
+
+0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+0.2
+
+identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+Score-based: Tri-Info (ours) STAC GRU-STAC Embedding-based: SAFE Fail-Detect FIPER
+
+Figure 11: Dimension-matched baselines. Balanced accuracy versus trajectory progress for the three in-domain settings (top) and the three transfers (bottom). All embedding-based detectors use the VAE-matched latent, so they are applicable in every panel, including PI0.5-LIBERO → ACT-ALOHA-real-cup. In the OOD panels overlapping curves are offset by ±0.01 for visibility.
+
+I(At; At+1) = H(At+1) − H(At+1|At) captures both diversity and consistency, while STAC measures consistency only.
+Dimension-matched embedding baselines with VAE compression. The embedding-based detectors cannot be applied when the target policy’s latent dimensionality differs from the source, which is the case for PI0.5-LIBERO → ACT-ALOHA-real-cup. To evaluate them in that setting as well, we project the source and target embeddings through the per-domain VAE to the common dz = 7 latent and train and apply each detector on those latents, giving the variants SAFE-VAE, Fail-Detect-VAE, and FIPER-VAE. Table 6 reports trajectory-level AUC and mean balanced accuracy for all methods, and Figure 11 shows balanced accuracy versus trajectory progress for the dimension-matched variants.
+In domain, the projection lowers the average accuracy of all three embedding-based detectors, as expected from compressing a high-dimensional latent to seven dimensions: SAFE drops from 0.91 to 0.85 AUC and from 0.82 to 0.79 mBA, while Fail-Detect and FIPER lose at most 0.02 AUC and 0.06 mBA. Under shift, the shared latent makes cross-domain evaluation possible: all three detectors now apply to PI0.5-LIBERO → ACT-ALOHA-real-cup, where the raw variants cannot run. The shared latent also improves transfer for some detectors. SAFE-VAE outperforms raw SAFE on both transfers where the two are comparable, raising AUC from 0.61 to 0.86 on PI0.5-LIBERO → PI0.5-ALOHA-real-block and from 0.64 to 0.74 on PI0-LIBERO → PI0.5-LIBERO. On the latter transfer it also raises mBA from 0.50 to 0.81. FIPER-VAE likewise raises AUC on PI0-LIBERO → PI0.5-LIBERO from 0.56 to 0.77. The gain is not uniform, however: Fail-Detect-VAE falls below chance on all three transfers (0.32 average AUC). Nor does it extend to deployable accuracy. Fail-Detect-VAE and FIPER-VAE sit at 0.50 mBA on every OOD setting, and SAFE-VAE averages 0.64. The cases where AUC stays high but mBA collapses identify the failure mode. These cases are SAFE-VAE on the two transfers to real ALOHA (0.86 vs. 0.53 and 0.79 vs. 0.58) and FIPER-VAE on PI0-LIBERO → PI0.5-LIBERO (0.77 vs. 0.50). There the scores still rank trajectories within the target domain, but their absolute level shifts. The threshold θ(t) calibrated on the source domain therefore no longer separates success from failure, and the deployed detector operates at or near chance.
+Alternative action metrics. We further consider several metrics that summarize how an action sequence evolves over time, each feeding into the same GRU-based detection pipeline. All are computed over the same sliding window Wt = {(si, ai)}it=t−W +1 of Section 3.2, using the action embeddings ai.
+1. Variance measures action dispersion within the window: Vart = tr Cov {ai}ti=t−W +1 .
+18
+
+Table 6: Full baseline comparison. Trajectory-level AUC (top) and mean balanced accuracy over t ∈ {0.1, . . . , 1.0} (bottom). “VAE” denotes the dimension-matched variant of each embeddingbased detector. “n/a” marks settings where the raw detector cannot be applied because the target latent dimensionality differs from the source. Best per row in bold.
+
+Score-based
+
+Embedding-based
+
+SAFE Fail-Detect FIPER
+
+Setting
+
+Tri-Info STAC GRU-STAC raw VAE raw VAE raw VAE
+
+AUC PI0-LIBERO-10 PI0.5-LIBERO-10 PI0.5-ALOHA-real-drawer ID average
+
+0.70 0.44 0.86 0.67 0.90 0.75 0.82 0.62
+
+0.60 0.85 0.74 0.70 0.73 0.63 0.49 0.81 0.95 0.90 0.75 0.82 0.77 0.93 0.85 0.94 0.90 0.89 0.72 0.81 0.75 0.76 0.91 0.85 0.78 0.76 0.73 0.72
+
+PI0.5-LIBERO → PI0.5-ALOHA-real-block 0.81 0.65
+
+PI0-LIBERO → PI0.5-LIBERO
+
+0.82 0.41
+
+PI0.5-LIBERO → ACT-ALOHA-real-cup
+
+0.89 0.27
+
+OOD average
+
+0.84 0.44
+
+0.77 0.61 0.86 0.32 0.24 0.91 0.51
+
+0.52 0.64 0.74 0.69 0.49 0.56 0.77
+
+0.94
+
+n/a 0.79 n/a 0.22 n/a 0.50
+
+0.74
+
+n/a 0.80 n/a 0.32 n/a 0.59
+
+Mean balanced accuracy PI0-LIBERO-10 PI0.5-LIBERO-10 PI0.5-ALOHA-real-drawer ID average
+
+0.84 0.65 0.89 0.63 0.76 0.55 0.83 0.61
+
+0.82 0.82 0.83 0.75 0.54 0.82 0.72 0.79 0.89 0.78 0.85 0.92 0.72 0.72 0.81 0.76 0.77 0.75 0.69 0.76 0.70 0.81 0.82 0.79 0.78 0.72 0.76 0.71
+
+PI0.5-LIBERO → PI0.5-ALOHA-real-block 0.70 0.49
+
+PI0-LIBERO → PI0.5-LIBERO
+
+0.90 0.50
+
+PI0.5-LIBERO → ACT-ALOHA-real-cup
+
+0.82 0.33
+
+OOD average
+
+0.81 0.44
+
+0.50 0.60 0.53 0.50 0.50 0.50 0.50
+
+0.80 0.50 0.81 0.50 0.50 0.50 0.50
+
+0.76
+
+n/a 0.58 n/a 0.50 n/a 0.50
+
+0.69
+
+n/a 0.64 n/a 0.50 n/a 0.50
+
+Table 7: Comparison against action-based scores, mean balanced accuracy over t ∈ {0.1, . . . , 1.0}. All scores share the GRU pipeline, so only the input signal differs. “Raw” uses the action embeddings directly; “VAE-matched” uses the dz = 7 latent, which Tri-Info also uses. FIPER-ACE reads sampled action chunks rather than embeddings and is therefore unaffected by the projection. Best per row in bold.
+
+Raw embeddings
+
+VAE-matched latent
+
+Setting
+
+Tri-Info FIPER-ACE Var kNN CosDis Grad Var kNN CosDis Grad
+
+PI0-LIBERO-10 PI0.5-LIBERO-10 PI0.5-ALOHA-real-drawer ID average
+
+0.84
+
+0.75 0.82 0.83 0.69 0.69 0.81 0.84 0.78 0.76
+
+0.89
+
+0.50 0.79 0.88 0.71 0.88 0.89 0.90 0.89 0.87
+
+0.76
+
+0.50 0.69 0.82 0.70 0.78 0.84 0.87 0.73 0.78
+
+0.83
+
+0.58 0.77 0.84 0.70 0.78 0.85 0.87 0.80 0.80
+
+PI0.5-LIBERO → PI0.5-ALOHA-real-block 0.70
+
+PI0-LIBERO → PI0.5-LIBERO
+
+0.90
+
+PI0.5-LIBERO → ACT-ALOHA-real-cup
+
+0.82
+
+OOD average
+
+0.81
+
+0.50 0.50 0.50 0.59 0.50 0.62 0.71 0.50 0.79 0.50 0.50 0.50 0.50 0.50 0.65 0.87 0.87 0.85 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.50 0.53 0.50 0.59 0.69 0.62 0.71
+
+2.
+
+KNN distance measures local density:
+
+KNNt
+
+=
+
+1 Wk
+
+t i=t−W +1
+
+k j=1
+
+∥ai
+
+−
+
+annj (i)∥2,
+
+where nnj(i) is the j-th nearest neighbor of ai within Wt.
+
+3. Cosine dissimilarity measures consecutive action alignment: CosDist = 1 −
+
+1 W −1
+
+. t−1
+
+ai⊤ ai+1
+
+i=t−W +1 ∥ai∥ ∥ai+1∥
+
+4.
+
+Temporal gradient measures the rate of action change:
+
+Gradt
+
+=
+
+1 W −1
+
+t−1 i=t−W
+
++1
+
+∥ai+1
+
+−
+
+ai∥1.
+
+These metrics summarize different aspects of an action sequence (dispersion, local density, directional alignment, and rate of change). We evaluate each one twice, on the raw action embeddings and on the VAE-matched latent, which separates the contribution of the information-theoretic form from that of the projection.
+
+Comparison against action-based scores. Table 7 and Figure 12 compare Tri-Info against FIPERACE and the four action-continuity scores. In domain, the alternatives are competitive and two of them are stronger than Tri-Info: on raw embeddings, kNN distance averages 0.84 mBA against 0.83
+
+19
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+1.0
+
+PI0-LIBERO (ID)
+
+1.0
+
+PI0.5-LIBERO (ID)
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.5
+
+0.5
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+PI10..05-LIBERO PI0.5-ALOHA-Real-Block (OOD1).0 PI0-LIBERO PI0.5-LIBERO (OOD)
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.5
+
+0.4
+
+identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress
+
+(8%0 )
+
+100
+
+0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 )
+
+100
+
+Tri-Info (ours)
+
+FIPER-ACE
+
+GRU-Variance
+
+GRU-KNN
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+1.0 PI0.5-ALOHA-Real-Drawer (ID)
+0.9 0.8 0.7 0.6 0.5
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100 P1I.00.5-LIBERO ACT-ALOHA-Real-Cup (OOD)
+0.9 0.8 0.7 0.6 0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+GRU-CosDis
+
+GRU-Gradient
+
+1.0
+
+PI0-LIBERO (ID)
+
+1.0
+
+PI0.5-LIBERO (ID)
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.5
+
+0.5
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+PI10..05-LIBERO PI0.5-ALOHA-Real-Block (OOD1).0 PI0-LIBERO PI0.5-LIBERO (OOD)
+
+Balanced Accuracy
+
+0.9
+
+0.9
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+0.6
+
+0.5 identical curves offset ±0.01 for visibility
+
+0.5
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+Tri-Info (ours)
+
+FIPER-ACE
+
+GRU-Variance
+
+GRU-KNN
+
+Balanced Accuracy
+
+Balanced Accuracy
+
+1.0 PI0.5-ALOHA-Real-Drawer (ID)
+0.9 0.8 0.7 0.6 0.5
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100 P1I.00.5-LIBERO ACT-ALOHA-Real-Cup (OOD)
+0.9 0.8 0.7 0.6 0.5 identical curves offset ±0.01 for visibility
+20 Trajec4t0ory Pr6o0gress (8%0 ) 100
+
+GRU-CosDis
+
+GRU-Gradient
+
+Figure 12: Comparison against action-based scores. Balanced accuracy versus trajectory progress for Tri-Info, FIPER-ACE, and the four action-continuity scores, all sharing our GRU pipeline. Top: scores computed on the raw action embeddings, where all four at or near chance in every OOD panel. Bottom: the same scores on the VAE-matched latent, which recovers accuracy on the crossenvironment and cross-model transfers but not on PI0.5-LIBERO → ACT-ALOHA-real-cup. Flat curves at chance are offset by ±0.01 for visibility.
+
+Balanced Accuracy
+
+20
+
+for Tri-Info, and on the matched latent kNN and variance reach 0.87 and 0.85. FIPER-ACE is the weakest at 0.58 and is unchanged by the projection, since it reads sampled action chunks rather than embeddings. In-domain accuracy therefore does not favour the information-theoretic form: action dispersion in a well-scaled latent already suffices.
+The methods separate under shift, and the projection largely determines how far. On raw embeddings, variance, kNN, and gradient fall to chance on every transfer, and cosine dissimilarity rises above chance only cross-environment (0.59), giving OOD averages of 0.50 to 0.53. These scores are expressed in the units of one policy’s embedding space, so a threshold fitted on the source does not carry over. The matched latent recovers part of their accuracy, raising the OOD average to 0.71 for gradient and 0.69 for kNN. The recovery comes entirely from the two milder transfers. Cross-environment, gradient reaches 0.79 and kNN 0.71, both above Tri-Info’s 0.70. Cross-model, kNN and cosine dissimilarity reach 0.87 and gradient 0.85, all below Tri-Info’s 0.90. On the transfer that changes model, embodiment, action dimensionality, and appearance at once, all four return to 0.50 in both representations, while Tri-Info holds 0.82. Tri-Info is therefore not the strongest on every transfer, but it is the only method in Table 7 that stays above chance on all three, and its OOD average (0.81) exceeds the best alternative (0.71) by 0.10.
+We draw two conclusions. The VAE projection accounts for a substantial share of whatever transfer an action statistic achieves, which is why we report both variants rather than attributing transfer to the metric alone. The projection is nevertheless not sufficient: Once the latent is matched, entropy and mutual information remain comparable across domains because they describe the distribution of actions (how probability mass is spread and how strongly actions depend on their history and states).
+
+A.4 Hyperparameter Search
+Every method is tuned by an independent grid search, so that no comparison is confounded by unequal tuning effort. Table 12 lists the grids and the selected configurations. Each search runs on the in-domain train/validation split of its own domain, and the selected configuration is applied unchanged to the transfer settings: the cross-model transfer inherits the PI0-LIBERO configuration, the two ALOHA transfers the PI0.5-LIBERO one. Model hyperparameters are ranked by AUC, and α, which does not enter AUC, by mean balanced accuracy among the AUC-optimal configurations.
+
+A.5 Additional Results and Sensitivity Analyses
+
+This section reports confidence intervals on the OOD results and the sensitivity of Tri-Info to detector capacity and to the flow-matching integration step.
+
+Confidence intervals on OOD. We add trajectory-level 95% CIs to the main OOD and real-world curves. We resample the n test trajectories with replacement, stratified by outcome (B = 2000). Each cell reports balanced accuracy with its 95% CI in bracket:
+
+Panel (OOD)
+
+n
+
+20%
+
+40%
+
+60%
+
+80%
+
+100%
+
+PI0-LIBERO-10 → PI0.5-LIBERO-10
+
+180 0.91 [0.86,0.95] 0.92 [0.89,0.95] 0.92 [0.88,0.94] 0.92 [0.88,0.94] 0.91 [0.88,0.94]
+
+PI0.5-LIBERO-10 → PI0.5-ALOHA-real-block 60 0.61 [0.55,0.69] 0.65 [0.57,0.72] 0.71 [0.63,0.79] 0.76 [0.68,0.85] 0.83 [0.74,0.91]
+
+PI0.5-LIBERO-10 → ACT-ALOHA-real-cup 120 0.80 [0.74,0.86] 0.95 [0.91,0.98] 0.90 [0.85,0.95] 0.82 [0.75,0.88] 0.78 [0.72,0.85]
+
+Detector capacity. To verify that our results do not hinge on detector capacity, we run a post-hoc sweep over the GRU hidden size N and the dropout rate on the two OOD transfers (Table 8). AUC varies within 0.818–0.839 on the cross-model transfer and 0.852–0.910 on the sim-to-real transfer, with no monotone trend in either hyperparameter.
+
+Table 8: Detector capacity sweep. Trajectory-level AUC (mean±std over three seeds) under distribution shift, for joint settings of GRU hidden size N and dropout. Detection is insensitive to both. Best per
+row in bold.
+
+AUC (OOD) \ (N, dropout)
+
+(32, 0.1) (64, 0.2) (128, 0.2) (256, 0.1) (256, 0.3)
+
+PI0-LIBERO-10 → PI0.5-LIBERO-10 0.818±.006 0.824±.002 0.839±.005 0.825±.007 0.830±.008 PI0.5-LIBERO-10 → ACT-ALOHA-real 0.891±.014 0.852±.048 0.910±.020 0.888±.029 0.862±.016
+
+21
+
+Flow-matching integration step. Flow-matching VLAs have no discrete action decoder, so we read the action embedding at from the velocity field at the last integration step (Section 3). To check that this choice is not critical, we rerun the Tri-Info pipeline on PI0.5-LIBERO, changing only the step i ∈ {0, . . . , 9} from which at is read (Table 9). mBA stays within 0.862–0.893 (mean 0.881, std 0.011) with no trend across steps, and the default last step is within 0.004 of the best. Detection is
+therefore insensitive to this choice; we keep the last step, which is closest to the executed action.
+
+Table 9: mBA versus the integration step used for the action embedding (PI0.5-LIBERO). Default in bold; best underlined.
+
+Integration step i 0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8 9 (default)
+
+mBA
+
+0.886 0.863 0.889 0.862 0.893 0.880 0.874 0.886 0.883 0.889
+
+Running time. We measure the detector’s per-inference cost end-to-end, averaged over 10×30 trajectories (Table 10). The cost rises mildly with W and reaches at most 5.30 ms on H800 (5.06 ms on RTX 4090) even at W =50, a small fraction of a typical VLA inference step, so the detector adds negligible overhead and does not perturb the control loop.
+
+Threshold calibration: α trades timeliness for accuracy.
+
+The signifi-
+
+cance level α sets the detector’s tolerance to transient anomalies (Table 11).
+
+Because the threshold is the (1−α) quantile of
+
+successful-trajectory scores, and successful trajectories Table 11: α controls tolerance for transient that recover from mid-execution perturbations still carry anomalies. TNR: fraction of successful the label f ξ=0, a smaller α raises the threshold and lets trajectories not falsely flagged. more transient excursions pass without an alarm. Low-
+
+ering α from 0.10 to 0.01 thus raises the true-negative α TPR TNR Bal. Acc Det.%
+
+rate from 0.584 to 0.906, while the true-positive rate stays above 0.95. The cost is timeliness: the first alarm moves from 5.5% to 16.0% of the trajectory. Even at
+
+0.010 .958 .906 0.050 .995 .736 0.100 .995 .584
+
+.932 .865 .789
+
+16.0 9.6 5.5
+
+the strictest setting, the detector reaches 0.932 balanced
+
+accuracy after only 16% of execution, and practitioners can tune α to their risk profile.
+
+B Limitations.
+Firstly, the scope of this paper is mainly alarms, rather than recovery or improvement of the success rate. We do try using the detector to select among sampled actions at inference time, which does raise the success rate (Appendix ??), though closing the loop deserves a more systematic study than we give it here. Secondly, this work is also tested only on VLAs; we additionally try a non-VLA behavioral-cloning policy (Appendix ??), which suggests the method may apply to closed-loop policies in general, but confirming this requires a wider range of architectures. Finally, our approach relies on a VAE to compress high-dimensional embeddings into a low-dimensional latent space where entropy and mutual information can be estimated. Therefore, our method requires training a VAE to compress the embeddings. Future work could remove this compression step by adopting information estimators that scale to high-dimensional spaces.
+
+C Validating the Three-Signal Reduction
+C.1 Exhaustive Subset Search
+We cross-check the metric reduction with an exhaustive search whose purpose is to confirm which signals to retain. We use logistic regression rather than the GRU: a memoryless classifier exposes the intrinsic discriminative content of each metric, so the resulting ranking is attributable to the metrics themselves rather than to the temporal model. Scoring a subset instantaneously is also cheap enough to cover the whole lattice, so we evaluate all 28 − 1 = 255 non-empty subsets, fitting one logistic regression per subset on per-timestep features pooled over all environment-model combinations excluding OOD domain in Figure. 5. Table 13 reports the four highest-AUC subsets at each cardinality.
+
+22
+
+Table 10: Detector latency grows only mildly with window size W . Per-inference latency (ms), averaged over 10×30 trajectories.
+
+Window size W
+
+GPU
+
+Model 10 20 30 40 50
+
+H800
+
+PI0 PI0.5
+
+2.64 3.14 3.65 4.54 5.22 2.69 3.21 3.72 4.61 5.30
+
+RTX 4090
+
+PI0 PI0.5
+
+4.08 4.27 4.47 4.79 5.06 4.02 4.22 4.42 4.74 5.01
+
+The search independently recovers {H(At), I(At; At+1), I(St, St+1; At)} as the top-AUC subset of size 3 (0.900), though the AUC is very flat across ID performance. Performance is bounded at this point rather than improved by adding signals: size 4 and size 5 match 0.900 without surpassing it, and size ≥ 6 declines steadily to 0.876 at size 8, as the remaining metrics are correlated with those already selected (Figure 4) and contribute redundancy rather than complementary discrimination. The optimal subsets at every size ≥ 2 retain the action-centric pair I(At; At+1) and H(At), with I(St, St+1; At) joining at size 3, consistent with our preference for action-centric signals: successful execution maintains consistent and diverse actions that remain coupled to state transitions.
+D MI Estimation
+We estimate the three Tri-Info quantities H(At), I(At; At+1), and I(St, St+1; At) nonparametrically over a sliding window of length W , using the Kozachenko–Leonenko estimator [Kozachenko, 1987] for the entropy and the Kraskov–Stögbauer–Grassberger estimator [Kraskov et al., 2004] for the mutual-information terms, both under the max-norm with k = 5 neighbours and N = W − 1 samples per window.
+VAE projection. Raw embeddings are too high-dimensional for k-NN estimation, where neighbour distances concentrate and the estimator bias grows. Following Hejna et al. [2025], who estimate state– action mutual information with the same estimator family, we compress each embedding to a matched dz=7 latent with a VAE fitted per model–dataset domain (Table 14; Appendix A.2) and estimate on the posterior means. A VAE rather than an arbitrary projection is what makes the distances usable: its isotropic Gaussian prior gives the latent a well-conditioned geometry, a prerequisite for k-NN statistics and the regime in which these estimators are best characterized. Keeping dz small serves the estimator, as they argue, and matching it across the two encoders keeps the joint dimensions of the three metrics comparable; their ablation over a threefold range of latent sizes reports little effect, and we did not repeat that sweep here.
+Assumptions and what the estimates support. Our windowed use stresses the estimators more than the pooled use they were validated under: Hejna et al. [2025] draw batches of 1024 samples from a whole dataset, whereas a window affords 29 consecutive – hence autocorrelated – steps at the default W = 30, and they take the L2 norm within each latent block and the max-norm between blocks, where we use the max-norm in every subspace. Local uniformity inside the k-NN ball is correspondingly loose, across up to 21 joint dimensions for I(St, St+1; At), and the entropy estimator diverges as neighbour distances vanish, so we floor them at 10−15: a degenerate window yields a finite floor for H(At) rather than a divergence. Absolute values in nats are therefore not meaningful and we never use them as such; as in Hejna et al. [2025], only relative comparisons carry weight. We accordingly read each metric as a normalized time series whose shape rather than level drives the GRU, and let the detector integrate the sequence of per-window estimates rather than trust any one of them. This is also why W is the one consequential hyperparameter below – it sets both the sample count and the span over which the regime must be stationary – while detection is insensitive to k, matching the robustness Hejna et al. [2025] report over k ∈ {2, . . . , 10}.
+Sensitivity to Window Size W and Neighborhood Size k We sweep the two estimator hyperparameters on the deployed detector (Tri-Info with mean fusion on PI0.5), varying W and k one at a time around their defaults (Table 15, Figure 13). Detection is largely insensitive to k, spanning
+23
+
+Table 12: Hyperparameter search. (a) The grid swept for each method. (b) The configuration selected in each of the three domains on which the search is run. h: hidden size; E: training epochs; W : window length; α: significance level; A = {0.001, 0.05, 0.10, 0.15}. Methods in the upper block read model embeddings and are swept separately on the raw embeddings (raw) and on the VAE-matched latent (VAE); methods in the lower block read executed or sampled actions and are swept once, so their selected configurations hold under both representations. FIPER-ACE fixes W = 30, stride 1, and the translational dimension set.
+
+(a) Search grids
+
+Method
+
+Grid
+
+Representation-dependent (swept once per representation)
+
+SAFE
+
+backbone ×E × α: {mlp, lstm} × {50, 100} × A
+
+Fail-Detect
+
+h × α: {32, 64, 256} × (A ∪ {0.20})
+
+FIPER
+
+α× combine × wact: (A ∪ {0.25}) × {and, or} × {10, 15, 20, 45}
+
+GRU-Variance / kNN / CosDis / Gradient h × E × W × α: {32, 64, 256} × {50, 100} × {20, 30} × A
+
+Representation-independent (swept once) STAC GRU-STAC FIPER-ACE Tri-Info
+
+score mode × α: {cumulative, max} × A h × E × W × α: {32, 64, 256} × {50, 100} × {20, 30} × A aggregation × h × E: 4 settings ×{32, 64, 256} × {50, 100} h × E × α: {32, 64, 256} × {50, 100} × A
+
+(b) Selected configurations
+
+Domain
+
+Method
+
+Format
+
+Repr. PI0-LIBERO-10 PI0.5-LIBERO-10 PI0.5-ALOHA-real-drawer
+
+SAFE
+
+(backbone, E, α) raw VAE
+
+Fail-Detect (h, α)
+
+raw
+
+VAE
+
+FIPER
+
+(α, combine, wact)
+
+raw VAE
+
+GRU-Variance (h, E, W, α)
+
+raw
+
+VAE
+
+GRU-kNN (h, E, W, α)
+
+raw
+
+VAE
+
+GRU-CosDis (h, E, W, α)
+
+raw
+
+VAE
+
+GRU-Gradient (h, E, W, α)
+
+raw
+
+VAE
+
+lstm, 100, .05 lstm, 100, .10
+256, .15 256, .15 .05, or, 15 .25, or, 45 256, 100, 20, .05 256, 100, 20, .05 256, 100, 20, .05 256, 100, 20, .05 64, 100, 30, .05 256, 50, 30, .15 32, 50, 20, .15 64, 100, 30, .05
+
+mlp, 50, .15 mlp, 100, .15
+256, .20 256, .15 .05, or, 15 .05, or, 10 256, 100, 20, .05 32, 50, 20, .15 256, 100, 30, .05 64, 100, 20, .05 256, 100, 20, .05 64, 50, 20, .05 64, 50, 20, .05 32, 50, 20, .15
+
+mlp, 50, .10 lstm, 100, .05
+256, .15 256, .10 .05, or, 45 .10, or, 10 256, 50, 20, .15 64, 50, 20, .05 256, 50, 30, .15 64, 50, 30, .15 64, 100, 30, .05 256, 100, 30, .05 256, 50, 20, .15 256, 100, 20, .05
+
+Tri-Info STAC GRU-STAC FIPER-ACE
+
+(h, E, α)
+
+both
+
+(mode, α)
+
+both
+
+(h, E, W, α)
+
+both
+
+(aggregation, h, E) both
+
+32, 100, .10 cumulative, .10 32, 100, 20, .05 window-30, 256, 50
+
+256, 100, .10 max, .10
+256, 100, 20, .15 raw, 256, 100
+
+32, 50, .05 cumulative, .10 32, 100, 20, .05
+raw, 32, 50
+
+0.893–0.918 AUC and 0.881–0.893 BA over the sweep, with the default k = 5 within 0.003 AUC of the best value. W is the consequential choice: AUC stays within 0.875–0.915 for W ≤ 40 and falls to 0.683 at W = 50, where BA also drops to 0.806, since long windows blur the failure transient the detector reads. The progress curves echo this, spreading under the W sweep and clustering under the k sweep. We therefore use W = 30, the peak of both measures, and leave k = 5 at its robust default.
+
+24
+
+Table 13: Detection performance AUC across different feature combinations. Best results per subset size are bolded.
+
+Size Features
+
+AUC
+
+H(At), I(At; At+1)
+
+2
+
+I(St; St+1), I(At; At+1) I(St+1; At), I(At; At+1)
+
+I(St, St+1; At), I(At; At+1)
+
+0.898 0.896 0.895 0.895
+
+H(At), I(St, St+1; At), I(At; At+1)
+
+3
+
+H(At), I(At, St; St+1), I(At; At+1) H(At), I(St; St+1), I(At; At+1)
+
+H(At), I(St+1; At), I(At; At+1)
+
+0.900 0.899 0.899 0.898
+
+H(At), I(At, St; St+1), I(St, St+1; At), I(At; At+1)
+
+4
+
+H(At), I(St, St+1; At), I(St; St+1), I(At; At+1) H(At), I(At, St; St+1), I(St; St+1), I(At; At+1)
+
+H(At), I(St+1; At), I(St; St+1), I(At; At+1)
+
+0.900 0.899 0.899 0.899
+
+H(At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+5
+
+H(At), I(St; At), I(St+1; At), I(St; St+1), I(At; At+1) H(At), I(St; At), I(At, St; St+1), I(St; St+1), I(At; At+1)
+
+H(At), I(St+1; At), I(At, St; St+1), I(St; St+1), I(At; At+1)
+
+0.900 0.899 0.899 0.894
+
+H(At), I(St; At), I(St+1; At), I(At, St; St+1), I(St; St+1), I(At; At+1)
+
+6
+
+H(At), I(St; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1) H(At), I(St+1; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+H(At), I(St; At), I(St+1; At), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+0.895 0.892 0.889 0.888
+
+H(At), I(St; At), I(St+1; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+7
+
+H(St), H(At), I(St; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1) H(St), I(St; At), I(St+1; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+H(St), H(At), I(St; At), I(St+1; At), I(St, St+1; At), I(St; St+1), I(At; At+1)
+
+0.888 0.879 0.877 0.877
+
+8 H(St), H(At), I(St; At), I(St+1; At), I(At, St; St+1), I(St, St+1; At), I(St; St+1), I(At; At+1) 0.876
+
+Table 14: Action and state variational autoencoder (VAE) encoder architectures. Both branch into parallel mean and log-variance heads at a matched dz-dim latent (dz = 7); decoders mirror the encoders with a sigmoid output. The VAE state encoder runs once per input modality (images, proprioception); nmod denotes the number of input modalities, which varies across models, and dint the per-modality intermediate code width (dint = 8), so each modality head emits 2dint values for its own mean/log-variance pair.
+
+Action VAE
+
+State VAE (per modality)
+
+Linear(→ 500) LeakyReLU Linear(500 → 500) LeakyReLU
+Mean / log-var heads: 500 → dz
+
+Linear(→ min(512, in/4)) LayerNorm + LeakyReLU + Dropout
+Linear(→ 2dint) Concatenate nmod modalities → dint nmod Linear(dint nmod → 64) + LayerNorm + LeakyReLU Mean / log-var heads: 64 → dz
+
+Table 15: Sensitivity to the window size W and the neighborhood size k of the k-NN estimators. Each sweep varies one while holding the other at its default (k = 5, W = 30). Best per row in bold.
+
+k
+
+5
+
+6
+
+8
+
+9 10
+
+AUC 0.915 0.893 0.918 0.918 0.893 Avg. BA 0.893 0.893 0.892 0.886 0.881
+
+W
+
+10 20 30 40 50
+
+AUC 0.913 0.888 0.915 0.875 0.683 Avg. BA 0.865 0.851 0.893 0.879 0.806
+
+25
+
+Balanced Accuracy Balanced Accuracy
+
+0.96
+
+0.94
+
+0.92
+
+0.90
+
+0.88
+
+0.86
+
+k=5
+
+k=9
+
+0.84
+
+k=6
+
+k = 10
+
+k=8
+
+20 Traje4c0tory Pro60gress (%80) 100
+
+1.00
+
+0.90
+
+0.80
+
+0.70
+
+W = 10
+
+W = 40
+
+W = 20
+
+W = 50
+
+W = 30
+
+0.60 20 Traje4c0tory Pro60gress (%80) 100
+
+Figure 13: Balanced accuracy versus trajectory progress for the Tri-Info detector (PI0.5-LIBERO) under the two estimator hyperparameter sweeps. Left: neighborhood size k ∈ {5, 6, 8, 9, 10} at fixed W = 30; the curves are tightly clustered, indicating that detection is insensitive to k. Right: window length W ∈ {10, 20, 30, 40, 50} at fixed k = 5; the wider spread, with W = 30 highest, shows that W is the more consequential hyperparameter.
+
+26
+
+

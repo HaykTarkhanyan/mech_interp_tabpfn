@@ -1,0 +1,44 @@
+{
+  "id": "2606.00269",
+  "title": "Closed-Loop Neural Activation Control in Vision-Language-Action Models",
+  "first_author": "Babu",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["OpenVLA-7B (fine-tuned per LIBERO suite)", "X-VLA (LIBERO-Goal only, one table)", "OpenVLA on SimplerEnv BridgeData V2 tasks"],
+  "action_head": "discrete action tokens (OpenVLA); X-VLA uses a flow-matching head but the paper does not explain how neurons were selected for it",
+  "methods": ["FFN value-vector vocabulary projection and kNN concept-to-neuron matching (extends Haon et al. 2025)", "manual polysemantic filtering to 10 neurons", "PID controller on steering coefficient", "per-task PPO controller over 10 neuron coefficients with reward = concept metric + lambda * task success"],
+  "question": "Does replacing the fixed steering coefficient of FFN-neuron steering with a feedback controller (PID or RL) keep task success while still steering height and speed?",
+  "key_findings": [
+    "Static steering at C=20 collapses success: average LIBERO SR drops from 71.37% (unsteered) to 27.37% for height and 1.8% for speed steering.",
+    "PID keeps average SR near baseline (71% height, 72.5% speed); RL controller reaches 73.88% (height) and 76.12% (speed), above the unsteered policy.",
+    "But on LIBERO the steering effect itself is near zero or reversed: LIBERO-Long mean height 0.832 m unsteered vs 0.828 (PID) and 0.804 (RL); AAT 181.7 vs 184.5 vs 181.9; mean speed 11.26 cm/s unsteered vs 10.88 (PID) and 11.04 (RL); SAT 2.69 vs 2.60 vs 2.54 (Tables 3-4). Other suites show differences of similar size within large SDs.",
+    "Static C=20 'up' steering lowers LIBERO-Long mean height (0.832 -> 0.723 m) instead of raising it.",
+    "On SimplerEnv/BridgeData V2 the effect is visible: height AAT 39.15 -> 47.28 (PID) / 48.13 (RL), speed 16.93 -> 18.90 / 21.38 cm/s, SR 40% -> 46-49% (Table 2).",
+    "X-VLA on LIBERO-Goal: AAT 161.58 -> 183.35 (PID) / 400.33 (RL) with SR 59% -> 60%; static C=20 gives AAT 626.74 but SR 25% (Table 1).",
+    "RL without PID warm start: SR 75% -> 65% and SAT 2.48 -> 2.28 (main text); per-suite SR drop e.g. LIBERO-Long 66.5 -> 57.0 (App. Table 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-Goal", "LIBERO-Object", "LIBERO-Spatial", "LIBERO-Long", "SimplerEnv BridgeData V2 pick-and-place"],
+    "scale": "20 deterministic seeded rollouts per task (App. D); 10 tasks per LIBERO suite; one fine-tuned OpenVLA per suite; RL controller trained per task",
+    "statistics": "no tests; mean +/- SD of steering metrics only; no CIs on success rates",
+    "baselines": "unsteered OpenVLA; static steering of Haon et al. with C = 5, 10, 20 (per-task best alpha chosen in task-wise tables)"
+  },
+  "causal_validation": "Interventions are causal by construction (scaling FFN neuron activations), but the paper does not test whether the selected 'motion' neurons are specific: no random-neuron control, no ablation. The tables show that on LIBERO the closed-loop controllers barely move the targeted metric.",
+  "closed_loop": "Yes, all metrics come from closed-loop simulated rollouts; the controller itself also uses online state feedback.",
+  "limitations_stated": [
+    "RL controller is trained per task.",
+    "Neuron identification still involves manual filtering.",
+    "Only a small set of steering concepts (height, speed)."
+  ],
+  "critique": [
+    "The central claim, 'better steering-task success trade-off', is not supported on LIBERO: the closed-loop variants keep success mainly by hardly steering, and their height and speed are at or below the unsteered model in the paper's own tables.",
+    "The RL controller is optimized per task with a task-success reward, so success above baseline may be ordinary RL fine-tuning through a 10-dim action space, not evidence about the concept neurons.",
+    "Static 'up' steering lowering height suggests the vocabulary-selected neurons do not encode height in this model, which undercuts the interpretability premise; no random-neuron baseline to check specificity.",
+    "Simulation only, OpenVLA only in depth; the X-VLA transfer is one table without explanation of how vocabulary projection applies to a flow-matching model.",
+    "No statistical tests with 20 rollouts per task; LIBERO-Object heights (~0.21 m vs ~1.06 m elsewhere) suggest inconsistent coordinate frames across suites."
+  ],
+  "code": "not reported",
+  "one_line": "Wraps vocabulary-selected OpenVLA FFN neurons in a PID or per-task RL controller so steering does not wreck task success, but on LIBERO the controlled runs barely change height or speed."
+}

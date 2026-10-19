@@ -1,0 +1,4 @@
+URL: https://neurips.cc/virtual/2026/loc/paris/162894
+OpenReview: ['YEvN8LfCTQ']
+
+Long-horizon manipulation with vision-language-action (VLA) policies remains1 unreliable under distribution shift. We ask whether a policy’s memory state signals2 impending failure early enough to act on. On MemoryVLA, a linear probe on the3 fused cognitive state predicts eventual failure at 0.862 AUC before any episode4 could have ended, generalizing to unseen perturbation dimensions (0.847) and5 unseen scenes (0.811); most of this signal is present in the first observation. We6 test four interventions: Best-of-N sampling, a scripted recovery macro, slowed7 execution, and memory bank clearing. Each measurably alters the robot’s behavior,8 yet none reliably improves success on this policy and benchmark; an outcome-9 informed oracle shows that headroom exists. Aborting predicted failures early10 saves 27% of compute at 2% cost in successes

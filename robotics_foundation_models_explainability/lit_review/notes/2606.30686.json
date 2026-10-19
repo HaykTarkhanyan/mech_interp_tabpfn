@@ -1,0 +1,42 @@
+{
+  "id": "2606.30686",
+  "title": "Position: Vision-Language-Action Models Cannot Be Verified to Perform Physical Reasoning",
+  "first_author": "Chen",
+  "year": 2026,
+  "venue": "arXiv preprint (position paper)",
+  "tier": "core",
+  "models": ["discusses RT-2, OpenVLA, OpenVLA-OFT, pi0, GR00T N1 and other VLM-backbone VLAs; no experiments"],
+  "action_head": "n/a (position paper covering discrete-token, diffusion-head and dual-system VLAs)",
+  "methods": ["conceptual decomposition of a VLA policy into semantic mapping z_sem and physical context z_phys", "argument about identifiability of success-rate evaluation at three levels (attribution, source, representation)", "literature analysis of 'narrative drift' in capability claims (Tables 1-2)", "proposed controlled-variation evaluation design"],
+  "question": "Can current VLA evaluation tell whether success comes from semantic generalization inherited from the VLM or from genuine physical execution generalization?",
+  "key_findings": [
+    "Claim: the field implicitly assumes pi(a | z_sem, z_phys) ~ pi(a | z_sem), i.e. that VLM semantic representations suffice for physical action, and this has never been tested.",
+    "Claim: task success rate cannot separate semantic grounding, physical execution and train-test distributional overlap (attribution non-identifiability).",
+    "Claim: OOD is defined relative to robot data, not VLM pretraining data, so 'novel' objects may be familiar (source non-identifiability).",
+    "Claim: benchmarks exclude infeasible or unsafe instructions, so loss of VLM capabilities like feasibility judgment during fine-tuning is invisible (representation-level non-identifiability).",
+    "Literature pattern (Table 2): reported physical limitations of RT-2, OpenVLA-OFT and pi0 are attributed to data or scale rather than to failure of semantic sufficiency ('narrative drift').",
+    "Proposal: evaluate semantic and physical generalization separately by holding one fixed while varying the other, e.g. linguistically expressible but visually unrecoverable properties ('the heavier cup'), and define OOD relative to all training sources."
+  ],
+  "evidence": {
+    "setting": "n/a (no experiments)",
+    "benchmarks": [],
+    "scale": "n/a",
+    "statistics": "n/a",
+    "baselines": "n/a"
+  },
+  "causal_validation": "n/a; the paper argues for behavioral controlled-variation designs and explicitly proposes protocols that do not need model internals.",
+  "closed_loop": "n/a",
+  "limitations_stated": [
+    "Aims to show the assumption has not been tested, not to refute it.",
+    "Tables 1-2 use representative high-impact systems, not an exhaustive survey."
+  ],
+  "critique": [
+    "Useful framing for the review's methodology section: success rate conflates mechanisms, which is the same identifiability problem interpretability work tries to solve from the inside.",
+    "Overstated in places: it argues z_sem 'cannot, in principle' encode physical properties because VLM pretraining lacks interaction data, but VLAs are fine-tuned end-to-end on robot interaction data, so the backbone after fine-tuning is no longer trained only on static image-text pairs.",
+    "Ignores mechanistic tools: probing and causal interventions on internals (e.g. probes of object state, steering papers) could test semantic vs physical encoding directly; the paper only proposes behavioral protocols.",
+    "No empirical test of its own proposal, so claims about narrative drift are interpretive.",
+    "Connects to LIBERO-Plus (2510.13626) and memorization results (2505.05787) as behavioral evidence that benchmark success can reflect distributional overlap."
+  ],
+  "code": "n/a",
+  "one_line": "A position paper arguing that VLA success rates cannot show whether models reason about physics or just match semantics and training distributions, and calling for evaluations that vary physical and semantic factors separately."
+}

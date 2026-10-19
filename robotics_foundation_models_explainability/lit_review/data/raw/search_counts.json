@@ -1,0 +1,379 @@
+{
+ "search_date": "2026-10-19",
+ "databases_used": [
+  "arXiv",
+  "Crossref"
+ ],
+ "semantic_scholar_status": "skipped: --no-chain and --s2-max 0",
+ "databases_not_used": {
+  "OpenAlex": "keyless daily budget for this IP at $0.017 of $0.10 on 2026-10-19; 0 references listed for seed 2509.00328",
+  "DBLP": "anti-bot challenge page instead of JSON (checked 2026-10-19 for the synthetic-data review)"
+ },
+ "results_per_query": {
+  "arXiv": 350,
+  "S2": 0,
+  "Crossref": 20
+ },
+ "queries": {
+  "vla_interp": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:interpretability OR abs:interpretable OR abs:mechanistic OR abs:explainability OR abs:explainable OR abs:\"sparse autoencoder\" OR abs:\"sparse autoencoders\" OR abs:probing OR abs:\"linear probe\" OR abs:\"linear probes\" OR abs:steering)",
+   "short": "vision-language-action model mechanistic interpretability"
+  },
+  "vla_attribution": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:attribution OR abs:saliency OR abs:\"attention map\" OR abs:\"attention maps\" OR abs:\"attention heads\" OR abs:\"attention patterns\" OR abs:neurons)",
+   "short": "vision-language-action attention attribution saliency analysis"
+  },
+  "vla_short_name": {
+   "tier": "core",
+   "arxiv": "(ti:VLA OR ti:VLAs) AND (abs:interpretability OR abs:mechanistic OR abs:\"sparse autoencoder\" OR abs:\"activation steering\" OR abs:probing OR abs:\"linear probe\" OR abs:neurons OR abs:\"internal representations\")",
+   "short": "VLA interpretability sparse autoencoder steering probing"
+  },
+  "vla_representations": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:\"hidden states\" OR abs:\"intermediate layers\" OR abs:\"layer-wise\" OR abs:\"representation analysis\" OR abs:\"internal representations\" OR abs:\"latent representations\")",
+   "short": "vision-language-action internal representations analysis layers"
+  },
+  "robot_policy_interp": {
+   "tier": "core",
+   "arxiv": "(abs:\"robot policy\" OR abs:\"robot policies\" OR abs:\"visuomotor policy\" OR abs:\"visuomotor policies\" OR abs:\"generalist policy\" OR abs:\"generalist policies\" OR abs:\"robot foundation model\" OR abs:\"robot foundation models\" OR abs:\"robot learning\") AND (abs:interpretability OR abs:interpretable OR abs:mechanistic OR abs:explainability OR abs:explainable OR abs:\"sparse autoencoder\" OR abs:\"sparse autoencoders\" OR abs:probing OR abs:\"linear probe\" OR abs:\"linear probes\" OR abs:steering)",
+   "short": "interpretability of robot policy internal representations"
+  },
+  "diffusion_policy_interp": {
+   "tier": "core",
+   "arxiv": "(abs:\"diffusion policy\" OR abs:\"diffusion policies\" OR abs:\"flow matching policy\" OR abs:\"flow-matching policy\" OR abs:\"action expert\") AND ((abs:interpretability OR abs:interpretable OR abs:mechanistic OR abs:explainability OR abs:explainable OR abs:\"sparse autoencoder\" OR abs:\"sparse autoencoders\" OR abs:probing OR abs:\"linear probe\" OR abs:\"linear probes\" OR abs:steering) OR abs:attribution)",
+   "short": "diffusion policy robot interpretability explanation"
+  },
+  "vla_failure_monitoring": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:\"failure detection\" OR abs:\"failure prediction\" OR abs:\"runtime monitoring\" OR abs:\"failure explanation\" OR abs:\"uncertainty estimation\")",
+   "short": "vision-language-action failure detection internal features"
+  },
+  "vla_language_grounding": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:\"language grounding\" OR abs:\"instruction following\" OR abs:\"ignore language\" OR abs:\"ignores language\" OR abs:\"language conditioning\" OR abs:\"counterfactual\")",
+   "short": "do vision-language-action models follow language instructions analysis"
+  },
+  "vla_safety_internals": {
+   "tier": "core",
+   "arxiv": "abs:\"vision-language-action\" AND (abs:backdoor OR abs:adversarial OR abs:jailbreak OR abs:unlearning OR abs:hallucination) AND (abs:mechanistic OR abs:interpretability OR abs:neurons OR abs:\"sparse autoencoder\" OR abs:features OR abs:\"attention\")",
+   "short": "vision-language-action adversarial backdoor mechanistic defense"
+  },
+  "concept_policies": {
+   "tier": "core",
+   "arxiv": "(abs:\"concept bottleneck\" OR abs:\"concept-based\" OR abs:\"concept learning\") AND (abs:robot OR abs:robotic OR abs:manipulation) AND (abs:policy OR abs:policies OR abs:\"imitation learning\" OR abs:\"vision-language-action\")",
+   "short": "concept bottleneck robot manipulation policy interpretable"
+  },
+  "robot_xai": {
+   "tier": "adjacent",
+   "arxiv": "(abs:robot OR abs:robotic OR abs:robotics) AND (abs:\"foundation model\" OR abs:\"foundation models\" OR abs:\"vision-language model\" OR abs:\"large language model\") AND (abs:explainability OR abs:\"explainable AI\" OR abs:\"explainable robotics\" OR abs:\"explain its\" OR abs:\"self-explanation\")",
+   "short": "explainable robotics foundation models explanation of robot behavior"
+  },
+  "world_model_interp": {
+   "tier": "adjacent",
+   "arxiv": "(abs:\"world model\" OR abs:\"world models\") AND (abs:robot OR abs:robotic OR abs:embodied) AND (abs:mechanistic OR abs:interpretability OR abs:probing OR abs:\"sparse autoencoder\" OR abs:\"linear probe\")",
+   "short": "interpretability of world models for robotics probing"
+  },
+  "embodied_llm_interp": {
+   "tier": "adjacent",
+   "arxiv": "(abs:embodied OR abs:robot OR abs:robotic) AND (abs:\"mechanistic interpretability\" OR abs:\"sparse autoencoder\" OR abs:\"activation steering\" OR abs:\"activation patching\")",
+   "short": "embodied agent mechanistic interpretability"
+  },
+  "rl_agent_mech_interp": {
+   "tier": "adjacent",
+   "arxiv": "abs:\"mechanistic interpretability\" AND (abs:\"reinforcement learning\" OR abs:\"RL agent\" OR abs:\"RL agents\" OR abs:\"deep RL\" OR abs:\"policy network\")",
+   "short": "mechanistic interpretability reinforcement learning agent"
+  },
+  "driving_interp": {
+   "tier": "adjacent",
+   "arxiv": "(abs:\"autonomous driving\" OR abs:\"end-to-end driving\") AND (abs:\"vision-language-action\" OR abs:\"foundation model\") AND (abs:mechanistic OR abs:\"sparse autoencoder\" OR abs:probing OR abs:\"linear probe\" OR abs:\"activation steering\")",
+   "short": "autonomous driving foundation model mechanistic interpretability"
+  },
+  "robot_visual_repr_probing": {
+   "tier": "adjacent",
+   "arxiv": "(abs:\"visual representations\" OR abs:\"visual representation\" OR abs:\"vision encoder\") AND (abs:robot OR abs:manipulation) AND (abs:probing OR abs:\"linear probe\" OR abs:\"linear probing\" OR abs:interpretability)",
+   "short": "pretrained visual representations for robot manipulation probing"
+  }
+ },
+ "per_theme": [
+  {
+   "theme": "vla_interp",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 317,
+    "total_matches": 317
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 5526673
+   }
+  },
+  {
+   "theme": "vla_attribution",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 85,
+    "total_matches": 85
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 9061245
+   }
+  },
+  {
+   "theme": "vla_short_name",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 165,
+    "total_matches": 165
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 196919
+   }
+  },
+  {
+   "theme": "vla_representations",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 110,
+    "total_matches": 110
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 9620270
+   }
+  },
+  {
+   "theme": "robot_policy_interp",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 212,
+    "total_matches": 212
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 2275308
+   }
+  },
+  {
+   "theme": "diffusion_policy_interp",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 118,
+    "total_matches": 118
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 1986002
+   }
+  },
+  {
+   "theme": "vla_failure_monitoring",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 31,
+    "total_matches": 31
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 5437334
+   }
+  },
+  {
+   "theme": "vla_language_grounding",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 194,
+    "total_matches": 194
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 12094151
+   }
+  },
+  {
+   "theme": "vla_safety_internals",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 27,
+    "total_matches": 27
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 2685483
+   }
+  },
+  {
+   "theme": "concept_policies",
+   "tier": "core",
+   "arXiv": {
+    "retrieved": 6,
+    "total_matches": 6
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 2021861
+   }
+  },
+  {
+   "theme": "robot_xai",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 93,
+    "total_matches": 93
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 8989786
+   }
+  },
+  {
+   "theme": "world_model_interp",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 111,
+    "total_matches": 111
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 3378500
+   }
+  },
+  {
+   "theme": "embodied_llm_interp",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 38,
+    "total_matches": 38
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 405215
+   }
+  },
+  {
+   "theme": "rl_agent_mech_interp",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 18,
+    "total_matches": 18
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 3140998
+   }
+  },
+  {
+   "theme": "driving_interp",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 5,
+    "total_matches": 5
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 9447820
+   }
+  },
+  {
+   "theme": "robot_visual_repr_probing",
+   "tier": "adjacent",
+   "arXiv": {
+    "retrieved": 42,
+    "total_matches": 42
+   },
+   "Crossref": {
+    "retrieved": 20,
+    "total_matches": 1102331
+   }
+  }
+ ],
+ "keyword_records": 1892,
+ "seeds": {
+  "haon_steering": {
+   "arxiv_id": "2509.00328",
+   "title": "Mechanistic interpretability for steering vision-language-action models",
+   "citations": 0,
+   "references": 0
+  },
+  "sae_vla": {
+   "arxiv_id": "2603.19183",
+   "title": "Sparse Autoencoders Reveal Interpretable and Steerable Features in VLA Models",
+   "citations": 0,
+   "references": 0
+  },
+  "observe_control": {
+   "arxiv_id": "2603.05487",
+   "title": "Observing and Controlling Features in Vision-Language-Action Models",
+   "citations": 0,
+   "references": 0
+  },
+  "not_all_features": {
+   "arxiv_id": "2603.19233",
+   "title": "Not All Features Are Created Equal: A Mechanistic Study of Vision-Language-Action Models",
+   "citations": 0,
+   "references": 0
+  },
+  "probing_symbolic": {
+   "arxiv_id": "2502.04558",
+   "title": "Probing a Vision-Language-Action Model for Symbolic States and Integration into a Cognitive Architecture",
+   "citations": 0,
+   "references": 0
+  },
+  "event_sae": {
+   "arxiv_id": "2605.17204",
+   "title": "Event-Grounded Sparse Autoencoders for Vision-Language-Action Policies",
+   "citations": 0,
+   "references": 0
+  },
+  "language_grounding": {
+   "arxiv_id": "2610.10178",
+   "title": "Do Vision-Language-Action Models Understand Instructions? A Mechanistic Interpretability Study on Language Grounding",
+   "citations": 0,
+   "references": 0
+  },
+  "concept_dict_safety": {
+   "arxiv_id": "2602.01834",
+   "title": "Concept-Based Dictionary Learning for Inference-Time Safety in Vision Language Action Models",
+   "citations": 0,
+   "references": 0
+  },
+  "embodied_interp": {
+   "arxiv_id": "2605.00321",
+   "title": "Embodied Interpretability: Linking Causal Understanding to Generalization in Vision-Language-Action Models",
+   "citations": 0,
+   "references": 0
+  },
+  "mech_finetune": {
+   "arxiv_id": "2511.22697",
+   "title": "Mechanistic Finetuning of Vision-Language-Action Models via Few-Shot Demonstrations",
+   "citations": 0,
+   "references": 0
+  },
+  "task_progress": {
+   "arxiv_id": "2608.13474",
+   "title": "Decoding Task Progress from VLA Representations",
+   "citations": 0,
+   "references": 0
+  },
+  "illusion_reasoning": {
+   "arxiv_id": "2604.18000",
+   "title": "Unmasking the Illusion of Embodied Reasoning in Vision-Language-Action Models",
+   "citations": 0,
+   "references": 0
+  },
+  "latent_cluster": {
+   "arxiv_id": "2609.02634",
+   "title": "Latent Cluster Analysis for Vision-Language-Action Models",
+   "citations": 0,
+   "references": 0
+  }
+ },
+ "chained_records": 0,
+ "abstracts_backfilled": 0,
+ "records_without_abstract": 217,
+ "total_records": 1892,
+ "failures": []
+}

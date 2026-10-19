@@ -1,0 +1,1847 @@
+arXiv:2609.30996v2 [cs.LG] 4 Oct 2026
+
+THE LINEAR REPRESENTATION HYPOTHESIS FOR VISION-LANGUAGE-ACTION MODELS
+Minseok Jeong1 Hyewon Choi1 Hiroyasu Tsukamoto2 Soojean Han1 1KAIST 2University of Illinois Urbana–Champaign {dsa950115,chw110825,soojean}@kaist.ac.kr hiroyasu@illinois.edu
+ABSTRACT
+The linear representation hypothesis (LRH) has become a standard lens for measuring and intervening on semantic information through the internal representations of large language models (LLMs). A growing body of work has begun extending this perspective to vision-language-action (VLA) models, but the dynamical nature of embodied interaction introduces an additional challenge. Unlike semantic attributes commonly studied in LLMs, such as gender or language, a physical quantity of interest (QoI) in a VLA evolves jointly with the system dynamics: the representation influences the actions selected by the policy, which alter the physical state and, in turn, the next representation. In this paper, we develop a theoretical, signature-based formulation of the LRH for VLA that unifies representations and policies. On the representation side, we establish the existence of representations from which the future evolution of a QoI under a candidate action trajectory can be recovered via linear probing. On the policy side, we introduce a signature generalized linear model for stochastic action chunks. This structure yields a monotonic change in the expected future QoI along linear paths in natural parameter space, enabling linear steering. We first validate this structure in a controlled oracle setting, then examine whether the same probing and steering mechanisms emerge in a pretrained VLA.
+1 INTRODUCTION
+The linear representation hypothesis (LRH) in large language models (LLMs) states that high-level concepts, such as gender and language, have representations that occupy particular linear directions, or low-dimensional subspaces, in their representation space (Mikolov et al., 2013; Elhage et al., 2022; Park et al., 2024). Its appeal is that this geometry provides a simple mathematical interface to otherwise opaque models. After identifying a linear representation corresponding to a concept, it can be used in two ways: probing measures the concept by projecting representations onto that direction (Alain & Bengio, 2016; Belinkov, 2022), while steering intervenes on the concept by moving representations along it (Li et al., 2023b; Turner et al., 2023; Zou et al., 2023). These two operations have become a standard interface to understand the internal structures of LLMs, supported by substantial empirical evidence (Li et al., 2023a; Marks & Tegmark, 2024; Templeton et al., 2024) and, more recently, by systematic theoretical analysis (Park et al., 2024; Jiang et al., 2024; Park et al., 2025; Garg et al., 2026).
+It is natural to seek the same interface for robot control with vision- language-action (VLA) models, where the motivation is even stronger. VLA models (Brohan et al., 2023; Kim et al., 2024; Ghosh et al., 2024; Black et al., 2025) are large, expensive to fine-tune, and trained on demonstration data that is costly to collect (Open X-Embodiment Collaboration, 2024; Khazatsky et al., 2024); retraining is rarely an option, e.g., when one needs to understand what the agent has inferred from the scene or when a policy must be made more cautious. The representation space offers a cheaper point of access. If task-relevant physical information is encoded in a representation space and can be measured, then we can use it without additionally instrumenting the environment or modifying the model weights. If behavior is steerable, it can be adjusted at inference time without collecting new robot demonstrations. Recent work has increasingly built on this premise (Lu et al., 2025; Ha¨on et al., 2025; Zhang et al., 2026; Miao et al., 2026), bringing much of the LLM-side LRH framework into VLAs: physical concepts and their representations, together with probing and steering.
+1
+
+Figure 1: Linear probing and steering in VLA representations. Given a current state x with representation λ(x), candidate action trajectories uj define action-conditioned linear probes that predict the propagated quantity of interest (QoI), ψ(Fuj (x)) = ⟨λ(x), γψ(uj)⟩. Steering the representation along λψ(x), via λ(x) → λ(x) + αλψ(x), monotonically shifts the propagated QoI, allowing the policy to favor lower or higher physical outcomes.
+But the objects of interest are not quite the same. In an LLM, commonly probed semantic directions, such as gender Rep(“Female”) − Rep(“Male”) or language Rep(“English”) − Rep(“French”), are relatively static. In a VLA, by contrast, many quantities of interest pertain to physical systems and, crucially, their evolutions: the pose of a manipulated object, or the force at a contact. A fixed representation direction may suffice to read out such a quantity at the current state, but decisionmaking often depends on how that quantity changes under action. For example, what matters is whether the object will reach a desired height or whether the contact force will not become excessive throughout task execution. Such future quantities depend not only on the current representation, but also on the action trajectory executed from that state and the dynamics through which those actions unfold. Although recent empirical studies on VLA models have shown promising results (Lu et al., 2025; Buurmeijer et al., 2026), a rigorous theoretical framework for characterizing this dynamical coupling remains largely undeveloped relative to the LRH literature for LLMs.
+We therefore develop a mathematical abstraction of VLA models centered on the representation– action–dynamics interface. Our contributions are as follows.
+1. A control-theoretic formulation of the LRH for VLA models. We connect VLA models to the underlying controlled dynamical system, leading to VLA-specific notions of probing and steering. Building on these notions, we formulate the LRH for VLA models and identify the key challenges arising from their architectural differences from LLMs.
+2. Shared linear representations for linear probing. We show constructively that an ideal VLA representation can simultaneously encode the information of multiple physical quantities of interest, with each propagated value under a candidate action trajectory admitting a linear probe in representation space.
+3. Generalized linear policies for linear steering. We introduce a path signature-based exponential family formulation of VLA policies, whose geometry provides a dually flat statistical manifold. Building on this geometry, we show that linear probing gives rise to linear steering in the representation space.
+4. Validation from oracle models to pretrained VLAs. We first verify the predicted probing and steering mechanism exactly in a controlled oracle construction. We then test the framework on a pretrained OpenVLA-OFT, where both linear probing and steering remain competitive with substantially more flexible nonlinear alternatives.
+2
+
+Basic background on VLA models. We consider a minimal abstraction of a VLA model. Let x denote the underlying physical state, which is not directly accessible to the model. Instead, the VLA receives an observation, o = h(x), which may include visual inputs, multiple camera views, or proprioceptive robot state. Given a language instruction ℓ, the VLA backbone maps o to an internal representation λ¯(o, ℓ). Throughout the paper, we fix ℓ and suppress its dependence. Motivated by recent work on physically meaningful visual representations (Bardes et al., 2024; Assran et al., 2025), we conjecture that such information is accessible from the VLA representation. We therefore define λ(x) := λ¯(h(x), ℓ). The representation λ(x) is then passed to a stochastic action policy π, such as a diffusion-based action-chunk policy. For our analysis, we model the resulting action chunk as a continuous-time open-loop trajectory over a horizon H, u := {u(t)}t∈[0,H] ∼ π(· | λ(x)). The resulting VLA pipeline is summarized as
+x −→h o −λ¯−(·−,ℓ→) λ(x) −→π u ∼ π(· | λ(x)).
+We ask whether the LRH extends to this largely unexplored architectural setting.
+
+2 A CONTROL-THEORETIC FORMULATION OF VLA MODELS
+
+2.1 VLA MODELS AS CONTROLLED DYNAMICAL SYSTEMS
+
+We now connect the VLA model to the underlying physical dynamics by interpreting the action trajectory u as a control input to a nonlinear control-affine system:
+
+m
+
+x˙ (t) = f0(x(t)) + fi(x(t))ui(t)
+
+(1a)
+
+i=1
+
+o(t) = h(x(t))
+
+(1b)
+
+Here, x(t) ∈ X ⊆ Rn denotes the unobserved physical state, u(t) = (u1(t), . . . , um(t)) ∈ U ⊂ Rm denotes the control input, f0 is the drift vector field, fi is the control vector field associated with the i-th control input, and h : X → O ⊆ Ro is the observation map. Let UH denote the set of admissible open-loop control paths u : [0, H] → U. For each u ∈ UH , we denote by Fu : X → X the corresponding state-transition map over the horizon H, defined by x(H) = Fu(x(0)).
+We next define a hidden scalar quantity ψ : X → R on the physical state space analogous to a high-level concept in the LLM setting.
+Definition 2.1 (Quantity of Interest (QoI)). Let ψ : X → R be a real-valued function of the physical state x. For example, ψ(x) = xi may extract the i-th component of the state, such as a coordinate of a robot’s position. More generally, ψ may represent any physically meaningful scalar quantity derived from x, such as a control Lyapunov function or a value function.1
+
+2.2 PROBING AND STEERING IN VLA MODELS
+We now adapt the notions of probing and steering to the VLA setting. Unlike LLM representations, VLA representations are coupled to actions that induce physical state transitions through interaction with the environment. We must therefore reformulate probing and steering to reflect this interaction. For probing, we consider a physically meaningful QoI ψ(x) and ask whether its future value under a candidate action trajectory u can be inferred from the VLA representation.
+Probing Problem
+Given a QoI ψ : X → R and a candidate action trajectory u ∈ UH , can the propagated QoI ψ(Fu(x))
+be predicted using only the VLA representation λ(x) and u, without explicit access to the underlying physical state or dynamics?
+
+1This general notion of a QoI may also support the study of safety and planning in representation space.
+
+3
+
+A representation is informative for probing if, together with u, it is sufficient to predict the actionconditioned propagated QoI ψ(Fu(x)).
+Existing VLA probing methods focus on static QoI, asking whether ψ(x) can be decoded directly from the internal representation (Lu et al., 2025; Bhardwaj et al., 2026), with promising empirical results. However, static probing does not capture the action-conditioned evolution of the physical quantity. This distinction is particularly important for VLA models, whose latent representations both generate state-transitioning actions and provide a space for steering them (Ha¨on et al., 2025).2
+For steering, we ask whether an intervention in the representation space can alter the action trajectory generated by the policy so as to induce a desired change in the propagated physical state.
+Steering Problem
+
+Given a QoI ψ : X → R, can we modify the VLA representation λ(x) so that the resulting policy generates an action trajectory u ∼ π(· | Steer(λ(x))) that drives the propagated QoI
+
+toward a desired value?
+
+ψ Fu(x)
+
+In general, a steering map λ(x) → Steer(λ(x)) need not admit a simple algebraic form. Recent work on VLA steering has therefore explored more structured interventions on internal representations, including conceptor-based subspace operators and learned distribution-matching maps that go beyond a single additive steering direction (Miao et al., 2026; Khayatan et al., 2026).
+Together, these two problems characterize the role of the representation λ in a VLA model: probing asks whether the representation contains sufficient information to predict the effect of a candidate action, whereas steering asks whether modifying the representation can systematically alter that effect through the policy.
+
+3 LINEAR PROBING AND STEERING IN VLA MODELS
+The linear representation hypothesis posits that both problems above admit a common resolution: linear structure in the VLA representation space. We extend the LRH for LLMs (Park et al., 2024) to VLA models by characterizing two complementary notions: linear probing and linear steering. Definition 3.1 (Linear Probing in VLA). Let ψ : X → R be a QoI. We say that ψ admits linear probing in the representation λ : X → Rd if there exists a map γψ : UH → Rd such that
+ψ(Fu(x)) = ⟨λ(x), γψ(u)⟩Rd , ∀ x ∈ X , u ∈ UH .
+Note that this structure differs from the LLM probing setting. There, the probe is typically given by a single global direction γψ ∈ Rd, and the QoI is estimated from that direction alone; in our setting, the corresponding object depends on the action trajectory u. Such dependence again reflects the interaction structure discussed above. The usual static probing setting is recovered by restricting to a no-transition case, in which action dependence is no longer required.
+Challenges in linear probing. In the LLM setting, the relevant linear measurement direction γψ is naturally tied to the rows of the output projection (or unembedding) matrix preceding the softmax. In contrast, VLA models do not provide an analogous, predefined measurement structure for propagated physical QoIs. A key challenge is therefore to characterize an action-conditioned map γ : UH → Rd that associates action trajectory with the representation space. Definition 3.2 (Linear Steering in VLA). Let ψ : X → R be a QoI. We say that ψ admits linear steering at x ∈ X if there exists a nonzero vector λψ(x) ∈ Rd such that
+α −→ Eu∼π(·|λ(x)+αλψ(x)) [ψ(Fu(x))] is nondecreasing.
+
+2This is closely related to LeCun’s view that an agentic system should be able to predict the consequences of contemplated actions (LeCun, 2022). A similar perspective is embodied in explicit world-model formulations, such as (Ha & Schmidhuber, 2018). Importantly, however, such predictive capability need not rely on an explicit world model and may also emerge implicitly within VLA models.
+
+4
+
+In our formulation, unlike standard LLM steering approaches that rely on a fixed global direction λψ ∈ Rd, the steering direction λψ(x) is generally state-conditioned. This is a natural extension in the VLA setting, since the propagated QoI ψ(Fu(x)) depends on both the current state and the action trajectory through the system dynamics; consequently, the same change in action can have different effects on the propagated QoI at different states.
+Challenges in linear steering. To control a physical QoI through a linear translation λ → λ + αλψ, we need to understand how such an intervention changes the downstream policy distribution and, consequently, the resulting physical behavior. To characterize this relationship, we adopt the information-geometric perspective of the Softmax (Park et al., 2026), viewing λ → π(· | λ) as a parameterization of a family of VLA policies. This motivates us to seek a generalized linear model (GLM) parameterization of the VLA policy under which the geometry induced by variations in λ admits an explicit characterization. However, owing to their structural differences from LLMs, modern generative VLA policies do not naturally admit such a convenient parameterization.
+
+4 EXISTENCE OF REPRESENTATION AND MEASUREMENT MAPS
+
+In this section, we take a closer look at linear probing in VLA models and address two fundamental theoretical questions as follows:
+
+1. Can the VLA representation λ capture the physical information necessary to characterize multiple quantities of interest, Ψ = {ψj}jp=1?
+2. For each QoI ψj, can we construct an action-conditioned measurement map γψj such that the propagated QoI admits a linear probe from the VLA representation λ?
+
+Before stating our main result, we introduce a key object used in its construction. Analogous to the role of unembedding vectors in the softmax-based measurement of LLMs, the action-conditioned measurement map γ can be chosen to factor through a signature of the action trajectory.
+Definition 4.1 (Signature of an Action Trajectory). Let A := {0, 1, . . . , m} denote the alphabet of action indices, with u0(t) ≡ 1, and let A⋆ denote the set of all finite words (or multi-indices) over A, including the empty word ∅. For a word I = (i1, . . . , ik) =: i1 · · · ik ∈ A⋆, define
+
+S(u)I0,H :=
+
+ui1 (t1) · · · uik (tk) dt1 · · · dtk,
+
+0≤t1 ≤···≤tk ≤H
+
+with S(u)∅0,H = 1. The collection S(u) := S(u)0I,H I∈A⋆ ∈ S is called the signature of u.
+
+The signature provides a principled representation of a continuous-time path, encoding its geometric and sequential structure through iterated integrals. It has been widely studied in mathematics, machine learning, and control (Lyons, 1998; Kidger et al., 2019; 2020; Bank et al., 2025). We refer the reader to (Chevyrev & Kormilitzin, 2026) for further details.
+
+To address the challenges in linear probing described above, we interpret the signature S : UH → S as an infinite-dimensional realization of the action-conditioned measurement map γ. For each QoI ψj, we consider a finite-dimensional measurement map that can be obtained through a linear map
+
+Lψj : S → Rd,
+
+γψj (u) := (Lψj ◦ S)(u).
+
+The range of Lψj therefore specifies a QoI-specific linear subspace of the representation space, while the signature parameterizes the measurement direction within that subspace as a function of
+the action trajectory. Our main result below establishes the existence of a shared VLA representation λ where these QoI-specific measurement structures can coexist.
+
+Theorem 4.2 (Existence of Representation and Measurement Maps). Consider the control-affine system in Eq. (1a), a finite collection of QoIs Ψ = {ψj}jp=1, and a compact set K ⊂ X . Suppose the uniform Chen–Fliess conditions (Appendix A) hold on the horizon-H reachable set from K. Then
+for every ε > 0, there exist d ∈ N, a shared representation map λ : K → Rd, and linear maps Lψj : S → Rd, j = 1, . . . , p, such that, with γψj := Lψj ◦ S : UH → Rd, we have
+
+max sup
+1≤j≤p (x,u)∈K×UH
+
+ψj(Fu(x)) −
+
+λ(x), γψj (u) Rd
+
+< ε.
+
+5
+
+The result is established constructively via the classical Chen–Fliess expansion (Chen, 1977; Fliess, 1981), as detailed in Appendix B.1. Importantly, we do not assume that the learned VLA representation λ(x) = λ¯(h(x), ℓ) coincides exactly with the Lie-derivative-based construction. Rather, the latter establishes the existence of physically meaningful structure required by our framework. Theorem 4.2 provides a theoretical framework consistent with empirical linear probing results observed in existing VLA representations (Lu et al., 2025; Buurmeijer et al., 2026), while also providing an oracle against which arbitrary learned representations can be quantitatively assessed.
+Theorem 4.2 answers Questions 1 and 2 affirmatively, in an existential sense. A desirable VLA model can admit a shared representation λ that supports multiple QoIs, with each QoI equipped with an action-conditioned linear measurement of the form γψj = Lψj ◦ S. Thus, the action dependence is captured by the signature, with Lψj specifying the QoI-specific measurement structure.
+
+5 GEOMETRY OF THE REPRESENTATION SPACE
+
+Section 4 addressed the representation-side question of whether propagated QoIs can admit actionconditioned linear probes. Linear probing alone, however, does not determine how an intervention on the representation changes the downstream action distribution. Thus, we next introduce a geometry on the representation space for formulating linear steering. To this end, we view stochastic action-chunk policies, such as autoregressive and diffusion policies, as defining a family of conditional distributions over action trajectories u ∈ UH
+
+P := {π(· | λ) : UH → R≥0} ,
+
+and regard this family as parameterized by λ. To emphasize that the policy is parameterized by the representation λ, we henceforth write the policy as πλ. Motivated by the geometric structure induced by the softmax-based distribution family in (Park et al., 2026), we would like to introduce a corresponding notion of geometry in representation space through P.
+
+For the policy-side analysis, we adopt the following identification. In general, the distribution family induced by a modern generative policy may possess a highly complex parametric structure. To obtain a tractable yet expressive representation of path-dependent statistics, we lift action trajectories u → S(u) into the signature space S. This construction leverages the universality of linear functionals on signatures for approximating continuous path functionals (Lyons, 2014).
+
+We then place this construction in a Hilbert-space setting by replacing the finite-dimensional representation space Rd with the Hilbert signature space HS, obtained by completing S under a suitable inner product ⟨·, ·⟩HS . This formulation naturally bridges the representation and policy modules. Specifically, we regard λ(x) ∈ Θ ⊆ HS simultaneously as the VLA representation and as the natural parameter of the signature exponential family. This identification allows us to draw on the
+well-developed body of work on linear representations in LLMs, including their geometry, and
+steering (Park et al., 2024; Marks & Tegmark, 2024; Park et al., 2026).
+Definition 5.1 (Signature Exponential Family). Given a base measure µ on the action-chunk space UH , we define the log-partition function A(λ) := log UH exp(⟨λ, S(u)⟩HS )dµ(u), whenever the integral is finite. The signature exponential family generated by µ is
+
+Pµ :=
+
+dπλ dµ
+
+(u)
+
+=
+
+exp(⟨λ, S(u)⟩HS
+
+−
+
+A(λ))
+
+:
+
+λ
+
+∈
+
+Θ
+
+where Θ := {λ ∈ HS : A(λ) < ∞} is the natural parameter space.
+
+The resulting exponential-family structure further admits a natural GLM perspective (Nelder & Wedderburn, 1972; McCullagh & Nelder, 1989), in which the conditional distribution of u | x belongs to an exponential family with natural parameter determined by x.
+
+Definition 5.2 (Signature Generalized Linear Model). Suppose that u | x follows a signature exponential family with base measure µ on UH . A signature generalized linear model specifies a state-conditioned natural parameter map λ : X → Θ, which induces the conditional distribution
+
+dπλ (u | x) = exp dµ
+
+⟨λ(x), S(u)⟩HS − A(λ(x))
+
+.
+
+6
+
+We introduce the signature GLM as an architecture-agnostic statistical abstraction linking representation changes to downstream action distributions, rather than as a characterization of specific VLA architectures. By abstracting away the internal generative mechanism, it provides a mathematically interpretable geometry for analyzing representation–policy interactions. Specifically, this exponential family structure endows the statistical manifold with a dually flat geometry (Amari & Nagaoka, 2000), with dual coordinate φ(λ) := ∇A(λ) = Eu∼πλ [S(u)] and dual space φ := φ(Θ). For a fixed state x ∈ X , define the state-conditioned steering direction λψ(x) := L∗ψλ(x) ∈ HS as in Theorem 3.2, so that the expected propagated QoI is linear in the dual coordinate:
+Eu∼πλ ψ(Fu(x)) = ⟨λ(x), Lψ Eu∼πλ [S(u)]⟩HS = L∗ψλ(x), φ(λ) HS = ⟨λψ(x), φ(λ)⟩HS .
+A desired QoI level c ∈ R therefore corresponds to the dual affine hyperplane φψ,x(c) := {φ ∈ φ : ⟨λψ(x), φ⟩HS = c}, and we formulate steering as the reverse-KL projection onto it,
+λ ∈ arg min DKL πλ ∥ πλ(x) .
+φ(λ)∈φψ,x (c)
+
+By dual Bregman geometry the solution is λ = λ(x) + αλψ(x) for some α ∈ R: projecting onto a constant expected-QoI hyperplane induces the linear path
+
+λα := λ(x) + α λψ(x)
+
+(2)
+
+in the natural parameter space. For readers seeking further details, we provide a complete derivation in Appendix C.1. We now show that this path satisfies the desired notion of linear steering.
+Theorem 5.3 (QoI Monotonicity under Linear Steering). Fix x ∈ X , and let λα denote the steering path in Eq. (2). Define Jψ,x(α) := Eu∼πλα ψ(Fu(x)) . Suppose QoI ψ admits an exact linear probe at x of the form ψ Fu(x) = λ(x), LψS(u) HS , ∀u ∈ UH , for a bounded linear operator Lψ : HS → HS. Then, for every α such that λα ∈ Θ, Jψ,x(α) is nondecreasing in α.
+
+See Appendix B.2 for the proof. Although we assume an exact linear probe, Theorem 4.2 shows that this regime can be approximated arbitrarily well with a sufficiently expressive representation as d becomes large. We therefore interpret the exact-probe assumption as an idealized limit in which the propagated QoI can be represented without approximation error. In this limit, the exact linearsteering guarantee is recovered. Establishing quantitative steering guarantees under finite probing error is a separate robustness question that we leave for future work.
+
+6 EXPERIMENTAL RESULTS
+
+6.1 NUMERICAL VERIFICATION
+We begin with a controlled numerical verification of the probing and steering theory developed in Sections 4 and 5. To isolate the predicted steering mechanism from representation-learning error, we instantiate the Chen–Fliess construction of Theorem 4.2 as an oracle representation for the controlled system, which yields an exact action-conditioned linear probe together with the corresponding signature exponential family policy. Due to space limitations, several intermediate steps are omitted here. Please see Appendix C.2 for the full derivation.
+
+Setup. Given the language instruction ℓ = “Navigate to the goal.”, consider the planar controlaffine system with state x = (px, py, θ) ∈ R3 and input u = (1, v, ω) ∈ UH ,
+p˙x = v, p˙y = θv, θ˙ = ω,
+over horizon H = 1 from x0 = (0, 0, 0), with nominal goal pgoal = (1, 0). The candidate set consists of 671 piecewise-constant chunks that turn and then counter-turn, producing lateral motion while approximately restoring the terminal heading.
+
+Exact oracle probe and policy. We take ψ(x) = py. Only the words {∅, 1, 21} have nonzero Chen–Fliess coefficients, so the expansion terminates exactly, hence the term oracle representation:
+
+ψ(Fu(x)) = ⟨λψ(x), S(u)⟩HS = py + θS(u)10,H + S(u)021,H ,
+
+λψ(x) = py, θ, 1 ⊤.
+
+7
+
+Figure 2: Effect, mechanism, and cost of linear steering. Left: Jψ,x0 (α); dotted lines mark the extreme values of ψ(Fu(x0)) over the candidate set. Middle: numerical dJψ,x0 /dα against Varπλα [ψ(Fu(x0))]. Right: DKL(πλα ∥πλ(x0)). Insets and the right panel show α ∈ [−8, 8]; red markers are α ∈ {0, 4, 8}.
+
+To obtain a representation that is not aligned with the QoI, we set λ(x) = M λψ(x) for an invertible M and Lψ = M −⊤, γψ(u) = LψS(u), so that ψ(Fu(x)) = ⟨λ(x), γψ(u)⟩HS holds exactly for every candidate chunk. The representation λ then plays two complementary roles: paired with γψ(u), it decodes the propagated QoI; paired with S(u), it is the natural parameter of the policy
+πλ(u | x0) ∝ µ(u) exp(⟨λ, S(u)⟩HS ), µ(u) ∝ exp(−Ctask(u; x0)/τ ),
+where Ctask is a goal-reaching cost and τ = 0.20; the unsteered policy πλ(x0) coincides with µ.
+
+Goal-directed VLA policy. We define a discrete base measure µ over candidate actions with ac-
+
+tion preference encoded by the goal-reaching cost Ctask(u; x0) = 8 px(H) − 1 2 + 2py(H)2 +
+
+4θ(H)2 + 0.05
+
+H 0
+
+v2
+
++ ω2
+
+dt. We set µ(u) ∝ exp(−Ctask(u; x0)/τ ) with τ = 0.20, and instan-
+
+tiate the signature exponential family policy as πλ(u | x0) ∝ µ(u) exp(⟨λ, S(u)⟩HS ).
+
+Linear steering. Following Theorem 5.3, we define λψ(x) = L⊤ψ λ(x) and traverse the linear path λα = λ(x0) + αλψ(x0). Since the log-density is affine in λ and ⟨λψ(x0), S(u)⟩HS = ψ(Fu(x0)),
+πλα (u | x0) ∝ πλ(x0)(u | x0) exp α ψ(Fu(x0)) ,
+so the steered policy is the nominal one tilted by the propagated QoI itself, and we report Jψ,x0 (α).
+
+Results. Steering the representation λα moves the physical quantity it decodes: as α increases over
+{0, 4, 8}, the rollouts shift laterally and the expected propagated QoI rises monotonically from 0.000 to +0.134 to +0.255, with the probe exact to 3 × 10−16 on all 671 candidates. The numerical slope matches Varπλα [ψ(Fu(x0))] to 10−11 (Figure 2), so the response is predicted by a quantity of the nominal policy, at a KL cost of 0, 0.27 and 0.98 nats. The steerable range is nonetheless bounded.
+Because ψ is bounded on the finite candidate set, large α concentrates πλα on the extremal chunks and collapses this variance; Jψ,x0 is monotone but saturates at 0.688.
+
+6.2 PROBING AND STEERING A PRETRAINED VLA
+Similarly to the oracle setting, we ask two questions on OpenVLA-OFT. Q1: does the representation of a pretrained VLA encode, linearly, what an action chunk does to a physical quantity (Theorem 3.1)? Q2: can the probe direction steer the policy (Theorem 3.2)? Details are in Appendix D.
+
+Setup. OpenVLA-OFT maps its last-layer action-token states λ(x) ∈ R56×4096 through an MLP head to a chunk of Hchunk = 8 actions, u(x) = head(λ(x)); To retain the most informative components, we use the latent representation z(x) = (1, P λ(x)), where P denotes the PCA projection matrix. On a LIBERO-10 task, ℓ = “put the white mug on the left plate and put the yellow-and-
+white mug on the right plate”, we collect 788 states from 50 layouts and, at 404 of them, execute 32 candidate chunks. The QoIs are the mug positions (mug1: white; mug2: yellow-and-white), the end-effector (EE) height as a control, and the task-relevant negative EE-to-mug distances.
+
+8
+
+Table 1: Q1: probing OpenVLA-OFT. Held-out episode R2 for predicting the current QoI ψ(x), chunk-induced increment ∆ψ, and propagated QoI ψ(Fu(x)). Additional baselines: Tables 3 and 4.
+
+QoI ψ
+mug1 px mug1 py mug1 pz mug2 px mug2 py mug2 pz
+
+static ψ(x) .777 .865 .956 .580 .814 .965
+
+increment ∆ψ additive bilinear
+.933 .960 .895 .959 .877 .918 .801 .901 .953 .979 .864 .923
+
+propagated ψ(Fu(x)) static only static + bilinear
+
+.671
+
+.767
+
+.821
+
+.861
+
+.636
+
+.946
+
+.453
+
+.593
+
+.752
+
+.846
+
+.620
+
+.959
+
+Q1: action-conditioned linear probing. We truncate the signature at level two, S≤2(u) = (S∅, S1, S2) with S∅ = 1, and split the probe of Theorem 3.1 along these coordinates into a static part, paired with the empty word, and an action-conditioned increment, paired with the words of levels one and two denoted by S1:2,
+ψˆ Fu(x) = ⟨z(x), LψS≤2(u)⟩Rq = ⟨z(x), L∅ψ⟩Rq + z(x), Lψ1:2 S1:2(u) Rq ,
+
+static ψ(x)
+
+increment ∆ψ(x;u)
+
+and compare the bilinear increment ⟨z, L1ψ:2S1:2⟩ with an additive probe ⟨z, a⟩ + ⟨b, S1:2⟩, in which a chunk has the same effect in every state (Table 1). All results are on held-out episodes. The bilinear increment predicts how a candidate chunk moves the mugs on held-out episodes (R2 0.90– 0.98, against 0.80–0.95 for the additive probe), and nonlinear readouts add little (≤ 0.03). The
+static probe, the standard tool of prior probing work, reads the current mug positions well but cannot predict them after the chunk (0.64 and 0.62 for the mug heights, against 0.95 and 0.96 with the
+increment). The representation therefore encodes more than the current state: it encodes, linearly
+and depending on the state, what an action will do to the objects.
+
+Q2: steering along the probe direction. We keep the physical state fixed, move the repre-
+sentation that the head receives along a latent direction, zα = z(x) + α zψ(x), and measure Jψ,x(α) = ψ(Fu(zα)(x)). Unlike Eq. (2), the quantity λψ(x) = Lψ⊤z(x) here lives in signature coordinates, not in the latent space of z, and therefore cannot be added to z directly. Instead, the probe predicts Jˆψ,x(α) = ψˆ(Fu(zα)(x)) = λψ(x), S≤2 u(zα) Rq , and the corresponding latent steering direction is obtained by applying the chain rule through the action head.
+
+dJˆψ,x
+
+=
+
+dα α=0
+
+d λψ(x), dα S≤2 u(zα)
+
+=
+α=0 Rq
+
+Dϕ z(x) ⊤λψ(x), zψ(x) Rq ,
+
+where Dϕ(z) := ∂S≤2(u(z))/∂z. We therefore steer along zψ = Dϕ⊤λψ, the gradient of the
+
+probe-predicted QoI with respect to the latent, which requires only the probe and the model’s own
+
+head. We compare it with the probe direction without the head, γψ = Lψ1:2S1:2(u), the static
+
+direction L∅ψ, random directions, and the simulator gradient ∇zJψ,x as an oracle (Table 2).
+
+Our results show that every held-out state admits a linear steering direction, which the probe obtains. Dϕ⊤λψ increases the QoI monotonically at 138 of 140 states and agrees with the simulator gradient (cosine 0.98–1.00) for all seven QoIs (Table 2). The two directions that ignore how the policy
+reads its representation fail: the probe direction taken without the head, γψ, as in probe steering of language models, recovers at most three quarters of the effect, and the static direction often moves
+the quantity the wrong way. Being able to decode a quantity from the representation is thus not
+the same as being able to control it; control requires the action-conditioned probe together with the model’s own action map, which here plays the role that the identification Dϕ = ∇2A plays in
+Theorem 5.3. Since both are available from the model, the direction is obtained without a simulator.
+
+In closed loop, steering is applied at every re-plan, recomputing z, λψ, and Dϕ at the current state (Figure 3). The effect accumulates in six times (2.4 s). For ψ = −d(EE, mugj), the distance to mug1 (white mug) after 2.4 s is 20/11.8/9 cm for α = −16/0/16, and with the probe of mug2 (yellow-and-white mug), the distance to that mug is 29.8/26.9/24.1 cm. Which distance changes
+most depends on the mug that defines ψ, while the policy keeps its task: it still heads for the white
+mug, with its path biased by a few centimetres towards or away from the chosen object.
+
+9
+
+Table 2: Q2: steering OpenVLA-OFT. Across 20 held-out states per QoI, we report the median
+effect Jψ,x(8) − Jψ,x(−8) in mm at equal representation displacement (random: median over three directions). For Dϕ⊤λψ, we additionally report the percentage of monotone states and median cosine similarity to the oracle simulator gradient. Full results: Table 5 and Figure 5.
+
+EE pz (control) mug1 pz mug2 pz −d(mug1, plate) −d(mug2, plate) −d(EE, mug1) −d(EE, mug2)
+
+sim. gradient +9.5 +12.9 +11.6 +12.3 +12.4 +9.0 +9.4
+
+effect (mm) Dϕ⊤λψ γψ
++9.8 +0.4 +12.9 +2.1 +11.2 +5.5 +11.9 +7.6 +12.2 +9.2 +8.9 +5.3 +9.3 +1.7
+
+static −4.2 −2.2 −2.1 −11.3 +3.5 −0.0 +2.9
+
+random +0.6 −0.6 −1.0 −1.8 −0.2 +0.2 −0.4
+
+Dϕ⊤λψ monotone cos
+100% 1.00 100% 1.00 100% 1.00 100% 0.98 100% 0.99 95% 1.00 95% 1.00
+
+7 CONCLUSION
+We developed a control-theoretic formulation of the linear representation hypothesis for visionlanguage-action models, centered on the evolution of physical quantities under candidate actions. On the representation side, we showed that propagated QoIs admit action-conditioned linear probes through signature-based measurement maps. On the policy side, we introduced a signature generalized linear model and showed that this geometry induces linear steering directions along which the expected propagated QoI changes monotonically.
+Our results support the proposed linear probing and steering framework at both oracle and pretrained-VLA levels. An explicit oracle construction verifies the predicted mechanisms exactly, including the derivative–variance identity, while experiments on OpenVLA-OFT provide evidence that analogous structure can emerge in a learned VLA. Given the still-emerging VLA landscape, however, identifying a representation λ naturally suited to both probing and steering remains an open challenge. We therefore view our experiments primarily as a proof of concept for the existence and realizability of such a representation.
+
+(a) Approach the white mug
+
+(b) Approach the yellow mug
+
+White mug Yellow mug
+
+White mug Yellow mug
+
+−16
+
+−8
+
+0
+
+8
+
+16
+
+Suppress approach ⟵ α ⟶ Encourage approach
+
+Figure 3: Closed-loop concept steering. Natural-language labels “Approach mugj” are used only to describe the corresponding concepts, not as additional policy instructions ℓ → ℓ′. End-effector
+trajectories over six re-planned chunks (2.4 s) in a held-out episode, starting from the same state (×), with αDϕ⊤λψ applied at each re-plan. The QoI is ψ(x) = −d(EE, mugj), targeting (a) the white mug (j = 1) and (b) the yellow-and-white mug (j = 2). Positive and negative α encourage
+and suppress approach, respectively. In both cases the policy still heads for the white mug, its first
+subgoal; steering biases the path and pace towards or away from the targeted mug without changing
+the object the policy goes to.
+
+10
+
+POLICY ON LLM USE FOR RESEARCH AND WRITING PAPERS
+We used generative AI tools to assist with language polishing and to discuss and refine aspects of the theoretical formulation. All mathematical statements and final formulations were independently verified by the authors.
+REFERENCES
+Guillaume Alain and Yoshua Bengio. Understanding intermediate layers using linear classifier probes. arXiv preprint arXiv:1610.01644, 2016.
+Shun-ichi Amari and Hiroshi Nagaoka. Methods of Information Geometry, volume 191 of Translations of Mathematical Monographs. American Mathematical Society and Oxford University Press, 2000. doi: 10.1090/mmono/191.
+Mido Assran, Adrien Bardes, David Fan, Quentin Garrido, Russell Howes, Mojtaba Komeili, Matthew Muckley, Ammar Rizvi, Claire Roberts, Koustuv Sinha, Artem Zholus, Sergio Arnaud, Abha Gejji, Ada Martin, Francois Robert Hogan, Daniel Dugas, Piotr Bojanowski, Vasil Khalidov, Patrick Labatut, Francisco Massa, Marc Szafraniec, Kapil Krishnakumar, Yong Li, Xiaodong Ma, Sarath Chandar, Franziska Meier, Yann LeCun, Michael Rabbat, and Nicolas Ballas. V-JEPA 2: Self-supervised video models enable understanding, prediction and planning. arXiv preprint arXiv:2506.09985, 2025.
+Peter Bank, Christian Bayer, Paul P. Hager, Sebastian Riedel, and Tobias Nauen. Stochastic control with signatures. SIAM Journal on Control and Optimization, 63(5):3189–3218, 2025. doi: 10. 1137/24M1667671.
+Adrien Bardes, Quentin Garrido, Jean Ponce, Xinlei Chen, Michael Rabbat, Yann LeCun, Mido Assran, and Nicolas Ballas. Revisiting feature prediction for learning visual representations from video. Transactions on Machine Learning Research, 2024.
+Yonatan Belinkov. Probing classifiers: Promises, shortcomings, and advances. Computational Linguistics, 48(1):207–219, 2022. doi: 10.1162/coli a 00422.
+Atiksh Bhardwaj, Edward Weiyi Duan, Prithwish Dan, Wei-Chiu Ma, and Preston Culbertson. Decoding task progress from VLA representations. arXiv preprint arXiv:2608.13474, 2026.
+Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Robert Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, Szymon Jakubczak, Tim Jones, Liyiming Ke, Sergey Levine, Adrian Li-Bell, Mohith Mothukuri, Suraj Nair, Karl Pertsch, Lucy Xiaoyang Shi, Laura Smith, James Tanner, Quan Vuong, Anna Walling, Haohuan Wang, and Ury Zhilinsky. π0: A vision-language-action flow model for general robot control. In Robotics: Science and Systems, Los Angeles, CA, USA, 2025. doi: 10.15607/RSS.2025.XXI.010.
+Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, Pete Florence, Chuyuan Fu, Montse Gonzalez Arenas, Keerthana Gopalakrishnan, Kehang Han, Karol Hausman, Alexander Herzog, Jasmine Hsu, Brian Ichter, Alex Irpan, Nikhil Joshi, Ryan Julian, Dmitry Kalashnikov, Yuheng Kuang, Isabel Leal, Lisa Lee, Tsang-Wei Edward Lee, Sergey Levine, Yao Lu, Henryk Michalewski, Igor Mordatch, Karl Pertsch, Kanishka Rao, Krista Reymann, Michael Ryoo, Grecia Salazar, Pannag Sanketi, Pierre Sermanet, Jaspiar Singh, Anikait Singh, Radu Soricut, Huong Tran, Vincent Vanhoucke, Quan Vuong, Ayzaan Wahid, Stefan Welker, Paul Wohlhart, Jialin Wu, Fei Xia, Ted Xiao, Peng Xu, Sichun Xu, Tianhe Yu, and Brianna Zitkovich. RT2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818, 2023.
+Hugo Buurmeijer, Carmen Amo Alonso, Aiden Swann, and Marco Pavone. Observing and controlling features in vision-language-action models, 2026. URL https://arxiv.org/abs/ 2603.05487.
+Kuo-Tsai Chen. Iterated path integrals. Bulletin of the American Mathematical Society, 83(5): 831–879, 1977. doi: 10.1090/S0002-9904-1977-14320-6.
+11
+
+Ilya Chevyrev and Andrey Kormilitzin. A primer on the signature method in machine learning. In Christian Bayer, Gonc¸alo dos Reis, Blanka Horvath, and Harald Oberhauser (eds.), Signature Methods in Finance, pp. 3–64. Springer, Cham, 2026. doi: 10.1007/978-3-031-97239-3 1.
+Nelson Elhage, Tristan Hume, Catherine Olsson, Nicholas Schiefer, Tom Henighan, Shauna Kravec, Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain, Carol Chen, Roger Grosse, Sam McCandlish, Jared Kaplan, Dario Amodei, Martin Wattenberg, and Christopher Olah. Toy models of superposition. Transformer Circuits Thread, 2022.
+Michel Fliess. Fonctionnelles causales non line´aires et inde´termine´es non commutatives. Bulletin de la Socie´te´ Mathe´matique de France, 109:3–40, 1981. doi: 10.24033/bsmf.1931.
+Nikhil Garg, Jon Kleinberg, and Kenny Peng. How many features can a language model store under the linear representation hypothesis? In Conference on Learning Theory, volume 336 of Proceedings of Machine Learning Research, pp. 5358–5376. PMLR, 2026.
+Dibya Ghosh, Homer Rich Walke, Karl Pertsch, Kevin Black, Oier Mees, Sudeep Dasari, Joey Hejna, Tobias Kreiman, Charles Xu, Jianlan Luo, You Liang Tan, Lawrence Yunliang Chen, Quan Vuong, Ted Xiao, Pannag R. Sanketi, Dorsa Sadigh, Chelsea Finn, and Sergey Levine. Octo: An open-source generalist robot policy. In Robotics: Science and Systems, Delft, Netherlands, 2024. doi: 10.15607/RSS.2024.XX.090.
+David Ha and Ju¨rgen Schmidhuber. World models. arXiv preprint arXiv:1803.10122, 2018.
+Bear Ha¨on, Kaylene Caswell Stocking, Ian Chuang, and Claire Tomlin. Mechanistic interpretability for steering vision-language-action models. In Conference on Robot Learning, volume 305 of Proceedings of Machine Learning Research, pp. 2743–2762. PMLR, 2025.
+Yibo Jiang, Goutham Rajendran, Pradeep Kumar Ravikumar, Bryon Aragam, and Victor Veitch. On the origins of linear representations in large language models. In International Conference on Machine Learning, volume 235 of Proceedings of Machine Learning Research, pp. 21879–21911. PMLR, 2024.
+Pegah Khayatan, Sara Meziane, Jayneel Parekh, and Matthieu Cord. Dimas: Distribution matching for steering vision-language-action models, 2026. URL https://arxiv.org/abs/2607. 14280.
+Alexander Khazatsky, Karl Pertsch, Suraj Nair, Ashwin Balakrishna, Sudeep Dasari, Siddharth Karamcheti, Soroush Nasiriany, Mohan Kumar Srirama, Lawrence Yunliang Chen, Kirsty Ellis, Peter David Fagan, Joey Hejna, Masha Itkina, Marion Lepert, Yecheng Jason Ma, Patrick Tree Miller, Jimmy Wu, Suneel Belkhale, Shivin Dass, Huy Ha, et al. DROID: A large-scale in-thewild robot manipulation dataset. In Robotics: Science and Systems, Delft, Netherlands, 2024. doi: 10.15607/RSS.2024.XX.120.
+Patrick Kidger, Patric Bonnier, Imanol Perez Arribas, Cristopher Salvi, and Terry Lyons. Deep signature transforms. In Advances in Neural Information Processing Systems, volume 32, 2019.
+Patrick Kidger, James Morrill, James Foster, and Terry Lyons. Neural controlled differential equations for irregular time series. In Advances in Neural Information Processing Systems, volume 33, 2020.
+Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan P. Foster, Pannag R. Sanketi, Quan Vuong, Thomas Kollar, Benjamin Burchfiel, Russ Tedrake, Dorsa Sadigh, Sergey Levine, Percy Liang, and Chelsea Finn. OpenVLA: An open-source vision-language-action model. In Conference on Robot Learning, volume 270 of Proceedings of Machine Learning Research, pp. 2679–2713. PMLR, 2024.
+Yann LeCun. A path towards autonomous machine intelligence. OpenReview, 2022.
+Kenneth Li, Aspen K. Hopkins, David Bau, Fernanda Vie´gas, Hanspeter Pfister, and Martin Wattenberg. Emergent world representations: Exploring a sequence model trained on a synthetic task. In International Conference on Learning Representations, 2023a.
+12
+
+Kenneth Li, Oam Patel, Fernanda Vie´gas, Hanspeter Pfister, and Martin Wattenberg. Inferencetime intervention: Eliciting truthful answers from a language model. In Advances in Neural Information Processing Systems, volume 36, pp. 41451–41530, 2023b.
+Hong Lu, Hengxu Li, Prithviraj Singh Shahani, Stephanie Herbers, and Matthias Scheutz. Probing a vision-language-action model for symbolic states and integration into a cognitive architecture. In IEEE International Conference on AI and Data Analytics, 2025. doi: 10.1109/ICAD65464. 2025.11114062.
+Terry Lyons. Rough paths, signatures and the modelling of functions on streams. In Sun Young Jang, Young Rock Kim, Dae-Woong Lee, and Ikkwon Yie (eds.), Proceedings of the International Congress of Mathematicians Seoul 2014. Kyung Moon SA, 2014.
+Terry J. Lyons. Differential equations driven by rough signals. Revista Matema´tica Iberoamericana, 14(2):215–310, 1998. doi: 10.4171/RMI/240.
+Samuel Marks and Max Tegmark. The geometry of truth: Emergent linear structure in large language model representations of true/false datasets. In First Conference on Language Modeling, 2024.
+Peter McCullagh and John A. Nelder. Generalized Linear Models, volume 37 of Monographs on Statistics and Applied Probability. Chapman and Hall, London, 2 edition, 1989. ISBN 978-0412-31760-6.
+Miranda Muqing Miao, Subin Kim, Brandon Yang, and Lyle Ungar. Contrastive conceptor activation steering (COAST): Unlocking vision-language-action models through hidden states. arXiv preprint arXiv:2605.17144, 2026.
+Tomas Mikolov, Wen-tau Yih, and Geoffrey Zweig. Linguistic regularities in continuous space word representations. In Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pp. 746–751, Atlanta, Georgia, 2013. Association for Computational Linguistics.
+John A. Nelder and Robert W. M. Wedderburn. Generalized linear models. Journal of the Royal Statistical Society: Series A (General), 135(3):370–384, 1972. doi: 10.2307/2344614.
+Open X-Embodiment Collaboration. Open X-embodiment: Robotic learning datasets and RT-X models. In IEEE International Conference on Robotics and Automation, pp. 6892–6903. IEEE, 2024. doi: 10.1109/ICRA57147.2024.10611477.
+Kiho Park, Yo Joong Choe, and Victor Veitch. The linear representation hypothesis and the geometry of large language models. In International Conference on Machine Learning, volume 235 of Proceedings of Machine Learning Research, pp. 39643–39666. PMLR, 2024.
+Kiho Park, Yo Joong Choe, Yibo Jiang, and Victor Veitch. The geometry of categorical and hierarchical concepts in large language models. In International Conference on Learning Representations, 2025.
+Kiho Park, Todd Nief, Yo Joong Choe, and Victor Veitch. The information geometry of softmax: Probing and steering. In International Conference on Machine Learning, 2026.
+Adly Templeton, Tom Conerly, Jonathan Marcus, Jack Lindsey, Trenton Bricken, Brian Chen, Adam Pearce, Craig Citro, Emmanuel Ameisen, Andy Jones, Hoagy Cunningham, Nicholas L. Turner, Callum McDougall, Monte MacDiarmid, Alex Tamkin, Esin Durmus, Tristan Hume, Francesco Mosconi, C. Daniel Freeman, Theodore R. Sumers, Edward Rees, Joshua Batson, Adam Jermyn, Shan Carter, Chris Olah, and Tom Henighan. Scaling monosemanticity: Extracting interpretable features from Claude 3 Sonnet. Transformer Circuits Thread, 2024.
+Alexander Matt Turner, Lisa Thiergart, David Udell, Gavin Leech, Ulisse Mini, and Monte MacDiarmid. Activation addition: Steering language models without optimization. arXiv preprint arXiv:2308.10248, 2023. Version 1.
+Jiachen Zhang, Junnan Nie, Junyi Lao, Wei Cheng, Chenghao Liu, Jiaxin Jiang, and Songfang Huang. What frozen VLAs already know about success: A probing study of value-like structure in foundation robot policies. arXiv preprint arXiv:2605.28527, 2026.
+13
+
+Andy Zou, Long Phan, Sarah Chen, James Campbell, Phillip Guo, Richard Ren, Alexander Pan, Xuwang Yin, Mantas Mazeika, Ann-Kathrin Dombrowski, Shashwat Goel, Nathaniel Li, Michael J. Byun, Zifan Wang, Alex Mallen, Steven Basart, Sanmi Koyejo, Dawn Song, Matt Fredrikson, J. Zico Kolter, and Dan Hendrycks. Representation engineering: A top-down approach to AI transparency. arXiv preprint arXiv:2310.01405, 2023.
+14
+
+A REGULARITY CONDITIONS FOR THE CHEN–FLIESS EXPANSION
+
+We collect the notation and sufficient conditions used for the Chen–Fliess expansion in Theorem 4.2. Since the approximation result is local in the state variable, we formulate the conditions uniformly over an arbitrary compact set K ⊂ X and the admissible action class UH . The regularity and convergence constants below may depend on K, but are uniform over K × UH .
+
+Controlled system. Consider the control-affine system
+
+m
+
+x˙ (t) = f0(x(t)) + fi(x(t))ui(t),
+
+(3)
+
+i=1
+
+and define u0(t) ≡ 1. Then
+
+m
+x˙ (t) = fi(x(t))ui(t).
+
+i=0
+
+Let A = {0, 1, . . . , m} denote the input alphabet, and let A⋆ denote the set of all finite words over
+
+A, including the empty word ∅.
+
+For a word I = (i1, . . . , ik) ∈ A⋆, we use the same chronological convention as in Theorem 4.1.
+
+Namely,
+
+k
+
+S(u)I0,H :=
+
+uir (tr) dt1 · · · dtk,
+
+S(u)0∅,H = 1.
+
+(4)
+
+0≤t1≤···≤tk≤H r=1
+
+With this convention, define the corresponding iterated Lie derivative by
+
+LI ψ = Lfi1 · · · Lfik ψ,
+
+L∅ψ = ψ,
+
+(5)
+
+where Lfi φ(x) = Dφ(x)fi(x). The ordering in Eqs. (4) and (5) is chosen so that the Chen–Fliess expansion takes the form
+
+ψ(Fu(x)) =
+
+LI ψ(x)S(u)I0,H .
+
+I ∈A⋆
+
+A.1 SUFFICIENT CONDITIONS FOR LOCALLY UNIFORM CONVERGENCE
+
+Fix an arbitrary compact set K ⊂ X . We impose the following sufficient conditions. Assumption A.1 (Common reachable domain). There exist an open set D ⊂ Rn and a compact set KH ⊂ D such that, for every x ∈ K and every u ∈ UH , the controlled system admits a unique solution on [0, H], and
+xu(t; x) ∈ KH , ∀t ∈ [0, H]. Equivalently, the horizon-H reachable tube from K,
+RH (K) := {xu(t; x) : x ∈ K, u ∈ UH , t ∈ [0, H]} ,
+satisfies RH (K) ⊂ KH ⊂ D. Assumption A.2 (Analytic regularity). The vector fields f0, . . . , fm : D → Rn and each QoI ψj : D → R, j = 1, . . . , p, are real analytic on D. Assumption A.3 (Uniformly bounded controls). Every admissible control satisfies
+ui ∈ L∞([0, H]), i = 1, . . . , m,
+
+and the admissible control class is uniformly bounded:
+
+u¯ := sup max 1, ∥u1∥L∞ , . . . , ∥um∥L∞ < ∞.
+
+(6)
+
+u∈UH
+
+Assumption A.4 (Uniform Lie-derivative growth). There exist constants CK, MK > 0, possibly depending on K but independent of j, x, and I, such that
+
+|LI ψj (x)| ≤ CK MK|I||I|!,
+
+∀j ∈ {1, . . . , p}, ∀x ∈ KH , ∀I ∈ A⋆.
+
+(7)
+
+15
+
+Assumption A.5 (Local convergence radius). The horizon and admissible control magnitude satisfy
+
+qK := (m + 1)MK u¯H < 1.
+
+(8)
+
+Lemma A.6 (Uniform bound on signature coordinates). Under theorem A.3, for every u ∈ UH and every I ∈ A⋆,
+
+|S(u)I0,H |
+
+≤
+
+(u¯H )|I | .
+|I |!
+
+(9)
+
+Proof. Let I = (i1, . . . , ik), so that |I| = k. By Eq. (6),
+
+|uir (t)| ≤ u¯, r = 1, . . . , k,
+
+where the same bound holds for ir = 0 because u0 ≡ 1 and u¯ ≥ 1. Hence
+
+k
+
+|S(u)I0,H | ≤
+
+|uir (tr)| dt1 · · · dtk
+
+0≤t1≤···≤tk≤H r=1
+
+≤ u¯k Vol {0 ≤ t1 ≤ · · · ≤ tk ≤ H} .
+
+Since the ordered k-simplex has volume Hk/k!,
+
+|S(u)0I,H
+
+|
+
+≤
+
+u¯k
+
+Hk k!
+
+=
+
+(u¯H )k .
+k!
+
+The empty-word case follows from S(u)0∅,H = 1.
+
+Proposition A.7 (Locally uniform Chen–Fliess expansion). Let K ⊂ X be compact. Under theorems A.1 to A.5, for every j = 1, . . . , p,
+
+ψj(Fu(x)) =
+
+LI ψj (x)S(u)0I,H ,
+
+(10)
+
+I ∈A⋆
+
+and the series converges absolutely and uniformly over
+
+j ∈ {1, . . . , p}, x ∈ K, u ∈ UH .
+
+Moreover, if
+
+Rj,N (x, u) :=
+
+LI ψj (x)S(u)0I,H ,
+
+|I |>N
+
+then
+
+max sup
+1≤j≤p (x,u)∈K×UH
+
+|Rj,N (x, u)|
+
+≤
+
+CK qKN+1 , 1 − qK
+
+qK = (m + 1)MK u¯H < 1.
+
+(11)
+
+Proof. Fix j ∈ {1, . . . , p}, x ∈ K, and u ∈ UH . For any sufficiently smooth scalar function g : D → R, the fundamental theorem of calculus along the controlled trajectory gives
+
+t
+
+g(xu(t; x)) − g(x) = Dg(xu(s; x))x˙ u(s; x) ds
+
+0
+
+mt
+
+=
+
+Lfi g xu(s; x) ui(s) ds.
+
+i=0 0
+
+Repeated application of this identity yields, for every N ≥ 0,
+
+ψj(Fu(x)) =
+
+LI ψj (x)S(u)0I,H + Rj,N (x, u),
+
+(12)
+
+|I |≤N
+
+where Rj,N is a sum of iterated integrals of order N + 1. Each such term contains an iterated Lie derivative of order N + 1, evaluated at an intermediate point of the controlled trajectory.
+By theorem A.1, every such intermediate point belongs to KH . Hence theorem A.4 gives LI ψj xu(t; x) ≤ CK MKN+1(N + 1)!
+
+16
+
+for every word w of length N + 1. Using the uniform control bound and the volume of the ordered simplex, each remainder term is bounded by
+
+CK MKN+1(N
+
+(u¯H )N +1 + 1)!
+(N + 1)!
+
+=
+
+CK (MK u¯H)N+1.
+
+Since there are (m + 1)N+1 words of length N + 1,
+
+|Rj,N (x, u)| ≤ CK qKN+1. Since qK < 1, this converges to zero uniformly over
+j ∈ {1, . . . , p}, x ∈ K, u ∈ UH . Letting N → ∞ in Eq. (12) therefore yields Eq. (10) uniformly on K × UH . For absolute convergence, let |I| = k. By Theorems A.4 and A.6,
+
+LI ψj (x)S(u)I0,H
+
+≤
+
+CK
+
+MKk
+
+k!
+
+(u¯H k!
+
+)k
+
+= CK (MK u¯H)k.
+
+There are (m + 1)k words of length k. Therefore
+
+LI ψj (x)S(u)I0,H ≤ CK qKk .
+|I |=k
+
+Since qK < 1,
+
+∞
+CK qKk
+k=0
+
+=
+
+CK 1 − qK
+
+< ∞.
+
+The bound is independent of j, x ∈ K, and u ∈ UH . Hence the Weierstrass M -test gives absolute and uniform convergence.
+
+Finally,
+
+∞
+|Rj,N (x, u)| ≤
+
+LI ψj (x)S(u)0I,H
+
+k=N +1 |I|=k
+
+∞
+
+≤ CK
+
+qKk
+
+k=N +1
+
+= CK qKN+1 . 1 − qK
+
+Taking the maximum over j and the supremum over K × UH proves Eq. (11).
+
+17
+
+B PROOFS
+
+B.1 PROOF OF THEOREM 4.2
+
+Proof. Fix an arbitrary compact set K ⊂ X and ε > 0. Let A = {0, 1, . . . , m}, where u0(t) ≡ 1, and let A⋆ denote the set of all finite words over A, including the empty word ∅.
+By the locally uniform Chen–Fliess expansion established in Appendix A, for every j ∈ {1, . . . , p},
+
+ψj Fu(x) =
+
+LI ψj (x)S(u)I0,H ,
+
+(13)
+
+I ∈A⋆
+
+where the series converges absolutely and uniformly over
+
+(x, u) ∈ K × UH .
+
+More precisely, under the conditions of Appendix A, there are exactly (m + 1)k words of length k,
+
+I ∈A⋆
+
+LI ψj (x)S(u)I0,H
+
+≤
+
+(m
+
++
+
+1)k
+
+CK
+
+MKk
+
+k!
+
+(u¯H k!
+
+)k
+
+|I |=k
+
+= CK qKk .
+
+Consequently, if
+
+Rj,N (x, u) :=
+
+LI ψj (x)S(u)I0,H
+
+I ∈A⋆ |I |>N
+
+denotes the truncation remainder, then
+
+max sup
+1≤j≤p (x,u)∈K×UH
+
+|Rj,N (x, u)|
+
+≤
+
+CK qKN+1 . 1 − qK
+
+(14)
+
+Since qK < 1, the right-hand side of Eq. (14) converges to zero as N → ∞. Therefore, there exists
+
+N ∈ N such that
+
+CK qKN+1 < ε.
+
+(15)
+
+1 − qK
+
+Define the finite word set and let
+Fix an ordering
+
+WN := A⋆≤N = {I ∈ A⋆ : |I| ≤ N } ,
+N
+dN := |WN | = (m + 1)k.
+k=0
+WN = {I1, . . . , IdN }.
+
+For each QoI ψj, define the truncated Chen–Fliess coefficient vector
+
+ LI1 ψj (x) 
+
+cj,N
+
+(x)
+
+:=
+
+ 
+
+...
+
+ ∈ RdN . 
+
+LIdN ψj (x)
+
+Construct the shared representation
+
+c1,N (x)
+
+λN
+
+(x)
+
+:=
+
+ 
+
+...
+
+ ∈ RpdN . 
+
+(16)
+
+cp,N (x)
+
+18
+
+Define the coordinate projection by
+In particular,
+
+PN : S → RdN
+
+ sI1 
+
+PN
+
+s
+
+:=
+
+ 
+
+...
+
+. 
+
+sIdN
+
+ S
+
+(u)0I1,H
+
+
+
+PN
+
+S(u)
+
+=
+
+ 
+
+...
+
+ 
+
+.
+
+ S
+
+(u)0Id,HN
+
+
+
+For each j ∈ {1, . . . , p}, let
+
+Ej : RdN → RpdN
+
+denote the canonical embedding into the j-th block:
+
+0
+
+ 
+
+...
+
+ 
+
+Ej z
+
+=
+
+z 
+
+.
+
+ 
+
+...
+
+ 
+
+0
+
+Define
+
+Lψj,N := Ej ◦ PN : S → RpdN .
+
+(17)
+
+Since both PN and Ej are linear, Lψj,N is linear.
+
+The corresponding action-conditioned measurement map is
+
+γψj,N (u) := Lψj,N S(u) = Ej PN S(u). Using the standard Euclidean inner products on the corresponding spaces,
+
+λN (x), γψj,N (u) RpdN = ⟨cj,N (x), PN S(u)⟩RdN
+
+dN
+
+=
+
+LIr ψj (x) S(u)I0r,H
+
+r=1
+
+=
+
+LI ψj (x) S(u)I0,H .
+
+I ∈A⋆
+
+|I |≤N
+
+Combining this identity with Eq. (13) gives
+
+ψj (Fu(x)) − λN (x), γψj,N (u) RpdN = Rj,N (x, u). Hence, by Eq. (15),
+
+max sup ψj(Fu(x)) −
+1≤j≤p (x,u)∈K×UH
+
+λN (x), γψj,N (u) RpdN
+
+= max sup |Rj,N (x, u)|
+1≤j≤p (x,u)∈K×UH
+≤ CK qKN+1 1 − qK
+< ε.
+
+Finally, choose Then
+
+d := pdN ,
+
+λ := λN ,
+
+Lψj := Lψj,N .
+
+γψj = Lψj ◦ S : UH → Rd
+
+19
+
+is linear in the signature coordinates and satisfies
+
+max sup
+1≤j≤p (x,u)∈K×UH
+
+ψj(Fu(x)) −
+
+λ(x), γψj (u) Rd
+
+< ε.
+
+Since K ⊂ X was arbitrary, the approximation holds locally uniformly in the state variable.
+
+B.2 PROOF OF THEOREM 5.3
+
+Proof. Fix x ∈ X , and write λ0 = λ(x),
+We consider values of α for which
+
+λψ = λψ(x) = Lψ∗ λ0.
+
+λα = λ0 + αλψ ∈ Θ,
+
+so that πλα (· | x) is well defined. By definition of the adjoint Lψ∗ ,
+⟨λ0, LψS(u)⟩HS = L∗ψλ0, S(u) HS = ⟨λψ, S(u)⟩HS . Since ψ admits an exact linear probe at x,
+
+ψ Fu(x) = ⟨λ0, LψS(u)⟩HS , ∀ u ∈ UH ,
+
+and therefore
+
+ψ Fu(x) = ⟨λψ, S(u)⟩HS .
+
+(18)
+
+Thus the propagated QoI coincides exactly with the sufficient-statistic direction induced by λψ.
+
+From Eq. (18),
+
+Jψ,x(α) = Eu∼πλα (·|x) ⟨λψ, S(u)⟩HS
+
+=
+
+λψ, Eu∼πλα (·|x) [S(u)]
+
+.
+HS
+
+For the signature exponential family, the dual coordinate is
+
+φ(λ) = ∇A(λ) = Eu∼πλ(·|x) [S(u)] .
+
+Hence
+
+Jψ,x(α) = ⟨λψ, φ(λα)⟩HS .
+
+(19)
+
+Since the steering path is affine, i.e., λα = λ0 + αλψ, its derivative with respect to α is d dα λα = λψ.
+Differentiating Eq. (19) along this path and applying the chain rule gives
+
+d dα Jψ,x(α) =
+
+λψ, Dφ(λα)
+
+dλα dα
+
+HS
+
+= ⟨λψ, Dφ(λα) [λψ]⟩HS .
+
+Because φ(λ) = ∇A(λ), we have Dφ(λ) = ∇2A(λ), and therefore
+
+d dα Jψ,x(α) =
+
+λψ, ∇2A(λα)[λψ] HS .
+
+(20)
+
+It remains to identify the quadratic form in Eq. (20). For the exponential family, the Hessian of the
+
+log-partition function is the covariance operator of the sufficient statistic. More precisely, for any
+
+η, ζ ∈ HS,
+
+η, ∇2A(λ)[ζ] HS = Covu∼πλ(·|x) ⟨η, S(u)⟩ , ⟨ζ, S(u)⟩HS .
+
+Taking
+
+η = ζ = λψ
+
+20
+
+yields λψ, ∇2A(λα)[λψ] HS = Varu∼πλα (·|x) ⟨λψ, S(u)⟩HS .
+Combining this with Eq. (18) gives
+
+d dα Jψ,x(α) = Varu∼πλα (·|x) ψ Fu(x) .
+
+Since variance is nonnegative,
+
+d dα Jψ,x(α) ≥ 0.
+
+In particular, for any α1 ≤ α2 such that λα ∈ Θ for all α ∈ [α1, α2],
+
+Jψ,x(α2) − Jψ,x(α1) =
+
+α2 d α1 dα Jψ,x(α) dα
+α2
+
+=
+
+Varu∼πλα (·|x) ψ Fu(x) dα
+
+α1
+
+≥ 0.
+
+Therefore Jψ,x(α) is nondecreasing along the steering path λα = λ(x) + αλψ(x).
+
+21
+
+C DETAILED DERIVATIONS
+
+C.1 KL PROJECTION AND THE INDUCED STEERING PATH
+
+We provide a derivation of the reverse-KL projection used in Eq. (2). Consider the exponential family induced by the base measure µ
+
+dπλ dµ
+
+(u)
+
+=
+
+exp(⟨λ, S(u)⟩HS
+
+−
+
+A(λ)) ,
+
+λ ∈ Θ ⊆ HS,
+
+where A(λ) = log Eu∼π0 e⟨λ,S(u)⟩HS is the log-partition function. We assume that the exponential family is regular and minimal, so that A is strictly convex on Θ. Its expectation coordinate
+
+is φ(λ) = ∇A(λ) = Eu∼πλ [S(u)], φ = φ(Θ).
+
+For a fixed state x ∈ X , recall the state-conditioned steering direction λψ(x) = Lψ∗ λ(x) ∈ HS.
+By construction, the expected propagated QoI is affine in the dual coordinate:
+Eu∼πλ ψ(Fu(x)) = ⟨λ(x), LψEu∼πλ [S(u)]⟩HS = L∗ψλ(x), φ(λ) HS = ⟨λψ(x), φ(λ)⟩HS .
+Hence, a target expected QoI level c ∈ R defines the affine hyperplane
+φψ,x(c) = {φ ∈ φ : ⟨λψ(x), φ⟩HS = c} .
+
+KL divergence as a dual Bregman divergence. For any λ, λ0 ∈ Θ, the KL divergence between two members of the same exponential family satisfies
+
+DKL(πλ∥πλ0 ) = Eπλ
+
+log dπλ (u) dπλ0
+
+= ⟨λ − λ0, φ(λ)⟩HS − A(λ) + A(λ0)
+
+= DA(λ0, λ),
+
+where DA(λ0, λ) := A(λ0) − A(λ) − ⟨∇A(λ), λ0 − λ⟩ is the Bregman divergence generated by A.
+
+Let A∗ denote the convex conjugate of A, A∗(φ) := sup {⟨λ, φ⟩HS − A(λ)} .
+λ∈Θ
+The Legendre correspondence gives φ = ∇A(λ), λ = ∇A∗(φ),
+
+and therefore
+
+DKL(πλ∥πλ0 ) = DA∗ φ(λ), φ(λ0) .
+
+(21)
+
+Projection onto a constant-QoI hyperplane. We now set λ0 = λ(x) and consider
+
+λ ∈ arg min DKL πλ∥πλ(x) .
+λ: φ(λ)∈φψ,x(c)
+Using Eq. (21), this is equivalently the Bregman projection
+
+φ ∈ arg min DA∗ φ, φ(λ(x))
+φ∈φ
+
+subject to ⟨λψ(x), φ⟩HS = c.
+
+Introduce a Lagrange multiplier β ∈ R: L(φ, β) = DA∗ φ, φ(λ(x)) + β (⟨λψ(x), φ⟩HS − c) .
+The first-order optimality condition with respect to φ is ∇A∗(φ) − ∇A∗ φ(λ(x)) + βλψ(x) = 0.
+By Legendre duality, ∇A∗(φ) = λ, ∇A∗ φ(λ(x)) = λ(x),
+and hence λ = λ(x) − βλψ(x). Finally, writing α = −β gives
+λ = λ(x) + αλψ(x).
+
+22
+
+C.2 ORACLE REPRESENTATION AND MEASUREMENT MAP
+
+We first write the dynamics in control-affine form. Since the system is driftless,
+
+x˙ = f1(x)v + f2(x)ω,
+
+1
+f1(x) = θ , 0
+
+0
+f2(x) = 0 . 1
+
+Observable and exact oracle representation. We consider the QoI ψ(x) = py. The first-order Lie derivatives are
+Lf1 ψ(x) = ∇ψ(x)⊤f1(x) = θ, Lf2 ψ(x) = ∇ψ(x)⊤f2(x) = 0.
+At second order, Lf2 Lf1 ψ(x) = Lf2 θ = 1,
+whereas Lf1 Lf1 ψ = Lf1 Lf2 ψ = Lf2 Lf2 ψ = 0.
+Since the only second-order iterated Lie derivative that is not identically zero is constant, all iterated Lie derivatives of order three or higher vanish identically.
+Strictly speaking, under the augmented formulation with u0 ≡ 1, the input should be written as u = (1, v, ω). However, since the time component plays no role in the control parametrization, we suppress it for notational simplicity and write A = {1, 2} as the control alphabet, with 1 and 2 corresponding to v and ω, respectively, and let A⋆ denote the set of all finite words over A, including the empty word ∅. We use the convention
+
+L(i1,...,ik)ψ := Lfi1 · · · Lfik ψ,
+
+L∅ψ := ψ,
+
+Let S(u) = S(u)I0,H I∈A⋆ denote the full signature of the control, with S0∅,H (u) = 1. The only words whose Chen–Fliess coefficient functions are not identically zero are
+
+Wψ = {∅, 1, 21}.
+
+In particular,
+
+H
+
+S(u)10,H =
+
+v(t) dt,
+
+0
+
+H t2
+
+S(u)201,H =
+
+ω(t1)v(t2) dt1 dt2.
+
+00
+
+Hence the Chen–Fliess expansion terminates exactly:
+
+ψ(Fu(x)) =
+
+LI ψ(x)S(u)I0,H = py + θS(u)01,H + S02,1H (u).
+
+I ∈A⋆
+
+Define
+
+λψ(x) = λψI (x) I∈A⋆ ,
+
+λIψ(x) := LI ψ(x).
+
+Since λψ(x) has finite support Wψ, its pairing with the full signature is a finite sum:
+
+ψ(Fu(x)) = ⟨λψ(x), S(u)⟩HS .
+
+The only coordinates of λψ(x) that are not identically zero are
+
+λ∅ψ(x) = py,
+
+λ1ψ(x) = θ,
+
+λψ21(x) = 1.
+
+Let ΠWψ denote projection onto these three active coordinates. Then
+
+1 ΠWψ S(u) = S(u)01,H  ,
+S(u)021,H
+
+py
+ΠWψ λψ(x) = θ . 1
+
+With a slight abuse of notation, whenever only these active coordinates are considered, we write
+
+1 S(u) = S(u)10,H  ,
+S(u)02,1H
+
+py λψ(x) = θ .
+1
+
+23
+
+Signature measurement map Lψ. For a learned VLA representation λ, the particular realization of Lψ may depend on how the VLA model is trained, and more specifically, on how much physical information is encoded in λ. In particular, our oracle experiment does not assume or learn a specific realization of Lψ; rather, Lψ is treated as given, and the experiment is intended to demonstrate the existence of such a linear correspondence. More generally, how the representation dimension-
+ality scales with the number of QoIs, as well as possible intersections among the associated QoI
+subspaces, requires further consideration.
+
+Numerical setting. We denote by u an entire action chunk over the horizon [0, H]. Each chunk is piecewise constant over K = 8 equal-length intervals of duration ∆t = H/K and is parameterized by a forward speed s and a turning rate r,
+
+v(t) = s,
+
+ω(t) = r, t < H/2, −r, t ≥ H/2,
+
+so that each chunk turns and then counter-turns, producing lateral motion while approximately restoring the terminal heading. Sweeping s over 11 uniform points in [0.75, 1.25] and r over 61 uniform points in [−2.2, 2.2] yields 671 candidates. For visual reference, we place a circular obstacle centered at pobs = (0.5, 0) with radius robs = 0.08; it is not included in Ctask. The change of coordinates and the goal-reaching cost are
+
+0.10 −0.04 0.18 M = 0.14 0.03 0 ,
+0.02 0.16 0
+
+λ(x0) = M λψ(x0) = (0.18, 0, 0)⊤,
+
+Since M ⊤M −⊤ = I, the bilinear relation ψ(Fu(x)) = ⟨λ(x), γψ(u)⟩HS holds exactly. Since λψ(x0) = (0, 0, 1)⊤, the parameter λ(x0) contributes only the constant ⟨λ(x0), S(u)⟩HS ≡ 0.18 to the policy log-density; hence, after normalization, the unsteered policy πλ(x0) coincides with the base measure µ. Along the steering path, Lψ⊤λ(x) = M −1M λψ(x) = λψ(x), so λψ(x0) = (0, 0, 1)⊤ and
+⟨λψ(x0), S(u)⟩HS = S02,1H (u) = ψ(Fu(x0)),
+the last equality because py = θ = 0 at x0. The log-density being affine in λ, the shift by αλψ(x0) factors out,
+πλα (u | x0) ∝ µ(u) e⟨λ(x0),S(u)⟩HS eα⟨λψ(x0),S(u)⟩HS ∝ πλ(x0)(u | x0) exp α ψ(Fu(x0)) .
+
+24
+
+Figure 4: LIBERO-10 task: “put the white mug on the left plate and put the yellow-and-white mug on the right plate”. Frames of a successful closed-loop OpenVLA-OFT rollout (top: agent view, bottom: wrist view), with the control step above each column.
+
+D EXPERIMENTS ON A PRETRAINED VLA
+
+D.1 SETUP
+
+Model and representation. OpenVLA-OFT decodes an action chunk in parallel: the last-layer
+
+hidden states of the Llama-2 backbone at the positions of the action tokens are mapped by a small
+
+MLP (the action head) to Hchunk = 8 continuous 7-dimensional actions. We take these hidden states as the representation, λ(x) ∈ R56×4096 (8 steps × 7 action dimensions), and work with the
+
+latent
+
+z(x) := 1, P λ(x) ∈ Rq,
+
+(22)
+
+where P keeps the leading principal components of λ(x), fitted on training states. The representation λ(x) of the theory corresponds to the full representation; z(x) is its truncation to the leading principal coordinates, and we apply Theorem 3.1 with z in place of λ. The policy chunk is a deterministic function of the representation, u(x) = head(λ(x)): re-applying the head to the stored λ(x) reproduces the executed chunk exactly. Representation interventions therefore act directly on the action, without passing through the language model again.
+
+Task and data. We use the checkpoint fine-tuned on LIBERO-10 and the task shown in Figure 4. We roll out the policy from all 50 initial layouts (46 successful) and take a snapshot every 16 control steps (788 states). At every second snapshot (404 states) we restore the simulator and execute 32 candidate chunks of Hchunk = 8 steps: the policy chunk and 31 smooth perturbations of it.
+Quantities of interest. The QoIs are the 3D positions of the two mugs (mug1: white, mug2: yellow-and-white) and of the end effector (EE); the EE coordinates serve as a control, since under delta end-effector actions their change follows directly from the action. For steering, we additionally use four task-level QoIs: the negative horizontal distance −d(mugj, plate) of each mug to its target plate and the negative distance −d(EE, mugj) between the EE and each mug, so that increasing the QoI means moving towards the goal; the target plate of each mug is the one it ends on in all successful episodes. All results are on held-out episodes.
+
+D.2 ACTION-CONDITIONED LINEAR PROBING
+
+We split the measurement map along the signature coordinates, Lψ = [L∅ψ, Lψ1:2], into the static probe and the action-conditioned increment,
+
+ψ(x) ≈ ⟨z(x), L∅ψ⟩Rq ,
+
+(23)
+
+∆ψ(x; u) := ψ(Fu(x)) − ψ(x) ≈ z(x), L1ψ:2 S1:2(u) Rq ,
+
+(24)
+
+whose sum is the probe of Theorem 3.1 truncated at level two,
+
+ψˆ Fu(x) := z(x), Lψ S≤2(u) Rq = ⟨z(x), L∅ψ⟩Rq + z(x), L1ψ:2 S1:2(u) Rq .
+
+(25)
+
+25
+
+Table 3: Propagated QoI from the representation alone (OpenVLA-OFT). R2 of ψ(Fu(x)) on held-out episodes. Static only (s.o.) uses the static probe ⟨z(x), Lψ∅ ⟩ as the prediction, i.e. it assumes that the chunk does not change the QoI; the remaining columns add one of the increment probes of Table 4, and the bilinear column is the probe of Theorem 3.1. The first column is the R2 of the
+static probe for the current value ψ(x). EE coordinates are control QoIs.
+
+QoI ψ
+
+static
+
+propagated ψ(Fu(x))
+
+ψ(x) s.o. + linear + additive + bilinear + MLP readout + unstructured
+
+EE px (control) .836 .510 .770
+
+.820
+
+.822
+
+.820
+
+.820
+
+EE py (control) .833 .809 .848
+
+.851
+
+.851
+
+.851
+
+.851
+
+EE pz (control) .944 .593 .902
+
+.943
+
+.943
+
+.946
+
+.945
+
+mug1 px
+
+.777 .671 .753
+
+.763
+
+.767
+
+.768
+
+.766
+
+mug1 py
+
+.865 .821 .853
+
+.858
+
+.861
+
+.861
+
+.862
+
+mug1 pz
+
+.956 .636 .918
+
+.938
+
+.946
+
+.949
+
+.949
+
+mug2 px
+
+.580 .453 .565
+
+.586
+
+.593
+
+.593
+
+.600
+
+mug2 py
+
+.814 .752 .842
+
+.844
+
+.846
+
+.847
+
+.846
+
+mug2 pz
+
+.965 .620 .921
+
+.940
+
+.959
+
+.959
+
+.960
+
+Table 4: Action-conditioned increment (OpenVLA-OFT). R2 of ∆ψ(x; u) on held-out episodes, with S = S1:2(u) and Hchunk = 8.
+
+linear additive bilinear MLP readout unstructured
+
+QoI ψ
+
+⟨z, a⟩ ⟨z, a⟩ + ⟨b, S⟩ ⟨z, L1ψ:2S⟩ ⟨MLP(z), S⟩ MLP(z, u)
+
+EE px (control) .829
+
+.983
+
+.981
+
+.982
+
+.981
+
+EE py (control) .912
+
+.995
+
+.995
+
+.993
+
+.995
+
+EE pz (control) .867
+
+.986
+
+.986
+
+.987
+
+.988
+
+mug1 px
+
+.878
+
+.933
+
+.960
+
+.970
+
+.973
+
+mug1 py
+
+.806
+
+.895
+
+.959
+
+.962
+
+.967
+
+mug1 pz
+
+.825
+
+.877
+
+.918
+
+.933
+
+.941
+
+mug2 px
+
+.656
+
+.801
+
+.901
+
+.916
+
+.934
+
+mug2 py
+
+.908
+
+.953
+
+.979
+
+.983
+
+.983
+
+mug2 pz
+
+.813
+
+.864
+
+.923
+
+.940
+
+.939
+
+The static term uses 256 principal components and the increment the leading 32. For the increment we compare the bilinear probe with a linear probe ⟨z(x), a⟩Rq that ignores the chunk, an additive probe ⟨z(x), a⟩Rq + ⟨b, S1:2(u)⟩Rq , an MLP readout ⟨MLP(z(x)), S1:2(u)⟩Rq of the signature coefficients, and an unstructured MLP(z(x), u) on the representation and the raw chunk. Table 3 reports the propagated QoI, which is the quantity of Theorem 3.1 and Table 4 the increment alone.
+The propagated QoI is predicted from the representation alone. The probe of Theorem 3.1 predicts the mug positions after the chunk with R2 between 0.59 and 0.96 (Table 3). The increment is essential for the mug heights: the current value alone gives 0.64 and 0.62, the bilinear probe 0.95 and 0.96. The two flexible alternatives change R2 by at most 0.01. The remaining error is dominated by the static part, which reaches 0.58–0.97 for the mug coordinates.
+The action-conditioned increment is linearly encoded. The bilinear probe predicts how a candidate chunk moves the mugs with R2 between 0.90 and 0.98 (Table 4), against 0.80–0.95 for the additive probe; the gain is largest for mug2 px (+0.10) and for mug1 py and mug2 pz (+0.06). For the EE coordinates the additive and bilinear probes coincide, as expected for a control QoI. Replacing the linear readout by an MLP, or the bilinear structure by an unstructured MLP, improves R2 by at most about 0.03. Because the policy chunk is itself a function of z, the linear probe already captures the effect of the policy’s own chunk; the signature term is needed for the effect of the deviations from it, and the bilinear term for how that effect depends on the state.
+26
+
+D.3 STEERING ALONG THE PROBE DIRECTION
+Theorem 3.2 asks for a direction in representation space along which the QoI after the chunk increases monotonically. We ask whether the probe of Section D.2 supplies such a direction for OpenVLA-OFT, and which information besides the probe is needed to use it.
+
+Intervention. We keep the physical state x fixed and move only the representation that the action head receives, along a fixed direction zψ(x):
+
+zα = z(x) + α zψ(x), u(zα) := head λ(x) + αP ⊤diag(σ) zψ(x) .
+
+(26)
+
+Let Jψ,x(α) = ψ Fu(zα)(x) . The direction lives in the leading 32 principal components and is mapped back to λ ∈ R56×4096 through the principal directions, with σ the standard deviations of the principal coordinates; all other components of λ are unchanged, and u(z) denotes the resulting chunk. Because the chunk is exactly head(λ), the steered chunk is obtained by re-applying the head to the displaced representation, without another pass through the language model. Because the policy is deterministic, Jψ,x(α) is determined by a single simulated chunk for each α; there is no sampling noise.
+In Eq. (2) the direction is λψ(x) itself, which presupposes that the representation and the probe direction live in the same space, as under the identification of Theorem 5.2. Here, z(x) has one entry per principal coordinate, whereas λψ(x) has one entry per signature coordinate; hence, λψ(x) cannot be added directly to z(x). Instead, λψ(x) is evaluated at the original latent representation z(x) and then held fixed. We therefore parameterize the steering path by a latent-space direction zψ(x), as in Eq. (26), and ask which zψ(x) realizes the desired signature-space direction λψ(x).
+
+From the probe to a representation direction. The probe describes the second half of the chain
+
+z −−h−ea−d→ u(z) −−p−hy−si−c→s ψ Fu(z)(x) ,
+
+ψˆ Fu(x) = λψ(x), S≤2(u) Rq ,
+
+(27)
+
+where λψ(x) := Lψ⊤z(x) has one entry per signature coordinate, i.e. it describes how the QoI depends on the signature of the chunk. The intervention, however, acts on the first half: moving z
+changes the chunk through the head. Writing
+
+ϕ(z) := S≤2 u(z) ,
+
+Dϕ(z) := ∂ S≤2(u(z)) , ∂z
+
+(28)
+
+for the signature of the chunk produced from z and its Jacobian, the probe’s prediction along the intervention is Jˆψ,x(α) = ⟨λψ(x), ϕ(zα)⟩ and, by the chain rule,
+
+dJˆψ,x
+
+=
+
+dα α=0
+
+d λψ(x), dα S≤2 u(zα)
+
+α=0 Rq
+
+= λψ(x), Dϕ z(x) zψ(x) Rq
+
+(29)
+
+= Dϕ z(x) ⊤λψ(x), zψ(x) Rq .
+
+The intervention changes the action, not the physical state, and it is the physical state that determines how a chunk moves the objects. Only the non-empty words of S contribute, since S∅ = 1 and the pure-time words are constant for a fixed horizon; the corresponding rows of Dϕ vanish. The static part Lψ∅ of the probe therefore plays no role in Eq. (29).
+
+Relation to Section 5. The map ϕ in Eq. (28) is the deterministic counterpart of the mean coordi-
+nates φ(λ) = Eπλ [S(u)] of Section 5. Under the identification of Theorem 5.2, the representation is the natural parameter, Dϕ = ∇2A is symmetric positive semidefinite, and Eq. (29) with zψ = λψ gives dJˆψ,x/dα = λ⊤ψ ∇2A λψ = Var[⟨λψ, S⟩] ≥ 0 for every α: the probe direction itself is an ascent direction and Dϕ need not be known (Theorem 5.3). For a learned action head, Dϕ is a
+general |S| × dim z matrix, neither symmetric nor positive semidefinite, and λψ does not even live in the same space as z; the probe direction has to be transported into latent space through Dϕ.
+
+27
+
+Steering directions. We compare five directions, all fitted or computed without the test episodes (except the oracle):
+• Dϕ⊤λψ: the probe direction transported through the head, Eq. (29). It is the gradient of the probe’s prediction Jˆψ,x with respect to the representation and uses only the probe and the model’s own action head; no simulator query is needed.
+• γψ = ∇z ψˆ(Fu0 (x)) with the chunk held fixed at the policy chunk u0 (increment part only), i.e. γψ(u) = (∂/∂z)⟨z, L1ψ:2S1:2(u)⟩ = Lψ1:2S1:2(u). This is the direction obtained by differentiating the probe alone, as in steering with a linear probe in language models. It changes what the probe reads from the representation for the same chunk, but ignores how the head responds to the change.
+• static: the static probe direction L∅ψ, which changes what the representation encodes about the current value ψ(x).
+• simulator gradient: ∇zJψ,x at α = 0, obtained by central differences of the simulated QoI along the 32 principal directions. It uses no probe and serves as an oracle for the best local linear steering direction in this subspace.
+• random: three random directions.
+What the construction guarantees. Along zψ = Dϕ⊤λψ, the probe’s prediction increases to first order, Jˆψ,x(α) = Jˆψ,x(0) + α ∥Dϕ⊤λψ∥2 + O(α2), for any differentiable head. Whether the true QoI increases depends on the probe residual r(u) = ψ(Fu(x)) − ψˆ(Fu(x)): the true slope is ⟨Dϕ⊤λψ + ∇zr(u(z)), zψ⟩, so the probe must be accurate for the chunk variations that the intervention induces, which is not implied by a high R2 on the data. Monotonicity beyond first order is not guaranteed and is tested empirically.
+Computation. Dϕ is obtained by central differences along the 32 principal directions (step 0.25 standard deviations), which requires only re-applying the action head to the displaced representations. Re-applying the head to the stored (float16) representation reproduces the executed policy chunk up to 3.3 · 10−3 on the arm dimensions, far below the size of the perturbations. The simulator gradient uses the same displacements, executed in the simulator. All directions are rescaled to the same displacement of λ per unit α, 0.5% of ∥λ(x)∥, and α ∈ {−8, −4, −2, 0, 2, 4, 8}, i.e. up to 4% of the representation norm.
+Evaluation protocol. Episodes are split into two halves. The principal components, both probes and all directions are fitted on one half, and steering is evaluated at states of the other half; the roles are then swapped. For each QoI we steer at the 10 states per half with the largest spread of the QoI among the candidate chunks; for the mug heights and the mug–plate distances we require that at least half of the candidate chunks change the QoI by more than 2 mm, which selects states in which the mug responds to the action at all. We report (i) the share of states with a monotone response (Spearman correlation between α and Jψ,x(α) at least 0.8), (ii) the median effect Jψ,x(8)− Jψ,x(−8), (iii) the share of states in which a direction’s effect exceeds that of all three random directions, (iv) the median cosine with the simulator gradient, and (v) for Dϕ⊤λψ, the ratio of the measured slope (Jψ,x(2) − Jψ,x(−2))/4 to the probe-predicted slope ⟨λψ, Dϕ zψ⟩. Table 5 lists (i)–(iv) for every QoI, and Figure 5 shows the full response curves.
+A linear steering direction exists. The simulator gradient raises the QoI monotonically at all 140 held-out states, by +9 to +13 mm over the range of α (Table 5, Figure 5). Thus, within the leading 32 principal components, the representation of OpenVLA-OFT admits a linear steering direction in the sense of Theorem 3.2 for each of the seven QoIs, including the four task-level distances, which are nonlinear functions of the object positions.
+The probe direction, transported through the head, finds it. Dϕ⊤λψ is monotone at 138 of the 140 states and reaches the effect of the oracle for every QoI (e.g. +12.9 vs. +12.9 mm for the white mug’s height and +12.2 vs. +12.4 mm for the distance of the yellow-and-white mug to its plate), with median cosine 0.98–1.00 to the simulator gradient. The probe also predicts the size of
+28
+
+Table 5: Steering OpenVLA-OFT along probe directions. Share of held-out states with a monotone response of Jψ,x(α) (Spearman ρ ≥ 0.8), median effect Jψ,x(8) − Jψ,x(−8) (mm), share of states in which the direction beats all three random directions of the same displacement, and median cosine with the simulator gradient; 20 states per QoI. The last four QoIs are negative distances (each mug to its target plate horizontally, the EE to each mug), so a positive effect means moving towards the goal.
+
+QoI
+
+direction
+
+monotone effect (mm) beats random cos to sim. grad.
+
+EE pz (control)
+
+simulator gradient Dϕ⊤λψ γψ static
+
+100% 100% 50% 0%
+
++9.5 +9.8 +0.4 −4.2
+
+100% 100% 15%
+0%
+
+1.00 1.00 0.03 −0.33
+
+random
+
+52%
+
++0.6
+
+–
+
+–
+
+mug1 pz
+
+simulator gradient Dϕ⊤λψ γψ static
+
+100% 100% 65% 0%
+
++12.9 +12.9 +2.1 −2.2
+
+100% 100% 30%
+5%
+
+1.00 1.00 0.13 −0.14
+
+random
+
+45%
+
+−0.6
+
+–
+
+–
+
+mug2 pz
+
+simulator gradient Dϕ⊤λψ γψ static
+
+100% 100% 100% 0%
+
++11.6 +11.2 +5.5 −2.1
+
+100% 100% 80%
+5%
+
+1.00 1.00 0.27 −0.12
+
+random
+
+40%
+
+−1.0
+
+–
+
+–
+
+−d(mug1, plate) simulator gradient Dϕ⊤λψ γψ
+static
+
+100% 100% 100% 0%
+
++12.3 +11.9 +7.6 −11.3
+
+100% 100% 70%
+0%
+
+1.00 0.98 0.37 −0.61
+
+random
+
+42%
+
+−1.8
+
+–
+
+–
+
+−d(mug2, plate) simulator gradient 100%
+
++12.4
+
+100%
+
+1.00
+
+Dϕ⊤λψ
+
+100%
+
++12.2
+
+100%
+
+0.99
+
+γψ
+
+100%
+
++9.2
+
+100%
+
+0.43
+
+static
+
+100%
+
++3.5
+
+25%
+
+0.10
+
+random
+
+45%
+
+−0.2
+
+–
+
+–
+
+−d(EE, mug1)
+
+simulator gradient Dϕ⊤λψ γψ static
+
+100% 95% 100% 45%
+
++9.0 +8.9 +5.3 −0.0
+
+100% 95% 60% 20%
+
+1.00 1.00 0.35 −0.01
+
+random
+
+52%
+
++0.2
+
+–
+
+–
+
+−d(EE, mug2) simulator gradient 100%
+
++9.4
+
+90%
+
+1.00
+
+Dϕ⊤λψ
+
+95%
+
++9.3
+
+95%
+
+0.99
+
+γψ
+
+60%
+
++1.7
+
+30%
+
+0.11
+
+static
+
+95%
+
++2.9
+
+45%
+
+0.21
+
+random
+
+42%
+
+−0.4
+
+–
+
+–
+
+the response: the measured slope over the probe-predicted slope has median between 1.01 and 1.26, i.e. the probe slightly underestimates the response for some QoIs, consistent with the shrinkage of the ridge coefficients. The two failures (one state for each of the two EE–mug distances) are states at which the probe is inaccurate for the induced chunk variations. In words: the probe correctly predicts how the head-induced change of the chunk moves the QoI, and combining it with the head’s Jacobian recovers the simulator’s own gradient without querying the simulator.
+The static direction is not a steering direction. The effect of the static probe direction depends on the QoI but is remarkably consistent across states for a given QoI. It lowers all three heights on median (−2 to −4 mm) and increases the distance of the white mug to its plate at all 20 states (between −6 and −12 mm on the negative-distance QoI, median −11.3 mm; median cosine −0.61 to the simulator gradient). For the yellow-and-white mug it moves towards the plate, but with a small effect (+3.5 mm, cosine 0.10), and for the two EE–mug distances it is essentially orthogonal
+29
+
+Figure 5: Steering a single chunk along probe directions. Change of the QoI after the chunk relative to α = 0, Jψ,x(α) − Jψ,x(0), as the latent is moved along each direction; median and interquartile range over 20 held-out states per QoI. The probe direction transported through the action head, Dϕ⊤λψ (red), coincides with the simulator gradient (grey, dashed) for all QoIs. The probe direction without the Jacobian, γψ (blue), has the right sign but a smaller and QoI-dependent effect. The static-probe direction (black) decreases the three heights and the negative distance of the white mug to its plate, i.e. it steers the wrong way. The task-level QoIs are negative distances, so an increase means moving towards the goal.
+to the simulator gradient (cosine −0.01) and rarely beats the random directions. Changing what the representation encodes about the current value therefore does not make the policy produce the corresponding change, and for several QoIs it produces the opposite. A possible reading is that the policy compensates for a perceived state; we have not tested this interpretation.
+The probe gradient alone is not enough. For the heights, γψ is nearly orthogonal to the simulator gradient for the EE and the white mug (median cosine 0.03 and 0.13) and performs close to random; for the yellow-and-white mug it is monotone but reaches about half of the oracle effect. For the mug– plate distances and the distance of the EE to the white mug it does better: it is monotone at all states and reaches 59–74% of the oracle effect, with median cosine 0.35–0.43; for the distance of the EE to the yellow-and-white mug it is weak again (+1.7 vs. +9.4 mm). It remains clearly below Dϕ⊤λψ in every case. This is the expected consequence of Eq. (29): without Dϕ, the direction changes how the probe reads the representation, but not necessarily how the head changes the action; how much of the right direction it retains varies with the QoI, for reasons we have not established.
+Relation to Theorem 5.3. OpenVLA-OFT is deterministic, so the exponential-tilting mechanism of Theorem 5.3, which yields a monotone increase with slope Var[ψ] along λψ itself, does not apply. What the experiment establishes is weaker and complementary: the gradient of the probe-predicted QoI, Dϕ⊤λψ, is an effective linear steering direction in the sense of Theorem 3.2, and it coincides with the simulator’s gradient. The comparison with γψ shows which ingredient of Theorem 5.3 is missing in a learned VLA: the identification Dϕ = ∇2A that lets the probe direction be used as is. With a learned head this identification is replaced by the head’s Jacobian, which the model itself provides.
+30
+
+

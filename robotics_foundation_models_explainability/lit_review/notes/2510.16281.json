@@ -1,0 +1,43 @@
+{
+  "id": "2510.16281",
+  "title": "Do What You Say: Steering Vision-Language-Action Models via Runtime Reasoning-Action Alignment Verification",
+  "first_author": "Wu",
+  "year": 2025,
+  "venue": "arXiv",
+  "tier": "core",
+  "models": ["pi0-reason: pi0 fully fine-tuned to interleave <think> text plans and <act> action segments (recipe of prior work)", "pi0 (no reasoning) and pi0-V-GPS (Q-function steering) as baselines"],
+  "action_head": "flow/diffusion action expert (text plan tokens decoded by the VLM; actions from the flow-matching head after <act>)",
+  "methods": ["Gemini-based automatic subtask annotation of LIBERO demonstrations", "best-of-K sampling of action sequences per text plan", "forward prediction of each candidate in parallel simulator instances", "GPT-4o verifier scoring whether the predicted final image fulfils the text plan", "OOD variants of LIBERO-10 (rephrase, object property, scene, viewpoint) and behavior-composition tasks"],
+  "question": "When a reasoning VLA's text plan is right but its actions do not achieve it (an 'embodied CoT faithfulness gap'), can selecting among sampled action sequences with a VLM verifier restore reasoning-action alignment and improve robustness?",
+  "key_findings": [
+    "With LIBERO-10-R training, the text plans are 100% accurate on in-distribution tasks while most task failures come from actions not executing the plan (Sec. III), i.e. the gap is on the action side.",
+    "SEAL reaches 94-97% success on in-distribution LIBERO-10 across the three training datasets, above pi0-reason, pi0-V-GPS and pi0.",
+    "On behavior-composition tasks, pi0 and pi0-V-GPS stay around 15% success while reasoning models improve with more diverse training data; the abstract reports up to 15% gain over prior work.",
+    "Semantic OOD (rephrasing, object properties): SEAL stays above 91%; pi0 drops 12% on rephrasing and pi0-V-GPS falls as low as 71%.",
+    "Visual viewpoint/background change is hardest for all: SEAL 45% vs next best by over 17 points.",
+    "More candidates (K) raise success; per-step latency grows from 147 ms (K=1) to 347 ms (K=10), but each GPT-4o verification takes 7-10 s and runs asynchronously (appendix)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO-10", "four OOD variants of LIBERO-10", "LIBERO-10-Compose, LIBERO-100-Basket-Compose, LIBERO-100-Compose"],
+    "scale": "50 trials per task; K = 10 candidates by default; seeds not reported",
+    "statistics": "no: single success rates, no CIs or tests",
+    "baselines": "pi0, pi0-reason (no verification), pi0-V-GPS (offline-RL Q-function steering, temperature 1)"
+  },
+  "causal_validation": "No mechanistic validation. The method filters actions by outcome; it does not test whether the text plan causally drives the actions (the gap is defined behaviorally as plan-outcome mismatch).",
+  "closed_loop": "Yes: selected action sequences are executed in closed-loop LIBERO rollouts. But candidate outcomes are predicted with parallel copies of the true simulator, i.e. an oracle dynamics model.",
+  "limitations_stated": [
+    "Gains bounded by verifier accuracy and by the quality of the base model's proposals; if no candidate succeeds, verification cannot help.",
+    "Real-world use would need a learned world model or digital twin for the predict step.",
+    "VLM verification latency becomes the bottleneck as K grows."
+  ],
+  "critique": [
+    "The 'Predict' stage uses the ground-truth simulator to roll out every candidate, so the improvements are an upper bound that assumes perfect dynamics; this is the main reason the gains may not transfer to real robots.",
+    "Defines a useful, distinct notion of unfaithfulness for the review: 'says right, does wrong' (action fails to realize a correct plan), the opposite direction from 2607.04681's concern of plans that rationalize actions.",
+    "The finding that plans are right while actions fail is consistent with 2603.12717's partial-rescue result: the chain influences actions but does not fully control them.",
+    "No variance or seeds, 50 trials per task, and the headline figure numbers are hard to verify from the text; claims of 'up to 15%' should be read as point estimates.",
+    "Interpretability content is limited to behavior-level verification; nothing about internals."
+  ],
+  "code": "https://yilin-wu98.github.io/steering-reasoning-vla/ (project page; reasoning-annotated LIBERO-100 dataset promised)",
+  "one_line": "A pi0-based reasoning VLA often writes the right plan but executes the wrong action; sampling several action sequences, simulating each, and letting GPT-4o pick the one that fulfils the plan raises success on in-distribution, OOD and compositional LIBERO tasks, with the caveat that the simulator acts as a perfect world model."
+}

@@ -1,0 +1,47 @@
+{
+  "id": "2609.34684",
+  "title": "Natural State-Prediction Accuracy can Hide Weak Controlled Responsiveness in VLA Readouts",
+  "first_author": "Kim",
+  "year": 2026,
+  "venue": "arXiv preprint (Sep 2026)",
+  "tier": "core",
+  "models": ["SmolVLA", "OpenVLA", "pi0 base", "GR00T N1.6", "non-VLA controls: SigLIP2, VC-1, R3M, DINOv3"],
+  "action_head": "n/a for the readout analysis (frozen visual/prefix features only); behavioral part uses SmolVLA (flow/diffusion action expert)",
+  "methods": ["ridge / RBF / MLP state readouts on frozen features", "crossed controlled observations (target coordinate x robot context) with physical and visual validation", "endpoint gain G, gain error EG, context range R", "pre-registered-style confirmation split, exact sign tests, paired scene bootstrap", "failure-prediction models adding readout diagnostics"],
+  "question": "Does high accuracy of a state readout on natural VLA trajectories imply that the readout actually responds to controlled changes of the target physical state and is stable across robot contexts?",
+  "key_findings": [
+    "Low natural MAE coexists with weak controlled response in all four task-model pairs (Meta-World drawer and faucet x SmolVLA, OpenVLA): e.g. drawer/OpenVLA natural MAE 3.9 mm but controlled MAE 75.9 mm and endpoint gain G = 0.15 (ideal 1.0); faucet/SmolVLA G = 0.021 (Table 2).",
+    "All 12 confirmation scenes per pair have G < 1; Holm-adjusted sign-test p = 0.00195 for each of the four responsiveness hypotheses.",
+    "Same pattern on new initializations for pi0 base and GR00T N1.6 (drawer G 0.11 and 0.24; faucet G ~ -0.01 and 0.04) and for SigLIP2, VC-1, R3M, DINOv3, so it is not specific to VLAs (Table 3).",
+    "Time and robot configuration alone predict the target coordinates accurately on natural trajectories, which explains how readouts can be accurate without tracking the object state (Appendix G.4).",
+    "Across 64 SmolVLA/OpenVLA readout candidates (layer, pooling, ridge/RBF/MLP, PCA), all have controlled MAE > natural MAE and G < 1; changes that improve natural MAE often worsen gain error.",
+    "Swapping 36 natural training samples for 36 controlled ones lowers controlled MAE and gain error but raises natural MAE and context sensitivity.",
+    "The pattern does not reproduce for a free-object (mug x-position) target: natural MAE is already large (128 mm), G = 0.14 (Table 4).",
+    "Adding EG and R to a failure predictor on 128 new LIBERO initializations lowers Brier score from 0.1815 to 0.1714; controlled MAE alone gives 0.1757, and the differences between controlled summaries include zero (Table 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["Meta-World (drawer, faucet, mug, book, stove)", "LIBERO (behavioral / failure prediction with SmolVLA)"],
+    "scale": "24 train / 8 dev / 12 confirmation initializations per task, 4 contexts x 6 coordinates per scene; 32 new initializations per task for model extension; failure prediction 96 dev / 128 eval initializations x 2 noisy rollouts",
+    "statistics": "yes: confirmatory/post-hoc separation, Holm-adjusted exact sign tests, 20,000-draw paired scene bootstrap CIs; initializations treated as the independent unit",
+    "baselines": "non-VLA vision encoders, time/robot-configuration contextual baselines, matched natural vs controlled training, M0 failure predictor (initial error + physical variables)"
+  },
+  "causal_validation": "No intervention on model activations. The 'controlled' manipulation is of the input world state (counterfactual observations), which tests the readout's responsiveness, not the policy's use of the feature. Authors state they do not show the readout is the policy's state estimator or a causal mediator of failure.",
+  "closed_loop": "Readout analysis is offline on rendered observations. The failure-prediction and appearance experiments use closed-loop SmolVLA rollouts in LIBERO, but diagnostics are not fed back to the policy.",
+  "limitations_stated": [
+    "Simulation only; real sensors, contact and friction may change the picture.",
+    "Single physical coordinates in a limited set of tasks and contexts; the free-object setting does not reproduce the pattern.",
+    "Controlled observations may lie outside the natural joint distribution, so representation content, readout feature selection and distribution shift are not separated.",
+    "G and R depend on the chosen coordinate range and context set; several comparisons are post hoc.",
+    "Does not establish that the readout is the policy's internal state estimator."
+  ],
+  "critique": [
+    "Strong methodological contribution: it is the clearest demonstration in this batch that high probe accuracy on natural rollouts can come from correlated context (time, arm pose) rather than the target variable. It undercuts probe-accuracy claims in 2502.04558, 2509.24559 and parts of 2605.28527.",
+    "Features are final image/prefix tokens from models mostly not fine-tuned on Meta-World. The weak responsiveness could partly be out-of-domain features rather than a property of VLA representations in their training domain.",
+    "The distribution-shift confound is real: crossed observations put the arm and object in combinations never seen in natural data, so a low G could reflect readout extrapolation failure. The authors acknowledge this but cannot resolve it.",
+    "The failure-prediction gain is small (Brier 0.1815 -> 0.1714) and controlled MAE alone captures most of it, so the specific G/R diagnostics add little beyond 'collect controlled observations'.",
+    "Very heavy, defensive prose (AI-assisted per the paper's own statement) makes the main result harder to extract than it needs to be."
+  ],
+  "code": "not reported (checkpoint hashes and procedures given in appendix)",
+  "one_line": "State readouts trained on frozen VLA features can be very accurate on natural trajectories yet barely move when the object state is changed with the robot pose held fixed, because time and arm pose already predict the state; this holds for VLAs and plain vision encoders alike."
+}

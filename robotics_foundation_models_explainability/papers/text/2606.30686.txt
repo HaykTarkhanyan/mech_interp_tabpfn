@@ -1,0 +1,296 @@
+arXiv:2606.30686v1 [cs.RO] 28 Jun 2026
+
+Position: Vision-Language-Action Models Cannot Be Verified to Perform Physical Reasoning
+Taozhao Chen School of Electrical and Computer Engineering
+The University of Sydney Sydney, NSW, Australia tche8294@uni.sydney.edu.au
+Ian Manchester School of Aerospace, Mechanical and Mechatronic Engineering
+The University of Sydney Sydney, NSW, Australia ian.manchester@sydney.edu.au
+Huaming Chen School of Electrical and Computer Engineering
+The University of Sydney Sydney, NSW, Australia huaming.chen@sydney.edu.au
+Abstract
+Vision-Language-Action (VLA) systems, built on pretrained vision-language models (VLMs), have shown rapidly improving performance on robot manipulation benchmarks. These gains are commonly interpreted as evidence that semantic representations learned from internet-scale data transfer to physical execution generalization. This position paper argues that the assumption underlying this interpretation—that semantic generalization is sufficient to support physical action decisions—has not been independently verified and cannot be tested under current evaluation protocols. We support this claim by decomposing VLA policies into semantic mapping and physical action decision, and showing that task success rate—the dominant evaluation metric—cannot distinguish between these two sources of capability. As a result, improvements in benchmark performance are consistent with multiple competing explanations, including semantic matching, distributional overlap, and genuine physical generalization. We further argue that this identifiability gap has been reinforced through narrative drift, whereby successive systems inherit and strengthen prior interpretations of performance gains without isolating the underlying causal mechanism. To address this limitation, we propose a research direction based on evaluation designs that introduce controlled variation to separately measure semantic and physical generalization. Such designs make it possible to causally attribute performance without requiring access to model internals, and to empirically assess the role of VLM backbones as semantic interfaces rather than implicit sources of physical competence. Our goal is not to refute the role of VLMs in robotics, but to clarify the conditions under which claims of physical generalization can be meaningfully evaluated.
+Preprint.
+
+1 Introduction
+Teaching robots to perform manipulation tasks has long required extensive task-specific training data and engineering effort, with each new task demanding carefully curated demonstrations [5, 56, 69] or hand-engineered reward functions [32, 60]. The emergence of large vision-language models (VLMs)—pretrained on internet-scale visual and linguistic data—offers a compelling alternative: if such models encode broad semantic knowledge about objects, instructions, and goals, they may provide a generalizable foundation for robot control [23, 28, 34].
+Since RT-2 demonstrated that pretrained VLMs can be repurposed as robot policies [79], the field has rapidly converged on the Vision-Language-Action (VLA) paradigm—end-to-end architectures that map visual observations and language instructions directly to action commands. As illustrated in Figure 1, subsequent systems largely follow this formulation while exploring variations in output parameterization and control interfaces, forming several architectural lineages, including discrete token policies, diffusion-based policies, and dual-system designs. Despite these differences, they share a common structural core: a pretrained VLM backbone that mediates perception, language grounding, and action generation, and an implicit assumption—introduced by RT-2 and inherited by subsequent work—that semantic representations learned from large-scale vision-language pretraining are sufficient to guide physical action decisions. Under this premise, improvements in semantic generalization are expected to translate into more robust physical execution, motivating extensions along multiple axes, including diffusion-based action modeling, increased model scale, and additional modalities such as proprioception. This trajectory is reflected in systems such as OpenVLA [37], OpenVLA-OFT [36], π0 [11], and GR00T N1 [10], which report steady benchmark improvements while maintaining this shared architectural and conceptual core.
+However, task success measures outcomes, not the mechanism producing them. A central unresolved question is whether semantic generalization learned by VLMs transfers to physical execution generalization in robotic systems. These correspond to two distinct components: semantic generalization, which maps observations and instructions to task-relevant abstractions, and physical execution, which selects actions under constraints of dynamics, contact, embodiment, and temporal interaction.
+We argue that current VLA research relies on an implicit but unverified assumption: that semantic generalization is sufficient to support physical execution. This assumption has been reinforced through what we term narrative drift, whereby successive systems inherit and extend prior interpretations of performance gains without explicit causal verification. Crucially, existing evaluation protocols do not provide the signals necessary to distinguish semantic generalization from physical execution, and therefore do not support causal attribution of performance improvements.
+We develop this argument as follows. Section 2 formalizes the implicit assumption underlying VLM-backbone VLA research. Section 3 shows that this assumption is not identifiable under current evaluation protocols. Section 4 analyzes the resulting systemic consequences. Section 5 proposes directions for evaluation reform. Section 6 concludes.
+2 The Implicit Assumption Underlying VLM-Backbone VLA Research
+We formalize the distinction introduced in Section 1 by decomposing a VLA policy—mapping observations and instructions to actions—into two components. Semantic mapping transforms visual observations and language instructions into task-relevant representations (e.g., object categories, spatial relations, and intended goals), whereas physical action decision selects actions conditioned on this representation under constraints of dynamics, contact interactions, embodiment, and temporal execution. A capability is physical if, holding the semantic interpretation fixed, variations in physical context (e.g., object mass, friction, geometry, or embodiment) require different actions for successful task completion. This distinction induces a criterion for attribution: improvements in task success can only be attributed to physical generalization if they remain robust under controlled variation of physical conditions that do not alter task semantics. It also implies distinct failure modes: semantic errors lead to incorrect task interpretation, while physical failures arise when the task is correctly identified but execution fails due to unmodeled physical factors—failure modes that are not distinguishable from task success rate alone.
+2
+
+VLM + Discrete Token
+
+RT-2
+
+VLM Backbone VLA
+
+VLM+ Diffusion head
+
+VLM + Dualsystem
+time 2023
+
+2024
+
+RT-H OpenVLA
+Pi-0
+DiVLA
+
+LLARA QUAR-VLA
+
+CoVLA
+
+ECoT
+
+Fast ECoT
+
+Pi-0.5 PointVLA DexVLA
+
+Go-1 GraspVLA
+CronusVLA
+
+ChatVLA ObjectVLA
+
+SwitchVLA SmolVLA
+
+OneTwoVLA
+
+Fis-VLA GR00T N1
+
+Hume
+
+2025
+
+2026
+
+Figure 1: VLM-backbone VLA systems (2023–2026) organized into three architectural lineages: discrete token output, diffusion head, and dual-system. Arrows indicate architectural similarity only, not dependency or inheritance relationships.
+
+We formalize this decomposition as:
+
+at ∼ π at zsem, zphys
+
+(1)
+
+where zsem = fvlm(ot, l) denotes the semantic representation extracted by the VLM backbone from current observation ot and language instruction l, and zphys denotes physical context—properties such as mass, friction, and contact geometry that are not recoverable from static image-text data. The semantic sufficiency assumption implicit in current VLA architectures is:
+
+π at | zsem, zphys ≈ π(at | zsem)
+
+(2)
+
+We decompose zsem into three constituent representations. Categorical representations zcat encode object identity, category membership, and visual appearance; they are acquired through large-scale image–text contrastive training, in which visual and linguistic signals are aligned via co-occurrence supervision [54, 44]. Relational representations zrel encode spatial configurations, affordance descriptions, and scene-level structure; they are learned through grounding and captioning objectives that map linguistic relational expressions to visual scene layouts [44, 72]. Goal representations zgoal encode task intent, sub-goal decomposition, and success criteria; they are derived from instruction-following and, in recent systems, chain-of-thought supervision over language and image–text pairs [79, 37]. Each component is acquired from static image-text data: visual and linguistic signals are jointly available, but action consequences are absent from the supervision signal throughout [54, 44].
+This shared supervision structure defines the information boundary of zsem. Physical properties such as mass distribution, surface friction, and contact geometry are not recoverable from static visual observation: two objects may be visually indistinguishable while differing substantially in physical behavior [6, 40]. These properties are only revealed through interaction—through the consequences of applied force, the resistance of contact, and the dynamics of motion [1, 53]. Because the training signal for fvlm contains no such interaction outcomes, zsem cannot, in principle, encode zphys regardless of model scale or data volume [26, 38]. The semantic sufficiency assumption in Equation 2 therefore does not follow from the properties of VLM pretraining: it asserts that zsem is sufficient for physical action decisions, but the supervision structure of fvlm excludes precisely the signal that would be required for this sufficiency to hold.
+Unlike zsem, which is explicitly computed via VLM encoding, current architectures provide no corresponding mechanism for acquiring zphys, making 2 both structurally unjustified and empirically untested.
+
+3
+
+Despite substantial variation in output representations—discrete token policies trading action fidelity for semantic expressiveness [70, 21, 7, 47, 4, 20], diffusion-based policies improving action continuity and precision [77, 78, 13, 42, 43, 19, 48], and dual-system architectures decoupling reasoning latency from execution speed [15, 58, 45]—the architectural core remains unchanged: all systems rely on a pretrained VLM backbone, with modifications concentrated in output heads and input modalities [37, 36, 11]. These design choices address execution limitations without isolating whether semantic representations are sufficient to support physical action decisions.
+Nevertheless, capability claims have escalated alongside this unchanged core. Early work positioned VLMs as transferring web-scale semantic knowledge to robot control [79]. Subsequent systems extended this to cross-task and cross-embodiment generalization [37, 36], while later work attributed semantic reasoning and problem-solving capabilities to VLM backbones in support of complex manipulation [11]. More recent systems further suggest that scaling VLM backbones improves spatial reasoning and physical adaptation [10]. Across these claims, a component that has not fundamentally changed has been credited with progressively stronger capabilities.
+Underlying this trajectory is a common but unverified condition: that improvements in semantic representations learned through VLM pretraining translate into robustness of physical action decisions. This condition is not necessarily stated explicitly in the cited works, but is required for their capability claims to hold under a causal interpretation. We refer to its progressive reinforcement across systems as narrative drift.
+
+Table 1: Narrative drift in VLM-backbone VLA research: the architectural core and verification methodology remain unchanged while capability claims escalate continuously. These systems are selected as representative high-impact examples rather than an exhaustive survey.
+
+System
+RT-2 [79]
+OpenVLA [37] OpenVLAOFT [36] π0 [11]
+GR00T N1 [10]
+
+Primary Architectural Changes
+Fine-tune PaLI-X/PaLM-E to output action tokens
+Open-source VLM backbone; adjusted tokenization Parallel decoding; multi-resolution input Flow matching action expert
+Dual-system architecture with proprioception
+
+Capability Claim
+Web-scale knowledge transfers to robot control
+Robust and generalizable visuomotor policies Semantic generalization supports physical execution Inherits reasoning and problemsolving ability Stronger VLM improves adaptation in physical tasks
+
+Assumption required for this claim to hold
+Semantic knowledge is sufficient to guide physical action selection
+Semantic generalization entails visuomotor generalization
+Semantic competence transfers to execution via fine-tuning
+Semantic reasoning transfers to manipulation competence
+VLM strength reflects physical world modeling capability
+
+This pattern extends beyond the systems in Table 1 [66, 70, 4, 46]. Across a broader range of VLM-backbone VLA works, improvements in task success rate—measured under largely unchanged evaluation protocols—are interpreted as evidence of increasingly strong physical execution generalization [59, 75, 63, 65, 73]. However, as introduced in Section 1, task success rate does not distinguish between semantic and physical contributions. Consequently, the same observed improvements are consistent with multiple explanations, including genuine physical generalization, improved semantic matching, or increased overlap between training and test distributions.
+The consequence is not that the assumption is untestable in principle, but that it is not independently identifiable within the current methodological framework. Existing evidence does not permit attribution of performance gains to semantic or physical capabilities separately, and therefore cannot establish whether semantic representations are sufficient to support physical action decisions.
+
+3 The Structural Argument
+3.1 Semantic and Physical Representations Are Structurally Distinct
+The assumption identified in Section 2—that semantic representations are sufficient to support physical action decisions—depends on whether the two representation types impose equivalent learning requirements. We argue that they do not.
+
+4
+
+Semantic representations encode what objects are and what instructions mean, including object identity, category membership, and relational descriptions grounded in language and visual appearance [54, 44, 72]. Such representations can be acquired from large-scale image-text co-occurrence, where visual and linguistic signals are jointly available.
+Physical representations encode how objects behave under interaction, including properties such as mass distribution, friction, contact geometry, and dynamic response to force [9]. These properties are not recoverable from static image-text data, as the consequences of action are absent from the training signal [6, 26]. Increasing data scale does not resolve this limitation: supervision over physical state transitions is not present in the modality.
+The two representation types therefore differ in their supervision requirements. Semantic representations can be learned from passive observation, whereas physical representations require interaction-based feedback over action outcomes [53, 1]. A model trained exclusively on the former cannot be assumed to have acquired the latter.
+This distinction implies that semantic generalization and physical execution generalization can dissociate. A system may correctly interpret the task while failing to execute it under novel physical conditions [79, 36]. The assumption that semantic representations are sufficient for physical action decisions therefore does not follow from the properties of the training data or learning objective.
+3.2 Three Levels of Non-Identifiability in Current Evaluation
+Current benchmarks fail to support causal attribution at three distinct levels. These levels are not independent: each deeper level is revealed only when the shallower one is examined, and together they indicate that the evaluation gap is more fundamental than it first appears.
+Level 1: Attribution Non-Identifiability. Current robot manipulation benchmarks evaluate performance primarily through task success rate [37, 50, 62, 10]. This metric does not distinguish between semantic and physical sources of success or failure. Successful task completion may result from correct semantic grounding, physically robust execution, or overlap between training and test distributions. Failures may arise from incorrect task interpretation or from inability to execute under novel physical conditions.
+Staged evaluation protocols improve localization by decomposing tasks into phases [36, 52], but do not resolve this ambiguity. A failure at a specific stage remains consistent with both semantic misinterpretation and physical execution error. These protocols identify where failure occurs, but not why.
+A critical limitation is that current benchmarks do not provide controlled interventions that invalidate semantic matching while preserving task semantics. As a result, policies that rely on distributional alignment between instruction–observation pairs and action patterns cannot be distinguished from those that model underlying physical dynamics. Attribution of performance to semantic matching or physical generalization is therefore fundamentally underdetermined.
+However, even if attribution could be resolved, a deeper question remains: where does the observed generalization come from?
+Level 2: Source Non-Identifiability. Even if attribution were resolved, the source of generalization would remain unidentifiable. Performance gains may arise from at least three sources—semantic priors from VLM pretraining, physical understanding from robot interaction data, or their interaction—yet current evaluation protocols control for none of them.
+A concrete manifestation appears in the definition of out-of-distribution (OOD). OOD status is typically defined relative to robot demonstration data, not VLM pretraining data [79, 37, 11]. Objects novel to the robot dataset may be familiar from pretraining, introducing an uncontrolled confound. Combined with task-specific fine-tuning, this creates a mismatch between nominal and actual sources of generalization.
+As a result, observed improvements remain ambiguous in origin. Gains attributed to physical generalization may instead reflect prior semantic exposure or distributional overlap. Because current evaluation protocols neither control pretraining exposure nor isolate interaction-driven learning, they do not permit disentangling these sources.
+5
+
+This leads to source non-identifiability: the origin of generalization cannot be determined from observed outcomes.
+Level 3: Representation-Level Non-Identifiability. Current benchmarks implicitly assume that all instructions are valid and executable within the agent’s physical context. Under this assumption, evaluation reduces to conditional action generation given a feasible task, and does not test whether the task itself should or can be executed.
+This obscures the fate of capabilities inherited from pretrained vision-language backbones. Prior work shows that such models exhibit forms of constraint-aware reasoning and feasibility judgment in embodied settings—including scoring action affordances [2], replanning after failures [30], and recognizing infeasible instructions [74]. However, it remains unclear whether these capabilities are preserved, degraded, or ignored during fine-tuning into action policies. This concern is supported by evidence that fine-tuning can overwrite pretrained representations [76, 68, 22, 29].
+Because current benchmarks exclude infeasible, unsafe, or contradictory instructions, they provide no signal to detect the presence or absence of such capabilities. As a result, representation-level changes during policy learning remain unobservable.
+This leads to representation-level non-identifiability: the effect of training on pre-existing capabilities cannot be measured, and potential degradation remains undetected.
+Taken together, these three levels show that non-identifiability is not merely a measurement limitation but a structural property of the current evaluation paradigm. Attribution cannot be resolved at the level of outcomes, the source of generalization cannot be isolated across training signals, and changes in underlying representations cannot be observed during learning.
+As a result, multiple latent factors—including semantic grounding, physical reasoning, and representation-level capabilities—are collapsed into a single observable metric. This prevents causal attribution and renders the central assumption of this paper—that semantic generalization is sufficient for physical execution—empirically untestable under current evaluation protocols.
+3.3 Empirical Signatures of Underdetermined Attribution
+The three levels of non-identifiability identified above are not merely theoretical. If evaluation systematically cannot distinguish attribution, source, and representation-level effects, the literature should exhibit a predictable empirical signature: physical execution failures are observed but attributed to engineering factors, while the alternative explanation—failure of the semantic sufficiency assumption—is not evaluated.
+Table 2 illustrates this pattern across representative systems. In each case, observed limitations are consistent with failure of physical execution under novel conditions, yet are attributed to data coverage, model scale, or training procedure [79, 37, 36, 11]. These attributions are plausible given the available evidence, but not uniquely supported by it. This pattern admits two explanations. The first is that independent research groups consistently overlook the same alternative interpretation. The second is structural: if evaluation does not provide signals to distinguish semantic and physical failure, alternative explanations cannot be formulated or tested. The observed consistency of engineering attribution across systems supports the latter.
+Under this interpretation, attribution in the literature reflects the limits of the evaluation framework rather than definitive evidence about underlying causes.
+4 Systemic Consequences
+The semantic sufficiency assumption, when combined with an evaluation framework that does not provide identifiable signals for detecting its failure, produces three systemic consequences that compound over time.
+Misallocation of Research Resources. When evaluation cannot attribute performance gains to their source, research investment decisions are made without reliable diagnostic signals [57, 35]. The field cannot determine whether observed improvements reflect advances in semantic generalization,
+6
+
+Table 2: Physical execution limitations across representative VLM-backbone VLA systems, and their attributed causes. In each case, an engineering attribution was adopted; the alternative—that the semantic sufficiency assumption has failed—was not considered.
+
+System RT-2 [79]
+RT-2 [79]
+OpenVLAOFT [36]
+π0 [11]
+
+Observed limitation
+Model correctly identifies and approaches target objects but fails to control physical dynamics: pen rolling, banana center of mass displacement [App. G]. Manually identified through qualitative case analysis outside the primary evaluation protocol
+Larger VLM backbone parameters do not produce higher task success rates across evaluation conditions
+Policy relies on spurious visual correlations in multi-camera deployment; language grounding degrades despite unchanged task semantics [§IV.C]. Distractor objects cause substantial success rate collapse while target localization remains intact
+Task completion is unreliable across conditions; recovery from errors is fragile [§VII]. Success rate varies substantially across tasks with no uniform failure pattern
+
+Author’s attribution Physical skills are bounded by the robot training data distribution; more robot demonstration data needed
+Model scale is not the bottleneck; data quality matters more than parameter count Spurious correlations in training data; insufficient data coverage
+Data recipe problem; higher quality or more diverse data needed
+
+physical execution generalization, or distributional overlap—yet resource allocation depends precisely on this distinction [17, 24].
+Investment in larger VLM backbones is justified if semantic capability transfers to physical execution; it is unjustified if the transfer does not occur and gains instead reflect distributional overlap. Likewise, investment in data collection depends on whether the bottleneck lies in semantic coverage or physical interaction diversity—two distinct requirements that existing benchmarks do not separately measure [32, 18, 52, 51].
+This issue connects to a broader principle in the study of scaling. It is often argued that increasing scale alone is sufficient to achieve higher capability, with different methods primarily affecting efficiency rather than qualitative behavior [27, 33, 31]. Under this view, evaluation plays a critical role: it determines whether scaling is applied to the correct underlying mechanism. If evaluation cannot distinguish between competing explanations of performance, scaling may amplify improvements along directions that do not correspond to the intended capability.
+False Confidence in Deployment Readiness. Benchmark performance is the primary basis on which VLA systems are assessed for deployment readiness [79, 49]. If benchmark success rates reflect distributional overlap rather than physical execution generalization, this confidence may not be warranted by the available evidence. OpenVLA-OFT reports near-perfect success rates on constrained tabletop tasks while the same system fails substantially when task-irrelevant distractor objects are introduced [36]: a perturbation that does not alter task semantics produces significant performance degradation.
+This gap between benchmark performance and robustness to minimal perturbations is not reliably captured by current evaluation frameworks. A system can accumulate a strong benchmark record while its physical execution generalization remains unverified. In deployment contexts where physical configurations cannot be controlled, failure modes that benchmarks cannot detect become consequential: systems that succeed under training distribution overlap may fail when that overlap disappears, without prior evaluation signals that predict or characterize such failures.
+Persistent Misdiagnosis of Architectural Failures. The attribution pattern identified in Section 3.3—physical execution limitations consistently attributed to engineering factors—is not merely a historical observation. It reflects a structural limitation of a field that lacks reliable tools to distinguish architectural causes from data or optimization effects [17].
+When failures are attributed to insufficient data coverage, the proposed solution is more data. When failures are attributed to model capacity, the solution is larger models. When failures are attributed to action parameterization, the solution is alternative output representations. Each of these responses is reasonable under an engineering diagnosis. However, if the underlying cause is an unverified architectural assumption, these responses may leave the root issue unaddressed while continuing to consume resources.
+7
+
+The cost of persistent misdiagnosis is not limited to inefficiency. It produces a compounding divergence between the problems the field believes it is solving and the problems that must be solved for robust physical deployment. Systems may exhibit consistent improvements in benchmark performance while relying on mechanisms that do not generalize under physically novel conditions [24]. Without evaluation signals that support causal attribution, progress becomes difficult to distinguish from the accumulation of distributional alignment.
+5 Forward Path
+The consequences identified in Section 4 arise from a single diagnostic limitation: the absence of identifiable signals for separately measuring semantic generalization and physical execution generalization. Addressing this limitation does not primarily require new model architectures; it requires evaluation designs that treat these two capabilities as distinct variables.
+Evaluation Reform. Separating semantic and physical generalization requires experimental designs that independently manipulate semantic content and physical configuration. Two complementary interventions enable this separation.
+To evaluate semantic generalization, physical conditions are held constant while semantic content varies. This can be achieved by altering linguistic descriptions of the same scene, or by introducing objects with visually similar appearance but different task-relevant properties.
+To evaluate physical execution generalization, semantic content is held constant while physical configuration varies. The same instruction and object category are presented under novel poses, surface conditions, or dynamics, requiring different action strategies for successful execution.
+The key requirement is controlled variation: one factor must be held fixed while the other is systematically perturbed. Increasing dataset scale or benchmark diversity alone does not resolve the attribution problem if these factors remain entangled.
+A particularly tractable instantiation of this design uses object properties that are linguistically expressible but not visually recoverable—such as mass, friction, or material composition [71, 25, 40]. A model that correctly grounds expressions such as “the heavier cup” or “the slippery object” provides evidence of semantic generalization that cannot be reduced to visual pattern matching [24, 12].
+Evaluating whether this grounded representation leads to physically correct manipulation establishes a conditional test: semantic grounding is verified independently, and physical execution is evaluated given correct grounding [1]. This design introduces two observable outcomes— semantic correctness and physical success—rather than collapsing both into a single task success signal. Importantly, this protocol does not require access to model internals; it relies only on observable behavior under controlled interventions [8].
+In addition, out-of-distribution status should be defined relative to all training data sources, including VLM pretraining corpora, rather than only robot demonstration datasets [79, 37, 49]. Without this distinction, nominally novel objects may remain familiar to the model, preventing attribution of performance gains to physical generalization.
+Reorienting the Role of VLM Backbones. Recent work has highlighted a gap between high-level semantic reasoning and the requirements of physical execution, emphasizing the importance of threedimensional structure, contact, and spatial relations in manipulation [16, 64, 14]. However, under current evaluation protocols, it remains unclear whether observed limitations arise from insufficient physical modeling or from confounding factors such as distributional overlap.
+Evaluation designs that enable attribution have a direct implication for the role of VLM backbones. Once semantic and physical generalization can be measured separately, the contribution of VLM pretraining to each can be empirically assessed rather than assumed. This may reveal that VLM backbones provide strong semantic interfaces—grounding open-vocabulary instructions to visual targets [44, 54, 3]—while physical execution generalization depends on mechanisms not captured by passive image-text training [39, 38].
+This perspective suggests a shift in architectural framing. Rather than treating VLM backbones as the foundation from which physical capability is expected to emerge, systems can be designed with
+8
+
+explicitly separated components: a semantic interface for grounding language and perception, and a physical module for modeling action-conditioned dynamics [67, 61, 55]. On such an architecture, the semantic sufficiency assumption need not be adopted from the outset, because the two components are designed to serve distinct functions independently [8].
+This separation has precedent in developmental cognition. Infants exhibit sensitivity to physical properties such as object permanence and causal interaction prior to acquiring language [38, 41]. Physical reasoning, on this account, develops as a distinct representational capacity rather than as a derivative of semantic knowledge.
+This reframing does not prescribe a specific architecture. It shifts the design objective: from adapting semantic models to perform physical execution, to constructing systems in which physical execution generalization is measurable, attributable, and improvable independently of semantic grounding. Under such conditions, the contribution of VLM-based representations to physical performance becomes an empirical question rather than an assumption.
+6 Conclusion
+This paper examined a foundational but unverified assumption underlying recent VLM-backbone VLA research: that semantic generalization learned from internet-scale data transfers to physical execution generalization in embodied systems. We showed that, under current evaluation protocols, this assumption is not independently identifiable. Task success rate—despite being the dominant metric—does not distinguish between semantic grounding and physical execution, and therefore does not support causal attribution of performance gains.
+Reinterpreted through this lens, the steady improvement of benchmark results across VLA systems does not, by itself, establish progress in physical reasoning. Because semantic and physical factors remain entangled in both training and evaluation, the same empirical outcomes are consistent with multiple competing explanations, including improved semantic matching and distributional overlap. What appears as evidence of increasingly general physical capability may instead reflect the limits of what current benchmarks are able to measure.
+The implication is methodological rather than architectural. Progress on physical execution generalization requires evaluation designs that introduce controlled variation, allowing semantic and physical contributions to be measured separately. This shift also reframes system design: instead of assuming that physical competence emerges from semantic representations, architectures can be structured to treat physical state modeling and semantic grounding as distinct components from the outset, enabling their roles to be empirically assessed rather than inferred.
+More broadly, this analysis highlights a general principle for embodied AI: when evaluation does not provide identifiable signals for key capabilities, implicit assumptions can become entrenched as de facto premises of a field. This limitation has implications beyond attribution: it also constrains which capabilities are expressed and measured. Pretrained VLMs exhibit abilities—feasibility judgment, constraint awareness, context-sensitive refusal—that fine-tuning into action policies may degrade, yet task completion benchmarks provide no signal to detect such loss. Progress along the task completion axis alone does not guarantee movement toward general embodied intelligence. In this context, our contribution is not to refute the semantic sufficiency assumption, but to show that it has not yet been tested in a way that would allow it to be confirmed or rejected. Establishing such tests is a necessary step toward grounding claims of generalization in mechanisms that can be measured, attributed, and ultimately understood.
+References
+[1] Pulkit Agrawal, Ashvin V Nair, Pieter Abbeel, Jitendra Malik, and Sergey Levine. Learning to poke by poking: Experiential learning of intuitive physics. Advances in neural information processing systems, 29, 2016.
+[2] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar Cortes, Byron David, Chelsea Finn, Chuyuan Fu, Keerthana Gopalakrishnan, Karol Hausman, et al. Do as i can, not as i say: Grounding language in robotic affordances. arXiv preprint arXiv:2204.01691, 2022.
+9
+
+[3] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar Cortes, Byron David, Chelsea Finn, Chuyuan Fu, Keerthana Gopalakrishnan, Karol Hausman, Alex Herzog, Daniel Ho, Jasmine Hsu, Julian Ibarz, Brian Ichter, Alex Irpan, Eric Jang, Rosario Jauregui Ruano, Kyle Jeffrey, Sally Jesmonth, Nikhil Joshi, Ryan Julian, Dmitry Kalashnikov, Yuheng Kuang, Kuang-Huei Lee, Sergey Levine, Yao Lu, Linda Luu, Carolina Parada, Peter Pastor, Jornell Quiambao, Kanishka Rao, Jarek Rettinghouse, Diego Reyes, Pierre Sermanet, Nicolas Sievers, Clayton Tan, Alexander Toshev, Vincent Vanhoucke, Fei Xia, Ted Xiao, Peng Xu, Sichun Xu, Mengyuan Yan, and Andy Zeng. Do as i can and not as i say: Grounding language in robotic affordances. In arXiv preprint arXiv:2204.01691, 2022.
+[4] Hidehisa Arai, Keita Miwa, Kento Sasaki, Kohei Watanabe, Yu Yamaguchi, Shunsuke Aoki, and Issei Yamamoto. Covla: Comprehensive vision-language-action dataset for autonomous driving. In 2025 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pages 1933–1943. IEEE, 2025.
+[5] Brenna D Argall, Sonia Chernova, Manuela Veloso, and Brett Browning. A survey of robot learning from demonstration. Robotics and autonomous systems, 57(5):469–483, 2009.
+[6] Peter W Battaglia, Jessica B Hamrick, and Joshua B Tenenbaum. Simulation as an engine of physical scene understanding. Proceedings of the national academy of sciences, 110(45):18327– 18332, 2013.
+[7] Suneel Belkhale, Tianli Ding, Ted Xiao, Pierre Sermanet, Quon Vuong, Jonathan Tompson, Yevgen Chebotar, Debidatta Dwibedi, and Dorsa Sadigh. Rt-h: Action hierarchies using language. arXiv preprint arXiv:2403.01823, 2024.
+[8] Emily M. Bender, Timnit Gebru, Angelina McMillan-Major, and Shmargaret Shmitchell. On the dangers of stochastic parrots: Can language models be too big? In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency, FAccT ’21, page 610–623, New York, NY, USA, 2021. Association for Computing Machinery.
+[9] Aude Billard and Danica Kragic. Trends and challenges in robot manipulation. Science, 364(6446):eaat8414, 2019.
+[10] Johan Bjorck, Fernando Castañeda, Nikita Cherniadev, Xingye Da, Runyu Ding, Linxi Fan, Yu Fang, Dieter Fox, Fengyuan Hu, Spencer Huang, et al. Gr00t n1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025.
+[11] Kevin Black, Noah Brown, Danny Driess, Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, Lachy Groom, Karol Hausman, Brian Ichter, et al. pi_0: A vision-language-action flow model for general robot control. arXiv preprint arXiv:2410.24164, 2024.
+[12] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in neural information processing systems, 33:1877–1901, 2020.
+[13] Qingwen Bu, Jisong Cai, Li Chen, Xiuqi Cui, Yan Ding, Siyuan Feng, Shenyuan Gao, Xindong He, Xuan Hu, Xu Huang, et al. Agibot world colosseo: A large-scale manipulation platform for scalable and intelligent embodied systems. arXiv preprint arXiv:2503.06669, 2025.
+[14] Wenxiao Cai, Iaroslav Ponomarenko, Jianhao Yuan, Xiaoqi Li, Wankou Yang, Hao Dong, and Bo Zhao. Spatialbot: Precise spatial understanding with vision language models. In 2025 IEEE International Conference on Robotics and Automation (ICRA), pages 9490–9498. IEEE, 2025.
+[15] Hao Chen, Jiaming Liu, Chenyang Gu, Zhuoyang Liu, Renrui Zhang, Xiaoqi Li, Xiao He, Yandong Guo, Chi-Wing Fu, Shanghang Zhang, et al. Fast-in-slow: A dual-system foundation model unifying fast manipulation within slow reasoning. arXiv preprint arXiv:2506.01953, 2025.
+[16] Kai Chen, Chengkun Li, Chang Tu, Jiahui Pan, Yiyao Ma, Wei Chen, Zhongxiang Zhou, Xuecheng Xu, Stephen James, Chi-Wing Fu, Rong Xiong, Pieter Abbeel, Yun-Hui Liu, and Qi Dou. A retrieval-augmented framework enabling vlm spatial awareness for object-centric robot manipulation. Science Robotics, 11(113):eaea2092, 2026.
+10
+
+[17] Alexander D’Amour, Katherine Heller, Dan Moldovan, Ben Adlam, Babak Alipanahi, Alex Beutel, Christina Chen, Jonathan Deaton, Jacob Eisenstein, Matthew D Hoffman, et al. Underspecification presents challenges for credibility in modern machine learning. Journal of Machine Learning Research, 23(226):1–61, 2022.
+[18] Sudeep Dasari, Frederik Ebert, Stephen Tian, Suraj Nair, Bernadette Bucher, Karl Schmeckpeper, Siddharth Singh, Sergey Levine, and Chelsea Finn. Robonet: Large-scale multi-robot learning. arXiv preprint arXiv:1910.11215, 2019.
+[19] Shengliang Deng, Mi Yan, Songlin Wei, Haixin Ma, Yuxin Yang, Jiayi Chen, Zhiqi Zhang, Taoyu Yang, Xuheng Zhang, Wenhao Zhang, et al. Graspvla: a grasping foundation model pre-trained on billion-scale synthetic action data. arXiv preprint arXiv:2505.03233, 2025.
+[20] Pengxiang Ding, Han Zhao, Wenjie Zhang, Wenxuan Song, Min Zhang, Siteng Huang, Ningxi Yang, and Donglin Wang. Quar-vla: Vision-language-action model for quadruped robots. In European Conference on Computer Vision, pages 352–367. Springer, 2024.
+[21] Zhekai Duan, Yuan Zhang, Shikai Geng, Gaowen Liu, Joschka Boedecker, and Chris Xiaoxuan Lu. Fast ecot: Efficient embodied chain-of-thought via thoughts reuse. arXiv preprint arXiv:2506.07639, 2025.
+[22] Senyu Fei, Siyin Wang, Junhao Shi, Zihao Dai, Jikun Cai, Pengfang Qian, Li Ji, Xinzhe He, Shiduo Zhang, Zhaoye Fei, et al. Libero-plus: In-depth robustness analysis of vision-languageaction models. arXiv preprint arXiv:2510.13626, 2025.
+[23] Roya Firoozi, Johnathan Tucker, Stephen Tian, Anirudha Majumdar, Jiankai Sun, Weiyu Liu, Yuke Zhu, Shuran Song, Ashish Kapoor, Karol Hausman, et al. Foundation models in robotics: Applications, challenges, and the future. The International Journal of Robotics Research, 44(5):701–739, 2025.
+[24] Robert Geirhos, Jörn-Henrik Jacobsen, Claudio Michaelis, Richard Zemel, Wieland Brendel, Matthias Bethge, and Felix A Wichmann. Shortcut learning in deep neural networks. Nature Machine Intelligence, 2(11):665–673, 2020.
+[25] James J Gibson. The perception of the visual world. 1950.
+[26] James J Gibson. The ecological approach to visual perception: classic edition. Psychology press, 2014.
+[27] Joel Hestness, Sharan Narang, Newsha Ardalani, Gregory Diamos, Heewoo Jun, Hassan Kianinejad, Md Mostofa Ali Patwary, Yang Yang, and Yanqi Zhou. Deep learning scaling is predictable, empirically. arXiv preprint arXiv:1712.00409, 2017.
+[28] Yafei Hu, Quanting Xie, Vidhi Jain, Jonathan Francis, Jay Patrikar, Nikhil Keetha, Seungchan Kim, Yaqi Xie, Tianyi Zhang, Hao-Shu Fang, et al. Toward general-purpose robots via foundation models: A survey and meta-analysis. arXiv preprint arXiv:2312.08782, 2023.
+[29] Suning Huang, Jiaqi Shao, Ke Wang, Qianzhong Chen, Jiankai Sun, Yanjiang Guo, Mac Schwager, and Jeannette Bohg. Breaking lock-in: Preserving steerability under low-data vla post-training. arXiv preprint arXiv:2604.23121, 2026.
+[30] Wenlong Huang, Fei Xia, Ted Xiao, Harris Chan, Jacky Liang, Pete Florence, Andy Zeng, Jonathan Tompson, Igor Mordatch, Yevgen Chebotar, et al. Inner monologue: Embodied reasoning through planning with language models. arXiv preprint arXiv:2207.05608, 2022.
+[31] Minyoung Huh, Brian Cheung, Tongzhou Wang, and Phillip Isola. The platonic representation hypothesis. arXiv preprint arXiv:2405.07987, 2024.
+[32] Dmitry Kalashnikov, Alex Irpan, Peter Pastor, Julian Ibarz, Alexander Herzog, Eric Jang, Deirdre Quillen, Ethan Holly, Mrinal Kalakrishnan, Vincent Vanhoucke, et al. Scalable deep reinforcement learning for vision-based robotic manipulation. In Conference on robot learning, pages 651–673. PMLR, 2018.
+11
+
+[33] Jared Kaplan, Sam McCandlish, Tom Henighan, Tom B Brown, Benjamin Chess, Rewon Child, Scott Gray, Alec Radford, Jeffrey Wu, and Dario Amodei. Scaling laws for neural language models. arXiv preprint arXiv:2001.08361, 2020.
+[34] Kento Kawaharazuka, Jihoon Oh, Jun Yamada, Ingmar Posner, and Yuke Zhu. Vision-languageaction models for robotics: A review towards real-world applications. IEEE Access, 2025.
+[35] Douwe Kiela, Max Bartolo, Yixin Nie, Divyansh Kaushik, Atticus Geiger, Zhengxuan Wu, Bertie Vidgen, Grusha Prasad, Amanpreet Singh, Pratik Ringshia, et al. Dynabench: Rethinking benchmarking in nlp. In Proceedings of the 2021 conference of the North American chapter of the Association for Computational Linguistics: human language technologies, pages 4110–4124, 2021.
+[36] Moo Jin Kim, Chelsea Finn, and Percy Liang. Fine-tuning vision-language-action models: Optimizing speed and success. arXiv preprint arXiv:2502.19645, 2025.
+[37] Moo Jin Kim, Karl Pertsch, Siddharth Karamcheti, Ted Xiao, Ashwin Balakrishna, Suraj Nair, Rafael Rafailov, Ethan Foster, Grace Lam, Pannag Sanketi, et al. Openvla: An open-source vision-language-action model. arXiv preprint arXiv:2406.09246, 2024.
+[38] Brenden M Lake, Tomer D Ullman, Joshua B Tenenbaum, and Samuel J Gershman. Building machines that learn and think like people. Behavioral and brain sciences, 40:e253, 2017.
+[39] Yann LeCun et al. A path towards autonomous machine intelligence version 0.9. 2, 2022-06-27. Open Review, 62(1):1–62, 2022.
+[40] Adam Lerer, Sam Gross, and Rob Fergus. Learning physical intuition of block towers by example. In International conference on machine learning, pages 430–438. PMLR, 2016.
+[41] Alan M Leslie and Stephanie Keeble. Do six-month-old infants perceive causality? Cognition, 25(3):265–288, 1987.
+[42] Chengmeng Li, Junjie Wen, Yaxin Peng, Yan Peng, and Yichen Zhu. Pointvla: Injecting the 3d world into vision-language-action models. IEEE Robotics and Automation Letters, 11(3):2506–2513, 2026.
+[43] Hao Li, Shuai Yang, Yilun Chen, Xinyi Chen, Xiaoda Yang, Yang Tian, Hanqing Wang, Tai Wang, Dahua Lin, Feng Zhao, et al. Cronusvla: Towards efficient and robust manipulation via multi-frame vision-language-action modeling. arXiv preprint arXiv:2506.19816, 2025.
+[44] Junnan Li, Dongxu Li, Silvio Savarese, and Steven Hoi. Blip-2: Bootstrapping language-image pre-training with frozen image encoders and large language models. In International conference on machine learning, pages 19730–19742. PMLR, 2023.
+[45] Meng Li, Zhen Zhao, Zhengping Che, Fei Liao, Kun Wu, Zhiyuan Xu, Pei Ren, Zhao Jin, Ning Liu, and Jian Tang. Switchvla: Execution-aware task switching for vision-language-action models. arXiv preprint arXiv:2506.03574, 2025.
+[46] Wei Li, Renshan Zhang, Rui Shao, Zhijian Fang, Kaiwen Zhou, Zhuotao Tian, and Liqiang Nie. Semanticvla: Semantic-aligned sparsification and enhancement for efficient robotic manipulation. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 40, pages 18397–18405, 2026.
+[47] Xiang Li, Cristina Mata, Jongwoo Park, Kumara Kahatapitiya, Yoo Sung Jang, Jinghuan Shang, Kanchana Ranasinghe, Ryan Burgert, Mu Cai, Yong Jae Lee, et al. Llara: Supercharging robot learning data for vision-language policy. arXiv preprint arXiv:2406.20095, 2024.
+[48] Fanqi Lin, Ruiqian Nai, Yingdong Hu, Jiacheng You, Junming Zhao, and Yang Gao. Onetwovla: A unified vision-language-action model with adaptive reasoning. arXiv preprint arXiv:2505.11917, 2025.
+[49] Bo Liu, Yifeng Zhu, Chongkai Gao, Yihao Feng, Qiang Liu, Yuke Zhu, and Peter Stone. Libero: Benchmarking knowledge transfer for lifelong robot learning. Advances in Neural Information Processing Systems, 36:44776–44791, 2023.
+12
+
+[50] Hanqing Liu, Shouwei Ruan, Jiahuan Long, Junqi Wu, Jiacheng Hou, Huili Tang, Tingsong Jiang, Weien Zhou, and Wen Yao. Eva-vla: Evaluating vision-language-action models’ robustness under real-world physical variations. arXiv preprint arXiv:2509.18953, 2025.
+[51] Oier Mees, Lukas Hermann, Erick Rosete-Beas, and Wolfram Burgard. Calvin: A benchmark for language-conditioned policy learning for long-horizon robot manipulation tasks. IEEE Robotics and Automation Letters, 7(3):7327–7334, 2022.
+[52] Soroush Nasiriany, Abhiram Maddukuri, Lance Zhang, Adeet Parikh, Aaron Lo, Abhishek Joshi, Ajay Mandlekar, and Yuke Zhu. Robocasa: Large-scale simulation of everyday tasks for generalist robots. arXiv preprint arXiv:2406.02523, 2024.
+[53] Lerrel Pinto and Abhinav Gupta. Supersizing self-supervision: Learning to grasp from 50k tries and 700 robot hours. In 2016 IEEE international conference on robotics and automation (ICRA), pages 3406–3413. IEEE, 2016.
+[54] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al. Learning transferable visual models from natural language supervision. In International conference on machine learning, pages 8748–8763. PmLR, 2021.
+[55] Maithra Raghu, Chiyuan Zhang, Jon Kleinberg, and Samy Bengio. Transfusion: Understanding transfer learning for medical imaging. Advances in neural information processing systems, 32, 2019.
+[56] Harish Ravichandar, Athanasios S Polydoros, Sonia Chernova, and Aude Billard. Recent advances in robot learning from demonstration. Annual review of control, robotics, and autonomous systems, 3(1):297–330, 2020.
+[57] David Sculley, Gary Holt, Daniel Golovin, Eugene Davydov, Todd Phillips, Dietmar Ebner, Vinay Chaudhary, Michael Young, Jean-Francois Crespo, and Dan Dennison. Hidden technical debt in machine learning systems. Advances in neural information processing systems, 28, 2015.
+[58] Haoming Song, Delin Qu, Yuanqi Yao, Qizhi Chen, Qi Lv, Yiwen Tang, Modi Shi, Guanghui Ren, Maoqing Yao, Bin Zhao, et al. Hume: Introducing system-2 thinking in visual-languageaction model. arXiv preprint arXiv:2505.21432, 2025.
+[59] Wenxuan Song, Ziyang Zhou, Han Zhao, Jiayi Chen, Pengxiang Ding, Haodong Yan, Yuxin Huang, Feilong Tang, Donglin Wang, and Haoang Li. Reconvla: Reconstructive visionlanguage-action model as effective robot perceiver. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 40, pages 18549–18557, 2026.
+[60] Richard S Sutton, Andrew G Barto, et al. Reinforcement learning: An introduction, volume 1. MIT press Cambridge, 1998.
+[61] Alex Tamkin, Miles Brundage, Jack Clark, and Deep Ganguli. Understanding the capabilities, limitations, and societal impact of large language models. arXiv preprint arXiv:2102.02503, 2021.
+[62] Haoxuan Wang, Gengyu Zhang, Yan Yan, Ramana Rao Kompella, and Gaowen Liu. Vla knows its limits. arXiv preprint arXiv:2602.21445, 2026.
+[63] Junming Wang. Latentvla: Taming latent space for generalizable and long-horizon bimanual manipulation. Proceedings of the AAAI Conference on Artificial Intelligence, 40(22):18593– 18601, Mar. 2026.
+[64] Renhao Wang, Jiayuan Mao, Joy Hsu, Hang Zhao, Jiajun Wu, and Yang Gao. Programmatically grounded, compositionally generalizable robotic manipulation. arXiv preprint arXiv:2304.13826, 2023.
+[65] Yihao Wang, Pengxiang Ding, Lingxiao Li, Can Cui, Zirui Ge, Xinyang Tong, Wenxuan Song, Han Zhao, Wei Zhao, Pengxu Hou, et al. Vla-adapter: An effective paradigm for tiny-scale vision-language-action model. In Proceedings of the AAAI conference on artificial intelligence, volume 40, pages 18638–18646, 2026.
+13
+
+[66] Junjie Wen, Minjie Zhu, Yichen Zhu, Zhibin Tang, Jinming Li, Zhongyi Zhou, Chengmeng Li, Xiaoyu Liu, Yaxin Peng, Chaomin Shen, et al. Diffusion-vla: Generalizable and interpretable robot foundation model via self-generated reasoning. arXiv preprint arXiv:2412.03293, 2024.
+[67] Jiajun Wu, Ilker Yildirim, Joseph J Lim, Bill Freeman, and Josh Tenenbaum. Galileo: Perceiving physical object properties by integrating a physics engine with deep learning. Advances in neural information processing systems, 28, 2015.
+[68] Yajat Yadav, Zhiyuan Zhou, Andrew Wagenmaker, Karl Pertsch, and Sergey Levine. Robust finetuning of vision-language-action robot policies via parameter merging. arXiv preprint arXiv:2512.08333, 2025.
+[69] Maryam Zare, Parham M Kebria, Abbas Khosravi, and Saeid Nahavandi. A survey of imitation learning: Algorithms, recent developments, and challenges. IEEE Transactions on Cybernetics, 54(12):7173–7186, 2024.
+[70] Michał Zawalski, William Chen, Karl Pertsch, Oier Mees, Chelsea Finn, and Sergey Levine. Robotic control via embodied chain-of-thought reasoning. arXiv preprint arXiv:2407.08693, 2024.
+[71] Rowan Zellers, Yonatan Bisk, Ali Farhadi, and Yejin Choi. From recognition to cognition: Visual commonsense reasoning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, pages 6720–6731, 2019.
+[72] Andy Zeng, Maria Attarian, Brian Ichter, Krzysztof Choromanski, Adrian Wong, Stefan Welker, Federico Tombari, Aveek Purohit, Michael Ryoo, Vikas Sindhwani, et al. Socratic models: Composing zero-shot multimodal reasoning with language. arXiv preprint arXiv:2204.00598, 2022.
+[73] Rongyu Zhang, Menghang Dong, Yuan Zhang, Liang Heng, Xiaowei Chi, Gaole Dai, Li Du, Dan Wang, Yuan Du, and Shanghang Zhang. Mole-vla: Dynamic layer-skipping vision language action model via mixture-of-layers for efficient robot manipulation. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 40, pages 18764–18772, 2026.
+[74] Wenbo Zhang, Zihang Xu, and Hengrui Cai. Recognizing limits: Investigating infeasibility in large language models. arXiv preprint arXiv:2408.05873, 2024.
+[75] Yifan Zhong, Xuchuan Huang, Ruochong Li, Ceyao Zhang, Zhang Chen, Tianrui Guan, Fanlian Zeng, Ka Nam Lui, Yuyao Ye, Yitao Liang, et al. Dexgraspvla: A vision-language-action framework towards general dexterous grasping. In Proceedings of the AAAI Conference on Artificial Intelligence, volume 40, pages 18836–18844, 2026.
+[76] Xueyang Zhou, Yangming Xu, Guiyao Tie, Yongchao Chen, Guowen Zhang, Duanfeng Chu, Pan Zhou, and Lichao Sun. Libero-pro: Towards robust and fair evaluation of vision-languageaction models beyond memorization. arXiv preprint arXiv:2510.03827, 2025.
+[77] Zhongyi Zhou, Yichen Zhu, Minjie Zhu, Junjie Wen, Ning Liu, Zhiyuan Xu, Weibin Meng, Yaxin Peng, Chaomin Shen, Feifei Feng, et al. Chatvla: Unified multimodal understanding and robot control with vision-language-action model. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing, pages 5377–5395, 2025.
+[78] Minjie Zhu, Yichen Zhu, Jinming Li, Zhongyi Zhou, Junjie Wen, Xiaoyu Liu, Chaomin Shen, Yaxin Peng, and Feifei Feng. Objectvla: End-to-end open-world object manipulation without demonstration. arXiv preprint arXiv:2502.19250, 2025.
+[79] Brianna Zitkovich, Tianhe Yu, Sichun Xu, Peng Xu, Ted Xiao, Fei Xia, Jialin Wu, Paul Wohlhart, Stefan Welker, Ayzaan Wahid, et al. Rt-2: Vision-language-action models transfer web knowledge to robotic control. In Conference on Robot Learning, pages 2165–2183. PMLR, 2023.
+14
+
+

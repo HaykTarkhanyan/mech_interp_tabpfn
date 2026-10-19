@@ -1,0 +1,44 @@
+{
+  "id": "2610.20767",
+  "title": "Multi-Dimensional Featurizers Yield Fine-Grained Steering and Data Shaping in Robot Foundation Models",
+  "first_author": "Swann",
+  "year": 2026,
+  "venue": "arXiv preprint (Oct 2026)",
+  "tier": "core",
+  "models": ["MolmoAct2 (quantitative comparison and steering)", "pi0.5 / pi0.5-DROID (phenomenology, data shaping)", "MolmoBot (phenomenology)"],
+  "action_head": "flow/diffusion action expert (pi0.5; MolmoAct2 and MolmoBot as flow-based policies per companion paper 2610.20840); the action-likelihood metric uses teacher-forced log-likelihood of action tokens",
+  "methods": ["block-sparse featurizers (BSFs: each feature a 3-D or larger subspace, group top-k) vs matched TopK SAEs", "Fisher-weighted reconstruction objective (gradient of action log-likelihood)", "~52M unpooled token activations from 45,344 episodes", "greedy minimal feature-set search for steering, measured as fraction of activation-patching effect on held-out scenes", "closed-loop semantic redirection", "feature-based data attribution and loss masking during fine-tuning, vs TRAK influence, difference of means, kNN, random"],
+  "question": "Do multi-dimensional (block-sparse) featurizers capture VLA representations better than SAEs, and do their features enable more precise steering and targeted changes to training data?",
+  "key_findings": [
+    "On MolmoAct2, larger blocks improve held-out reconstruction and action-likelihood preservation at fixed block sparsity; Fisher weighting trades lower R2 for better action fidelity; 16-D blocks have mean stable rank ~5.3 (Fig. 3).",
+    "Across layers, 3-D BSFs give larger per-feature ablation effects on predicted end-effector position and higher single-feature task-variable decodability than SAEs at matched budgets (Fig. 3, figures only).",
+    "Open-loop redirection over 52 held-out scene-instruction comparisons x 6 noise seeds: semantic edits at the L3 noun token need 2.15 BSF blocks (83.8% recovery of the patching effect) vs 3.50 SAE latents (81.9%); visual edits at L7 image tokens need 16-20 BSF blocks vs 36 SAE latents, but SAE transfers better (97.3% vs 84.6-88.3%); geometric edits at the L23 action-readout token need ~1 feature for both (BSF 99.7%, SAE 98.2%) (Fig. 4).",
+    "Closed-loop semantic redirection (3 object pairs x 2 directions x 10 trials): BSF selects the redirected object 100%, grasps 96.7%, completes 93.3% with 2.3 features; SAE 88.3% / 83.3% / 75.0% with 2.5 features (Table 1).",
+    "A failure-recovery feature (F1515, pi0.5 layer 9) flags recovery windows in ~6.5% of DROID episodes; masking the loss on the 1.38% of action tokens overlapping them during fine-tuning increases gripper-reopening time after a forced closure to 12.93 s vs 3.13 s unmodified, 5.74 s TRAK influence, 5.01 s difference of means, 3.45 s kNN, 4.34 s random (Table 2).",
+    "The concept-masked policy still completes unperturbed real pick-and-place in 100% of 20 trials with similar completion time (11.79 vs 12.13 s).",
+    "Authors note BSFs are not uniformly better: SAEs win on some quantitative metrics, and unpooled data and training scale matter as much as block geometry."
+  ],
+  "evidence": {
+    "setting": "both (open-loop steering offline; closed-loop redirection and data-shaping evaluation on robot, the data-shaping test stated as real-world)",
+    "benchmarks": ["DROID (activations and fine-tuning, 73,112 episodes)", "custom two-object redirection scenes (13 object pairs)", "real pick-and-place with induced grasp failures"],
+    "scale": "open-loop: 52 comparisons x 6 noise seeds; closed-loop redirection: 60 trials (20 per pair); data shaping: 15 perturbed trials and 20 unperturbed trials per method (main text elsewhere says five trials per method); one fine-tuning seed per method",
+    "statistics": "partial: mean +/- SEM over 48 episodes for fidelity curves; nested leave-one-episode-out CV for one baseline; no tests or CIs on closed-loop rates",
+    "baselines": "TopK SAEs trained on the same corpus (b=1), activation patching as the steering reference, TRAK/CUPID-style influence, difference of means, kNN, random masking"
+  },
+  "causal_validation": "Yes: feature-subspace patching and fixed-vector edits redirect predicted and executed actions; feature ablation effects on end-effector predictions; training-data masking selected by a feature changes the trained policy's recovery behavior.",
+  "closed_loop": "Yes for semantic redirection and data-shaping evaluation; visual and geometric steering are open-loop only (stated as a limitation).",
+  "limitations_stated": [
+    "Does not explain how features emerge or participate in policy computation.",
+    "Visual and geometric steering evaluated only open-loop; closed-loop versions need tracking of moving image regions.",
+    "BSFs are not uniformly superior to SAEs on all metrics."
+  ],
+  "critique": [
+    "Internal inconsistency in the data-shaping result: Table 2 reports 3.13 s -> 12.93 s with 15 perturbed trials, while the text reports 'five trials per method' and 1.89 s -> 14.25 s ('more than sevenfold'). The qualitative effect survives, but the numbers need checking against the final version.",
+    "Data shaping uses one fine-tuning seed per method and a single behavior (reopening after a forced gripper closure). The large effect versus TRAK is notable, but variance across training runs is unknown.",
+    "Semantic steering edits the L3 noun-token representation toward that of the other noun, which is close to changing the instruction. It works here, whereas pi0.5 and GR00T ignored noun swaps in 2610.06235. This may reflect the two-equal-objects scene design (where language is needed, as 2603.19233 argues) or a MolmoAct2-specific difference.",
+    "The steering search selects features by greedy recovery of a patching effect, so the comparison favors featurizers whose units align with the patching difference. It is a fair comparison of compactness, not of interpretability.",
+    "This is the strongest SAE-family paper in the batch: 52M unpooled tokens, matched SAE baselines, held-out evaluation and a real-robot data-curation test. It also addresses the mean-pooling weakness of 2603.19183 (same first author)."
+  ],
+  "code": "https://github.com/goodfire-ai/robotics_multi_dimensional",
+  "one_line": "Block-sparse featurizers trained on 52M unpooled VLA token activations capture multi-dimensional robot concepts more compactly than SAEs, steer target selection with ~2 features in closed loop, and identify 1.4% of DROID training tokens whose removal specifically suppresses failure-recovery behavior."
+}

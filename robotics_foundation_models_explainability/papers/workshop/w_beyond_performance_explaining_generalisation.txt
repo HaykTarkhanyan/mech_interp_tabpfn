@@ -1,0 +1,1785 @@
+URL: https://journal.hep.com.cn/bir/EN/1223295907161035662
+OpenReview: []
+
+Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation
+-->
+Home
+Journals
+Subscription
+Submission
+Metrics
+Top followed articles on altmetrics
+-->
+Top read articles on mendeley
+Editorial policy
+Open access
+About us
+Sign in
+-->
+Biomimetic Intelligence and Robotics
+About the journal
+Aims & scope
+Cover gallery
+Browse
+Latest issue
+All volumes and issues
+Most accessed
+Most cited
+Authors & reviewers
+Online submisson
+Adv search
+About the journal
+Aims & scope
+Cover gallery
+Browse
+Latest issue
+All volumes and issues
+Most accessed
+Most cited
+Authors & reviewers
+Online submisson
+-->
+Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation
+David Kube
+,
+Simon Hadwiger
+,
+Tobias Meisen
+Biomimetic Intelligence and Robotics
+››
+2025,
+Vol. 5
+››
+Issue (4)
+: 100249
+PDF
+(4150KB)
+-->
+Biomimetic Intelligence and Robotics
+››
+2025,
+Vol. 5
+››
+Issue (4)
+:100249
+DOI:
+10.1016/j.birob.2025.100249
+Research Article
+research-article
+Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation
+David Kube
+a
+,
+b
+,
+*
+,
+Simon Hadwiger
+a
+,
+b
+,
+Tobias Meisen
+b
+Author information
++
+a
+Siemens AG, Nuremberg 90475, Germany
+b
+Bergische Universität Wuppertal, Wuppertal 42119, Germany
+*
+E-mail addresses:
+david.kube@siemens.com
+(D. Kube).
+Show less
+History
++
+Received
+Accepted
+Published Online
+2025-04-03
+2025-06-15
+2026-01-28
+Issue Date
+Revised Date
+2026-01-28
+2025-06-08
+-->
+PDF
+(4150KB)
+-->
+Abstract
+This study investigates the generalisation and explainability challenges of Robotic Foundation Models (RFMs) in industrial applications, using Octo as a representative case study. Motivated by the scarcity of domain-specific data and the need for safe evaluation environments, we adopt a simulation-first approach: instead of transitioning from simulation to real-world scenarios, we aim to adapt real-world-trained RFMs to synthetic, simulated environments — a critical step towards their safe and effective industrial deployment. While Octo promises zero-shot generalisation, our experiments reveal significant performance degradation when applied in simulation, despite minimal task and observation domain shifts. To explain this behaviour, we introduce a modified Grad-CAM technique that enables insight into Octo’s internal reasoning and focus areas. Our results highlight key limitations in Octo’s visual generalisation and language grounding capabilities under distribution shifts. We further identify architectural and benchmarking challenges across the broader RFM landscape. Based on our findings, we propose concrete guidelines for future RFM development, with an emphasis on explainability, modularity, and robust benchmarking — critical enablers for applying RFMs in safety-critical and data-scarce industrial environments.
+Keywords
+Explainability
+/
+Industrial robotics
+/
+Robotic Foundation Models
+/
+Reasoning visualisation
+/
+Zero-shot generalisation
+Cite this article
+BibTeX
+EndNote
+RefWorks
+TxT
+Download citation ▾
+David Kube, Simon Hadwiger, Tobias Meisen.
+Beyond performance: Explaining generalisation failures of Robotic Foundation Models in industrial simulation.
+Biomimetic Intelligence and Robotics
+, 2025, 5 (4) :  100249 DOI:10.1016/j.birob.2025.100249
+Previous article
+Next article
+登录浏览全文
+4963
+注册一个新账户
+忘记密码
+References
+Publishing order
+|
+Descend order by publishing year
+|
+Descend order by cited within
+[1]
+O.X.-E.
+Collaboration
+,
+A.
+Padalkar
+,
+A.
+Pooley
+,
+A.
+Mandlekar
+,
+A.
+Jain
+,
+A.
+Tung
+,
+A.
+Bewley
+,
+et al.
+,   Open X-embodiment: Robotic learning datasets and RT-X models,
+2023
+,  arXiv:2310.08864.
+[2]
+Y.
+Hu
+,
+Q.
+Xie
+,
+V.
+Jain
+,
+J.
+Francis
+,
+J.
+Patrikar
+,
+N.
+Keetha
+,
+et al.
+,   Toward general-purpose robots via foundation models: A survey and meta-analysis,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2312.08782
+,  arXiv:2312.08782.
+[3]
+D.
+Ghosh
+,
+H.
+Walke
+,
+K.
+Pertsch
+,
+K.
+Black
+,
+O.
+Mees
+,
+S.
+Dasari
+,
+et al.
+,   Octo: An open-source generalist robot policy,
+2024
+.
+[4]
+R.R.
+Selvaraju
+,
+M.
+Cogswell
+,
+A.
+Das
+,
+R.
+Vedantam
+,
+D.
+Parikh
+,
+D.
+Batra
+,   Grad-CAM: Visual explanations from deep networks via gradient-based localization,
+Int. J. Comput. Vis.
+128
+(2) (
+2020
+) 336-359,
+http://dx.doi.org/10.1007/s11263-019-01228-7
+,  arXiv:1610.02391.
+[5]
+R.
+Bommasani
+,
+D.A.
+Hudson
+,
+E.
+Adeli
+,
+R.
+Altman
+,
+S.
+Arora
+,
+S. von
+Arx
+,
+et al.
+,   On the opportunities and risks of foundation models,
+2022
+,
+http://dx.doi.org/10.48550/arXiv.2108.07258
+,  arXiv:2108.07258.
+[6]
+Z.
+Xu
+,
+K.
+Wu
+,
+J.
+Wen
+,
+J.
+Li
+,
+N.
+Liu
+,
+Z.
+Che
+,
+et al.
+,   A Survey on robotics with foundation models: Toward embodied AI,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2402.02385
+,  arXiv:2402.02385.
+[7]
+A.
+Goyal
+,
+J.
+Xu
+,
+Y.
+Guo
+,
+V.
+Blukis
+,
+Y.-W.
+Chao
+,
+D.
+Fox
+,   RVT: Robotic view transformer for 3D object manipulation,
+2023
+,  arXiv:2306.14896.
+[8]
+M.
+Shridhar
+,
+L.
+Manuelli
+,
+D.
+Fox
+,   Perceiver-actor: A multi-task transformer for robotic manipulation,
+2022
+.
+[9]
+S.
+Chen
+,
+R.
+Garcia
+,
+C.
+Schmid
+,
+I.
+Laptev
+,   PolarNet: 3D point clouds for language-guided robotic manipulation,
+2023
+,  arXiv:2309.15596.
+[10]
+Y.
+Ze
+,
+G.
+Yan
+,
+Y.-H.
+Wu
+,
+A.
+Macaluso
+,
+Y.
+Ge
+,
+J.
+Ye
+,
+et al.
+,   GNFactor: Multi-task real robot learning with generalizable neural feature fields,
+2023
+,  arXiv:2308.16891.
+[11]
+P.-L.
+Guhur
+,
+S.
+Chen
+,
+R.
+Garcia
+,
+M.
+Tapaswi
+,
+I.
+Laptev
+,
+C.
+Schmid
+,   Instruction-driven history-aware policies for robotic manipulations,
+2022
+.
+[12]
+D.
+Driess
+,
+F.
+Xia
+,
+M.S.M.
+Sajjadi
+,
+C.
+Lynch
+,
+A.
+Chowdhery
+,
+B.
+Ichter
+,
+et al.
+,   PaLM-E: An embodied multimodal language model,
+2023
+,  arXiv:2303.03378.
+[13]
+G.
+Thomas
+,
+C.-A.
+Cheng
+,
+R.
+Loynd
+,
+F.V.
+Frujeri
+,
+V.
+Vineet
+,
+M.
+Jalobeanu
+,
+et al.
+,   PLEX: Making the most of the available data for robotic manipulation pretraining,
+2023
+,  arXiv:2303.08789.
+[14]
+M.
+Ahn
+,
+A.
+Brohan
+,
+N.
+Brown
+,
+Y.
+Chebotar
+,
+O.
+Cortes
+,
+B.
+David
+,
+et al.
+,   Do as I can, not as I say: Grounding language in robotic affordances,
+2022
+,  arXiv:2204.01691.
+[15]
+M.
+Shridhar
+,
+L.
+Manuelli
+,
+D.
+Fox
+,   CLIPort: What and where pathways for robotic manipulation,
+2021
+,  arXiv:2109.12098.
+[16]
+A.
+Stone
+,
+T.
+Xiao
+,
+Y.
+Lu
+,
+K.
+Gopalakrishnan
+,
+K.-H.
+Lee
+,
+Q.
+Vuong
+,
+et al.
+,   Open-world object manipulation using pre-trained vision-language models,
+2023
+,  arXiv:2303.00905.
+[17]
+C.
+Chi
+,
+S.
+Feng
+,
+Y.
+Du
+,
+Z.
+Xu
+,
+E.
+Cousineau
+,
+B.
+Burchfiel
+,
+et al.
+,   Diffusion policy: Visuomotor policy learning via action diffusion,
+2023
+,  arXiv:2303.04137.
+[18]
+S.
+Reed
+,
+K.
+Zolna
+,
+E.
+Parisotto
+,
+S.G.
+Colmenarejo
+,
+A.
+Novikov
+,
+G.
+Barth-Maron
+,
+et al.
+,   A generalist agent,
+2022
+,  arXiv:2205.06175.
+[19]
+H.
+Bharadhwaj
+,
+J.
+Vakil
+,
+M.
+Sharma
+,
+A.
+Gupta
+,
+S.
+Tulsiani
+,
+V.
+Kumar
+,   RoboAgent: Generalization and efficiency in robot manipulation via semantic augmentations and action chunking,
+2023
+,  arXiv:2309.01918.
+[20]
+A.
+Brohan
+,
+N.
+Brown
+,
+J.
+Carbajal
+,
+Y.
+Chebotar
+,
+J.
+Dabis
+,
+C.
+Finn
+,
+et al.
+,   RT-1: Robotics transformer for real-world control at scale,
+2023
+,  arXiv:2212.06817.
+[21]
+A.
+Brohan
+,
+N.
+Brown
+,
+J.
+Carbajal
+,
+Y.
+Chebotar
+,
+X.
+Chen
+,
+K.
+Choromanski
+,
+et al.
+,   RT-2: Vision-language-action models transfer web knowledge to robotic control,
+2023
+.
+[22]
+S.
+Haldar
+,
+Z.
+Peng
+,
+L.
+Pinto
+,   BAKU: An efficient transformer for multi-task policy learning,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2406.07539
+,  arXiv:2406.07539.
+[23]
+S.
+Xia
+,
+H.
+Fang
+,
+C.
+Lu
+,
+H.-S.
+Fang
+,   CAGE: Causal attention enables data-efficient generalizable robotic manipulation,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2410.14974
+,  arXiv:2410.14974.
+[24]
+M.J.
+Kim
+,
+K.
+Pertsch
+,
+S.
+Karamcheti
+,
+T.
+Xiao
+,
+A.
+Balakrishna
+,
+S.
+Nair
+,
+et al.
+,   OpenVLA: An open-source vision-language-action model,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2406.09246
+,  arXiv:2406.09246.
+[25]
+A.
+Mete
+,
+H.
+Xue
+,
+A.
+Wilcox
+,
+Y.
+Chen
+,
+A.
+Garg
+,   QueST: Self-supervised skill abstractions for learning continuous control,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2407.15840
+,  arXiv:2407.15840.
+[26]
+S.
+Liu
+,
+L.
+Wu
+,
+B.
+Li
+,
+H.
+Tan
+,
+H.
+Chen
+,
+Z.
+Wang
+,
+et al.
+,   RDT-1B: A diffusion foundation model for bimanual manipulation,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2410.07864
+,  arXiv:2410.07864.
+[27]
+R.
+Doshi
+,
+H.
+Walke
+,
+O.
+Mees
+,
+S.
+Dasari
+,
+S.
+Levine
+,   Scaling cross-embodied learning: One policy for manipulation, navigation, locomotion and aviation,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2408.11812
+,  arXiv:2408.11812.
+[28]
+Q.
+Bu
+,
+H.
+Li
+,
+L.
+Chen
+,
+J.
+Cai
+,
+J.
+Zeng
+,
+H.
+Cui
+,
+et al.
+,   Towards synergistic, generalized, and efficient dual-system for robotic manipulation,
+2025
+,
+http://dx.doi.org/10.48550/arXiv.2410.08001
+,  arXiv:2410.08001.
+[29]
+K.
+Black
+,
+N.
+Brown
+,
+D.
+Driess
+,
+A.
+Esmail
+,
+M.
+Equi
+,
+C.
+Finn
+,
+et al.
+,   Π0: A vision-language-action flow model for general robot control,
+2024
+.
+[30]
+Helix: A vision-language-action model for generalist humanoid control,
+2025
+,  https://www.figure.ai/news/helix. (Accessed 18 March 2025).
+[31]
+Gemini robotics,
+2025
+,  https://deepmind.google/technologies/gemini-robotics/. (Accessed 13 March 2025).
+[32]
+A.
+Majumdar
+,
+K.
+Yadav
+,
+S.
+Arnaud
+,
+Y.J.
+Ma
+,
+C.
+Chen
+,
+S.
+Silwal
+,
+et al.
+,   Where are we in the search for an artificial visual cortex for embodied intelligence?
+2023
+.
+[33]
+Z.
+Mandi
+,
+H.
+Bharadhwaj
+,
+V.
+Moens
+,
+S.
+Song
+,
+A.
+Rajeswaran
+,
+V.
+Kumar
+,   CACTI: A framework for scalable multi-task multi-scene visual imitation learning,
+2023
+,
+http://dx.doi.org/10.48550/arXiv.2212.05711
+,  arXiv:2212.05711.
+[34]
+N.M.M.
+Shafiullah
+,
+Z.J.
+Cui
+,
+A.
+Altanzaya
+,
+L.
+Pinto
+,   Behavior transformers: Cloning $k$ modes with one stone,
+2022
+,
+http://dx.doi.org/10.48550/arXiv.2206.11251
+,  arXiv:2206.11251.
+[35]
+E.
+Jang
+,
+A.
+Irpan
+,
+M.
+Khansari
+,
+D.
+Kappler
+,
+F.
+Ebert
+,
+C.
+Lynch
+,
+et al.
+,   BC-Z: Zero-Shot task generalization with robotic imitation learning,
+2022
+,
+http://dx.doi.org/10.48550/arXiv.2202.02005
+,  arXiv:2202.02005.
+[36]
+S.
+Nair
+,
+A.
+Rajeswaran
+,
+V.
+Kumar
+,
+C.
+Finn
+,
+A.
+Gupta
+,   R3M: A universal visual representation for robot manipulation,
+2022
+,  arXiv:2203.12601.
+[37]
+C.
+Lynch
+,
+A.
+Wahid
+,
+J.
+Tompson
+,
+T.
+Ding
+,
+J.
+Betker
+,
+R.
+Baruch
+,
+et al.
+,   Interactive language: Talking to robots in real time,
+2022
+,  arXiv:2210.06407.
+[38]
+C.
+Wang
+,
+H.
+Fang
+,
+H.-S.
+Fang
+,
+C.
+Lu
+,   RISE: 3D perception makes real-world robot imitation simple and effective,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2404.12281
+,  arXiv:2404.12281.
+[39]
+R.
+Zheng
+,
+C.-A.
+Cheng
+,
+H.D.
+III
+,
+F.
+Huang
+,
+A.
+Kolobov
+,   PRISE: LLM-style sequence compression for learning temporal action abstractions in control,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2402.10450
+,  arXiv:2402.10450.
+[40]
+T.Z.
+Zhao
+,
+V.
+Kumar
+,
+S.
+Levine
+,
+C.
+Finn
+,   Learning fine-grained bimanual manipulation with low-cost hardware,
+2023
+,
+http://dx.doi.org/10.48550/arXiv.2304.13705
+,  arXiv:2304.13705.
+[41]
+B.
+Liu
+,
+Y.
+Zhu
+,
+C.
+Gao
+,
+Y.
+Feng
+,
+Q.
+Liu
+,
+Y.
+Zhu
+,
+et al.
+,   LIBERO: Benchmarking knowledge transfer for lifelong robot learning,
+2023
+,
+http://dx.doi.org/10.48550/arXiv.2306.03310
+,  arXiv:2306.03310.
+[42]
+S.
+Lee
+,
+Y.
+Wang
+,
+H.
+Etukuru
+,
+H.J.
+Kim
+,
+N.M.M.
+Shafiullah
+,
+L.
+Pinto
+,   Behavior generation with latent actions,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2403.03181
+,  arXiv:2403.03181.
+[43]
+J.
+Yang
+,
+C.
+Glossop
+,
+A.
+Bhorkar
+,
+D.
+Shah
+,
+Q.
+Vuong
+,
+C.
+Finn
+,
+et al.
+,   Pushing the limits of cross-embodiment learning for manipulation and navigation,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2402.19432
+,  arXiv:2402.19432.
+[44]
+D.
+Shah
+,
+A.
+Sridhar
+,
+N.
+Dashora
+,
+K.
+Stachowicz
+,
+K.
+Black
+,
+N.
+Hirose
+,
+et al.
+,   ViNT: A foundation model for visual navigation,
+2023
+,
+http://dx.doi.org/10.48550/arXiv.2306.14846
+,  arXiv:2306.14846.
+[45]
+T.
+Yu
+,
+D.
+Quillen
+,
+Z.
+He
+,
+R.
+Julian
+,
+K.
+Hausman
+,
+C.
+Finn
+,
+et al.
+,   Meta-world: A benchmark and evaluation for multi-task and meta reinforcement learning,
+2019
+.
+[46]
+Y.
+Zhu
+,
+J.
+Wong
+,
+A.
+Mandlekar
+,
+R.
+Martín-Martín
+,
+A.
+Joshi
+,
+K.
+Lin
+,
+et al.
+,   Robosuite: A modular simulation framework and benchmark for robot learning,
+2025
+,
+http://dx.doi.org/10.48550/arXiv.2009.12293
+,  arXiv:2009.12293.
+[47]
+Y.
+Tassa
+,
+Y.
+Doron
+,
+A.
+Muldal
+,
+T.
+Erez
+,
+Y.
+Li
+,
+D.d.
+Casas
+,
+et al.
+,   DeepMind control suite,
+2018
+,
+http://dx.doi.org/10.48550/arXiv.1801.00690
+,  arXiv:1801.00690.
+[48]
+O.
+Mees
+,
+L.
+Hermann
+,
+E.
+Rosete-Beas
+,
+W.
+Burgard
+,   CALVIN: A benchmark for language-conditioned policy learning for long-horizon robot manipulation tasks,
+2022
+,
+http://dx.doi.org/10.48550/arXiv.2112.03227
+,  arXiv:2112.03227.
+[49]
+J.
+Luo
+,
+C.
+Xu
+,
+F.
+Liu
+,
+L.
+Tan
+,
+Z.
+Lin
+,
+J.
+Wu
+,
+et al.
+,   FMB: A functional manipulation benchmark for generalizable robotic learning,
+Int. J. Robot. Res.
+(
+2024
+), 02783649241276017,
+http://dx.doi.org/10.1177/02783649241276017
+.
+[50]
+S.
+James
+,
+Z.
+Ma
+,
+D.R.
+Arrojo
+,
+A.J.
+Davison
+,   RLBench: The robot learning benchmark & learning environment,
+2019
+,
+http://dx.doi.org/10.48550/ARXIV.1909.12271
+.
+[51]
+B.
+Zhou
+,
+A.
+Khosla
+,
+A.
+Lapedriza
+,
+A.
+Oliva
+,
+A.
+Torralba
+,   Learning deep features for discriminative localization,
+2015
+,
+http://dx.doi.org/10.48550/arXiv.1512.04150
+,  arXiv:1512.04150.
+[52]
+J.
+Zhang
+,
+Z.
+Lin
+,
+J.
+Brandt
+,
+X.
+Shen
+,
+S.
+Sclaroff
+,   Top-down neural attention by excitation backprop,
+2016
+,
+http://dx.doi.org/10.48550/arXiv.1608.00507
+,  arXiv:1608.00507.
+[53]
+J.
+Gu
+,
+Y.
+Yang
+,
+V.
+Tresp
+,   Understanding individual decisions of CNNs via contrastive backpropagation,
+2019
+,
+http://dx.doi.org/10.48550/arXiv.1812.02100
+,  arXiv:1812.02100.
+[54]
+R.
+Fong
+,
+M.
+Patrick
+,
+A.
+Vedaldi
+,   Understanding deep networks via extremal perturbations and smooth masks,
+2019
+,
+http://dx.doi.org/10.48550/arXiv.1910.08485
+,  arXiv:1910.08485.
+[55]
+R.
+Fu
+,
+Q.
+Hu
+,
+X.
+Dong
+,
+Y.
+Guo
+,
+Y.
+Gao
+,
+B.
+Li
+,   Axiom-based grad-CAM: Towards accurate visualization and explanation of CNNs,
+2020
+,
+http://dx.doi.org/10.48550/arXiv.2008.02312
+,  arXiv:2008.02312.
+[56]
+A.
+Chattopadhyay
+,
+A.
+Sarkar
+,
+P.
+Howlader
+,
+V.N.
+Balasubramanian
+,   Grad-CAM++: Improved visual explanations for deep convolutional networks,
+2018 IEEE Winter Conference on Applications of Computer Vision, WACV
+,
+2018
+, pp. 839-847,
+http://dx.doi.org/10.1109/WACV.2018.00097
+,  arXiv:1710.11063.
+[57]
+H.
+Wang
+,
+Z.
+Wang
+,
+M.
+Du
+,
+F.
+Yang
+,
+Z.
+Zhang
+,
+S.
+Ding
+,
+et al.
+,   Score-CAM: Score-weighted visual explanations for convolutional neural networks,
+2020
+,
+http://dx.doi.org/10.48550/arXiv.1910.01279
+,  arXiv:1910.01279.
+[58]
+M.B.
+Muhammad
+,
+M.
+Yeasin
+,   Eigen-CAM: Class activation map using principal components,
+2020 International Joint Conference on Neural Networks (IJCNN), IEEE, Glasgow, United Kingdom
+,
+2020
+, pp. 1-7,
+http://dx.doi.org/10.1109/IJCNN48605.2020.9206626
+.
+[59]
+B.
+Zhou
+,
+D.
+Bau
+,
+A.
+Oliva
+,
+A.
+Torralba
+,   Interpreting deep visual representations via network dissection,
+2018
+,
+http://dx.doi.org/10.48550/arXiv.1711.05611
+,  arXiv:1711.05611.
+[60]
+M.A.A.K.
+Jalwana
+,
+N.
+Akhtar
+,
+M.
+Bennamoun
+,
+A.
+Mian
+,   CAMERAS: Enhanced resolution and sanity preserving class activation mapping for image saliency,
+2021
+,
+http://dx.doi.org/10.48550/arXiv.2106.10649
+,  arXiv:2106.10649.
+[61]
+S.
+Sarkar
+,
+A.R.
+Babu
+,
+S.
+Mousavi
+,
+S.
+Ghorbanpour
+,
+V.
+Gundecha
+,
+A.
+Guillen
+,
+et al.
+,   RL-CAM: Visual explanations for convolutional networks using reinforcement learning,
+2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops, CVPRW, IEEE, Vancouver, BC, Canada
+,
+2023
+, pp. 3861-3869,
+http://dx.doi.org/10.1109/CVPRW59228.2023.00400
+.
+[62]
+S.
+Greydanus
+,
+A.
+Koul
+,
+J.
+Dodge
+,
+A.
+Fern
+,   Visualizing and understanding atari agents,
+2018
+,
+http://dx.doi.org/10.48550/arXiv.1711.00138
+,  arXiv:1711.00138.
+[63]
+H.-T.
+Joo
+,
+K.-J.
+Kim
+,   Visualization of deep reinforcement learning using grad-CAM: How AI plays atari games?
+2019 IEEE Conference on Games, CoG, IEEE, London, United Kingdom
+,
+2019
+, pp. 1-2,
+http://dx.doi.org/10.1109/CIG.2019.8847950
+.
+[64]
+R.S.
+Sutton
+,
+A.G.
+Barto
+,   Reinforcement Learning: An Introduction, Second Edition,
+Adaptive Computation and Machine Learning, MIT Press, Cambridge, Mass
+,
+2018
+.
+[65]
+Deep Reinforcement Learning: Fundamentals, Research and Applications,
+Springer Singapore Pte. Limited, 2020, Singapore
+,
+2020
+.
+[66]
+T.
+Haarnoja
+,
+A.
+Zhou
+,
+P.
+Abbeel
+,
+S.
+Levine
+,   Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor,
+2018
+,  arXiv:1801.01290.
+[67]
+S.
+Dey
+,
+J.-N.
+Zaech
+,
+N.
+Nikolov
+,
+L.V.
+Gool
+,
+D.P.
+Paudel
+,   ReVLA: Reverting visual domain limitation of robotic foundation models,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2409.15250
+,  arXiv:2409.15250.
+[68]
+X.
+Li
+,
+K.
+Hsu
+,
+J.
+Gu
+,
+K.
+Pertsch
+,
+O.
+Mees
+,
+H.R.
+Walke
+,
+et al.
+,   Evaluating real-world robot manipulation policies in simulation,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2405.05941
+,  arXiv:2405.05941.
+[69]
+X.
+Li
+,
+P.
+Li
+,
+M.
+Liu
+,
+D.
+Wang
+,
+J.
+Liu
+,
+B.
+Kang
+,
+et al.
+,   Towards generalist robot policies: What matters in building vision-language-action models,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2412.14058
+,  arXiv:2412.14058.
+[70]
+Bullet real-time physics simulation,
+2025
+,  https://pybullet.org/wordpress/. (Accessed 2 March 2025).
+[71]
+F.
+Pardo
+,
+A.
+Tavakoli
+,
+V.
+Levdik
+,
+P.
+Kormushev
+,   Time limits in reinforcement learning,
+2022
+,
+http://dx.doi.org/10.48550/arXiv.1712.00378
+,  arXiv:1712.00378.
+[72]
+H.V.
+Hasselt
+,   Double Q-learning,
+Proceedings of the 24th International Conference on Neural Information Processing Systems
+,
+2010
+,
+http://dx.doi.org/10.5555/2997046.2997187
+.
+[73]
+S.
+Fujimoto
+,
+H. van
+Hoof
+,
+D.
+Meger
+,   Addressing function approximation error in actor-critic methods,
+2018
+,
+http://dx.doi.org/10.48550/arXiv.1802.09477
+,  arXiv:1802.09477.
+[74]
+H.
+Walke
+,
+K.
+Black
+,
+A.
+Lee
+,
+M.J.
+Kim
+,
+M.
+Du
+,
+C.
+Zheng
+,
+et al.
+,   BridgeData V2: A dataset for robot learning at scale,
+2024
+,  arXiv:2308.12952.
+[75]
+J.
+Adebayo
+,
+J.
+Gilmer
+,
+M.
+Muelly
+,
+I.
+Goodfellow
+,
+M.
+Hardt
+,
+B.
+Kim
+,   Sanity checks for saliency maps,
+2018
+.
+[76]
+M.
+Ahn
+,
+D.
+Dwibedi
+,
+C.
+Finn
+,
+M.G.
+Arenas
+,
+K.
+Gopalakrishnan
+,
+K.
+Hausman
+,
+et al.
+,   AutoRT: Embodied foundation models for large scale orchestration of robotic agents,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2401.12963
+,  arXiv:2401.12963.
+[77]
+T.T.
+Ponbagavathi
+,
+K.
+Peng
+,
+A.
+Roitberg
+,   Probing fine-grained action understanding and cross-view generalization of foundation models,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2407.15605
+,  arXiv:2407.15605.
+[78]
+S.
+Sun
+,
+W.
+An
+,
+F.
+Tian
+,
+F.
+Nan
+,
+Q.
+Liu
+,
+J.
+Liu
+,
+et al.
+,   A review of multimodal explainable artificial intelligence: Past, present and future,
+2024
+,
+http://dx.doi.org/10.48550/arXiv.2412.14056
+,  arXiv:2412.14056.
+[79]
+S.
+Atakishiyev
+,
+M.
+Salameh
+,
+H.
+Yao
+,
+R.
+Goebel
+,   Explainable artificial intelligence for autonomous driving: A comprehensive overview and field guide for future research directions,
+IEEE Access
+12
+(
+2024
+) 101603-101625,
+http://dx.doi.org/10.1109/ACCESS.2024.3431437
+.
+[80]
+M.
+Müller
+,
+A.
+Dosovitskiy
+,
+B.
+Ghanem
+,
+V.
+Koltun
+,   Driving policy transfer via modularity and abstraction,
+2018
+,
+http://dx.doi.org/10.48550/arXiv.1804.09364
+,  arXiv:1804.09364.
+[81]
+L.
+Breiman
+,   Random forests,
+Mach. Learn.
+45
+(1) (
+2001
+) 5-32,
+http://dx.doi.org/10.1023/A:1010933404324
+.
+[82]
+S.
+Baker
+,
+W.
+Xiang
+,   Explainable AI is responsible AI: How explainability creates trustworthy and socially responsible artificial intelligence,
+2023
+,
+http://dx.doi.org/10.48550/ARXIV.2312.01555
+.
+×
+Share on WeChat
+PDF
+(4150KB)
+-->
+Part of a collection:
+3045
+Accesses
+0
+Citation
+-->
+Altmetric
+-->
+Detail
+Sections
+Recommended
+/
+〈
+〉
+About the journal
+Aims & scope
+Contact us
+Articles and content
+All volumes and issues
+Collections
+Multimedia collections
+Most accessed
+Most cited
+For authors
+Online submission
+Editorial policy
+Copyright © Higher Education Press. Powered by Beijing Magtech Co. Ltd
+ICP Filing:
+京ICP备12020869号-1
+|
+京ICP备150856号
+| 京公网安备11010202008535号 | 网络出版服务许可证网出证(京)字第127号

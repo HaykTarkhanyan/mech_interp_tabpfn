@@ -1,0 +1,46 @@
+{
+  "id": "2605.30117",
+  "title": "VLA-Trace: Diagnosing Vision-Language-Action Models through Representation and Behavior Tracing",
+  "first_author": "Shi",
+  "year": 2026,
+  "venue": "arXiv (v2 Aug 2026)",
+  "tier": "core",
+  "models": ["pi0.5 (PaliGemma base, pretrained, LIBERO-finetuned)", "OpenVLA (Prismatic base, pretrained, LIBERO-finetuned)", "OpenVLA-OFT (masking experiments)", "X-VLA (protocol only, not completed)"],
+  "action_head": "flow/diffusion action expert (pi0.5) vs discrete action tokens (OpenVLA); OpenVLA-OFT parallel continuous head in masking only",
+  "methods": ["cross-modal CKA and checkpoint-drift CKA across VLM -> pretrained VLA -> fine-tuned VLA", "all-layer and windowed layer-wise attention knockout (prefill V-L blocking; action-to-image / action-to-text blocking)", "action-to-image attention IoU / mass / peak-hit vs simulator masks", "visual patch masking (background, black, mosaic)", "instruction editing"],
+  "question": "How do VLM representations change through VLA training, which modality pathways are causally needed for action decoding, and do these pathways give robust grounding or shortcuts?",
+  "key_findings": [
+    "Checkpoint drift: pi0.5 text representations change most (fine-tuned vs VLM text CKA 0.05-0.32 across datasets), while OpenVLA text stays near-preserved (0.80-0.96) and its vision/joint views change more (Fig. 3).",
+    "pi0.5 all-layer knockout (200 episodes per suite): blocking action-to-image attention drops average success from 96.9% to 1.0%; blocking action-to-text gives 83.1% (LIBERO-10 39.0%, others ~96-99%); dropping only the instruction tokens costs 1.3 points; dropping only BOS+newline costs LIBERO-10 36 points (Table 6).",
+    "OpenVLA all-layer knockout: removing prompt access during generation or image access in prefill gives 0% on every suite; removing image access during generation gives 1-44% (avg 23.4% vs 70.5% baseline) (Table 6).",
+    "Layer-wise knockout: pi0.5 has a narrow visual bottleneck (gen-no-image drops LIBERO-10 to 4% at the most vulnerable window) while OpenVLA's critical layers are broader.",
+    "Action attention overlaps robot+object regions more than object-only regions (IoU90 e.g. pi0.5 0.23 vs 0.20), and object attention shifts between subgoal phases in LIBERO-10 (Table 3, Fig. 5).",
+    "Masking: target-object background replacement causes the largest average drop for pi0.5 (76.45 points) and OpenVLA-OFT (60.25); OpenVLA is more hurt by full-robot replacement (69.42) than target masking (47.75).",
+    "Instruction edits change success inconsistently (e.g. moka pot -> frypan 75% -> 30%, another edit 75% -> 100%), read as weak fine-grained semantic following (Table 5)."
+  ],
+  "evidence": {
+    "setting": "simulation",
+    "benchmarks": ["LIBERO (10, Goal, Spatial, Object)", "COCO (CKA reference)", "CALVIN, RoboTwin 2.0, SimplerEnv in appendix / protocol"],
+    "scale": "knockouts: 200 episodes per suite (20 trials x 10 tasks); instruction edits: 7 prompts, trial count per prompt not stated in text read",
+    "statistics": "no: point success rates, no CIs or tests; authors note no random or permutation CKA baselines",
+    "baselines": "unablated baseline; non-essential-token knockouts (drop instruction, drop newline) as specificity controls"
+  },
+  "causal_validation": "Yes, as necessity tests: attention knockouts at all layers and in sliding windows, measured by closed-loop success. The authors note these are necessity probes, not sufficiency or mediation (no patching or restoration).",
+  "closed_loop": "Yes for knockouts, masking and editing (closed-loop LIBERO rollouts). CKA is offline.",
+  "limitations_stated": [
+    "Attention knockout tests necessity under one intervention design; failures are not natural OOD failures; no activation patching or restoration.",
+    "CKA depends on dataset, pooling and checkpoint choice; no random-feature or permutation CKA baselines.",
+    "Attention IoU depends on simulator masks and patch resolution.",
+    "pi0.5 fine-tuned checkpoint is shared across LIBERO suites.",
+    "Full evidence chain only for pi0.5 and OpenVLA; other models and benchmarks are protocol only."
+  ],
+  "critique": [
+    "In pi0.5, prefill attention is bidirectional, so image tokens already absorb instruction information before generation. 'Gen: no text' therefore does not remove language, and 'pi0.5 relies on visual-to-action pathways' partly restates where the language is stored. The combined prefill-block + no-text condition is the cleaner test (avg 49.6%, Goal 10.5%).",
+    "The LIBERO-10 drop under 'no text' comes mostly from BOS/newline tokens (drop BOS+newline: 57.5%; drop instruction: 86.0%), which suggests attention-sink or register tokens, not language use. The paper reports this but does not draw the conclusion.",
+    "OpenVLA's total collapse when prompt access is removed is likely a format/OOD effect on autoregressive token decoding (template tokens such as 'Out:' are removed), not evidence that OpenVLA uses instruction semantics more than pi0.5.",
+    "Knockouts that zero out a whole modality are blunt and push the model far off-distribution; near-zero success is expected and says little about mechanism.",
+    "Instruction-edit results (7 prompts, unclear success definition for the edited goal, no trial counts) are too thin for the 'limited semantic following' claim, though they agree with 2610.06235."
+  ],
+  "code": "GitHub and project page linked in the paper (URL not in extracted text)",
+  "one_line": "Attention knockouts, CKA and masking show that pi0.5 routes action generation almost entirely through image tokens (with language mixed in during prefill) while OpenVLA needs both image and prompt access, and both follow edited instructions poorly."
+}

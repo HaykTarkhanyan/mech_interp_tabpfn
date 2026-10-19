@@ -1,0 +1,44 @@
+{
+  "id": "2610.20840",
+  "title": "A Phenomenology of Neural Geometry in Vision-Language-Action Models",
+  "first_author": "Jacobs",
+  "year": 2026,
+  "venue": "arXiv preprint (Oct 2026)",
+  "tier": "core",
+  "models": ["MolmoBot (main)", "pi0.5", "MolmoAct2"],
+  "action_head": "flow/diffusion action expert (MolmoBot: flow matching expert cross-attending to the VLM at each layer; pi0.5 and MolmoAct2 also flow-based)",
+  "methods": ["controlled simulator sweeps and teleports (MolmoSpaces / ProcTHOR)", "rank-limited ridge probes, LDA, iterative probe-direction erasure", "Procrustes and curvature analysis of subspaces", "autoencoder-to-circle 'geometry-matched' edits", "pullback steering (gradient-optimized activation edits from desired action output)", "freezing the arm mid-rollout", "cross-model Procrustes on real DROID data"],
+  "question": "What geometric shape do control-relevant variables (positions, distance, contact, phase, wrist angle, gripper) take inside a VLA, and does that shape determine how they can be edited?",
+  "key_findings": [
+    "End-effector and target position live in ~3-D near-Euclidean subspaces: held-out R2 0.92 (EE, VLM layer 20) and 0.75 (target, layer 21), saturating at rank 3; world translations map to activations by an approximately orthogonal map.",
+    "Distance to target is coded by two nearly orthogonal 'rulers': erasing 32 far directions drops far R2 from 0.84 to ~0 while near R2 stays 0.71; meter and centimeter probe cosine 0.04 vs split-half ceiling ~0.23; a synthetic one-direction control gives cosine 0.92-0.95.",
+    "Contact is decoded at 91.3% (LDA, layer 24) and survives off-schedule contact induced by teleporting the object.",
+    "Task phase in the action expert is inferred from motion: freezing the arm during reach shifts decoded phase to grasp and raises closed-gripper commands by 43 points; freezing during place lowers them by 68 points.",
+    "Wrist roll is an open arc (joint limit +/-172.8 deg), not a circle; a geometry-matched edit acts as a 'belief' edit and produces compensation: the action rotates 0.33 +/- 0.08 deg against each written degree, and held edits rotate the wrist opposite the edit by 1.0-1.3x.",
+    "Gripper command is near one-dimensional: the first PC of pullback steering vectors carries ~70% of variance and flips the gripper, but leaks into arm joints unless more components are used.",
+    "On real DROID data, pi0.5 and MolmoAct2 show the same structures: EE position R2 0.78-0.92, wrist R2 0.52-0.69, two-scale distance code reappears, gripper pullback first PC 31-59%; cross-model Procrustes similarity above a shuffled null."
+  ],
+  "evidence": {
+    "setting": "both (simulation rollouts and interventions; real-robot offline data from DROID, no real-robot execution)",
+    "benchmarks": ["MolmoSpaces / ProcTHOR houses (pick, pick-and-place)", "DROID (offline)"],
+    "scale": "1,008 natural pick episodes over 196 houses; 530 pick-and-place episodes over 181 houses (63% success); 5-fold CV with houses held out; DROID 26,675 timesteps from 1,998 episodes; wrist edits on 7 held-out scenes",
+    "statistics": "partial: house-held-out cross-validation, fold mean +/- s.d., 95% CIs on some effects, shuffled nulls for Procrustes; no formal tests on most claims",
+    "baselines": "synthetic one-direction activations, split-half probe ceilings, random 3-D projections, shuffled-variable null"
+  },
+  "causal_validation": "Yes: belief edits on the wrist arc (closed-loop compensation), pullback gripper steering that flips the commanded gripper, freezing interventions that shift decoded phase and gripper commands, and probe-direction erasure. These show that editing a decodable geometry does not necessarily command the corresponding action.",
+  "closed_loop": "Yes in simulation: wrist edits are held across closed-loop queries and change executed motion; freezing interventions are in rollouts. Real DROID analyses are offline only.",
+  "limitations_stated": [
+    "The taxonomy is supervised (variables chosen in advance).",
+    "Real-data analyses use proxies (distance to eventual grasp location) and lack ground-truth object poses and mid-rollout interventions.",
+    "MolmoBot is evaluated on real data outside its simulated training distribution."
+  ],
+  "critique": [
+    "Among the strongest papers in the batch: controlled sweeps plus interventions, held-out houses, synthetic controls for the two-ruler claim, and a cross-model real-data check. It directly answers the 'readability is not geometry' critique and links it to steering behavior.",
+    "The belief-vs-action distinction (wrist edits produce compensation, gripper pullback commands) gives a concrete mechanism for why probe-direction steering fails in other papers (e.g. the non-steerable progress feature in 2608.13474).",
+    "Pullback steering is optimized with gradients from the desired action output, so it is closer to an adversarial or optimization-based edit than to discovering a native control variable. That the edits are low-rank is informative; that they work is nearly guaranteed by construction.",
+    "Main analyses use one simulated model (MolmoBot) on pick tasks; the real-data replication is offline and correlational. Behavioral effects are measured as decoded action changes, not task success rates.",
+    "Steering numbers (e.g. 0.33 deg compensation per degree, 7 scenes) are small-sample; trial counts for most interventions are only in the appendix."
+  ],
+  "code": "https://github.com/goodfire-ai/vla-geometry",
+  "one_line": "In MolmoBot (replicated offline in pi0.5 and MolmoAct2 on DROID), control variables have specific shapes, such as 3-D position subspaces, two orthogonal distance rulers and an open wrist arc, and editing them either shifts the policy's belief (which it then corrects against) or its command, depending on the variable."
+}

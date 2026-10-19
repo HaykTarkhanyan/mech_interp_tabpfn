@@ -1,0 +1,11 @@
+{
+ "records_identified": {
+  "search": 1892,
+  "web_sweep": 61,
+  "reference_lists": 850
+ },
+ "after_dedup": 2245,
+ "screened_in": 437,
+ "screened_out": 1808,
+ "screened_on_title_only": 181
+}

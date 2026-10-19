@@ -1,0 +1,43 @@
+{
+  "id": "2610.06235",
+  "title": "Encoded but Not in Control: Revealing the Grounding Gap in Vision-Language Robot Policies",
+  "first_author": "Jiang",
+  "year": 2026,
+  "venue": "arXiv preprint (Oct 2026)",
+  "tier": "core",
+  "models": ["pi0.5", "GR00T N1.7", "FastWAM (world-action model)", "LingBot-VA (world-action model)"],
+  "action_head": "flow/diffusion action expert (pi0.5, GR00T N1.7 DiT); world-action models with video co-training (FastWAM, LingBot-VA autoregressive diffusion)",
+  "methods": ["scene-preserving instruction interventions (in-scene target replacement, random noun, random sentence)", "layerwise 'action lens' (apply action readout to intermediate states)", "linear probes for target and scene identity on instruction tokens", "attention-weighted value contribution by modality", "UMAP", "shared semi-NMF with variance partitioning"],
+  "question": "When a VLA succeeds, is it following the instruction or inferring the task from the scene, and if language is encoded, why does it fail to control target selection?",
+  "key_findings": [
+    "In LIBERO-Object target replacement, 86.5-98.3% of trials go to the original (scene-associated) target and only 0.5-13.0% to the newly instructed one; current-target success 0.0-11.5% (Table 1).",
+    "Real robot: pi0.5 picks the original target in 74.2% vs 5.8% for the instructed one; GR00T N1.7 90.8% vs 3.3% (Table 1).",
+    "Language still matters: random sentences cut LIBERO-Goal success from 98.0 to 11.7% (pi0.5) and 97.5 to 4.0% (GR00T); random nouns have smaller, task-dependent effects (Table 2).",
+    "Action lens: random sentences shift intermediate action predictions most, then in-scene replacements, then out-of-scene nouns, with separation growing at later denoising steps (Fig. 2).",
+    "Target and scene identity are linearly decodable from mean-pooled instruction-token representations at 96-100% before and after fine-tuning (Fig. 3).",
+    "Instruction tokens get a small share of attention-value contribution to action tokens: pi0.5 25.6-27.9% on LIBERO, ~1.7% on RoboTwin, 9.7% real world; GR00T 18.5-23.4%, ~12%, 13.5%.",
+    "After fine-tuning, pi0.5 instruction representations cluster by scene rather than target in middle layers (UMAP), and all 12 shared NMF components shift toward scene-unique variance from layer 2 onward."
+  ],
+  "evidence": {
+    "setting": "both",
+    "benchmarks": ["LIBERO (Spatial, Object, Goal, Long)", "RoboTwin 2.0 (clean and randomized, 50 tasks)", "6 real-world scenes"],
+    "scale": "RoboTwin: 100 rollouts per task; LIBERO per-model protocols with matched seeds across instruction conditions; representation sets of 60 (LIBERO-Object) and 36 (real) scene-target instances; action lens from one successful rollout per model; real-world trial counts not stated in main text",
+    "statistics": "no: percentages only, no CIs or tests",
+    "baselines": "original instruction condition; base vs fine-tuned checkpoints for probes/UMAP/NMF"
+  },
+  "causal_validation": "Input-level interventions only (changing the instruction with the scene fixed) with behavioral and action-lens readouts. No activation patching, ablation or steering, and the authors say the representational analyses do not establish a causal mechanism.",
+  "closed_loop": "Yes for behavioral results (closed-loop sim and real robot). The action lens and probes are open-loop on recorded states.",
+  "limitations_stated": [
+    "Representational analyses (attention contribution, UMAP, NMF) are consistent with the behavior but do not establish a causal link.",
+    "Action-lens deviations show sensitivity, not movement toward the instructed target."
+  ],
+  "critique": [
+    "The '100% target decodability' probe reads mean-pooled instruction tokens, which literally contain the target noun. Decoding it is trivial and says nothing about whether the target is grounded in the visual or action pathway. A probe on action-expert tokens or visual tokens would be the informative test.",
+    "Attention-weighted contribution is a correlational proxy; a modality-ablation or patching experiment on instruction tokens would turn the 'weak contribution' claim into a causal one.",
+    "No CIs or rollout counts in the main text for the key target-replacement table, although the effect sizes (86-98% vs 0.5-13%) are large enough that the conclusion is unlikely to flip.",
+    "The behavioral finding reproduces earlier counterfactual-instruction results (LIBERO-CF, LangGap) and 2608.13474's appendix; the new part is extending it to world-action models and the real robot, plus the scene-vs-target reorganization after fine-tuning.",
+    "The headline is consistent with 2609.34684 and 2607.03372: decodability is cheap and does not imply use."
+  ],
+  "code": "not reported",
+  "one_line": "With the scene fixed, pi0.5, GR00T and two world-action models almost always grab the object their training scene implies rather than the newly instructed one, even though the instruction is encoded and does perturb the computation; fine-tuning reorganizes language representations around scene identity."
+}

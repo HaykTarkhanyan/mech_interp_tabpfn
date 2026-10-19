@@ -1,0 +1,43 @@
+{
+  "id": "2510.09459",
+  "title": "Failure Prediction at Runtime for Generative Robot Policies",
+  "first_author": "Roemer",
+  "year": 2025,
+  "venue": "NeurIPS 2025",
+  "tier": "core",
+  "models": ["single-task diffusion policy (DDPM, temporal U-Net, ResNet-18 encoder) for PushT, Pretzel, PushChair", "single-task flow-matching policy with ACT transformer backbone for Sorting and Stacking"],
+  "action_head": "diffusion policy / flow matching (not a VLA)",
+  "methods": ["random network distillation in the policy's frozen observation-embedding space (RND-OE)", "action-chunk entropy (ACE) via dimension-wise binning over a batch of sampled chunks in end-effector space", "sliding-window aggregation", "functional conformal prediction thresholds; AND-combination of the two predictors", "new timestep-wise accuracy (TWA) metric"],
+  "question": "Can failures of generative imitation policies be predicted early, without failure data, by requiring both out-of-distribution observation embeddings and high entropy of sampled action chunks?",
+  "key_findings": [
+    "Averaged over five environments (Table 1, 5 seeds): FIPER TWA 0.65, balanced accuracy 0.78, detection time 0.30 vs best baseline logpZO 0.60 / 0.69 / 0.35 and STAC 0.57 / 0.68 / 0.42; overall TPR 0.92.",
+    "Per task FIPER is not always best: Stacking PCA-kmeans TWA 0.66 vs FIPER 0.62; PushT STAC 0.58 vs 0.55; Pretzel ACE alone 0.75 vs FIPER 0.68.",
+    "RND-OE and ACE separate 'success under OOD' from 'failure in distribution' better than the other observation- and action-based scores (Fig. 4); action-based scores separate fail from success less than observation-based ones.",
+    "AND-combination with a time-varying threshold gives TPR 0.91 / TNR 0.65; OR-combination gives TPR 1.00 but TNR 0.05 (Table 2).",
+    "Cumulative scores (as in STAC) mostly detect failures because failed rollouts are longer; single-timestep scores (as in FAIL-Detect logpZO) give many false alarms (Figs. 5-6).",
+    "ACE beats STAC especially on tasks with discrete action multimodality (Sorting, Stacking, Pretzel), because variance-style consistency flags mode switches as uncertainty."
+  ],
+  "evidence": {
+    "setting": "both (3 simulation tasks; 2 real-world tasks)",
+    "benchmarks": ["Sorting", "Stacking", "PushT (Sentinel data)", "real Pretzel rope folding (Franka)", "real PushChair mobile manipulation (Sentinel data)"],
+    "scale": "M = 50 successful calibration rollouts in simulation, M = 10 in real tasks; test rollout counts in an appendix table (not extracted); 5 seeds; results averaged over calibration quantiles 0.90-0.99",
+    "statistics": "partial: mean +/- std over 5 seeds (many std are 0.00, implying seeds vary detector training rather than rollouts); no tests",
+    "baselines": "PCA-kmeans, logpZO (FAIL-Detect), RND-A, STAC"
+  },
+  "causal_validation": "None; uncertainty and novelty scores only.",
+  "closed_loop": "Offline evaluation on recorded rollouts; no intervention.",
+  "limitations_stated": [
+    "Needs a set of successful rollouts and a separately trained RND model.",
+    "Runtime cost could grow for very high-dimensional action spaces (e.g. humanoids).",
+    "Only single-task vision-based imitation policies; adapting to large VLAs is future work."
+  ],
+  "critique": [
+    "Not a VLA paper: single-task diffusion/flow policies with ResNet-18 encoders, so its success says little about VLA internals; it is in this batch as the main non-probe baseline (FIPER) used by GUARD, Tri-Info and VLA-Scope.",
+    "Window size and threshold type are selected per method as the values maximizing TWA across all environments, i.e. tuned on the test environments.",
+    "ACE needs a batch of sampled action chunks each step, which later VLA papers (SAFE, VLA-FAIL) argue is too expensive for large VLAs.",
+    "Important methodological warning for the review: cumulative failure scores largely reflect that failed episodes run longer, a shortcut that several VLA failure papers must guard against.",
+    "Seed std of 0.00 on most entries means variability across independent rollouts is not measured."
+  ],
+  "code": "tum-lsy.github.io/fiper_website",
+  "one_line": "FIPER flags failures of diffusion and flow-matching imitation policies, without failure data, when both a novelty score on the policy's observation embedding and the entropy of sampled action chunks stay high over a short window, beating OOD and consistency baselines on five tasks."
+}

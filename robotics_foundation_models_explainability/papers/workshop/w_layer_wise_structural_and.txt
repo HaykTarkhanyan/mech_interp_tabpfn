@@ -1,0 +1,22 @@
+URL: https://ii.metu.edu.tr/node/1694
+OpenReview: []
+
+:
+Limitations of conventional policies in robot learning have driven the adoption of large-scale pretrained models, known as foundation models, leading to the emergence of Vision-Language-Action (VLA) models. Although VLA models have alleviated some of these significant limitations, such as generalization through foundation model backbones, they also inherit flaws, including an inability to comprehend negation. Additionally, this adaptation further degrades some already limited capabilities. Furthermore, VLAs introduce novel issues such as the integration of perception and control, alongside prompt-induced and action-related limitations. Therefore, current VLA models face significant challenges.
+To this end, this thesis aims to explore the interpretability-related limitations of OpenVLA under a unified framework. Moreover, it adapts log-probability-based probing to the VLA setting to alleviate the limitations of conventional linear probing, enabling a comparative analysis. Both methods are employed in a layer-wise manner via task-specific controlled perturbations.
+Our findings demonstrate that (1) OpenVLA neglects the fixed part of the prompts, focusing primarily on instructions; (2) it lacks negation comprehension; (3) language following exhibits greater sensitivity to spatial properties than to colors; (4) action dimensions are not equally important: gripper control is more important than rotations, second only to translations; (5) the first and second halves of the architecture specialize in low-level and high-level action features, respectively, with the 27th and 32nd layers requiring distinct attention. Ultimately, the insights gained from this thesis are expected to inform novel architectural design, more effective training strategies and improved data design in embodied AI.
+METU Library
+METU Mail
+ODTÜ Class
+Informatics Instute Nextcloud
+IS100
+Academic Calendar
+METU Registrar's Office
+METU Rules and Regulations
+Student Affairs Information System
+Registration
+Location of the classrooms
+Facebook
+Twitter
+©2017 METU Graduate School of Informatics. All rights reserved.
+Design: CC-IG

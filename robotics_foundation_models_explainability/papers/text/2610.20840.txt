@@ -1,0 +1,1625 @@
+A Phenomenology of Neural Geometry in Vision-Language-Action Models
+Mozes Jacobs⋆,•,a Aiden Swann⋆,•,b Mathilde Papillon⋆,•,c Siddharth Boppana• Fenil R. Doshi•,a Usha Bhalla• Thomas Icard•,b Matt Feiszli•
+Thomas McGrath• Vasudev Shyam• Demba Baa Leon Bergen• Nina Miolanec Owen Lewis• Jack Merullo• Ekdeep Singh Lubana• Atticus Geiger• Matthew Kowal†,• Thomas Fel†,• ⋆Equal contribution †Equal senior contribution
+https://github.com/goodfire-ai/vla-geometry
+Gr•iGpopodefirre aHarvard UnivOerrsiiWteynrtibasStttainofnord UniversityTacUrPgnoievsetristOitiyobonjfeCcatlifornia, SanTtaaDBraigsrbteaartanOcbejteoct
+m ruler
+
+arXiv:2610.20840v1 [cs.RO] 14 Oct 2026 δ PC2 (6%) PC2 (16%) cm ruler cm ruler
+
+δ PC1 (70% var)
+steer close
+Open
+
+steer open
+Closed
+
+PC1 (77% var)
+346° sweep · open arc -173 w-r9is0t ang0le θ (d9e0g) 173
+
+x y
+
+x=R
+
+R 2 = 0.77 y=G
+
+z=B
+
+origin
+
+m ruler
+R 2 = 0.81 (m) / 0.70 (cm) 0.15dist0a.n4c0e (m)0.70 0 dista5nce1(0cm)15
+
+Figure 1: Control variables realize distinct geometries in a VLA policy. MolmoBot (Deshpande et al., 2026) activations
+
+over many states (clouds) and controlled sweeps varying one physical quantity (traces). Clouds and traces are activations
+
+projected onto a low-dimensional basis (principal components for the gripper and wrist; the span of a linear probe’s weights
+
+for target position); for distance, the activations along the two ruler directions are plotted against the true distance (z axis). (Gripper) Open and closed states from natural rollouts separate along one axis; arrows show interventions reversing the
+
+command. (Wrist) Rotation sweeps pooled over 64 houses trace an open arc, not the circle unconstrained rotation would give. (Target position) A structured trajectory within the cloud of teleported target placements. (Distance) Two orthogonal rulers,
+
+coarse for approach and fine for grasp.
+
+Robotic manipulation is inherently geometric, but what shape does the world take inside the policy that performs it? Prior work on vision-language-action (VLA) policies establishes that task-relevant variables are linearly readable from activations, yet readability certifies only that a variable is present and says nothing about the shape its values trace, which may be curved and multi-dimensional. Using controlled sweeps, natural rollouts, linear probes, and activation interventions, we build a taxonomy of seven task-relevant concepts in VLA models. We find that realized geometry is predominantly multi-dimensional and is shaped by the constraints under which the policy acts. Physical joint limits, for example, leave wrist orientation an open arc rather than a circle, and distance to the target, a single scalar, is realized in two orthogonal subspaces, a coarse ruler for the approach and a fine ruler for the grasp. The same geometries reappear in two further VLA models on real-world robot data, indicating that they are neither model-specific nor artifacts of simulation. We demonstrate how the findings are actionable by steering along the geometry a concept realizes. Overall, this work lays out an initial phenomenology of realized geometry in VLA policies and demonstrates that a concept’s shape carries as much importance as its readability.
+
+1 Introduction
+Robotic manipulation is inherently geometric. Robotic systems operate in three-dimensional space through articulated kinematic structures, while the objects they manipulate and the tasks they perform have their own geometric organization, including symmetries, constraints, and phases of interaction. Any general manipulation policy must contend with this structure, and vision-language-action (VLA) models have become the dominant paradigm for building such policies (Brohan et al., 2023; Kim et al., 2024; Octo Model Team et al., 2024; Black et al., 2025; Physical Intelligence et al., 2025b; Lee et al., 2025; Fang et al., 2026; Deshpande et al., 2026). VLAs inherit visual and semantic priors from backbones pretrained on internet-scale data, including vision encoders (Radford et al., 2021; Oquab et al., 2024; Zhai et al., 2023), language models (Touvron et al., 2023; Gemma Team et al., 2024), and full vision-language models (Driess et al., 2023; Beyer et al., 2024; Deitke et al., 2025; Wang et al., 2024). This data has grown by orders of magnitude in volume and diversity (O’Neill et al., 2024; Walke et al., 2023; Bu et al., 2025; Deshpande et al., 2026; Bjorck et al., 2025), with generalization improving along power-law-like trends (Lin et al., 2025). The resulting systems are increasingly capable, general, and even deployed in the real world (Physical Intelligence et al., 2025b,a; Gemini Robotics Team et al., 2025; Figure AI, 2026; Gemini Robotics Team, 2026; Figure AI, 2025b,a).
+How such competence is reflected in the representations of these VLAs is the subject of a nascent literature (Qi et al., 2025, 2026; Swann et al., 2026; Buurmeijer et al., 2026; Häon et al., 2025; Bhardwaj et al., 2026; Lu et al., 2025; Molinari et al., 2025; Khan et al., 2025; Grant et al., 2026; Goyal, 2026; Yang & Mokalla, 2026; Shi et al., 2026). In particular, one line of work uses probes, testing whether a quantity of interest can be read out from the model’s activations (Joseph et al., 2026; Buurmeijer et al., 2026; Bhardwaj et al., 2026; Lu et al., 2025; Molinari et al., 2025; Grant et al., 2026; Yang & Mokalla, 2026). A second trains sparse autoencoders (SAEs) (Cunningham et al., 2024; Bussmann et al., 2024; Rajamanoharan et al., 2024b; Fel et al., 2025; Costa et al., 2025; Hindupur et al., 2025; Gao et al., 2025; Bricken et al., 2023; Lubana et al., 2026; Bhalla et al., 2026b; Templeton et al., 2024; Rajamanoharan et al., 2024a; Lieberum et al., 2024; Thasarathan et al., 2025; Makhzani & Frey, 2014) to discover concepts without supervision (Swann et al., 2026; Khan et al., 2025; Grant et al., 2026), and the discovered features even provide control over the policy via steering Joseph et al. (2025).
+Both lines of work share a limitation. A probe can ensure that a variable is decodable, yet says nothing about the structure through which the model “realizes” it, and an SAE inherits the linear representation hypothesis (LRH) (Park et al., 2024; Costa et al., 2025), which casts each concept as a single direction in activation space and therefore fixes that structure in advance. Interpretability for language and vision models, conscious of this limitation, has moved beyond the single direction to multi-dimensional features and curved geometry (Modell et al., 2025; Feucht et al., 2026; Wurgaft et al., 2026; Bhalla et al., 2026a; Fel et al., 2026b,a; Engels et al., 2025; Lubana et al., 2026; Karkada et al., 2026; Dooms & Gauderis, 2025; Kantamneni & Tegmark, 2025; Gurnee et al., 2026; Yocum et al., 2025; Park et al., 2025a; Sarfati et al., 2026; Costa et al., 2025; Pearce et al., 2025; Diego-Simón et al., 2024; Chung et al., 2018; Cohen et al., 2020; Hosseini et al., 2026; Dhimoila et al., 2026; Fel et al., 2025; Gorton, 2024; Sun et al., 2025; Tvetkova et al., 2025; Park et al., 2025b, 2026), a line of work now gathered under the name of Neural Geometry (Geiger et al., 2026).
+Do VLAs realize their variables through similarly rich geometry? Two facts suggest they might. First, vision models, including the backbones VLAs inherit, already carry colors, shadows, and position as multi-dimensional features rather than single directions (Fel et al., 2026b,a; Pach et al., 2026; Uselis et al., 2026). Second, representations tend to inherit the symmetries of their training data, so that cyclic concepts, for example, come to be arranged on circles (Karkada et al., 2026). The variables a manipulation policy must track, such as poses, distances, contacts, and task phase, are geometric objects with symmetries of their own before the network ever represents them.
+We take up this question and make the following contributions:
+• Realized geometry as a lens for VLA interpretability. We formalize the distinction between concept realization—the capacity to extract information about a concept under a given readout—and its realized geometry—the structure activations trace as the concept varies. Linear readability establishes only that a concept is present, while its realized geometry determines how its values are structured and whether they can be manipulated.
+• A taxonomy of realized geometry in MolmoBot. Combining controlled sweeps, natural rollouts, linear probes, and activation interventions, we chart the realized geometry of seven control concepts: gripper state,
+2
+
+end-effector position, distance to the target, target object position, contact, task phase, and wrist orientation. We find this geometry is predominantly multi-dimensional and shaped by the constraints under which the policy acts: joint limits leave wrist orientation an open arc rather than a circle, while the numerical precision of the embedding splits distance into orthogonal coarse (meter-scale) and fine (centimeter-scale) rulers. • Real-world transfer. We reproduce these geometries in π0.5 (Physical Intelligence et al., 2025b) and MolmoAct2 (Fang et al., 2026) on the real-world DROID dataset (Khazatsky et al., 2024), indicating they are neither model-specific nor artifacts of simulation.
+2 Realization of Control Geometry
+Before specifying the seven concepts of interest that this study will examine and documenting their realized geometry, we first clarify what is meant by realized and by geometry. In particular, our aim here is to distinguish two questions that are frequently conflated in the literature: whether a concept can be recovered from a policy’s activations – which we term realized – and what geometric shape that recovered concept takes within activation space – which we term realized geometry. The first question asks about recoverability, the second about structure; we now formalize those notions.
+
+Notation. Throughout, bold symbols denote vector or matrix valued quantities and calligraphic symbols their
+domains. We model observations as arising from a data-generating process whose latent state collects m concepts, writing [m] = {1, . . . , m} and z = (z1, . . . , zm) ∼ pz for a state drawn from Z = Z1 × · · · × Zm. Borrowing the language of conceptual spaces (Gärdenfors, 2000), we take each concept i ∈ [m] to be a structured domain
+(Zi, di) rather than a single vector, so that Zi supplies the values the concept can assume; a domain may be discrete, continuous, or manifold-valued, with an intrinsic dimension ki = dim(Zi) when smooth. We write x and a for a single input and activation, and X and A ∈ Rn×d for n of them stacked row-wise.
+
+Data-generating process. We consider the minimal data-generating process
+
+z ∼ pz, x = g (z) ∈ X , a = f (x) ∈ A ⊆ Rd,
+
+(1)
+
+in which the (potentially stochastic) generator g : Z → X combines the concepts z and instantiates an observation x (e.g. an image), while f : X → A maps that observation to an activation a at a fixed layer of a VLA. In this work, we will focus on a particular set of concepts which are control-relevant and are modeled by both a quantity and its possible values1, so that Zi may describe a binary gripper state, a scalar distance in R+, an end-effector position in R3, or a wrist orientation in S1. These are properties of the world or of the control process, and the policy accesses them only through the observation that the generator g produces, so that nothing guarantees a concept present in z remains recoverable from a. Whether it does is the first thing to establish, and it is a question that shall become well posed only once the means of recovery is fixed.
+Definition 1 (Concept realization). Let (Zi, di) be the concept domain of interest and V be a class of readouts γ : A → Zi, for ε ≥ 0, we say that concept i is (V, ε)-realized in a if
+
+inf E (di (γ (a) , zi)) ≤ ε,
+
+(2)
+
+γ ∈V
+
+where the expectation is taken over the process in Equation 1.
+
+This definition is relative to both a readout class and an error tolerance. It therefore specifies not only whether information about zi is present, but also how “easily” it can be extracted. This follows the same operational principle as predictive V-information (Xu et al., 2020): usable information is defined relative to a class of predictors. In particular, unless specified, our main case is the class of affine readouts γ (a) = W a + b. When concept i is realized under this class, we say that it is linearly readable. We reserve realization for the general, readout-relative notion and use linear readability only for this particular case.
+An important remark before jumping to the realized geometry is that realization does not imply that the activations are isomorphic to the concept domain2 or that the policy causally “uses” the recoverable information. Finally, it also lacks a description of the geometry of the conceptual space itself, which we now turn our attention to.
+1This mirrors the recent notion of a feature field (Yocum et al., 2025), where a feature is defined over a topological space – rather than at a point – and the geometry of that space embedded in activation space determines which functions of the concept are linearly representable.
+2It does not require (1) preservation of distances or (2) topology, nor (3) an efficient or minimal representation (see App. A for an example).
+
+3
+
+a)
+
+b)
+
+c)
+
+d)
+
+e)
+
+World
+
+EE Position
+
+Model
+
+Target Object Position
+
+World
+
+Model
+
+Figure 2: MolmoBot’s VLM encodes its end-effector (layer 20) and the target object (layer 21) in separate, approximately Euclidean 3-D subspaces. Top: (a) held-out per-axis error relative to gripper width; (b) held-out R2 vs. readout rank; (c) singular values of the rank-3 readout; (d) residual of a linear map from world to activation displacements across layers (solid: general linear; dashed: orthogonal; reference line: no linear relation); (e) curvature of straight world paths inside each subspace vs. distance to the gripper, compared with a random 3-D projection. Middle, bottom: five gripper paths through the workspace (middle) and five target paths across its support surface (bottom), shown in world coordinates (upper) and projected into the corresponding subspace (lower). Subspaces are fit with the tested house held out.
+
+Realized geometry. Knowing that a concept can be read from the activations tells us nothing about how its values are laid out, and to describe this layout we fix a context c = z[m]\{i} containing all the other concepts and look at how the activations move when only zi changes.
+
+Definition 2 (Realized geometry). The activation map of concept i in context c is
+
+φi(v; c) = E a | zi = v, z[m]\{i} = c , v ∈ Zi,
+
+(3)
+
+and the realized geometry of the concept is the image Mi(c) = φi(Zi; c) together with the map that produces it.
+
+In words, the realized geometry is the path traced by the activations when only concept i moves, for example two points for the gripper state, a curve for a distance, or an arc for the wrist angle. This path is what just monitoring would overlook, since, for example a linear probe only looks at a few directions of activation space and the path can take any shape in the others without changing its accuracy (App. A). The rest of this work estimates φi, directly through controlled sweeps when the simulator lets us move one concept and hold the rest fixed, and through teleports and natural rollouts when it does not, and then tests with interventions whether the policy actually uses the geometry we find.
+4
+
+how far the hand is from the target object metres left to close
+
+Distance to Target Object
+
+d
+
+c) range-split round to c 1.0
+0.8
+
+sminatemhaeesw-uoarrlexdids ceiling synthetic, one direction
+
+a)
+0.8
+
+fnaeradredceocdoede(1(5<-1750ccmm))
+
+nfaeraarxaisxiesrearsaesded b) 0.8
+
+R² far ( c)
+
+held-out R²
+
+0.6
+
+0.6
+
+0.4
+
+0.4
+
+0.2
+
+0.2
+
+0.0 0
+d)
+
+1 dire2ctions4eraseind8act(ikva)tion1s6pace 32 Meter ruler
+
+0.0 0.0
+
+15
+
+0.60
+
+35 7 round to c full-range range-split
+
+10 15 220350 40
+
+0.2 R² n0e.a4r (< c0).6 0.8 CM ruler
+15
+
+distance (m)
+
+cm-probe readout (cm)
+
+0.6
+
+10
+
+0.45
+
+10
+
+0.4
+
+0.2
+
+5
+
+0.30
+
+5
+
+0.0
+
+perpendicular 0
+
+0.15
+
+0
+
+10 b2o0unda3ry0 c (cm40) 50
+
+0.0 m-0p.2robe re0a.4dout (0m.6)
+
+0.0 m-0p.2robe re0a.4dout (0m.6)
+
+distance (cm)
+
+cosine (near, far)
+
+Figure 3: MolmoBot’s VLM encodes distance to the target in nearly orthogonal near- and far-range codes (layer 21). (a) Near (<15 cm) and far (15–70 cm) probe R2 after erasing the top-k directions of the other
+probe, computed against each range’s own variance. Erasing far directions leaves near decoding intact while far decoding collapses, and vice versa. The intact (k = 0) probes have errors of ∼1.3 cm (near) and ∼3.6 cm (far). (b) Near R2 (<c) vs. far R2 (≥c) as the cutoff c is swept. Clipped (‘round to c’) probes match probes fit
+separately on each range and outperform a single full-range probe. (c) Cosine between the near- and far-probe weight vectors as the cutoff c is swept, for range-split and clipped (‘round to c’) pairs (fold mean ± s.d.). For c ≲ 30 cm, both cosines stay below the cosine between two copies of the same probe fit on different halves of the data (dashed). On synthetic activations that encode distance along a single direction, the same probes are nearly parallel for c ≳ 15 cm (dotted). (d) Activations plotted by their meter- and centimeter-probe readouts, colored by true distance in meters (left) and centimeters (right). Far samples vary along the meter axis while the centimeter
+readout saturates, and near samples do the opposite, tracing an L.
+
+3 A Taxonomy of Realized Geometry in MolmoBot
+We now build a taxonomy of how a model realizes the variables of pick and pick-and-place tasks. Our subject is MolmoBot (Deshpande et al., 2026), which pairs a VLM that reads the language instruction and camera images of the scene with an action expert that reads the robot’s proprioceptive state and generates action chunks via flow matching, cross-attending to the VLM at each layer (Appendix C.1). We choose MolmoBot for three reasons: it is a relatively strong policy on numerous benchmarks (Deshpande et al., 2026), and we hypothesize that stronger models realize task geometry more faithfully; its weights are open, so we can record and edit activations; and it runs in MolmoSpaces (Kim et al., 2026), which provides ground-truth task variables and lets us intervene on the world mid-rollout. We study seven variables in three groups: spatial geometry (EE position, target object position, and distance to the target), task structure (contact and task phase), and action geometry (wrist orientation and gripper aperture). For each, we ask whether the model represents it and with what geometry.
+3.1 Spatial Geometry
+We begin with spatial geometry in the VLM backbone, which receives no proprioception and must infer these variables from images: EE position, target object position, and distance to the target.
+End-effector and target object position. Since both positions live in R3, we expect a faithful code for each to occupy a three-dimensional subspace. We teleport the arm through poses above the workspace and the target
+5
+
+a) Contact
+
+no contact
+
+contact
+
+in the world
+
+PC1 (9.1%)
+
+contact
+
+b)
+
+no contact
+
+1.0
+
+0.9
+
+P(correct)
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+PCin2ac(t7iv.a6t%ion)space
+
+baseline 0.860 0.853
+(nOatpuernal) (Cfolorcseedd)
+Early touch
+
+chance 0.919 0.7500.913
+(Cnalotuseradl) (fOorpceend)
+Induced slip
+
+Figure 4: MolmoBot’s VLM encodes contact with the target along a direction that survives off-schedule contact (layer 24). (a) Natural rollouts projected onto their first three principal components, colored by contact; the two states separate cleanly. (b) An LDA probe trained on natural rollouts decodes contact with 91.3% accuracy. When we force an early touch or an induced slip by teleporting the object, the same probe still decodes contact well above chance.
+
+through a uniform sweep of positions on the workspace surface, record VLM activations after each teleport, and fit ridge probes onto (x, y, z), evaluated on held-out houses (Appendix C.3). For both variables, three dimensions are necessary and sufficient: held-out R2 rises sharply up to rank 3 and does not improve beyond it, reaching 0.92 for EE position (layer 20) and 0.75 for the target (layer 21), with per-axis error within the gripper’s width (Fig. 2a–c). These subspaces also preserve spatial geometry: translating the gripper or target by a known world vector shifts the activations in a way well fit by an orthogonal (Procrustes) map (Fig. 2d), and straight world paths stay nearly straight inside each subspace (Fig. 2e). Position thus sets the taxonomy’s baseline: from pixels alone, the VLM re-encodes a Euclidean quantity at its native dimension and approximately its native metric.3 We next turn to a variable that couples the two: distance to the target.
+Distance to target object. Distance to the target is a scalar, but the policy needs it at two very different scales: it must tolerate noise during the approach yet resolve the grasp to within a centimeter. A single direction with finite precision may struggle to carry both, so we hypothesize that the model encodes distance in more than one subspace. We fit separate linear probes on near (<15 cm) and far (15–70 cm) states and iteratively erase one probe’s directions from the activations (Appendix C.4). Each code survives removal of the other: erasing 32 far directions drops far R2 from 0.84 to near zero while near R2 stays at 0.71, and vice versa (Fig. 3a).
+To isolate the two codes, we fit a meter probe with targets clipped below 15 cm and a centimeter probe with targets clipped above 15 cm, a cutoff that is Pareto-optimal for both ranges (Fig. 3b). Each probe reads its own range well (R2 = 0.81 and 0.70) and saturates outside it, so activations projected onto the two readouts trace an L (Fig. 3d). The two probe directions are nearly orthogonal, with a cosine of 0.04 against a split-half ceiling of ∼0.23 (Fig. 3c). Clipping does not impose this orthogonality, since a probe can only select directions the activations contain. On synthetic activations that encode distance along a single direction, the near and far probes at the 15 cm boundary come out nearly parallel (cosine 0.95 for the clipped pair, 0.92 for the range-split pair), so neither clipping nor range-restricted fitting yields orthogonal probes on its own. In the model, probes fit separately on each range, without clipping, are also nearly orthogonal (0.04 vs. ∼0.18; Fig. 3c). Distance thus departs from the position baseline: the model realizes a single scalar along separate directions for coarse and fine scales, consistent with the limited precision of a representation bending how a concept is encoded.
+3.2 Task Structure
+We next turn to variables that describe the structure of the task rather than the geometry of the scene: contact with the target object, in the VLM, and task phase, in the action expert.
+Contact. Contact with the target is binary, so we treat it as a two-class problem and use linear discriminant analysis (LDA) to find the direction that separates the classes. We label each state of the rollouts by simulator contact and fit the discriminant on VLM activations (layer 24). Contact and no-contact states separate cleanly even in an unsupervised PCA of natural activations (Fig. 4a), and the discriminant decodes contact with 91.3% accuracy. Because contact co-occurs with other variables in natural rollouts, high accuracy alone does not show
+3The action expert also carries rank-3 subspaces for both variables (Appendix Figs. 9 and 10).
+6
+
+ground truth Exo
+
+reach
+
+grasp
+
+transport
+
+place
+
+Phase
+
+Wrist
+
+LD2 decoded correctly (%)
+Δ gripper closed fraction
+
+recovered
+
+t
+
+a)
+
+reach
+
+grasp b)
+
+transport place
+
+6 4 2 0 -2 -4 -6
+-8 -4 0 4
+LD1
+
+reach
+
+grasp
+
+transport
+
+place
+
+in the world
+
+in act
+
+c)
+
+reach grasp transport place d)
+
+100
+
+transport 89%
+
+place 73%,
+
+75
+
+transport 24%
+
+grasp 65%
+
+50
+
+reach 50%,
+
+grasp 50%
+
+25 chance
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+-0.2
+
+-0.4 -0.6 -0.8
+
+opens more #
+
+closes more "
+
+0 natural frozen
+
+reach transport grasp place
+
+Figure 5: MolmoBot’s action expert encodes task phase, but infers it from motion, so pauses are read as phase transitions (layer 24). Top: an example pick-and-place trajectory and its path through the phase subspace. Bottom: (a) LDA projection of natural rollouts, colored by phase. (b) First three principal components of natural activations, colored by true phase; the example trajectory is colored by the LDA probe readouts. (c) Freezing the arm shifts the decoded phase toward grasp during reach; frozen place landmarks are most often still decoded as place. Right: most frequent decoded phases when frozen (top two for reach and place). (d) Change in the fraction of executed-chunk steps commanding a closed gripper (frozen − natural; mean ± 95% CI across landmarks). Frozen reach and grasp moments close the gripper, while frozen place moments open it (Fig. 19).
+
+Box 1: Belief vs. Action. Probe accuracy does not distinguish the two regimes.
+Belief. Some structures encode the model’s estimate of its current state, such as wrist angle, or its relationship to the scene, such as the distance to the object. Editing such structures effectively amounts to affecting the policy’s perception and can thus only affect behavior indirectly. The policy always seeks to close the gap between perceived state and goal state, meaning the behavior will shift against the edit, producing what we call a compensation effect.
+Action. Other structures directly represent the commanded behavior, such as the gripper. Editing such structures affects behavior directly, while leaving other outputs, such as other joints, unchanged. To identify these edits, we reverse engineer the desired behavior by pulling a target output action back into activation space.
+
+that the direction tracks contact itself. We therefore force contact off schedule by teleporting the object into the gripper early (an early touch) or away from it during a grasp (an induced slip). Even though both interventions are out of distribution for the model, the same direction still decodes contact well above chance (Fig. 4b), indicating that the model maintains a real contact code rather than some proxy for task timing.
+Phase. We now move to the action expert, where we expect variables coupled to actions to appear most strongly. Unlike contact, task phase is defined by the whole trajectory rather than a single state, so we fit a multi-class LDA on activations along full pick-and-place trajectories (AE, layer 24; labels in Appendix C.7). Natural activations separate into distinct clusters for reach, grasp, transport, and place, both in the LDA projection and in the first three principal components (Fig. 5a–b). To test how the model infers phase, we freeze the arm for several actions. Freezing during reach shifts the decoded phase toward grasp, while freezing during grasp, transport or place mostly leaves it unchanged (Fig. 5c). The shifts are also behavioral: freezing raises the fraction of steps commanding a closed gripper by 43 percentage points during reach and lowers it by 68 points during place, while leaving it unchanged during transport (Fig. 5d). MolmoBot thus represents contact and task phase with different robustness. While contact remains decodable when forced off schedule, phase does not reliably survive a pause. Since the model does not receive previous
+7
+
+Wrist Orientation
+
+a)
+
+b)
+
+c)
+
+d)
+
+Figure 6: The action expert encodes wrist orientation as an open arc, and edits to it act as beliefs (layer 9). We sweep the wrist’s roll joint through its full range (−172.8◦ to +172.8◦), holding other joints fixed, and record
+activations at each angle (camera views in Fig. 20). (a) The sweep traces an open curve: its endpoints, nearly
+the same physical pose, lie far apart. (b) An autoencoder maps activations onto an exact circle. (c) A single ±20◦ or ±40◦ edit produces a decoded rotation opposing the written angle (dots: seven held-out scenes; ticks:
+means; dashed diagonal: the response a command would produce). (d) Holding the edit at every step compounds
+the corrections, rotating the wrist opposite the written angle by about its magnitude (vertical lines mark action
+chunks).
+
+a)
+
+b)
+
+Gripper
+
+c)
+
+d)
+
+Figure 7: Gripper control is one-dimensional (AE, layer 32). (a) The first principal component of the pullback steering vectors captures ∼70% of their variance. (b) One principal component of the pullback steering vectors decodes the commanded gripper aperture nearly as well as the full activation. (c) Natural-rollout activations colored by gripper state; the steering vectors point from each cluster toward the other. (d) One component flips the gripper but leaks into the arm joints relative to using the full 768-dimensional steering vector; more components remove this excess leakage.
+actions, it cannot keep an explicit time index and must re-derive phase from motion at each chunk. We hypothesize that in demonstrations, the arm stops when the gripper actuates, so that a still arm is read as a phase transition and the model issues the corresponding gripper command.
+3.3 Action Geometry
+So far, we have studied variables by reading them out. For the last two, wrist orientation and gripper aperture, we also write to them, which reveals a distinction that readout alone cannot: whether an edit lands on what the model believes or on what it commands (Box 1).
+Wrist orientation. Orientation is cyclic, so its most compact code would be a circle. However, the wrist’s roll joint is limited to ±172.8◦ and never completes a full turn, and the action expert receives this angle directly as a raw, non-wrapping joint reading. Consistent with this, sweeping the joint through its range (Appendix Fig. 20) traces an open arc in the action expert (layer 9), whose ends lie far apart in activation space despite being only 14◦ apart physically (Fig. 6a). The action expert thus encodes an unwrapped angle: after a full turn past the joint limit (overridden in simulation), the images are identical but its activation does not return to the start, while the VLM’s does (Appendix Fig. 22). To write to this code, we cannot add one fixed vector: on an open arc, the direction that advances the rotation depends on where the activation sits (Fig. 6a). We instead train a small MLP autoencoder that maps activations onto an exact circle (Fig. 6b), so that rotating by θ is the same operation at every state; the edit is the decoded difference between the rotated and unrotated points (Appendix C.8). This edit is built from the representation alone and does not command motion, making it a belief edit (Box 1). Applied once mid-rollout, it produces a compensation effect: the decoded action rotates 0.33 ± 0.08 against each written degree (Fig. 6c), as if the policy were closing the gap between its believed angle and its goal. Held at every query, the corrections compound, and the wrist rotates opposite the edit by 1.0–1.3× the written angle (Fig. 6d). Thus, even a geometry-matched edit lands on a belief, so for the gripper we work from the action side.
+8
+
+Figure 8: The geometry recovered in MolmoBot largely reappears in π0.5 and MolmoAct2 on real-world DROID data. Procrustes similarity between each pair of models is highest for the gripper and lowest for wrist orientation, and all values exceed a shuffled null (0.00–0.02 for gripper and distance; 0.11–0.18 for wrist and EE position). (Gripper) Pullback steering vectors (379 per model) on their top three principal components, colored by whether they close (blue) or open (red) the gripper. (Wrist orientation) Activations on a (cos θ, sin θ) probe, colored by angle. (EE position) Activations on the (x, y, z) probe. (Distance to grasp) The real-world proxy for distance to target: activations on the meter and centimeter rulers of Fig. 3, with far (cool) and near (warm) points spreading along different rulers. Episode trajectories are overlaid in the last three columns.
+Gripper. The gripper command is an action variable (see Box 1), so a natural question is, then, how can we edit just the gripper action? Here, we derive the edit from the action output. For each sampled rollout state, we use pullback (Wurgaft et al., 2026) to find a steering vector δ, added as h ← h + δ in the action expert (layer 32), optimized with gradients from the action output until the decoded gripper command flips while the arm
+9
+
+joints stay fixed. Natural activations form two clouds by gripper state, and each successful steering vector points from its own cloud toward the other (Fig. 7c), so edits derived only from action gradients recover the axis that separates the states. These edits are largely one-dimensional: their first principal component captures ∼70% of their variance (Fig. 7a) and is sufficient to accurately decode the commanded gripper state (Fig. 7b). This direction is not fully isolated, however: steering along it also moves the arm joints, and suppressing this leakage requires additional components (Fig. 7d). Together, the wrist and gripper show two things. First, physical limits shape realized geometry: a variable we hypothesized would be circular is encoded as an arc. Second, recovering a variable’s geometry does not determine how editing it affects behavior: edits along the wrist’s arc land on a belief and elicit compensation, whereas edits derived from gripper action gradients change the action.
+4 Representations in Real Robots
+All experiments in Section 3 were run in simulation. Since the gap between simulation and reality remains a central open problem in robotics (Jakobi et al., 1995; Tobin et al., 2017; Kadian et al., 2020), we ask whether the geometry we found carries over to real data. We repeat our analyses on MolmoBot and two additional VLAs, π0.5 (Physical Intelligence et al., 2025b) and MolmoAct2 (Fang et al., 2026), using episodes from the real-world DROID dataset (Khazatsky et al., 2024). Real data lacks the privileged information of simulation, such as ground-truth object poses and mid-rollout interventions, so we focus on four variables we can measure: gripper aperture, wrist orientation, EE position, and distance to target, for which we use distance to the eventual grasp location as a proxy. All four variables are recovered in every model, with cross-model Procrustes similarities well above a shuffledvariable null (Fig. 8). The gripper structure is the most consistent across models: pullback steering vectors again separate closing from opening, with the first principal component carrying 31–59% of their variance. EE position is linearly decodable in all three models (R2 of 0.78–0.92), and the probed activations follow the arm smoothly through an episode. Wrist orientation is decoded less well (R2 of 0.52–0.69) and agrees least across models. Most notably, the two-scale distance code reappears: in all three models, far points spread along the meter ruler while near points split off onto the centimeter ruler. This structure is sharper in π0.5 and MolmoAct2 than in MolmoBot, consistent with MolmoBot being evaluated on real data outside its simulated training distribution. Together, these results suggest that the geometry we identified is neither an artifact of simulation nor specific to one model, but a recurring way in which VLAs organize the variables needed for manipulation.
+5 Conclusion
+In this work, we asked what geometry manipulation variables realize inside VLAs. In MolmoBot, the answer is rarely a single direction: position occupies a near-Euclidean 3-D subspace, wrist orientation an open arc imposed by joint limits, and distance two nearly orthogonal rulers, and this structure largely recurs in π0.5 and MolmoAct2 on real data. Two lessons follow. First, decodability is only a starting point: a variable can be linearly readable yet require a geometry-matched edit to steer, and even then the edit may land on a belief the policy compensates against rather than an action it executes. Interpretability tools for VLAs should therefore match both the geometry a concept realizes and its role in control. Second, this geometry is shaped by the policy’s inputs and physical limits, so design choices such as how joint angles are encoded shape how the model represents them. Our taxonomy is supervised, but it provides ground truth against which unsupervised methods, such as block-sparse featurizers (Fel et al., 2026a), can be validated. We believe the geometry of VLAs is a promising direction for both interpretability and better policies.
+Acknowledgments
+We thank our colleagues at Goodfire for valuable feedback at various stages of the project.
+References
+Beyer, L., Steiner, A., Pinto, A. S., Kolesnikov, A., Wang, X., Salz, D., Neumann, M., Alabdulmohsin, I., Tschannen, M., Bugliarello, E., et al. PaliGemma: A versatile 3b vlm for transfer. arXiv preprint arXiv:2407.07726,
+10
+
+2024.
+Bhalla, U., Fel, T., Rager, C., Feucht, S., Haklay, T., Wurgaft, D., Boppana, S., Kowal, M., Shyam, V., Merullo, J., et al. Do sparse autoencoders capture concept manifolds? arXiv preprint arXiv:2604.28119, 2026a.
+Bhalla, U., Oesterling, A., Mayrink Verdun, C., Lakkaraju, H., and Calmon, F. Temporal sparse autoencoders: Leveraging the sequential nature of language for interpretability. In International Conference on Learning Representations, volume 2026, pp. 141147–141175, 2026b.
+Bhardwaj, A., Duan, E. W., Dan, P., Ma, W.-C., and Culbertson, P. Decoding task progress from vla representations. arXiv preprint arXiv:2608.13474, 2026.
+Bjorck, J., Castañeda, F., Cherniadev, N., Da, X., Ding, R., Fan, L., Fang, Y., Fox, D., Hu, F., Huang, S., Jang, J., Jiang, Z., Kautz, J., Kundalia, K., Lao, L., Li, Z., Lin, Z., Lin, K., Liu, G., Llontop, E., Magne, L., Mandlekar, A., Narayan, A., Nasiriany, S., Reed, S., Tan, Y. L., Wang, G., Wang, Z., Wang, J., Wang, Q., Xiang, J., Xie, Y., Xu, Y., Xu, Z., Ye, S., Yu, Z., Zhang, A., Zhang, H., Zhao, Y., Zheng, R., and Zhu, Y. GR00T N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734, 2025.
+Black, K., Brown, N., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., Groom, L., Hausman, K., Ichter, B., et al. π0: A vision-language-action flow model for general robot control. Robotics: Science and Systems (RSS), 2025.
+Bricken, T., Templeton, A., Batson, J., Chen, B., Jermyn, A., Conerly, T., Turner, N., Anil, C., Denison, C., Askell, A., Lasenby, R., Wu, Y., Kravec, S., Schiefer, N., Maxwell, T., Joseph, N., Hatfield-Dodds, Z., Tamkin, A., Nguyen, K., McLean, B., Burke, J. E., Hume, T., Carter, S., Henighan, T., and Olah, C. Towards monosemanticity: Decomposing language models with dictionary learning. Transformer Circuits Thread, 2023. https://transformer-circuits.pub/2023/monosemantic-features/index.html.
+Brohan, A., Brown, N., Carbajal, J., Chebotar, Y., Chen, X., Choromanski, K., Ding, T., Driess, D., Dubey, A., Finn, C., et al. RT-2: Vision-language-action models transfer web knowledge to robotic control. Proceedings of the Conference on Robot Learning (CoRL), 2023.
+Bu, Q., Cai, J., Chen, L., Cui, X., Ding, Y., Feng, S., Gao, S., He, X., Hu, X., Huang, X., et al. AgiBot World Colosseo: A large-scale manipulation platform for scalable and intelligent embodied systems. arXiv preprint arXiv:2503.06669, 2025.
+Bussmann, B., Leask, P., and Nanda, N. BatchTopK sparse autoencoders. arXiv preprint arXiv:2412.06410, 2024.
+Buurmeijer, H., Alonso, C. A., Swann, A., and Pavone, M. Observing and controlling features in vision-languageaction models. arXiv preprint arXiv:2603.05487, 2026.
+Chung, S., Lee, D. D., and Sompolinsky, H. Classification and geometry of general perceptual manifolds. Physical Review X, 8(3):031003, 2018.
+Cohen, U., Chung, S., Lee, D. D., and Sompolinsky, H. Separability and geometry of object manifolds in deep neural networks. Nature communications, 11(1):746, 2020.
+Costa, V., Fel, T., Lubana, E. S., Tolooshams, B., and Ba, D. From flat to hierarchical: Extracting sparse representations with matching pursuit. Advances in Neural Information Processing Systems (NeurIPS), 2025.
+Cunningham, H., Ewart, A., Riggs, L., Huben, R., and Sharkey, L. Sparse autoencoders find highly interpretable features in language models. Proceedings of the International Conference on Learning Representations (ICLR), 2024.
+Deitke, M., VanderBilt, E., Herrasti, A., Weihs, L., Ehsani, K., Salvador, J., Han, W., Kolve, E., Kembhavi, A., and Mottaghi, R. Procthor: Large-scale embodied ai using procedural generation. Advances in neural information processing systems, 35:5982–5994, 2022.
+11
+
+Deitke, M., Clark, C., Lee, S., Tripathi, R., Yang, Y., Park, J. S., Salehi, M., Muennighoff, N., Lo, K., Soldaini, L., et al. Molmo and PixMo: Open weights and open data for state-of-the-art vision-language models. In 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 91–104. IEEE, 2025.
+Deshpande, A., Guru, M., Hendrix, R., Jauhri, S., Eftekhar, A., Tripathi, R., Argus, M., Salvador, J., Fang, H., Wallingford, M., et al. MolmoB0T: Large-scale simulation enables zero-shot manipulation. arXiv preprint arXiv:2603.16861, 2026.
+Dhimoila, G., Fel, T., Boutin, V., and Picard, A. Cross-modal redundancy and the geometry of vision-language embeddings. Proceedings of the International Conference on Learning Representations (ICLR), 2026.
+Diego-Simón, P., d’Ascoli, S., Chemla, E., Lakretz, Y., and King, J.-R. A polar coordinate system represents syntax in large language models. Advances in Neural Information Processing Systems, 37:105375–105396, 2024.
+Dooms, T. and Gauderis, W. Finding manifolds with bilinear autoencoders. arXiv preprint arXiv:2510.16820, 2025.
+Driess, D., Xia, F., Sajjadi, M. S., Lynch, C., Chowdhery, A., Ichter, B., Wahid, A., Tompson, J., Vuong, Q., Yu, T., et al. PaLM-E: An embodied multimodal language model. Proceedings of the International Conference on Machine Learning (ICML), 2023.
+Engels, J., Michaud, E., Liao, I., Gurnee, W., and Tegmark, M. Not all language model features are onedimensionally linear. In International Conference on Learning Representations, volume 2025, pp. 84591– 84622, 2025.
+Fang, H., Duan, J., Clay, D., Wang, S., Liu, S., Huang, W., Fan, X., Tsai, W.-C., Chen, S., Wang, Y. R., et al. MolmoAct2: Action reasoning models for real-world deployment. arXiv preprint arXiv:2605.02881, 2026.
+Fel, T., Lubana, E. S., Prince, J. S., Kowal, M., Boutin, V., Papadimitriou, I., Wang, B., Wattenberg, M., Ba, D., and Konkle, T. Archetypal SAE: Adaptive and stable dictionary learning for concept extraction in large vision models. Proceedings of the International Conference on Machine Learning (ICML), 2025.
+Fel, T., Kowal, M., Jacobs, M., Hazra, D., Bhalla, U., Sharkey, L., Bushnaq, L., Grant, S., Haklay, T., Icard, T., et al. Structuring sparsity: Block-sparse featurizers capture visual concept manifolds. arXiv preprint arXiv:2606.25234, 2026a.
+Fel, T., Wang, B., Lepori, M., Kowal, M., Lee, A., Balestriero, R., Joseph, S., Lubana, E. S., Konkle, T., Ba, D., et al. Into the rabbit hull: From task-relevant concepts in DINO to Minkowski geometry. In International Conference on Learning Representations, volume 2026, pp. 154538–154584, 2026b.
+Feucht, S., Haklay, T., Bhalla, U., Wurgaft, D., Rager, C., Sarfati, R., Merullo, J., McGrath, T., Lewis, O., Lubana, E. S., et al. Arithmetic in the wild: Llama uses base-10 addition to reason about cyclic concepts. arXiv preprint arXiv:2605.01148, 2026.
+Figure AI. F.02 contributed to the production of 30,000 cars at BMW. https://www.figure.ai/news/ production-at-bmw, November 2025a. Accessed September 2026.
+Figure AI. Helix: A vision-language-action model for generalist humanoid control. https://www.figure.ai/ news/helix, February 2025b.
+Figure AI. Introducing Helix 02: Full-body autonomy. https://www.figure.ai/news/helix-02, January 2026.
+Gao, L., Dupre la Tour, T., Tillman, H., Goh, G., Troll, R., Radford, A., Sutskever, I., Leike, J., and Wu, J. Scaling and evaluating sparse autoencoders. In International Conference on Learning Representations, volume 2025, pp. 26721–26754, 2025.
+Gärdenfors, P. Conceptual spaces: The geometry of thought. MIT press, 2000.
+12
+
+Geiger, A., Lubana, E. S., Fel, T., Merullo, J., Byun, M., Lewis, O., and McGrath, T. The world inside neural networks: How neural geometry will unlock understanding and control of AI. Goodfire Research, May 2026. URL https://www.goodfire.com/research/the-world-inside-neural-networks.
+
+Gemini Robotics Team.
+
+Gemini Robotics 2 brings whole-body intelligence to
+
+robots.
+
+Google DeepMind blog, July 2026.
+
+URL https://deepmind.google/blog/
+
+gemini-robotics-2-brings-whole-body-intelligence-to-robots/. Accessed: 2026-08-25.
+
+Gemini Robotics Team, Abdolmaleki, A., Abeyruwan, S., Ainslie, J., Alayrac, J.-B., Arenas, M. G., Balakrishna, A., Batchelor, N., Bewley, A., Bingham, J., et al. Gemini Robotics 1.5: Pushing the frontier of generalist robots with advanced embodied reasoning, thinking, and motion transfer. arXiv preprint arXiv:2510.03342, 2025.
+
+Gemma Team, Mesnard, T., Hardin, C., Dadashi, R., Bhupatiraju, S., Pathak, S., Sifre, L., Rivière, M., Kale, M. S., Love, J., et al. Gemma: Open models based on Gemini research and technology. arXiv preprint arXiv:2403.08295, 2024.
+
+Gorton, L. The missing curve detectors of InceptionV1: Applying sparse autoencoders to InceptionV1 early vision. arXiv preprint arXiv:2406.03662, 2024.
+
+Goyal, A. The hitchhiker’s guide to mechanistic interpretability of vision-language-action models. In Mechanistic Interpretability Workshop at ICML 2026, 2026.
+
+Grant, B., Zhao, X., and Wang, P. Not all features are created equal: A mechanistic study of vision-languageaction models. arXiv preprint arXiv:2603.19233, 2026.
+
+Gurnee, W., Ameisen, E., Kauvar, I., Tarng, J., Pearce, A., Olah, C., and Batson, J. When models manipulate manifolds: The geometry of a counting task. arXiv preprint arXiv:2601.04480, 2026.
+
+Häon, B., Stocking, K., Chuang, I., and Tomlin, C. Mechanistic interpretability for steering vision-language-action models. arXiv preprint arXiv:2509.00328, 2025.
+
+Hindupur, S. S. R., Lubana, E. S., Fel, T., and Ba, D. Projecting assumptions: The duality between sparse autoencoders and concept geometry. Advances in Neural Information Processing Systems (NeurIPS), 2025.
+
+Hosseini, E. A., Li, Y., Bahri, Y., Campbell, D., and Lampinen, A. K. Context structure reshapes the representational geometry of language models. arXiv preprint arXiv:2601.22364, 2026.
+
+Jakobi, N., Husbands, P., and Harvey, I. Noise and the reality gap: The use of simulation in evolutionary robotics. In European conference on artificial life, pp. 704–720. Springer, 1995.
+
+Joseph, S., Suresh, P., Goldfarb, E., Hufe, L., Gandelsman, Y., Graham, R., Bzdok, D., Samek, W., and Richards, B. A. Steering CLIP’s vision transformer with sparse autoencoders. ArXiv e-print, 2025.
+
+Joseph, S., Garrido, Q., Balestriero, R., Kowal, M., Fel, T., Bakhtiari, S., Richards, B., and Rabbat, M. Interpreting physics in video world models. ArXiv e-print, 2026.
+
+Kadian, A., Truong, J., Gokaslan, A., Clegg, A., Wijmans, E., Lee, S., Savva, M., Chernova, S., and Batra, D. Sim2real predictivity: Does evaluation in simulation predict real-world performance? IEEE Robotics and Automation Letters, 5(4):6670–6677, 2020.
+
+Kantamneni, S. and Tegmark, M. Language models use trigonometry to do addition. arXiv preprint arXiv:2502.00873, 2025.
+
+Karkada, D., Korchinski, D. J., Nava, A., Wyart, M., and Bahri, Y. Symmetry in language statistics shapes the geometry of model representations. arXiv preprint arXiv:2602.15029, 2026.
+
+Khan, M. A., Boskov, N., Anwar, F. M., and Khan, M. A. Controlling vision–language–action policies through sparse latent directions. In Mechanistic Interpretability Workshop at NeurIPS 2025, 2025.
+
+13
+
+Khazatsky, A., Pertsch, K., Nair, S., Balakrishna, A., Dasari, S., Karamcheti, S., Nasiriany, S., Srirama, M. K., Chen, L. Y., Ellis, K., et al. DROID: A large-scale in-the-wild robot manipulation dataset. Robotics: Science and Systems (RSS), 2024.
+Kim, M. J., Pertsch, K., Karamcheti, S., Xiao, T., Balakrishna, A., Nair, S., Rafailov, R., Foster, E., Sanketi, P., et al. OpenVLA: An open-source vision-language-action model. Proceedings of the Conference on Robot Learning (CoRL), 2024.
+Kim, Y., Pumacay, W., Rayyan, O., Argus, M., Han, W., VanderBilt, E., Salvador, J., Deshpande, A., Hendrix, R., Jauhri, S., et al. MolmoSpaces: A large-scale open ecosystem for robot navigation and manipulation. arXiv preprint arXiv:2602.11337, 2026.
+Lee, J., Duan, J., Fang, H., Deng, Y., Liu, S., Li, B., Fang, B., Zhang, J., Wang, Y. R., Lee, S., et al. MolmoAct: Action reasoning models that can reason in space. arXiv preprint arXiv:2508.07917, 2025.
+Lieberum, T., Rajamanoharan, S., Conmy, A., Smith, L., Sonnerat, N., Varma, V., Kramár, J., Dragan, A., Shah, R., and Nanda, N. Gemma Scope: Open sparse autoencoders everywhere all at once on Gemma 2. In Proceedings of the 7th BlackboxNLP Workshop: Analyzing and Interpreting Neural Networks for NLP, pp. 278–300, 2024.
+Lin, F., Hu, Y., Sheng, P., Wen, C., You, J., and Gao, Y. Data scaling laws in imitation learning for robotic manipulation. In International Conference on Learning Representations, volume 2025, pp. 54877–54910, 2025.
+Lu, H., Li, H., Shahani, P. S., Herbers, S., and Scheutz, M. Probing a vision-language-action model for symbolic states and integration into a cognitive architecture. In 2025 IEEE International Conference on AI and Data Analytics (ICAD), pp. 1–8. IEEE, 2025.
+Lubana, E. S., Rager, C., Hindupur, S. S. R., Costa, V., Patel, O., Murthy, S., Fel, T., Tuckute, G., Wurgaft, D., Bigelow, E., et al. Priors in time: Missing inductive biases for language model interpretability. In International Conference on Learning Representations, volume 2026, pp. 42231–42290, 2026.
+Makhzani, A. and Frey, B. K-sparse autoencoders. Proceedings of the International Conference on Learning Representations (ICLR), 2014.
+Modell, A., Rubin-Delanchy, P., and Whiteley, N. The origins of representation manifolds in large language models. arXiv preprint arXiv:2505.18235, 2025.
+Molinari, M., Nevali, L., Navani, S., and Younis, O. G. Emergent world representations in OpenVLA. arXiv preprint arXiv:2509.24559, 2025.
+Octo Model Team, Ghosh, D., Walke, H., Pertsch, K., Black, K., Mees, O., Dasari, S., Hejna, J., Kreiman, T., Xu, C., et al. Octo: An open-source generalist robot policy. In Robotics: Science and Systems (RSS), 2024.
+Oquab, M., Darcet, T., Moutakanni, T., Vo, H., Szafraniec, M., Khalidov, V., Fernandez, P., Haziza, D., Massa, F., El-Nouby, A., et al. DINOv2: Learning robust visual features without supervision. The Journal of Transactions on Machine Learning Research (TMLR), 2024.
+O’Neill, A., Rehman, A., Maddukuri, A., Gupta, A., Padalkar, A., Lee, A., Pooley, A., Gupta, A., Mandlekar, A., Jain, A., et al. Open x-embodiment: Robotic learning datasets and rt-x models. In 2024 IEEE International Conference on Robotics and Automation (ICRA), pp. 6892–6903. IEEE, 2024.
+Pach, M., Bader, J., Bouniot, Q., Belongie, S., and Akata, Z. The latent color subspace: Emergent order in high-dimensional chaos. arXiv preprint arXiv:2603.12261, 2026.
+Park, C. F., Lee, A., Lubana, E. S., Yang, Y., Okawa, M., Nishi, K., Wattenberg, M., and Tanaka, H. ICLR: In-context learning of representations. In International Conference on Learning Representations, 2025a.
+Park, K., Choe, Y. J., and Veitch, V. The linear representation hypothesis and the geometry of large language models. Proceedings of the International Conference on Machine Learning (ICML), 2024.
+14
+
+Park, K., Choe, Y. J., Jiang, Y., and Veitch, V. The geometry of categorical and hierarchical concepts in large language models. In International Conference on Learning Representations, volume 2025, pp. 76441–76463, 2025b.
+Park, K., Nief, T., Choe, Y. J., and Veitch, V. The information geometry of softmax: Probing and steering. Proceedings of the International Conference on Machine Learning (ICML), 2026.
+Pearce, M., Simon, E., Byun, M., and Balsam, D. Finding the tree of life in Evo 2. Goodfire Research, August 2025. URL https://www.goodfire.com/research/phylogeny-manifold.
+Physical Intelligence, Amin, A., Aniceto, R., Balakrishna, A., Black, K., Conley, K., Connors, G., Darpinian, J., Dhabalia, K., DiCarlo, J., et al. π0∗.6: a VLA that learns from experience. arXiv preprint arXiv:2511.14759, 2025a.
+Physical Intelligence, Black, K., Brown, N., Darpinian, J., Dhabalia, K., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., et al. π0.5: a vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054, 2025b.
+Qi, H., Yin, H., and Yang, H. Control-oriented clustering of visual latent representation. In International Conference on Learning Representations, volume 2025, pp. 45264–45296, 2025.
+Qi, H., Su, H., Shao, L., Li, N., and Yang, H. Action-aligned representation geometry in vision–language–action models. 2026.
+Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., et al. Learning transferable visual models from natural language supervision. In International conference on machine learning, pp. 8748–8763. PMLR, 2021.
+Rajamanoharan, S., Conmy, A., Smith, L., Lieberum, T., Varma, V., Kramár, J., Shah, R., and Nanda, N. Improving sparse decomposition of language model activations with gated sparse autoencoders. Advances in Neural Information Processing Systems (NeurIPS), 2024a.
+Rajamanoharan, S., Lieberum, T., Sonnerat, N., Conmy, A., Varma, V., Kramar, J., and Nanda, N. Jumping ahead: Improving reconstruction fidelity with JumpReLU sparse autoencoders. arXiv preprint arXiv:2407.14435, 2024b.
+Sarfati, R., Bigelow, E., Wurgaft, D., Boppana, S., Merullo, J., Geiger, A., Lewis, O., McGrath, T., and Lubana, E. S. The shape of beliefs: Geometry, dynamics, and interventions along representation manifolds of language models’ posteriors. arXiv preprint arXiv:2602.02315, 2026.
+Shi, H., Ren, X., Zhang, Y., Zhang, Q., Hu, J., Shan, H., Dong, H., Lu, J., Chen, Y., Zhang, Y., et al. VLATrace: Diagnosing vision-language-action models through representation and behavior tracing. arXiv preprint arXiv:2605.30117, 2026.
+Sun, X., Stolfo, A., Engels, J., Wu, B., Rajamanoharan, S., Sachan, M., and Tegmark, M. Dense SAE latents are features, not bugs. Advances in Neural Information Processing Systems (NeurIPS), 2025.
+Swann, A., McGranahan, L., Buurmeijer, H., Kennedy III, M., and Schwager, M. Sparse autoencoders reveal interpretable and steerable features in vla models. arXiv preprint arXiv:2603.19183, 2026.
+Templeton, A., Conerly, T., Marcus, J., Lindsey, J., Bricken, T., Chen, B., Pearce, A., Citro, C., Ameisen, E., Jones, A., Cunningham, H., Turner, N. L., McDougall, C., MacDiarmid, M., Freeman, C. D., Sumers, T. R., Rees, E., Batson, J., Jermyn, A., Carter, S., Olah, C., and Henighan, T. Scaling monosemanticity: Extracting interpretable features from Claude 3 Sonnet. Transformer Circuits Thread, 2024.
+Thasarathan, H., Forsyth, J., Fel, T., Kowal, M., and Derpanis, K. Universal sparse autoencoders: Interpretable cross-model concept alignment. Proceedings of the International Conference on Machine Learning (ICML), 2025.
+15
+
+Tobin, J., Fong, R., Ray, A., Schneider, J., Zaremba, W., and Abbeel, P. Domain randomization for transferring deep neural networks from simulation to the real world. In 2017 IEEE/RSJ international conference on intelligent robots and systems (IROS), pp. 23–30. IEEE, 2017.
+Touvron, H., Martin, L., Stone, K., Albert, P., Almahairi, A., Babaei, Y., Bashlykov, N., Batra, S., Bhargava, P., Bhosale, S., et al. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288, 2023.
+Tvetkova, L., Bruesch, T., Dorszewski, T., Mager, F. M., Aagaard, R. O., Foldager, J., Alstrom, T. S., and Hansen, L. K. On convex decision regions in deep network representations. Nature Communications, 2025.
+Uselis, A., Dittadi, A., and Oh, S. J. Compositional generalization requires linear, orthogonal representations in vision embedding models. arXiv preprint arXiv:2602.24264, 2026.
+Walke, H. R., Black, K., Zhao, T. Z., Vuong, Q., Zheng, C., Hansen-Estruch, P., He, A. W., Myers, V., Kim, M. J., Du, M., et al. Bridgedata v2: A dataset for robot learning at scale. In Conference on robot learning, pp. 1723–1736. PMLR, 2023.
+Wang, P., Bai, S., Tan, S., Wang, S., Fan, Z., Bai, J., Chen, K., Liu, X., Wang, J., Ge, W., et al. Qwen2-VL: Enhancing vision-language model’s perception of the world at any resolution. arXiv preprint arXiv:2409.12191, 2024.
+Wurgaft, D., Rager, C., Kowal, M., Shyam, V., Feucht, S., Bhalla, U., Haklay, T., Bigelow, E., Sarfati, R., McGrath, T., et al. Manifold steering reveals the shared geometry of neural network representation and behavior. arXiv preprint arXiv:2605.05115, 2026.
+Xu, Y., Zhao, S., Song, J., Stewart, R., and Ermon, S. A theory of usable information under computational constraints. Proceedings of the International Conference on Learning Representations (ICLR), 2020.
+Yang, T. and Mokalla, A. Interpretable signals for vision-language-action model failure. In Mechanistic Interpretability Workshop at ICML 2026, 2026.
+Yocum, J., Allen, C., Olshausen, B., and Russell, S. Neural manifold geometry encodes feature fields. NeurIPS 2025 Workshop on Symmetry and Geometry in Neural Representations, 2025.
+Zhai, X., Mustafa, B., Kolesnikov, A., and Beyer, L. Sigmoid loss for language image pre-training. Proceedings of the IEEE International Conference on Computer Vision (ICCV), 2023.
+16
+
+A Realization does not determine Geometric Realization.
+
+For example, linear readability does not imply linear realized geometry. Consider the map
+
+t
+
+φ (t) = cos t .
+
+(4)
+
+sin t
+
+The value t is exactly linearly readable through γ (a) = a1, yet its realized geometry is a helix. The concept is intrinsically one-dimensional, but its trace is curved and occupies several activation dimensions. Thus, the subspace used by a linear readout should not be confused with the shape traced by the concept itself.
+
+This distinction also matters for control. A single fixed steering direction v can follow a concept globally only
+
+when
+
+φi,c (u + δ) − φi,c (u) ≈ vδ
+
+(5)
+
+throughout the relevant range. For a curved or multiscale geometry, the appropriate activation steering vector instead changes with the current concept value. Another way to put it is that a readout specifies how to measure a concept from an activation but it does not necessarily specify how to move the activation while remaining on the geometry realized by that concept. Linear readability therefore does not imply linear steerability.
+
+B Extended Results
+This appendix collects the figures that support the main text; Figure 34 gives an overview of the seven task variables, and experimental details are in Appendix C.
+End-effector and target object position (App. C.3). Figure 35 shows the crossed arm×object teleports used for both position variables: unlike the object teleports, both the arm and the object move, so the horizontal positions of the two vary nearly independently on the same states. The action expert also carries rank-3 subspaces for EE position (Figure 9) and target position (Figure 10); the EE subspace is a stretched rather than rigid copy of world coordinates, and the target, which reaches the action expert only through cross-attention to the VLM, is decoded with larger error than in the VLM. Figure 11 marks the token groups and layers used in Figure 2: within a scene, EE position is decodable from the first layer, whereas target position appears on the instruction and final tokens between layers 12 and 21, and in the action expert only from layer 18. Figure 36 shows that the VLM’s target code is a position rather than a map of the workspace: an occupancy map read from the activations is no more accurate than one built from the target’s true coordinates, objects the instruction does not name are detected per image patch, and a table-position readout fit on all visible objects does not track the target as it moves within a scene, whereas one fit on the target alone does on the exo camera.
+Distance to target object (App. C.4). Figure 15 shows the object placements in the object-teleport dataset used for distance and direction; only the object is teleported. Figure 12 shows that a single full-range probe is most accurate with a compressive link (log d or 1/d) below 15 cm and with a linear link in the farthest bins, and that the centimeter and meter rulers each score only on their own side of the cutoff. Figure 13 repeats the erasure test and both rulers at the action expert’s last layer and finds the VLM’s two-subspace code.
+Direction to target object (App. C.5). Figure 14 shows that, unlike distance, direction to the target is read by a single probe: decoded directions point toward the target across the workspace, and splitting the probe by range does not improve near reads and improves far reads by at most 1.1◦.
+Contact (App. C.6). Figure 16 shows where in the VLM contact is decodable: from the wrist-camera patches already at the first layer, while the exo-camera patches and text tokens reach a similar level only in the middle layers; at layer 24, the per-patch signal covers the whole image rather than only the fingers.
+Phase (App. C.7). Figure 17 shows the phase subspace in the VLM’s vision tokens: the four phases occupy separate regions in temporal order, and freezing shifts the VLM’s decoded phase toward grasp, as in the action expert. Figure 18 compares the frozen read across the action expert and both VLM token groups: in all three, the decoded phase shifts toward grasp, while place landmarks are most often still decoded as place. Figure 19 gives the per-step time course of the freezing effect on gripper commands in each phase.
+
+17
+
+Wrist orientation (App. C.8). Figure 20 shows the exo-camera view of the roll sweep in Figure 6. Figure 22 shows that after a full turn of the wrist joint, when the images are identical to the start, the VLM’s activation returns to its start but the action expert’s does not, consistent with only the action expert receiving the raw, non-wrapping joint value. Figure 21 shows that the VLM, which receives only images and text, carries a weaker trace of wrist orientation, with about a third of the action expert’s R2. Figure 23 shows that the action expert’s trace stays an open arc over the 228◦ of a precession the arm covers (a full turn would return the orientation to its start). Figure 24 shows that the full 3-DOF orientation of the hand is decodable from natural rollouts at low rank, best at layer 9. Gripper (App. C.9). Figure 25 plots the cumulative variance of the layer-32 steering vectors, of which the first component captures about 70%. Figure 26 repeats the analyses of Figure 7 at action-expert layer 9, where one component again decodes and flips the gripper, but the steering vectors do not point from one gripper-state cluster toward the other. Figure 28 refits the steering vectors at layers 9, 18, 27, and 32 and finds them dominated at every depth by one component aligned with the close–open flip axis. Figure 27 applies the same pullback in the VLM backbone, where flip rates fall to the level of a control edit by layer 28, although the gripper command remains readable there. Real robots (App. C.10). Figures 29–33 repeat the analyses on real-robot data for MolmoAct2 and π0.5: DROID episodes, plus one recorded wrist-roll episode. Figure 29 shows the gripper, EE position, and wrist orientation structures in both models. Figure 30 shows that a real wrist-roll sweep traces an open, semicircular arc in both streams of both models (for the π0.5 action expert, only with a fixed noise seed at an intermediate flow step). Figure 31 shows the two distance rulers: far points spread along the meter ruler and near points along the centimeter ruler. Figure 32 shows that the four task phases are decodable along a real episode, and that reach and transport occupy separate regions of the phase subspace in both models. Figure 33 repeats the gripper pullback: one steering-vector component flips the gripper in both models, but it carries 59% of the steering-vector variance in π0.5 and 31% in MolmoAct2.
+18
+
+World
+
+Model
+
+Figure 9: The action expert (layer 12) also maintains a rank-3 EE position subspace. Panels as in the top and middle rows of Figure 2, for EE position read from the action expert, which receives proprioception; the paths are from a single scene excluded when fitting the subspace. The readout is near-exact and the paths are recovered almost without distortion. The gap between the general-linear and orthogonal residuals shows the subspace is a scaled, not isometric, copy of world coordinates.
+19
+
+World
+
+Model
+
+Figure 10: The action expert (layer 22) also maintains a rank-3 target object position subspace. Panels as in Figure 9, for the target object’s position; the paths are from a single scene excluded when fitting the subspace. The action expert receives the object only through cross-attention to the VLM, and it carries target position with larger error than the VLM (Figure 2), recovering the paths with more distortion.
+
+within-house R2
+
+End-effector position
+1.0
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+-0.2
+
+0 5 10 15layer20 25 30 35 0
+
+image-adjacent text tokens instruction tokens final token
+
+all tokens image patches (both cameras) exo-camera patches
+
+Target object position
+5 10 15layer20 25 30 35
+wrist-camera patches action expert readout used in the main text (layer 20 / 21)
+
+Figure 11: Within a scene, target object position is computed on the VLM’s instruction and final tokens between layers 12 and 21 and appears in the action expert from layer 18; EE position is present from the first layer in both. Held-out R2 of the rank-3 ridge readout of end-effector position (left) and target object position (right) at every layer, scored after removing each held-out house’s mean from the true and predicted positions, so only position changes within a scene count; one line per VLM token pool, the action expert dashed, rings on the readouts of Figure 2, values below the axis floor clipped. The target’s height is constant within a scene, so the target panel’s variance is horizontal and any within-scene variation in the predicted height counts as error; scores fall below zero where a readout’s predictions vary within a scene without tracking the object. On the instruction and final tokens the target read stays at or below zero until layer 12 and peaks at layers 18–21, while the image patches carry little of it at any layer. The action expert tracks EE position near-perfectly at every layer and the target only from layer 18 on.
+
+20
+
+MAE (cm) held-out R2
+
+12
+
+linear d
+
+10
+
+log d 1/d
+
+8
+
+6
+
+4
+
+2
+
+0 <15 15 30 30 45 45 70
+distance to target (cm)
+
+1.0
+
+centimeter ruler meter ruler
+
+0.8 0.70
+
+0.81
+
+0.6
+
+0.4
+
+0.2
+
+0.0
+
+-4.48 -2.80
+
+<15
+
+15 70
+
+distance to target (cm)
+
+Figure 12: Distance is compressive within the near range and closest to linear beyond 30 cm, and each ruler reads only its own range (VLM, layer 21). (Left) Held-out mean absolute error per bin of true distance for a single full-range ridge probe fit to d, log d, or 1/d and mapped back to metres; the compressive links have the lower error below 15 cm and the linear link in the farthest bins. (Right) Held-out R2 against true distance for the centimeter ruler and the meter ruler of Figure 3, scored separately on states below and above that cutoff; negative (saturated) values are drawn at zero and printed. Each ruler saturates outside its own range, as does a single unclipped metre-scale probe (not shown) on the near-range states.
+
+held-out R2
+
+near decode (<15 cm) far decode (15-70 cm)
+0.8 0.6 0.4
+
+far axis erased near axis erased
+
+cm ruler
+0.8
+0.6 0.4 0.43
+
+meter ruler 0.73
+
+held-out R2
+
+0.2 0.0
+0
+
+1direc2tions4erase8d (k)16 32
+
+0.2
+
+0.0
+
+-4.75 -2.80
+0sc15ocrmed1r5an7g0ecm
+
+Meter ruler
+
+15
+
+0.60
+
+10
+
+0.45
+
+CM ruler
+15 10
+
+5
+
+0.30
+
+5
+
+0 0m.0-pro0b.2e rea0d.4out0(m.6 ) 0.15
+
+0m.0-pro0b.2e rea0d.4out0(m.6 ) 0
+
+distance (m) distance (cm)
+
+cm-probe readout (cm)
+
+Figure 13: The action expert (layer 35) reproduces the two-subspace distance code. Same store, folds, and constructions as Figure 3, read from the action expert instead of the VLM. (Top left) Held-out R2 of the near and
+far decodes as far-axis (solid) or near-axis (dashed) directions are erased; each decode drops only when its own axis is removed. (Top right) Held-out R2 of the centimeter and meter rulers on each side of the 15 cm cutoff;
+each ruler scores only its own range, and bars below zero are drawn at zero with the value printed. (Bottom) The
+two ruler readouts plotted against each other, colored by true distance on the meter (left) and centimeter (right)
+scales; the meter ruler resolves the far arm and the centimeter ruler the near arm, as in the VLM cell.
+
+21
+
+direction-probe cosine angular error (deg)
+z (cm) ttrouteardgisetta(nccme)
+
+y (cm) z (cm)
+
+60 30 0
+
+40
+
+0
+
+-40
+
+-40
+
+0
+x (cm)
+
+split-half ceiling cos(near-fit, far-fit)
+
+0.1
+
+0.0
+3 bo7undary15c (cm30) 56
+
+70
+
+60
+
+60
+
+50 40
+
+30
+
+30 20
+
+-40
+
+0
+y
+
+40
+(cm)
+
+0
+40 y0(cm) -40
+
+10 0
+
+train-mean floor
+onenperoabre(d < c)
+50 40
+
+one probe + recal
+two probefsa(rra(ndg≥e-csp)lit)
+30
+
+30
+
+20
+
+20 3 bou7ndar1y5c (3c0m)56 10 3 bou7ndar1y5c (3c0m)56
+
+Figure 14: Direction to target object is observable with one probe, in contrast to the two distance rulers. Top: held-out decoded directions (VLM layer 21), averaged in 6 cm cells in a target-centered frame; arrow
+length is cell coherence. Decoded directions point toward the target throughout the workspace (median angular error 11.7◦ vs. a 33.1◦ floor); within 15 cm, per-read error increases but cell means still point toward the target (coherence 0.98 beyond 40 cm vs. 0.77 inside 7.5 cm). Bottom left: as in Fig. 3c, but for direction probes fit on
+different halves of the houses: the near/far cosine stays below its ceiling at every boundary (0.081 vs. 0.130 at c = 15). Bottom right: the range-split pair does not outperform a single recalibrated probe on near reads (up to 3◦ worse) and improves on it by at most 1.1◦ on far reads — a single probe suffices at all ranges.
+
+22
+
+Figure 15: Object teleportation across the workspace for distance to target object experiments. Object placements in the robot-base frame, viewed from above (robot at left, forward to the right). Gray points are all placements in the teleport datasets (906 houses). For one example house, the black point is the object’s natural placement and the blue points its 15 teleported placements, sampled uniformly over the supporting surface within the benchmark placement envelope; dashed arrows connect the natural placement to each teleport. Only the object is moved; the arm’s initial pose is unchanged.
+
+Held-out AUC (contact) per-patch AUC
+
+1.0
+
+exmoepdaitacnhAesU,Clay0e.8r924
+
+wrmistepdaiatnchAeUsC, la0y.e9r424
+
+1.0
+
+0.9
+
+action expert, best cell (0.86)
+
+0.9
+
+0.8
+
+gripper closure (0.80)
+
+0.8
+
+wrist patches final token
+
+0.7
+
+exo patches text tokens
+
+all tokens
+
+0.7
+
+0.6
+
+phase timer (0.59)
+
+0.6
+
+0.5 0
+
+8
+
+VL1M6 layer 24
+
+32
+
+0.5
+
+Figure 16: Contact is decodable from the wrist-camera patches at the first layer and from the exo-camera patches and text tokens at a similar level only from the middle layers on (VLM). (Left) Held-out AUC of the contact discriminant at each of 10 layers, fit separately on five token groups: wrist-camera patches, exo-camera patches, text tokens, the final token, and the whole-sequence mean; reference lines mark a phase-timer baseline, a gripper-closure baseline, and the action expert. (Right) Per-patch AUC at layer 24 for the two cameras: the signal is spread over the whole image rather than confined to the fingers.
+
+23
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+  
+ 
+ 
+ 
+
+Figure 17: MolmoBot’s task phase subspace in the VLM backbone (vision tokens, Layer 31). (Left) LDA projection of natural rollouts, colored by phase (0.86 balanced accuracy across held-out houses; AE: 0.92). (Middle) The full three-dimensional LDA subspace, with a held-out episode’s trajectory traversing the four phase regions in order. (Right) Freezing shifts the VLM’s decoded phase toward grasp, as in the action expert (Figure 5): frozen reach and grasp landmarks are mostly decoded as grasp, and frozen transport and place landmarks are most often still decoded as transport and place.
+
+action expert
+layer 24
+reach 50% 50% 0% 0%
+
+VLM vision tokens
+layer 31
+13% 86% 1% 0%
+
+VLM language tokens
+layer 29
+26% 71% 2% 1%
+
+frozen landmarks
+
+grasp 4% 65% 30% 1%
+
+2% 69% 25% 4%
+
+6% 62% 30% 1%
+
+transport 0% 9% 89% 2%
+
+1% 21% 68% 11%
+
+0% 13% 79% 9%
+
+place 0% 4% 24% 73%
+
+natural own phase
+
+97% 88% 86% 99%
+
+reach transport
+
+grasp
+
+place
+
+0% 9% 18% 74%
+
+94% 77% 87% 88%
+
+reach transport
+
+grasp
+
+place
+
+decoded as
+
+0% 1% 20% 79%
+
+91% 69% 84% 93%
+
+reach transport
+
+grasp
+
+place
+
+Figure 18: Under the frozen read, the decoded phase shifts toward grasp in all three streams, while place landmarks are most often still decoded as place. Left to right: action expert, VLM vision tokens, VLM language tokens. Each row gives the percentage of one phase’s landmarks decoded as each phase when the policy is shown the current frame twice (bold: the true phase); the strip beneath each matrix gives the percentage decoded correctly with the usual two frames, at the same moments.
+
+24
+
+gripper closed fraction
+
+natural
+
+frozen (2-query pause)
+
+reach
+1.0
+
+grasp
+
+0.5
+
+0.0
+transport
+1.0
+
+place
+
+0.5
+
+0.0
+
+14
+
+81 4
+
+8
+
+action chunk step
+
+Figure 19: Per-step time course of the freezing effect on gripper commands. Fraction of chunks commanding a closed gripper at each step of the executed action chunk (shaded: 95% CI), natural vs. frozen, per phase.
+
+25
+
+Figure 20: Wrist roll sweep (Figure 6). Exo (third-person) camera images at several points of the sweep through the wrist’s full roll range (−172.8◦ to +172.8◦), with all other joints fixed. Borders are colored by wrist angle θ.
+
+PC2 (13% var) roll (deg)
+R2
+
+80 60 40 20 0 -20 -40 -60
+-100 -75 -P50C1 (5-72%5 var)0 25 50
+
+180
+
+AE L9 rank-6
+
+0.8
+
+Rank 1
+
+Rank 4
+
+90
+
+0.6
+
+Rank 2 Rank 3
+
+Rank 5 Rank 6
+
+0.4 0
+0.2
+
+-90
+
+0.0
+
+-0.2 -180
+0
+
+10 VLM la2y0er
+
+30
+
+Figure 21: The VLM maintains only a weak, pixel-derived trace of wrist orientation. A roll sweep from the same starting pose as Figure 6, over a 332◦ range (−156◦ to +176◦), read at the VLM; the VLM receives only images and text as input. (Left) PCA over the sweep activations (layer 35). The trace wraps — −156◦ and +176◦ land close together — but does not form a clean circle. (Right) The reduced-rank regression of Figure 24
+at every VLM layer, on natural rollouts re-encoded at the VLM (19,089 states, 169 houses). Decoding peaks mid-stack at R2 = 0.31 (layer 20), a third of the action expert’s 0.87 (dotted) on the same data.
+
+26
+
+distance from the 0° activation distance from the 0° activation
+
+physical range of joint 7
+Action expert, layer 9
+at 360°, 720°, 1080°: 28.8 · 25.8 · 23.9 30
+20
+10
+
+rendered frame identical to 0°
+VLM, layer 20, image tokens
+at 360°, 720°, 1080°: 0.00 · 0.00 · 0.00 300
+200
+100
+
+0
+
+0°
+
+360° 720° 1080°
+
+joint-7 rotation from start
+
+0
+
+0°
+
+360° 720° 1080°
+
+joint-7 rotation from start
+
+Figure 22: After a full turn of the wrist joint the action expert’s activation does not return to its start; the VLM’s returns exactly. From one pose of the roll sweep (App. C.8; a single house), the wrist joint (Franka joint 7) is driven through successive full turns by writing the joint value directly into the simulator, far past the joint’s physical range (shaded band), so the sweep tests the models’ inputs rather than a reachable motion. At every full turn (dashed lines, large markers) the rendered frames and text tokens are identical to the start and only the raw joint value differs, and only the action expert receives that value. (Left) Action expert, layer 9, first action token: Euclidean distance of the activation at each step from the start activation; after one turn it is 28.8 units away and does not return over the following turns. (Right) VLM, layer 20, mean over image tokens: the same distance, which varies within each turn and is exactly 0 at every full turn; the two panels are in different activation units.
+
+27
+
+exo cam
+PC2 (25% var)
+z-rotation (deg)
+
+158
+
+5
+
+90
+
+0
+
+-5
+
+0
+
+-10
+-10 PC-51 (69%0var) 5
+
+-70
+
+-70°
+
+-30°
+
++5°
+
++45°
+
++80°
+
++120° +158°
+
+-180
+
+-90z-rotatio0n (deg)90
+
+180
+
+Figure 23: Even the most circular reachable wrist rotation does not close. Instead of rolling about the gripper’s approach axis, we tilt the gripper 30◦ off that axis and orbit the tilt about the vertical. If driven through a full turn, this precession returns the wrist orientation exactly to its start (a closed circle in SO(3)). The gripper
+position is held fixed within 5 cm while the whole arm reconfigures, and we record activations at each step. The
+arm’s joint limits (clipped to the 1st to 99th training percentile) stop the orbit partway: sweeping both directions from the start covers −70◦ to +158◦ (228◦ of the turn; angles are the realized rotation about the vertical axis). (Top) PCA over the sweep activations. Precession remains an open arc, with PC1 carrying 69% of the variance and PC2 25%. (Bottom) The exo camera image at different rotation angles along the sweep.
+
+28
+
+R2 cumulative variance
+
+0.8
+
+0.7
+
+0.6
+
+0.5
+
+0.4
+
+0.3
+
+0.2
+
+Rank 1
+
+Rank 4
+
+0.1
+
+Rank 2 Rank 3
+
+Rank 5 Rank 6
+
+0.0
+
+0
+
+5
+
+10action-1e5xpert l2a0yer 25 30
+
+Figure 24: Full 3-DOF wrist orientation is decodable from natural rollouts at low rank (AE). Unlike Fig. 6, which rotates a single roll joint and reads the code with PCA, here “wrist orientation” means the complete 3-DOF orientation of the hand, represented by the first two columns of its rotation matrix (a 6-D target). We fit reduced-rank ridge regressions of rank 1 to 6 from the activations to this target on natural rollouts (6,555 queries, 191 houses) and report R2 on held-out houses at six action-expert layers. Rank 2 recovers most of the decodable variance and rank 3 nearly all of it; higher ranks add little. Decodability peaks at layer 9.
+
+1.0
+
+0.8
+
+0.6
+
+0.4
+
+0.2
+
+0.0 1
+
+4 k (num16ber of δ6-4PCs) 256 768
+
+Figure 25: Cumulative variance of gripper steering vectors in layer 32. Cumulative explained variance from PCA on the pullback steering vectors δ (App. C.9) as a function of the number of principal components. The first component captures ∼70% of the variance, complementing the per-component view in Figure 7.
+
+29
+
+aperture decoder R2
+
+gripper aperture
+
+1.000 0.975 0.950 0.925 0.900 0.875 0.850 0.825 0.800 1
+0.6
+0.5
+0.4
+0.3
+
+top-k full activation
+k4 (num1b6er of6δ4-PCs)256 768
+stable rank = 1.82
+
+PC2 (9% var)
+
+1.0
+
+0.5
+
+0.0
+
+-0.5
+
+-1.0 -2
+1600%
+
+close open
+P-C1 1 (550% var1)
+
+800%
+
+1 0.5 0 -0.5 -1
+2
+close open
+
+400%
+
+leak / 768-D optimum (%)
+
+0.2
+
+200%
+
+0.1
+
+0.0 1
+
+4 δ-PC8 index 12
+
+16
+
+100%
+k1 (num4 ber1o6f δ-P64CA c2o56mpo51n2ent7s6)8
+
+Figure 26: Gripper control for action expert layer 9 (Top left) A linear probe decodes the commanded gripper aperture; one principal component of the pullback steering vectors decodes it nearly as well as the full activation. (Top right) Natural-rollout activations colored by gripper state; notably, the steering vectors from each cluster do not point toward the other, unlike layer 32 in Figure 7. (Bottom left) One component captures ∼55% of steering-vector variance. (Bottom right) One component flips the gripper but leaks into the arm joints relative to using the full 768-dimensional steering vector; more components remove this excess leakage.
+
+vareixapnlcaienreadtio
+
+30
+
+flip rate (%) aperture probe R2 cos(PC1, flip axis)
+
+100
+75 arm-hold
+50 gripper-only
+25 0 control
+4 1V2LM2l0ayer28 35
+
+1.0 0.8 0.6 0.4 0.2 0.0
+4 V12LM2l0aye28r 35
+
+1.0 action expert 0.8 0.6 0.4 0.2 0.0
+4 V12LM2l0aye28r 35
+
+Figure 27: In the VLM backbone, gripper steerability falls to the control floor by layer 28 although aperture readability stays high. The gripper pullback of App. C.9 with the edit δ added to every sequence token after VLM block L, at screen scale (32 edits per layer and objective, one query per landmark). (Left) Fraction of edits that flip the commanded gripper under the arm-hold objective of App. C.9 and under the gripper-only objective (the arm-hold and smoothness terms dropped), counted on the 29 edits whose unedited chunk has the opposite gripper sign; the gray band spans the flip rates of a control edit (the mean of the action-expert catalog, App. C.9). (Middle) Held-out R2 of a ridge probe from the pre-edit activation to the commanded aperture, best of the token pools at each layer; readability rises to 0.86 by layer 20. (Right) Absolute cosine between the first principal component of the arm-hold edits, a sample-limited estimate from the small per-layer catalog, and the close–open flip axis (dashed: the action-expert catalog of Figure 26); at the shallowest flipping layers (4 and 12) the leading component is only partly aligned with the flip axis.
+
+PδC1vasrihaarneceof stable rank of δ
+R2 or |cos|
+
+0.70
+0.7
+
+0.61
+
+0.6
+
+0.61
+
+0.56
+0.5 9action-1e8xpert2la7ye3r2
+
+1.8 1.80
+
+1.63
+
+1.6
+
+1.64
+
+1.4
+
+1.42
+
+9action-1e8xpert 2la7ye3r2
+
+1
+
+0.75
+
+0.5
+
+|cos(PC1, flip)|
+
+R 2, PC1 only
+
+0.25
+
+random direction
+0 9action-1e8xpert2la7ye3r2
+
+Figure 28: The gripper steering vectors stay dominated by one component and aligned with the flip axis at every action-expert layer. The pullback catalog of App. C.9, re-fit at layers 9, 18, 27, and 32. (Left) Share of
+steering-vector variance on the first principal component. (Middle) Stable rank of the steering vectors. (Right)
+Cosine between the first principal component and the flip axis (mean close edit minus mean open edit), and held-out R2 of the aperture probe restricted to that component; dashed: a random direction.
+
+31
+
+Figure 29: DROID real world behavioral manifolds. Here we show the behavioral manifolds realized by MolmoAct2 and π0.5. The EE position and wrist orientation point clouds show the activations of all 3,321 queries, sampled from MolmoAct2 AE L16 of 36 and π0.5 VLM L7 of 18, demonstrating the structures appear across multiple streams. We plot a natural episode trajectory in the EE position subplots and the wrist roll sweep of Figure 30 in the Wrist Orientation subplots. In the Gripper plot we project the 379 landmark activations from each model’s final action-expert block onto the principal components of the pullback steering vectors, with binned steering vectors as arrows.
+32
+
+Figure 30: Wrist orientation PCA across models and streams. Following Fig. 6, we record a real-robot episode in which the wrist roll joint is swept from −79◦ to +84◦ while the other joints and the scene are held approximately fixed, and plot the top two principal components of the activations for MolmoAct2 and π0.5 in both the VLM and the action expert (color: roll angle). As in MolmoBot, the sweep traces an open, semicircular arc. Because real-world data are noisier, the trajectories are considerably less smooth.
+Figure 31: MolmoAct2 and π0.5 encode distance to target object in 2 orthogonal subspaces. We find that similar to MolmoBot, as shown in Fig. 3 the tested DROID model also encode distance to target object with a multi-scale ruler. We sample 26,675 timesteps from 1,998 pick and place episodes. The distance is how far the gripper is from its initial grasp location. Activations are sampled from MolmoAct2 VLM L25 of 36 and π0.5 VLM L14 of 18.
+Figure 32: Task phase subspace in π0.5 and MolmoAct2. (Left) Example trajectory for a simple pick-and-place task, “Pick up the white and green brush from the table and hang it on the wall,” along with the predicted task phases. The ground-truth bar is derived from the measured gripper aperture alone, using a simple heuristic: reach until the gripper starts to close, grasp while it closes, transport while it stays closed, place after it opens. A linear classifier is trained on the top 48 principal components of activations collected across 2,000 episodes. (Right) The recovered task subspace in both models, colored by phase. Activations are taken from the π0.5 action expert at layer 9 of 18 and the MolmoAct2 action expert at layer 22 of 36.
+33
+
+gripper-command R2
+
+-PC2 arm leak / full- optimum (%)
+command (0 open, 1 closed)
+
+1.00
+
+MolmoAct2
+3
+
+0.5
+1.0
+
+0.95
+
+2
+
+20
+
+0.90
+
+dashed = full activation
+
+1
+
+10
+
+0.8
+
+0.85
+
+0
+
+0.6
+
+0.80
+
+0 1
+
+0.4
+
+0.75
+
+2
+
+10
+
+0.2
+
+0.70
+
+MolmoAct2 top-k 0.5 top-k
+
+3
+
+close open 20
+
+0.0
+
+1 2 4 k (8numbe1r6of -P3C2s) 64 128 256
+
+2
+
+-PC01 (31%) 2
+
+10 -PC10 (59%) 10
+
+0.6
+
+MolmoAct2 (stable rank 3.21) 0.5 (stable rank 1.69)
+
+400
+
+MolmoAct2 close MolmoAct2 open
+
+0.5 0.5
+
+close open
+
+0.5
+
+explained variance ratio
+
+0.4
+
+0.3
+
+200
+
+0.2
+
+0.1
+
+0.0 1
+
+4
+
+-P8C index 12
+
+16
+
+100 1
+
+4 k (num1b6er of -PCs6)4
+
+256
+
+Figure 33: Gripper steering vectors on real DROID episodes. (Top left) A linear probe decodes each model’s own gripper command from the activations projected onto the top-k principal components of the steering vectors. Dashed lines: each model’s full-activation ceiling. (Top right) Activations colored by the commanded gripper (red open, blue closed); the steering vectors point from each cluster toward the other. (Bottom left) One component captures 59 % of π0.5’s steering-vector variance (stable rank 1.69) but only 31% of MolmoAct2’s (stable rank 3.21).(Bottom right) One component flips the gripper (94–96% of attempts, both models) but leaks into the arm joints at 2.4–4.3× the full-δ optimum. Activations are recorded and steered at the final action-expert block (MolmoAct2 layer 35 of 36, π0.5 layer 17 of 18, counting from 0).
+
+34
+
+End-E ector Position
+
+Target Object Position
+
+Phase
+
+Wrist Orientation
+
+lateral (m) height above object (m)
+
+Contact
+
+Distance to Target Object
+
+Gripper
+
+Figure 34: The seven task variables. An overview of each variable we study.
+
+ff
+
+Top view
+0.4
+
+Side view
+0.6
+
+0.2
+0.0
+robot
+-0.2
+-0.4
+0.0 0.2forw0a.r4d (m)0.6 0.8
+arm poses, all houses object placements, all houses arm-pose sampling box
+
+0.4
+0.2
+0.0 object resting position
+0.2 f0o.r4ward (0m.6) 0.8
+arm poses, example house object placements, example house home end-effector, example house
+
+Figure 35: Arm and object placements in the crossed teleport harvest used for EE and target position. Robot-base frame viewed from above (left) and from the side, with height above the object’s resting position (right). Gray points are arm poses and violet diamonds object placements across all houses; the dashed outline is the box arm poses are sampled in. For one example house, the black point is the home pose, blue points its ten arm poses, and violet diamonds its five object placements; unlike Figure 15, both the arm and the object move.
+
+35
+
+chance
+
+18.3
+
+true position decoded position activations
+rank 3 activations
+full rank
+
+7.4 9.1 8.6 8.5
+
+0
+
+5
+
+10
+
+15 20
+
+median decoded-peak
+
+error (cm)
+
+activations RGB + position
+
+patch position patch mean RGB
+
+1.0 0.96 0.94 0.97 0.98 0.9 0.8 0.7 0.6 0.5
+
+L8
+
+L8 L20 L20
+
+exo wrist exo wrist
+
+per-patch object AUC within-house object-xy R 2
+
+1 0.75
+0.5 0.25
+0 -0.25
+-0.5 -0.75
+
+activations, any-object fit patch position activations, target-only fit
+0.83 0.59
+0.18
+0.00
+
+L8
+
+L8 L20 L20
+
+exo wrist exo wrist
+
+Figure 36: The VLM keeps the target’s position but no map of the workspace; other objects are encoded per image patch. (Left) A table-occupancy map of the target, read from VLM activations (last token, layer 21), is no more accurate than the same readout applied to the target’s three true coordinates (dashed). (Middle) One readout shared across all image-patch tokens detects whether an object the instruction does not name is visible in that patch, well above patch-position and patch-color baselines (exo and wrist cameras, layers 8 and 20). (Right) With scene means removed, a readout of table position fit on all visible objects does not track the target as it moves, whereas one fit on the instructed target alone does on the exo camera.
+
+36
+
+C Experimental Details
+C.1 MolmoBot Architecture
+MolmoBot (Deshpande et al., 2026) consists of two streams: a vision-language model (VLM) and an action expert. The VLM takes in the language instruction and images from two cameras: an exocentric camera providing a fixed third-person view of the workspace, and a wrist camera mounted on the end effector providing a first-person view that moves with the gripper. At each query after the first, the VLM receives the current frame and a frame from eight steps earlier from each camera; the first query of an episode, including every state recorded right after a teleport, sees only the current frames. The VLM receives no proprioceptive input, so any information it carries about the robot’s state must be recovered from these observations.
+The action expert takes in the robot’s proprioceptive state together with noisy action tokens, which it denoises into an action chunk over 10 steps of flow matching. The two streams contain 36 layers each, and each layer of the action expert cross-attends to the VLM layer at the same depth, so visual and language information can enter the action computation at every level. Information flows in one direction only: the action expert reads from the VLM, but the VLM does not attend to the action expert. The action expert can therefore access the target object, which appears only in the camera images, solely through this cross-attention.
+C.2 Data
+Simulation experiments run in MolmoSpaces on ProcTHOR (Deitke et al., 2022) houses. All use the pick task (“Pick up the X”) except phase, which uses pick-and-place (“Pick up the X and place it in or on the Y”). Every probe is 5-fold cross-validated with houses held out. We collect four datasets:
+1. Natural pick rollouts (1,008 episodes, 196 houses), with action-expert activations at every action-chunk query. Used for wrist orientation, the gripper pullback, and contact (for which we re-run 299 episodes in the same houses and with the same seeds to record VLM activations).
+2. Object teleports (906 scenes). The target is teleported to up to 16 placements per scene (Figure 15) and activations are recorded at the first four chunk boundaries, with an additional near-range set of placements within 35 cm of the hand (68,174 states in total). Used for distance and direction.
+3. Crossed arm×object teleports (945 scenes). Five object placements are crossed with ten arm poses, recorded immediately after the teleport (q0) and after one executed chunk (q1). Used for both position variables.
+4. Pick-and-place rollouts (530 episodes, 181 houses, 63% success). Used for phase.
+Position, distance, direction, and contact are read from the VLM residual stream at the token positions given below (a single final token, or the mean over a named set of tokens). Phase, wrist orientation, and the gripper are read from the action expert, averaged over the 16 action tokens at the final flow step unless noted. Layers are indexed from 0 in both streams.
+C.3 End-Effector and Target Object Position
+Data. In each scene we pick ten gripper targets at random in a box in front of the robot (20–60 cm forward, up to 30 cm to either side, 5–40 cm above the object’s resting position) and move the arm there with inverse kinematics. We keep a target only if the gripper gets within 1.5 cm of it without the arm intersecting anything, and we drop arm–object pairs in which the gripper is within 12 cm of the object. Each arm pose is paired with five object placements chosen the same way as in the object-teleport dataset. After each teleport the robot holds its new arm configuration, so the policy only sees frames taken after the move. Labels are the gripper and object positions read from the simulator after the teleport, in the robot’s base frame.
+Probes. For each variable we average the activations over a group of tokens and fit a ridge regression onto its (x, y, z) position, with houses held out; both variables use the same rows and folds. We use the token group and layer that decode each variable best: for EE position, the non-image tokens before the instruction (the short labels that introduce each camera image, such as “Image 1 View 1”, the image start and end markers, and the beginning-of-sequence token) at layer 20; for the target, the instruction tokens at layer 21. To count how many dimensions a readout uses, we restrict its predictions to their top one, two, or three principal directions (the rank curves) and report the singular values of the predictions. Table height differs between scenes but not within one, so part of the z signal only identifies the scene; subtracting each scene’s mean from the true and predicted
+37
+
+positions removes it (within-scene R2: 0.92 for EE, 0.57 for the target). The true x and y of each variable predict the other’s at R2 ≤ 0.02.
+Equivariance. To test whether a subspace preserves spatial geometry, we take pairs of states from the same scene that differ in one variable only: two arm poses with the object fixed, or two object placements with the arm fixed (the object moves only horizontally, so its displacement is 2-D). On training scenes we fit a map from the world displacement to the resulting change in activation within the rank-3 subspace, and on held-out scenes we report the median relative error of its predictions, once for any linear map and once for a rotation with uniform scaling (Procrustes). Shuffling which world displacement goes with which activation change gives an error of 1.00.
+Curvature. We move the hand along four straight lines (forward, sideways, up, and toward the object; 47 scenes) and the object along straight lines with the arm at its home pose (43 scenes), up to 24 points per line, and project the activations onto the subspace fit without those scenes. Curvature is the median angle between consecutive ∼7 cm segments of the projected path, binned by hand–object distance and compared with the same activations projected onto random 3-D subspaces (median of eight). The paths in Figure 2 were traced separately in one of these held-out scenes.
+Action expert (Figure 9). Applied to the action expert’s activations, the same pipeline decodes EE position best at layer 12 (R2 = 0.998, 1.1 cm error). There, a general linear map predicts the displacements almost exactly (error 0.04) but a rotation with uniform scaling does not (0.29), so the subspace is a stretched rather than a rigid copy of world coordinates.
+C.4 Distance to Target Object
+Data. We use the object-teleport dataset, keeping the 67,778 states in which the object is within 70 cm of the gripper (905 scenes; 11,534 states below 15 cm). Distance d is the straight-line distance between the gripper and the object, read from the simulator. Activations are the VLM’s final token at layer 21; the action expert’s last layer (35) gives the same main results (Figure 13). The erasure test, the left panel of Figure 12, and the EE control below use only the first round of teleports, recorded before the extra near-range placements were added (52,210 states; 4,422 below 15 cm).
+Erasure (Figure 3a). We split states into near (below 15 cm) and far (15–70 cm). Within each cross-validation fold, we fit a linear probe for distance on one range, remove its direction from all activations, and repeat, fitting each new probe on the already-cleaned activations and making its direction orthogonal to those already removed, up to 32 times. After each removal we refit a probe on each range and report its held-out R2, computed against the variance within that range.
+Rulers and cutoff sweep. The meter ruler is a ridge probe fit on all states to distance with every value below 15 cm set to 15 cm; the centimeter ruler is the mirror image, with every value above 15 cm set to 15 cm. Each is scored against the true distance within its own range. To judge whether two probes point in different directions, we compare the cosine between them with the cosine expected if both measured the same direction: for each probe, the cosine between two copies fit on disjoint halves of the houses (median of three random splits), taking the lower of the two probes’ values. The cutoff sweep repeats this with the cutoff moved from 3 to 56 cm, fitting the pair either only on the states on each side of the cutoff (range-split) or on all states with values clipped at the cutoff (round-to-c), and compares both with a single probe fit on the whole range and then rescaled and shifted separately on each side of the cutoff.
+Controls. The near axis (the direction of the near-range probe) is not a disguised copy of EE position: EE position predicts nothing about distance among near states (R2 ≈ 0), and less than 3% of the near axis falls within the subspaces that encode EE and target position. It does not detect contact either: the centimeter ruler’s error is the same on states in which the object touches nothing but its supporting surface (1.46 vs. 1.45 cm). For the single-direction control, we build synthetic activations in which distance is written along one random direction, plus noise and a per-scene offset, and run the same probes on them.
+38
+
+C.5 Direction to Target Object
+We use the same data and layer as for distance. The target is the unit bearing u from EE to object in the base frame, decoded by ridge regression onto its three components. Error is the angle between decoded and true bearing, compared to a training-mean baseline (33.1◦) and a scene-mean oracle (19.0◦). Since the bearing is a nonlinear function of the two positions, we check that the model does not simply recompute it from them: the residual of u after regressing out [pEE, pobj, d] remains decodable (R2 of 0.3–0.5 per component), and the residual probe has little energy in the position and distance subspaces (0.01–0.04). In Figure 14, decoded bearings are averaged in 6 cm cells of a target-centered frame, and the cutoff sweep follows the distance protocol.
+C.6 Contact
+Data and probe. We record VLM activations by re-running the policy in the same house and with the same seed as each of 299 natural pick episodes. The re-runs are not copies of the originals: in 259 of them a different target object is sampled, and bf16 inference makes even repeated runs differ, so each state is labeled from the re-run itself: contact means some part of the gripper touches the object with nonzero contact force. We average the layer-24 activations over the text tokens of the prompt (the instruction and its chat-template words) and fit a linear discriminant (LDA) for contact, with houses held out. It reaches 91.3% held-out accuracy against a 65% majority baseline (AUC 0.954); the final token alone gives the same accuracy (AUC 0.957). Figure 4a is a PCA of the same pooled activations. For Figure 4b and the tests below, the probe is never trained on intervention states: each test pose is scored by the probe refit on natural states with that pose’s house held out, so no tested scene is in its training data.
+Off-schedule interventions. To make contact start or end at moments when it would not naturally change, we stop 123 natural pick episodes in the same houses (100 of them among the 299) at up to four poses of each kind, hold the arm fixed, and teleport the object in 1 cm steps along the line between the gripper and the object, continuing three steps past the change: toward the gripper at poses where the policy commands it open, until the object first touches it (early touch), or away from the gripper at poses where it touches the object, usually in a closed grasp, until contact breaks (induced slip). After each step, both cameras are re-rendered from the arm’s current pose. We repeat each test with the gripper forced to the opposite state: closed during early touches and open during slips. Forcing the gripper closed during early touches does not lower detection; forced-open slips (24 poses, as opening the gripper at a held grasp usually releases the object, which leaves few true slips) still score contact higher at most poses (75%), but they are too few to compare with natural slips.
+C.7 Phase
+Labels. Each step is labeled from the simulator state: the gripper command, the object’s height, and whether the object rests on the receptacle. REACH lasts until four steps before the first command to close the gripper. GRASP runs from there until transport begins, so failed grasps and retries count as grasp. TRANSPORT begins once the object, held after the final close, has risen 3 mm. PLACE begins where the object starts its last uninterrupted descent (at least 1 cm) before being released onto the receptacle, or at the release if there is no such descent, and runs to the end of the episode.
+Decoding. We fit a four-class linear discriminant (LDA) on the successful episodes, with houses held out. Balanced accuracy (the mean of the four per-phase accuracies; chance 0.25) is 0.92 for the action expert at layer 24, 0.86 for the VLM’s image tokens of the two current camera frames at layer 31, and 0.87 for the VLM’s non-image tokens at layer 29. The VLM’s 3-D view (Figure 17) shows the top three LDA directions rather than principal components, because the VLM’s first principal component (78% of variance) tracks the scene rather than the phase; the action expert’s view in Figure 5b uses principal components.
+Freezing. The policy sees two frames per query, taken eight steps apart. At landmark moments in each phase (for place, the last query before the release), taken from re-simulations of successful episodes, we query the policy twice at the same moment: once with its normal two frames (natural), and once with the current frame shown twice, so that the world appears to have stopped (frozen; “2-query pause” in Figure 19). Re-simulations that end in failure are kept. The decoded phase of both queries (Figures 5c, 17, and 18) comes from the LDA of the previous paragraph, using the fold that held out each landmark’s house (797 landmarks from 122 episodes). The
+39
+
+gripper effect comes from all episodes of the same capture (819 landmarks from 126 episodes): the fraction of the eight executed steps that command a closed gripper, frozen minus natural (Figure 5d; per step in Figure 19).
+
+C.8 Wrist Orientation
+Roll sweep (Figures 1 and 6). Starting from one arm pose, we set the wrist joint (Franka joint 7) to 38 evenly spaced angles across its range plus its starting angle, keep all other joints fixed, and re-render both cameras at each angle. We record the action expert at layer 9, using the first action token at the final flow step, and plot the top two principal components of the 39 activations. For Figure 1, we run the same sweep in 64 houses, subtract each house’s mean activation, and fit one PCA to all of them.
+
+Readout and precession (Figures 24 and 23). The natural-rollout readout uses the first action token at the final flow step. In the precession sweep, each joint is kept within the range of the policy’s training actions (1st to 99th percentile) and the hand within 5 cm of its starting position; in each direction, the orbit stops when the hand can no longer be held there.
+
+Steering (Figure 6b–d). The autoencoder is a pair of small MLPs (768–512–256–32 and back), trained on layer-9 activations averaged over the action tokens, from controlled wrist-rotation sweeps with a third of the houses held out. Three pairs of its 32 code dimensions are each constrained to a circle, one per rotation axis, and the other 26 are unconstrained; we rotate only the pair for rotation about the vertical axis, where one degree on the circle corresponds to one degree of physical rotation on held-out sweeps. To rotate by θ, we encode the current activation, rotate its point on that circle by θ, and decode. The edit is the decoded rotated point minus the decoded unrotated one, so a zero-degree rotation gives no edit; it is added to all action tokens at layer 9 at the final flow step and is 19% ± 7% of the activation’s norm. One-shot edits of ±20◦ and ±40◦ are applied at a single query in the middle of a rollout, in eight scenes held out from training the autoencoder, and the response is read from the decoded 8-step action chunk; one scene in which the wrist rotates strongly on its own is excluded, leaving 28 conditions. Held edits are recomputed from the live activation at every query over 32-step rollouts in six held-out scenes (five of these seven plus the excluded one), and the rotation is measured relative to the unedited rollout of the same scene.
+
+C.9 Gripper Pullback
+Landmarks. In 304 grasping episodes (170 houses), we take two landmarks relative to the moment the grasp becomes stable (contact held for three consecutive queries, with a lift of at least 2 cm when one occurs): a few queries before it (typically 3–9, gripper open) and a few after (gripper closed and holding the object). At each landmark we pick up to three evenly spaced queries whose executed gripper command is opposite the target, giving 1,666 edits. For 304 of them the unedited chunk already has the target’s sign; flip rates exclude these.
+
+Objective. We fit an additive edit δ ∈ R768 to all 16 action tokens at the output of action-expert block L, at the final flow step only, with the model’s weights fixed. Let a(δ) ∈ RH×8 be the decoded chunk (H=16), with seven arm channels aarm and a gripper channel g. We minimize
+
+L(δ)
+
+=
+
+wg H
+
+t
+
+gt(δ) − g∗
+
+2
+
++
+
+wa 7H
+
+t,j aat,rjm(δ) − a¯j 2
+
++
+
+ws 7(H −1)
+
+t,j aat+rm1,j (δ) − ata,rjm(δ) 2 + λ∥δ∥22,
+
+where g∗ ∈ {+1, −1} is the target gripper command (close, open) and a¯ is the current joint configura-
+tion; the terms flip the gripper, hold the arm still, and keep the chunk smooth. We use (wg, wa, ws, λ) = (1, 300, 3000, 10−4), with wa and ws chosen by grid search at wg = 1, and run Adam (learning rate 0.1) for
+1,000 steps, keeping the lowest-loss edit. An edit succeeds if the gripper command, averaged over the chunk, has the sign of g∗; all measurements use the decoded chunk, which is not executed.
+
+Low-rank edits and leakage. For the leakage curves we refit the same objective with the edit restricted to µ + V w, where µ and V are the mean and top k principal components of the edits from all other houses, at one query per landmark per episode. Leakage is the root-mean-square gap between the arm commands and the current joint angles over the chunk, reported as the median over queries relative to the median for the unrestricted 768-dimensional edits.
+
+40
+
+Probe and steering field. The aperture probe is a ridge regression, with houses held out, from each state’s pre-edit activation, projected onto the top k edit components, to the gripper command averaged over its decoded chunk. The field panel places pre-edit states on the top two components and averages the edits in each grid cell, separately for closing and opening edits.
+C.10 Real-Robot Analyses
+Data. We use DROID (Khazatsky et al., 2024), giving each model one frame per camera at each query (no earlier frame). The first 100 episodes, queried every eighth step (3,321 queries), are used for Figures 8, 29, and 33; the wrist traces in the first two instead show the roll-sweep episode described below. A further 2,000 pick-and-place episodes, drawn at random from those with a single grasp-and-release cycle and at least six recorded queries after the release, are used for Figures 31 and 32. Action-expert activations are averaged over the action tokens at the final flow step. VLM activations are averaged over the image tokens, with each token first scaled to unit length for MolmoAct2 and MolmoBot; the MolmoAct2 distance rulers instead average the non-image tokens. Reported scores are 5-fold cross-validated with episodes held out. Closure onset is the first query at which the measured gripper position leaves zero, ignoring blips that stay below 30% of its holding value.
+EE position and wrist orientation. Labels are computed from the recorded joint angles with the robot’s kinematic model; the wrist angle is the gripper’s rotation about the vertical axis (the last angle of its xyz Euler decomposition). Probes read action-expert layer 16 of MolmoAct2 and MolmoBot and VLM layer 7 of π0.5. For the roll sweep (Figure 30), an operator rotated joint 7 from +69◦ to −79◦ and back to +84◦ in one episode while the other joints moved by up to 15◦; Figure 30 colors points by this joint angle. The π0.5 action-expert panel uses one fixed noise seed for all queries, the third of the ten flow steps, and the first action token (with a new seed per query at the final step, no arc is visible).
+Distance to grasp. We use the queries from the start of each episode up to closure onset, keeping pick-and-place episodes with at least three such queries, and define d as the gripper’s distance from where it is at closure onset. The rulers are fit as in App. C.4, on VLM layer 25 of MolmoAct2 and MolmoBot and layer 14 of π0.5.
+Phase. Labels come from the measured gripper position: reach until closure onset, grasp until the gripper reaches 90% of its holding value, transport while it stays there, and place for the six queries (3.2 s) after that; later queries are not scored. The bars in Figure 32 come from four one-vs-rest linear discriminants, one per phase, each fit on all other episodes.
+Gripper pullback. We follow App. C.9, adding δ after the final action-expert block, with 15 action tokens for MolmoAct2 and π0.5 (whose activations are 1,024-dimensional) and a gripper weight of 16 for MolmoAct2 and 4 for π0.5 and MolmoBot. MolmoAct2’s gripper command lies in [0, 1], so its targets are 0 and 1 and a flip means crossing 0.5; π0.5 outputs joint velocities, so its arm target is zero velocity. All models share 379 landmarks: queries 3–9 before closure onset (gripper open) or 0–9 after (closing), at most two of each per episode. Rank-k edits project each δ onto the mean and top k principal components of all 379 edits instead of refitting.
+Cross-model similarity. MolmoBot is run on the same DROID queries. For each variable, we project each model’s standardized activations onto that model’s own ridge-probe directions for the variable, out of fold (aperture on the 379 landmark states; (cos θ, sin θ) and (x, y, z) on the 3,321 queries; the two rulers on the reach queries of the first 100 episodes). Similarity is one minus the Procrustes disparity between two models’ coordinates on identical rows, after centering, scaling to unit norm, and the best rotation, reflection, and uniform scaling; the null repeats this with the target shuffled across rows. Every coordinate is fit to the same labels in each model, so part of the agreement is built in.
+41
+
+

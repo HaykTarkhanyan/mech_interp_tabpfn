@@ -1,0 +1,44 @@
+{
+  "id": "2511.22697",
+  "title": "Mechanistic Finetuning of Vision-Language-Action Models via Few-Shot Demonstrations",
+  "first_author": "Mitra",
+  "year": 2025,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["pi0 (DROID)", "pi0.5 (DROID)"],
+  "action_head": "flow/diffusion action expert (heads selected in the PaliGemma backbone; expert frozen)",
+  "methods": ["per-head kNN action regression on few-shot demo activations to rank attention heads", "LoRA on query projections + MLPs of the top-20 heads", "ablation vs causal mediation (noise) and REINFORCE head selection", "attention-map visualization of selected heads", "head-selection overlap analysis"],
+  "question": "Can few-shot demonstrations identify task-relevant attention heads in a VLA, and does fine-tuning only those heads beat standard LoRA on real-robot tasks?",
+  "key_findings": [
+    "Real Franka (DROID setup), 20 demos per task, 40 trials per cell (Table 1): pi0 LoRA vs Robotic Steering: Place Marker 75% vs 80%, Press Button Hard 45% vs 75%, Pick Cube 75% vs 90%, Place Cube in Bowl 60% vs 85%, Push Cup 10% vs 17.5%. pi0.5 LoRA vs RS: 62.5 vs 72.5, 90 vs 85, 70 vs 77.5, 65 vs 80, 20 vs 27.5. Zero-shot pi0/pi0.5-DROID: 0-35%.",
+    "Robotic Steering uses 74.6-78.8M trainable params vs about 1.78B for LoRA (96% fewer) and about 21% less fine-tuning time.",
+    "Multi-task and unseen task (pi0.5): trained on Place Marker only, unseen Pick Mug 42.5% (LoRA) vs 65% (RS); joint multi-task training gives Pick Mug 0% (LoRA) vs 12.5-20% (RS).",
+    "Robustness on Place Marker (lighting, form, distractors): RS 22.5-30% vs LoRA 12.5-15% for the variants as parsed from Table 2; both drop sharply (25-40 points) from the unperturbed task.",
+    "Ablations (Table 3): finetuning queries only gives 10% vs queries + MLP 80%; kNN head selection costs 0.2 min vs 58 min (CMA) and 93 min (REINFORCE). Fine-tuning all 144 heads with the RS recipe gives 45%, below LoRA's 62.5% (App.).",
+    "Head selection is moderately stable: 54-82% pairwise overlap of the top-20 heads across demo subsets; 5-74% overlap across tasks.",
+    "Appendix negative result: in a head-classification variant, random 20 heads reach 82.5% accuracy and the worst 20 heads 81.25% vs 86.75% for the best 20, and the authors conclude task information is distributed across most heads."
+  ],
+  "evidence": {
+    "setting": "real robot",
+    "benchmarks": ["5 custom DROID-platform Franka tasks (place marker in mug, press red button hard, pick up red cube, place green cube in red bowl, push red cup to red bowl)", "Pick Mug (unseen)"],
+    "scale": "20 teleoperated demos per task; 40 trials per method per task; single training run per configuration",
+    "statistics": "no: success rates only, no CIs or tests",
+    "baselines": "zero-shot pi0/pi0.5-DROID, full LoRA following the official openpi setup; head-selection ablations with CMA and REINFORCE"
+  },
+  "causal_validation": "Weak. Heads are selected by a correlational kNN retrieval score; there is no random-head control at matched parameter budget for fine-tuning. Queries-only fine-tuning reaches 10% versus 80% with MLPs, so most of the gain may come from the MLP and auxiliary updates. The appendix's random-head classification result argues against head-level specificity.",
+  "closed_loop": "Yes, all success rates are closed-loop real-robot trials.",
+  "limitations_stated": [
+    "Requires open weights.",
+    "Evaluated on a single Franka arm.",
+    "Only attention heads of the LLM backbone are considered."
+  ],
+  "critique": [
+    "The comparison is confounded: Robotic Steering freezes the vision encoder and action expert while the LoRA baseline also trains SigLIP; gains may come from freezing, not from head selection. A same-recipe random-20-heads control is missing.",
+    "The recipe also updates 'the main LLM feed-forward layers' plus several auxiliary modules, so the method is less sparse than 'only task-relevant heads' suggests.",
+    "The text says CMA, REINFORCE and kNN selection reach comparable success, but Table 3 as extracted shows CMA at 15%; and Place Marker with pi0.5 RS is 72.5% in Table 1 but 80% in Table 3. Reporting is inconsistent.",
+    "The claim 'matches or outperforms LoRA on all tasks' fails for pi0.5 Press Button Hard (90% LoRA vs 85% RS); with 40 trials most per-task gaps are within noise.",
+    "Interpretability is thin: attention visualizations of selected heads are qualitative and not tied to behavior; this is mainly a parameter-efficient fine-tuning paper."
+  ],
+  "code": "project page https://chancharikmitra.github.io/robosteering/ (code status not stated in text read)",
+  "one_line": "Ranks pi0/pi0.5 backbone attention heads by how well their activations retrieve similar actions from 20 demos, then LoRA-tunes only those heads (plus MLPs), beating full LoRA on most of 5 real Franka tasks at a fraction of the parameters."
+}

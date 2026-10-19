@@ -1,0 +1,1113 @@
+arXiv:2605.24642v1 [cs.CV] 23 May 2026
+
+Understanding the Impact of Geometric Foundation Models on Vision-Language-Action
+Models
+Yurou Yang1, Muyuan Lin1, Roberto Martin-Martin1,2, Martin Labrie1, Shreekant Gayaka1, Cheng-Hao Kuo1, and Luca Carlone1,3
+Amazon Personal Robotics Group1 University of Texas at Austin2 Massachusetts Institute of Technology3
+Abstract. Recent work explores new opportunities at the intersection of vision-language-action models (VLAs) and geometric foundation models (GFMs) for 3D reconstruction, such as VGGT. While the resulting geometric VLAs often show improved performance, it remains unclear (i) if modern VLAs already have sufficient geometric understanding to start with, (ii) what is the best architecture to inject geometric understanding into a VLA, and (iii) what is the effect of other design choices that affect geometric VLAs. In this paper we provide a rigorous experimental analysis to shed light on these questions, for a specific choice of VLA (GR00T-N1.5) and GFM (VGGT). Our first contribution is to formalize prior work’s intuition that current VLAs lack geometric understanding, by providing a rigorous analysis based on linear probing. The analysis quantifies, for the first time, the “geometric gap” between VLAs and GFMs. Our second contribution is to identify and compare different strategies to bridge GFMs with VLAs. We implement three different architectures, which differ in the way they inject geometry in the VLA, while keeping low-level implementation details as similar as possible, to ensure a fair comparison. Finally, we analyze the impact of non-architectural choices (e.g., training data, number of cameras, reconstruction quality) on the performance of the geometric VLAs.
+1 Introduction
+Vision-Language-Action models (VLAs) have recently been at the center stage of robotics research for their ability to enable generalist manipulation behaviors from a modest number of expert demonstrations. These models have enabled successful manipulation skills from text instructions (e.g., “pick up the red mug and put it in the sink”) and are steadily permeating from academic labs to industrial applications (e.g., [15,42,37]). Typical VLAs are composed of two main building blocks: a vision-language model (VLM), which parses input images collected by the robot and language instructions from the user, and an action expert, which takes the output of the VLM and computes a suitable action (or chunk of actions) for the robot to execute. Intuitively, the VLM helps the robot correlate the user’s instructions (“pick up the red mug”) with relevant pixels in the image, while the action expert is in charge of establishing the best course of
+
+2
+
+Yang et al.
+
+action depending on the robot embodiment and the VLM understanding. While the combination of VLMs and action expert has demonstrated to be a strategic and powerful architectural choice, VLMs have been observed to be poor at spatial understanding [9,8]. At the same time, spatial understanding is intrinsically related to manipulation, where distances and geometry make the difference between a successful physical interaction and a failed one. This insight triggered work on 3D VLAs, where the VLA policy is augmented with depth information from an RGB-D camera [28,38,52,10,17,23].
+Parallel work in computer vision has pioneered the use of feed-forward transformer architectures for 3D reconstruction. Contrary to traditional SLAM and Structure from Motion approaches, which decouple the problem into multiple stages (e.g., feature extraction, matching, bundle adjustment, dense 3D reconstruction), these new geometric foundation models (GFM) reconstruct camera poses, depth maps, and point maps of the observed scene from a collection of images (e.g., [45,14,35,44,39]). The advantage of these approaches lies in their simplicity, their zero-shot generalization, and their ability to work with uncalibrated cameras. These new methods have created new opportunities to enhance VLAs with geometric understanding without altering their input data. This is particularly important since VLAs are typically trained on RGB inputs and GFMs open the door to adding 3D information without requiring additional data collection. These opportunities have been explored in a number of very recent works [30,1,34,16,51,29], which report promising results.
+Despite the quick progress in combining VLAs and GFMs in a so-called geometric VLA, related work leaves several questions unanswered. First of all, it remains unclear if VLAs already have sufficient geometric understanding and how to quantify a potential gap in 3D understanding. Second, related works propose disparate architectures to inject 3D information from GFMs into VLAs and it is unclear how these architectures compare or what is the insight behind one architecture being better than another. Finally, it is unclear how external factors related to geometry, including number of cameras, size of the training set, and reconstruction quality, impact performance of geometric VLAs.
+Contributions. In this paper we provide a rigorous experimental analysis to shed light on the open questions above, for a specific choice of VLA (GR00TN1.5) and GFM (VGGT). Our first contribution (Section 3) is to identify and compare different strategies to bridge GFMs and VLAs. Towards this goal, we analyze related work and identify three different strategies, summarized in Fig. 1. We provide prototype implementations of models using the three different strategies, while keeping low-level implementation details as similar as possible (to ensure an apple-to-apple comparison). Our second contribution (Section 4) is to formalize related work’s intuition that current VLAs lack geometric understanding, by providing a rigorous analysis based on linear probing. The probing assesses the VLA ability (more specifically, the ability of the VLM within the VLA) to predict dense depth information from images. The analysis quantifies, for the first time, the “geometric gap” between VLAs and GFMs, rigorously grounding observations in related work [29]. Our analysis
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+3
+
+INPUTS Images
+Language Instruction “Pick up 
+the pink water bottle”
+
+Vision-Language Model (VLM)
+
+Ve
+Vision Encoder
+Le
+Text Tokenizer
+
+Vl
+LLM
+Backbone Ll
+
+Action Expert
+
+Robot State
+
+Robot State Encoder
+
+Robot State tokens
+R
+
+(a) Standard VLA
+
+OUTPUTS Actions
+
+INPUTS Images
+
+Geometric Foundation
+MVoLdMel
+Vision Encoder
+
+Language Instruction
+“Pick up  the pink water
+bottle”
+
+Text Tokenizer
+
+Cross Attention
+Fusion
+
+VLM
+
+LLM Backbone
+
+Action Expert
+
+Robot State
+
+Robot State Encoder
+
+Robot State tokens
+
+(b) Early Fusion
+
+OUTPUTS Actions
+
+INPUTS Images
+Language Instruction “Pick up 
+the pink water bottle”
+
+VLM
+
+Geometric
+Foundation MVoLdMel
+
+Vision Encoder
+Text Tokenizer
+
+LLM Backbone
+
+Cross Attention
+Fusion
+
+Action Expert
+
+Robot State
+
+Robot State Encoder
+
+Robot State tokens
+
+(c) Late Fusion
+
+OUTPUTS Actions
+
+INPUTS Images
+
+VLM
+Vision Encoder
+
+Language Instruction
+“Pick up  the pink water
+bottle”
+
+Text Tokenizer
+
+Geometric Foundation
+MVoLdMel
+
+Alignment  loss
+
+…
+LLM Backbone
+
+Action Expert
+
+Robot State
+
+Robot State Encoder
+
+Robot State Tokens
+
+(d) Spatial Forcing [29]
+
+OUTPUTS Actions
+
+Fig. 1: (a) Standard VLA architecture. (b)-(d) Key strategies to inject tokens from a geometric foundation model (e.g., VGGT) into the VLA.
+
+also provides the surprising finding that a pretrained LLM can predict dense depth information if it is fed with tokens from a GFM. Our final contribution (Section 5) is to analyze the effect of key design choices that affect geometric VLAs. Relevant factors include both architectural aspects (such as the choice of fusion strategy discussed above), as well as non-architectural aspects (such as the number of cameras used by the VLA, the size of the training data, and the quality of the reconstruction from the GFM). We perform our analysis on popular simulation benchmarks, including RoboCasa [33] and LIBERO [31], and we also provide an evaluation on real data, using the Unitree G1 humanoid.
+
+2 Related Work
+Vision-Language-Action Models (VLAs) for Manipulation. VLAs map visual observations and natural language instructions to robot actions by extending VLMs with a policy or action head [6,5,4,7,13]. These models inherit the semantic grounding and generalization capabilities of large VLMs, enabling robots to perform diverse manipulation tasks from relatively limited demonstration data. However, despite their impressive generalization capabilities, VLAs inherit a key limitation from VLMs: they primarily operate on RGB inputs and focus on semantic understanding [2] rather than explicit spatial reasoning. Prior work has shown that vision-language models often struggle with geometric reasoning tasks such as estimating distances, relative pose, or object placement constraints [38,8]. While recent work attempts to improve spatial reasoning through architectural modifications or large-scale multimodal pretraining [38,52,54,12],
+
+4
+
+Yang et al.
+
+it remains unclear whether these approaches provide the level of geometric understanding required for efficient robotic manipulation.
+Geometric Foundation Models. Recent work in computer vision has introduced geometric foundation models (GFMs), which learn to infer 3D scene structure directly from images using a single feed-forward transformer-based architecture [46,27]. Models such as the Visual Geometry Grounded Transformer (VGGT) [45] predict camera poses, depth maps, and dense point maps from one or multiple views without the multi-stage pipelines used in traditional SLAM or structure-from-motion systems. Subsequent work has further developed these models with improved geometric consistency by jointly predicting correlated geometric quantities such as depth, normals, and point maps [46], incorporating additional modalities or supervision to enable metric reconstruction and multiview consistency [24,44], or extending these architectures to dynamic scenes and semantic understanding, enabling unified feed-forward modeling of geometry, semantics, and motion [55,39,21]. Together, these models provide powerful geometric representations that generalize across environments and can be queried without scene-specific training. These techniques have recently been shown to improve spatial understanding in VLMs [53,48,20].
+Injecting Geometry into VLAs. Several works augment VLAs with geometric information to address the limited spatial reasoning capabilities of traditional VLM-based policies. Some approaches incorporate explicit geometric inputs such as depth maps or point clouds, for example PointVLA [28] and RVT-2 [17]. Other works attempt to learn spatial structure within the policy itself, through 3D feature learning, affordance reconstruction, or spatial memory mechanisms [10,23,41]. More recently, geometric foundation models have been used to inject geometric context into VLAs, either by fusing geometric tokens with visual representations [30,1,34,16] or by aligning vision-language representations with geometric features during training [29]. Despite promising results, existing approaches differ substantially in how geometry is integrated, making it difficult to understand which architectural choices are most effective. In this work, we provide a systematic analysis of several strategies for integrating geometric foundation models into modern VLAs.
+
+3 Bridging VLAs and Geometric Foundation Models
+This section reviews the typical VLA architecture and discusses ways to integrate GFMs in a VLA (Section 3.1). Then, we describe our implementation of the “fusion module” that fuses VLA tokens with tokens from the GFM (Section 3.2).
+
+3.1 VLA Architecture and Key Strategies to Inject Geometry
+VLA Architecture. A typical VLA is shown in Fig. 1(a). The VLA takes three inputs: a set of images I (e.g., captured by the robot cameras at the current time t), a language instruction L (e.g., “pick up the red mug”), and robot state information R (e.g., joint angles). The inputs are first processed
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+5
+
+by specific encoders that produce visual (Ve), language (Le), and robot state tokens (R), respectively. Visual and language tokens are then passed to the LLM backbone inside the VLM that produces new visual tokens (Vl) and language tokens (Ll). These tokens, together with the robot state tokens R, are passed to the action expert, which computes the set of actions for the next T time steps, a0:T .
+The VLA is trained from demonstrations, given tuples (I, L, R, a0:T ), including both input data (I, L, R) and the desired action sequence, a0:T , given in the demonstration. While different architectures differ in the choice of the VLM, the action expert, and training objective, a popular choice is to use a diffusion policy formulation [11], where the action expert integrates a diffusion transformer. In a diffusion policy formulation, one iteratively adds Gaussian noise to the clean action sequence, a0:T , to obtain a noisy sequence ak, k = 1, . . . , N , such that:
+
+  \mathbf {a}^k = {\alpha _k}\va _{0:T} + {(1-\alpha _k)}\boldsymbol {\epsilon }, \quad \boldsymbol {\epsilon } \sim \mathcal {N}(0, \mathbf {I}). 
+
+(1)
+
+The diffusion policy, parametrized by weights θ, is then trained with a flowmatching loss, which teaches the policy how to map back random noise samples to plausible actions. Concretely, the policy predicts the denoising field vθ(ak, T , k), conditioned on the visual, text, and robot state tokens, T = (Vl, Ll, R), and is trained using the following flow-matching loss:
+
+  \mathcal {L}_{\text {diff}} = \mathbb {E}_{k} \left [ \left \| v_\theta (\mathbf {a}^k, \MT , k) - (\boldsymbol {\epsilon } - \va _{0:T}) \right \|_2^2 \right ]. 
+
+(2)
+
+The predicted robot actions are then obtained via (Euler) integration of the field vθ(ak, T , k); see [6,4] for details and popular instantiations of these ideas.
+Early Fusion. Now let us consider a first strategy to inject GFM tokens into the baseline VLA described above. This first strategy, that we call “Early Fusion”, is illustrated in Fig. 1(b). More specifically, the GFM takes the same images I as the VLA and produces tokens G; in our experiments, we use the VGGT backbone to produce these tokens. Then, visual tokens Ve from the VLA and geometric tokens G from the GFM are fused together to produce new tokens fuse(Ve, G), which are passed to the LLM in lieu of the tokens from the vision encoder. Intuitively, the Early Fusion strategy treats the GFM as an additional encoder. This approach has been used in early papers combining VGGT with VLAs [30]; moreover, it resembles injection strategies used to enhance spatial understanding in VLMs [53]. We implement the fusion fuse(Ve, G) as a crossattention layer with attention gating, as discussed in Section 3.2 below. We remark that the use of attention gating was not explicitly mentioned in [30,53], but we found this aspect to be crucial to the effectiveness of this strategy (Appendix B).
+Late Fusion. The second strategy, that we call “Late Fusion”, is illustrated in Fig. 1(c). Again, the GFM takes the same images I as the VLA and produces geometric tokens, G. However, in this case the geometric tokens are fused with the visual tokens outputted by the LLM, namely Vl; the fused tokens, fuse(Vl, G), are used as input by the action expert instead of the original LLM
+
+6
+
+Yang et al.
+
+tokens, Vl. Intuitively, the Late Fusion strategy attempts at enriching the VLM output with more geometric information before passing it to the action expert. This approach is conceptually similar to [51], but with a simplified architecture. As before, we implement the fusion fuse(Vl, G) as a cross-attention layer with attention gating, to keep the implementation as close as possible across architectures.
+Spatial Forcing. The third strategy is Spatial Forcing [29] (see Fig. 1(d)). In this case, the architecture itself is the same as the original VLA with the main difference being that, at training time, spatial forcing adds an alignment loss to encourage internal tokens of the LLM to align (as measured by cosine similarity) with the GFM tokens. This facilitates the VLM to retain geometric information that could potentially be used by the action expert.
+Remark 1 (Our evaluation focuses on GR00T and VGGT). At the time of preparation of this manuscript, no open-source code was available for approaches following the Early Fusion and Late Fusion strategy. Therefore, we developed prototype implementations for both strategies, building on top of the GR00TN1.5 VLA [3]. For consistency, we also implemented Spatial Forcing [29] using GR00T: while open-source code is available for Spatial Forcing, it is based on OpenVLA [25] and π0 [6]; we adapted to GR00T for a fair comparison. In all tests, we used VGGT as the geometric foundation model.
+
+3.2 Cross-Attention Fusion
+In this section, we briefly discuss the implementation of the fusion module fuse(·, ·) mentioned in Section 3.1. We adopt a similar implementation for both the Early Fusion and the Late Fusion strategy. Let us denote with X ∈ RPx×Dx the VLA visual tokens, where Px denotes the number of tokens (this typically depends on the number of patches the encoder subdivides the images in) and Dx is the size of the feature associated to each token; for the Early Fusion, we set X = Ve, while for the Late Fusion we set X = Vl. Also, denote with G ∈ RPg×Dg the tokens of the geometric foundation model. Below we show how to obtain fused tokens X˜ = fuse(X, G) using a cross-attention mechanism with attention gating, such that X˜ ∈ RPx×Dx has the same size of the VLA tokens, hence remaining compatible with the rest of the architecture.
+We follow a standard cross-attention implementation, where tokens are first projected onto a common space using learned projection matrices WQ, WK , WV :
+  \label {eq:QKV} \mathbf {Q} &= \MX \; {\MW }_Q \in \mathbb {R}^{P_x \times d}, \quad \mathbf {K} &= \MG \; {\MW }_K \in \mathbb {R}^{P_g \times d}, \quad \mathbf {V} &= \MG \; {\MW }_V \in \mathbb {R}^{P_g \times d}. (3)
+Then, cross-attention is computed as follows:
+
+  \label {eq:crossAtt} \MY = \text {softmax} \left ( \frac {\mathbf {Q}\mathbf {K}^\top }{\sqrt {d}} \right )\mathbf {V} \in \Real {P_x \times d} 
+
+(4)
+
+and the result is projected back to the VLA feature space using a learned pro-
+
+jection matrix WO:
+
+  \label {eq:projWO} \MZ = \MY \; \MW _O \in \Real {P_x \times D_x}. 
+
+(5)
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+7
+
+Finally, we apply a learned attention gate A to the cross-attention results and use the gated results as a residual correction term on the VLA tokens:
+
+  \label {eq:gate} \tilde {\MX } = \MX + \MA \odot \MZ 
+
+(6)
+
+where ⊙ denotes the component-wise (Hadamard) product. The gate is initialized close to zero, such that the geometric tokens are gradually added to the VLA tokens; this aspect is important since the rest of the architecture is pretrained without the geometric tokens, and introducing geometric tokens too abruptly prevents the action expert from correctly using them (Appendix B). In our implementation, we follow a standard practice and parameterize the linear projections WQ, WK , WV , WO as low-ranking (LoRA) layers [19] and add positional encodings to the VLA and GFM tokens to retain the spatial arrangement of the corresponding tokens. We refer the reader to Appendix A for more details.
+
+4 Probing Geometric Understanding in VLAs
+
+Key Takeaway. GR00T-N1.5 is not able to retain depth information, which is already lost before the output of the VLM. Late fusion, as expected, can inject depth understanding. Surprisingly, even Early Fusion can inject depth understanding, without requiring finetuning of GR00T’s VLM.
+Before investigating the impact of injecting geometric tokens into a VLA, we ask a basic question: do VLAs already understand geometry? We rigorously answer this question using a technique known as linear probing. In linear probing, one attaches a simple MLP (the linear probe) to a layer of a frozen network, and then trains the MLP to solve a task (in our case, monocular depth estimation) to probe the information content of that layer: intuitively if the layer contains enough information (e.g., about geometry), then the task can be completed successfully, otherwise it cannot. Qualitative probing results have been reported in related work (e.g., [29]), but we provide the first quantitative evaluation of the geometric understanding gap between VLAs and geometric foundation models.
+Probing Setup. We train the linear probe for 10 epochs on the NYU Depth V2 dataset (we use the version of the dataset from [47]). The dataset includes pairs of RGB and depth images, including 24,000 training pairs, and 645 pairs for validation. For probing purposes, we use a Scale-Invariant Logarithmic (SILog) loss following standard practice [49]. To evaluate probing performance, we compute the RMSE depth error (↓), as well as the δ1 score (↑), which measures the fraction of pixels with predictions within 25% of the ground truth depth.
+Probing Results. With reference to Fig. 1(a), we start by probing the output of the vision encoder, as well as the output of the overall GR00T VLM. Again, in both cases, the VLA is frozen at the original pre-trained weights and the linear probe is the only module that is trained. The first two rows in Table 1 report the corresponding scores. For reference, we also perform linear probing using the output of the VGGT backbone and report the results in the third row of
+
+8
+
+Yang et al.
+
+RMSE [m] (↓) δ1 (↑)
+
+GR00T - vision encoder probe 0.92
+
+0.51
+
+GR00T - VLM probe
+
+0.73
+
+0.63
+
+VGGT probe
+
+0.41
+
+0.89
+
+Early Fusion probe
+
+0.44
+
+0.88
+
+Late Fusion probe
+
+0.45
+
+0.87
+
+Table 1: RMSE depth errors and δ1 scores for the linear probing experiments.
+
+(a) RGB
+
+(b) GT depth
+
+(c) VLA 1
+
+(d) VLA 2
+
+(e) VGGT
+
+(f) Early
+
+(g) Late
+
+Fig. 2: Sample linear probing results: (a) RBG input, (b) ground truth (GT) depth, (c) depth predicted by the GR00T vision encoder probe, (d) GR00T VLM probe, (e) VGGT probe, (f) Early Fusion probe, and (g) Late Fusion probe. The poor performance of the VLA probes support the intuition that VLAs lose geometric understanding, while geometric VLAs recover most of it thanks to the VGGT tokens.
+
+Table 1: intuitively the VGGT tokens definitely encode geometric understanding and we can think about the gap between the performance of the VGGT probe and the VLA probes as a measure of the “geometric gap”, which quantifies the amount of geometric information loss in the VLA. From Table 1, we observe that the depth understanding in VGGT is substantially higher compared to the VLA, with the RMSE almost doubling between VGGT and the VLA. The table also shows that the depth information is already lost after the vision encoder.1
+The results so far confirm that using VGGT has the potential to supplement the VLA with a better depth understanding. To further reinforce this possibility, we perform linear probing on the Early Fusion and Late Fusion models, to show that those architectures are indeed able to inject geometric information into the VLA. In this case, since we do not have pre-trained weights for the cross-attention fusion module, we train both the fusion module and the linear probe. In both cases, we probe the output of the VLM, to make sure geometric information is retained. Note that Spatial forcing does not entail architectural modifications hence it is excluded from this comparison. The results are reported in the last two rows of Table 1. The Late Fusion architecture is able to retain geometric information. This is somewhat expected, since the VGGT tokens are injected near the probe: intuitively, the attention gate in (6) can prioritize VGGT tokens and
+1 The attentive reader might find surprising that the probe at the output of the VLM has more depth information than the output of the vision encoder (intuitively, if the depth information is lost after the vision encoder, how can it be recovered at the output of the VLM?). This is an artifact of the analysis: the hidden dimension for vision encoder probe is 1024, while for the VLM and VGGT probes is 2048; therefore, the vision encoder probe is impacted by the lower capacity of the MLP.
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+9
+
+provide relevant geometric information to the linear probe. More surprisingly, even the Early Fusion architecture is able to correctly inject geometric information, achieving depth performance almost on par with VGGT. This is nontrivial since we are injecting the VGGT tokens before the LLM and the LLM is frozen: nevertheless, the LLM is still able to use the VGGT tokens to produce dense depth predictions. We provide qualitative depth prediction results in Fig. 2. We remark that these are the results of a linear probe, hence —even when accurate— they are more noisy than the ones produced by, e.g., a DPT [45]. Next, we are ready to assess whether the additional geometric information in the Early and Late Fusion models is actually helpful to improve manipulation.2
+
+5 Impact of Key Design Choices
+In this section, we provide a rigorous evaluation to assess the impact of key design choices on the performance of the geometric VLAs in Section 3. After introducing the evaluation protocol (Section 5.1), we investigate the impact of the fusion strategy (Section 5.2), the training data size (Section 5.3), the number of cameras (Section 5.4), and the VGGT reconstruction quality (Section 5.5).
+
+5.1 Experimental Protocol
+Benchmarks. We evaluate performance on two simulated benchmarks (RoboCasa and LIBERO) and a real benchmark (using a Unitree G1 humanoid).
+RoboCasa [33] is a large-scale simulation benchmark. The benchmark includes 8 tasks: PnPCabToCounter, PnPCounterToCab, PnPCounterToMicrowave, PnPCounterToSink, PnPCounterToStove, PnPMicrowaveToCounter, PnPSinkToCounter, PnPStoveToCounter. For instance, PnPCabToCounter indicates a Pick-and-Place (PnP) task that moves an object from the cabinet to the kitchen counter. For each task, the benchmark provides 5 different episodes, each one corresponding to a different kitchen scenario and a different object to grasp. For each of the 5 episodes, we repeated 15 trials, where the appearance of the scene is randomized, for a total of 600 manipulation experiments. We follow the standard evaluation protocol and use three cameras (left, right, and wrist cameras).
+LIBERO [31] is a standard simulation benchmark and includes four tasks: LIBERO-SPATIAL, LIBERO-OBJECT, LIBERO-GOAL, and LIBERO-100. LIBERO100 includes 90 short-horizon tasks (LIBERO-90) and 10 long-horizon tasks (LIBEROLONG). Each task is evaluated over 500 trials. We follow the standard evaluation protocol, including the use of both primary and wrist-mounted cameras.
+We also benchmark on real robot data using a Unitree G1 humanoid. The G1 benchmark focuses on evaluating pick-and-place performance for 3 classes
+2 Appendix E.4 provides an additional experiment where we probe surface normal prediction. Surface normals describe how a robot can interact with an object by encoding local contact geometry and feasible force directions. The results are consistent with the findings in this section, further confirming the lack of geometric understanding in GR00T and the potential to regain it using VGGT.
+
+10
+
+Yang et al.
+
+of objects: bottle, ball, and box. We repeated 90 tests across the three objects, randomizing object location, object orientation, and object instances within each class (e.g., from a small wooden box to a larger cereal box for the “box” class). In each test, there is a single object on the table and the text prompt first commands the robot to pick up the object, and then to drop if off on the table. To position the target objects in a repeatable manner across experiments, we overlaid a grid on the table surface and randomly generated the object’s grid coordinates and orientation. We use the same configuration across all models.
+Performance Metrics. We use success rate as key performance metric, but in certain experiments we also break down the success rate across different grasping stages. For each model, we evaluate the models at the following checkpoints/epochs: 1, 5, 10, 15, 18, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, and report the best success rate across checkpoints. For each result, we compute significance levels using the two-sided McNemar’s test (more details in Appendix C): we observed that the randomness in the action expert can produce fluctuations in the results (even after fixing the seed for the scenario generation), hence distinguishing randomness from actual performance differences is key (Appendix D).
+Experimental Considerations. We fix the random seeds for repeatability, without any attempt at tuning the seed for performance. We also fix the noise generation in the diffusion transformer of GR00T. Experimental settings are identical across all models. We train all models using an NVIDIA A100 GPU cluster with 320 GB GPU Memory for 100 epochs. Finetuning takes 2-3 days (depending on the model), while mid-training (Section 5.3) takes around 1 week.
+Implementation Details. When finetuning GR00T, we follow the standard protocol and only train the action expert starting from pre-trained weights. For the Early Fusion and the Late Fusion model, we train the fusion module and the action expert and keek everything else frozen. For Spatial Forcing, we apply the alignment loss to layer 9 (out of 13) of the GR00T LLM and only finetune the linear projection between the vision encoder and the LLM. We also attempted to finetune the LLM in Spatial Forcing, but obtained worse results (Appendix E).
+
+5.2 Impact of Fusion Strategy
+Key Takeaway. Task-level finetuning of geometric VLAs combining GR00T-N1.5 and VGGT does not lead to a statistically significant increase in the success rate. The Early Fusion geometric VLA appears to be more promising in real world experiments.
+In this section, we compare the three geometric VLA models from Section 3. RoboCasa Results. Table 2 reports success rates across the 8 RoboCasa
+tasks, including both the implemented geometric VLAs (Early Fusion, Late Fusion, and Spatial Forcing) and baselines from the literature. For each, we also report p values for statistical significance, all computed with respect to the GR00TN1.5 baseline. For each geometric VLA, we finetune on the specific task using the demonstrations provided by RoboCasa (around 300 demonstrations per task).
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+11
+
+Moreover, we finetune and test GR00T-N1.5 to ensure a fair comparison. We postpone the discussion of the last row of the table to Section 5.3.
+
+DP3[50] Pi0[6] Pi0-Fast[36] RS-CL[26] DP-VLA[18] GR00T N1 [4] Video Policy[22] GR00T-N1.5 Early Fusion Late Fusion Spatial Forcing
+
+CabToCtr CtrToCab CtrToMicrowave CtrToSink CtrToStove MicrowaveToCtr SinkToCtr StoveToCtr Average
+
+4.0
+
+2.0
+
+6.0
+
+0.0
+
+0.0
+
+6.0
+
+0.0
+
+0.0
+
+2.3
+
+28.0
+
+18.0
+
+36.0
+
+70.0
+
+36.0
+
+22.0
+
+16.0
+
+44.0
+
+33.8
+
+30.0
+
+48.0
+
+20.0
+
+56.0
+
+64.0
+
+46.0
+
+62.0
+
+60.0
+
+48.3
+
+60.0
+
+68.0
+
+40.0
+
+68.0
+
+72.0
+
+48.0
+
+68.0
+
+54.0
+
+59.0
+
+10.0
+
+32.0
+
+56.0
+
+30.0
+
+22.0
+
+18.0
+
+56.0
+
+62.0
+
+35.8
+
+20.0
+
+36.0
+
+13.0
+
+10.0
+
+24.0
+
+16.0
+
+33.0
+
+29.0
+
+22.6
+
+48.0
+
+52.0
+
+22.0
+
+48.0
+
+54.0
+
+28.0
+
+56.0
+
+70.0
+
+47.3
+
+42.7
+
+74.7
+
+73.3
+
+93.3
+
+77.3
+
+58.7
+
+65.3
+
+88.0
+
+71.7
+
+32.0 (p=0.186) 69.3 (p=0.289) 65.3 (p=0.377)
+
+88.0 (p=0.388) 73.3 (p=0.664) 62.7 (p=0.742)
+
+80.0 (p=0.019) 86.7 (p=1.000) 69.7 (p=0.399)
+
+46.7 (p=0.710) 72.0 (p=0.625) 74.7 (p=1.000) 85.3 (p=0.146) 69.3 (p=0.307) 69.3 (p=0.115) 69.3 (p=0.689) 81.3 (p=0.267) 71.0 (p=0.806)
+
+29.3 (p=0.123) 68.0 (p=0.227) 66.7 (p=0.499)
+
+76.0 (p¡0.001) 72.0 (p=0.454) 60.0 (p=1.000)
+
+84 (p=0.007) 90.7 (p=0.804) 68.3 (p=0.154)
+
+Early Fusion (mid-trained) 52.0 (p=0.281) 72.0 (p=0.727) 69.3 (p=0.700)
+
+94.7 (p=1.000) 80.0 (p=0.815) 68.0 (p=0.189)
+
+81.3 (p=0.023) 84.0 (p=0.607) 75.2 (p=0.104)
+
+Table 2: VLA performance comparison on the RoboCasa benchmark. Green
+
+indicates best result per column; yellow indicates second best (ties share the
+
+same color). p-values are computed against the GR00T-N1.5 baseline. Results
+
+for the first 7 rows are borrowed from the corresponding paper.
+
+From a quick glance at the table, the results show that in average the performance of the geometric VLAs is subpar compared to the GR00T baseline (e.g., 69.7% for Early Fusion vs. 71.2% for the baseline). However, closer inspection of the p values suggests that the baseline results are just not significantly different from the baseline: a p value larger than p = 0.05−0.1 indicates the differences are not statistically significant and might be the result of randomness. We remark that each p value in the “Average” column is not the average of the p values of that row, but it is recomputed accounting for the success rates of the runs across all tasks. We draw similar conclusions from testing on the LIBERO benchmark, see Appendix E for further details. In conclusion, basic finetuning of geometric VLAs does not fundamentally change success rate in simulated benchmarks. As we will show in the next sections, the conclusion drastically changes when increasing the amount of training data or the sensor configuration.
+
+Approach
+
+Grasp
+
+Lift
+
+Placement Overall
+
+GR00T-N1.5 57.78
+
+51.92
+
+85.19
+
+86.96
+
+22.22
+
+Early Fusion 84.44 (p¡0.001) 60.53 (p=0.824) 89.13 (p=1.000) 65.85 (p=0.180) 27.78 (p=0.511)
+
+Late Fusion 57.78 (p=0.855) 59.62 (p=1.000) 93.55 (p=1.000) 79.31 (p=0.625) 25.56 (p=0.710)
+
+Table 3: VLA performance comparison on (real) Unitree G1 benchmark. The
+
+table reports the overall success rate, as well as the breakdown of the success
+
+rate in terms of percentage of cases where the robot successfully approached,
+
+grasped, lifted, and placed the target object. Green indicates best result per
+
+column; yellow indicates second best.
+
+Unitree G1 Results. Table 3 reports the results of the real manipulation benchmark on the Unitree G1. Since each experiment is time consuming, we focus on the Early Fusion and the Late Fusion models. In this case, we also provide a breakdown of the performance across grasping stages: the Approach stage is successful when the robot approaches and touches the object of interest; the Grasp stage is successful when the robot is able to grasp the object; the Lift stage is successful when the object is correctly lifted above the table; the Placement stage is successfully when the object is correctly placed back on the
+
+12
+
+Yang et al.
+
+table. If all the stages are successful, the overall episode is considered successful. Several considerations are in order. First of all, the overall success rate is higher than baseline (22.22%) for both the Early Fusion (27.78%) and Late Fusion model (25.56%). However, the results again lack strong statistical significance, with p values above 0.1. At the same time, the success rate of the approach stage is statistically better than baseline for the Early Fusion model, achieving 84.44% success rate compared to 57.78% of the GR00T baseline. This might indicate that Early Fusion is able to leverage geometric information to better identify the target object and more precisely move the gripper towards it. In average, Grasp and Lift performance is better for the Early and Late Fusion models compared to baseline, while the placement is slightly worse, but again these observations are assigned relatively large p values. In practice, we observed the Early Fusion approach to more reliably grasp small objects (e.g., the small ball and the small box in our benchmark), which was very challenging for the GR00T baseline instead. The performance gain of the Late Fusion approach is more modest. We conjecture that the VLM (and, in particular, the LLM within the LLM) is more flexible in processing new information (as the one provided by the Early Fusion) —an observation confirmed by the plasticity observed in the probing experiment of Section 4; on the other hand, the action expert is relatively “rigid” and unable to make good use of additional data sources (as in the Late Fusion). Next, we go deeper into our investigation and focus on other aspects that make the advantage of using GFMs more pronounced. We mostly focus on the Early Fusion model, mostly due to the fact that it stands out in real experiments, and we postpone details about other models to Appendix E.
+
+5.3 Impact of Training Data Scaling
+Key Takeaway. Early Fusion’s performance largely improves and becomes better than baseline (in a statistically significant manner) after training it on a larger amount of data before finetuning on the specific task.
+This section shows that we can draw stronger conclusions about the impact of geometric information if we scale up the training data. For this experiment, we first trained the Early Fusion model on the entire RoboCasa dataset (all 8 tasks) starting from the GR00T’s pretrained weights. The basic idea is that this “mid-training” allows the network to better adjust to the VGGT tokens and make better use of the resulting geometric information. After mid-training, we finetune on a specific RoboCasa task, as done in the previous section. The corresponding results are reported in the last row of Table 2. Interestingly, now the Early Fusion approach with mid-training becomes substantially better than baseline, with p values indicating increased statistical significance. To further demonstrate that the advantage is due to VGGT rather than other potential information leakage induced by the mid-training, Appendix E shows that Early Fusion outperforms GR00T even when both are mid-trained using the same protocol. This observation is important because it suggests that scaling up the
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+13
+
+Method CabToCtr CtrToCab CtrToMicrowave CtrToSink CtrToStove MicrowaveToCtr SinkToCtr StoveToCtr Average
+
+GR00T-N1.5 12.0
+
+8.0
+
+33.3
+
+28.0
+
+13.3
+
+12.0
+
+26.7
+
+4.0
+
+17.2
+
+Early Fusion 10.7 (p=1.000) 9.3 (p=1.000) 38.7 (p=0.503) 17.3 (p=0.115) 29.3 (p=0.008) 18.7 (p=0.302) 34.7 (p=0.307) 13.3 (p=0.039) 21.5 (p=0.030)
+
+Table 4: RoboCasa results with single-camera (no mid-training). Green indicates
+
+best result per column. p values are computed against GR00T-N1.5 (single cam-
+
+era).
+
+training of geometric VLAs may unlock their full potential. Such a large-scale training is indeed possible since it would not require additional training data.
+
+5.4 Impact of the Number of Cameras
+Key Takeaway. Even without mid-training, Early Fusion’s performance becomes statistically better than baseline when using a single-camera setup.
+While we have observed that mid-training already makes the Early Fusion model statistically better than baseline, one might also ponder if —without mid-training— there are factors that could make VGGT more useful for manipulation. One may conjecture that GR00T might already be able to infer depth information from multiple camera views. On the other hand, the advantage of using a geometric foundation model might be more pronounced when using a single camera, since in that case the VLA would not be able to obtain dense geometric understanding via multi-view geometry. To test this hypothesis, we finetune both the Early Fusion model and the GR00T baseline using a single camera (in particular, the left camera) in Robocasa. Table 4 reports success rates for both single-camera models. For both, as expected, the overall performance drastically drops, confirming that multi-view inputs are key to successful grasping. More interestingly, the advantage of Early Fusion becomes more pronounced (21.5% vs. 17.2% for the baseline) and statistically significant (p < 0.05), confirming our intuition. This might suggest that, in sensor-constrained settings, geometric foundation models provide a viable option to boost performance.
+
+5.5 Impact of VGGT Performance
+Key Takeaway. While the Early Fusion model’s success rate is largely task dependent, the success rate is also correlated with VGGT’s performance (i.e., smaller depth errors in VGGT correlate with highest success rates).
+Finally, we test the impact of the VGGT reconstruction performance on the success rate of the resulting geometric VLA. Intuitively, we expect that in cases where VGGT is out-of-distribution or exhibits larger errors, such errors would propagate to the VLA as well. Conversely, scenarios with more accurate VGGT performance might achieve better success rates. Fig. 3(a) plots —for each of the 5 episodes of the 8 RoboCasa tasks— the success rate for that episode versus the average (RMSE) depth error of the VGGT reconstruction.
+
+14
+
+Yang et al.
+
+The depth error is averaged across all images and cameras in the episode. First of all, Fig. 3(a) shows that the depth errors are relatively small, confirming the outstanding generalization capabilities of VGGT, which performs well despite the relatively low-resolution camera renderings (qualitative results in Fig. 3(b)). More importantly, we can inspect the correlation between depth quality and success rate. While the success rate is largely impacted by other factors beyond the VGGT reconstruction quality (such as the task complexity), we can see that the right-hand side of the plot shows a decreasing trend, meaning that lower RMSE corresponds to higher success rates. More formally, we can measure the correlation between depth reconstruction error and success rate: using the data in Fig. 3(a), we compute the Spearman correlation coefficient and obtain ρ = −0.202, which confirms a mild negative correlation between the variables. This observation is important since it suggests that finetuning VGGT in the target environment might further top-off the performance of the geometric VLA.
+Left Wrist Right
+
+GT VGGT RGB
+
+(a)
+
+(b)
+
+Fig. 3: (a) VGGT depth error vs. manipulation success rate in RoboCasa. (b) Sample RGB images and predicted vs. ground-truth depth, for the left, wrist, right cameras.
+
+6 Limitations
+Despite our best effort to provide a rigorous evaluation of the impact of geometric foundation models on VLAs, this work is not without limitations. First of all, the results are limited to our choice of VLA (GR00T-N1.5) and GFM (VGGT). There are many other VLAs and GFMs, and despite the presence of architectural similarities, we cannot generalize our conclusions beyond the combination we tested. Second, most of the results are on simulation benchmarks (except our analysis on the Unitree G1). While this is common practice in the field, it might not fully reflect real performance (indeed we observed that models using GFMs show stronger performance on real data). This issue is compounded by the fact that some of the simulation benchmarks are saturated, hence limiting the margin of improvement that can be shown. Third, while we tried to follow design choices used in related work, we did not ablate the impact of other choices (e.g., which
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+15
+
+layer to apply Spatial Forcing to, or alternative fusion strategies not relying on cross-attention); the scope of our experimental analysis is already very broad, with some of the training experiments taking close to a week to complete, and exploring the entire design space is simply impractical. Finally, while we believe that adding statistical significance (and avoiding tuning random seeds) is crucial to draw rigorous conclusions, the corresponding p values are not binary, and still leave a margin for errors; we acknowledge this uncertainty in our evaluation.
+
+7 Conclusions
+We provide an analysis of the impact of injecting geometric information via Geometric Foundation Models (GFMs) into modern VLAs. First, we introduced three different strategies to inject geometric knowledge in VLAs, providing a unifying lens over the recent literature. Second, we quantified the gap in geometric understanding between a VLA (GR00T-N1.5) and a GFM (VGGT) using linear probing, and show such a gap can be filled by architectures leveraging GFMs. Third, we discussed factors impacting performance, including both architectural choices (i.e., choice of fusion strategy) as well as non-architectural choices (including the size of the training data, the number of cameras, and the quality of the VGGT reconstruction). As a result, this work provides non-trivial insights into the performance of novel VLAs integrating geometric foundation models, that we believe can trigger new and impactful research in this area.
+
+16
+
+Yang et al.
+
+References
+
+1. Abouzeid, A., Mansour, M., Sun, Z., Song, D.: GeoAware-VLA: Implicit geometry aware vision-language-action model. arXiv preprint arXiv:2509.14117 (2025)
+2. Ahn, M., Brohan, A., Brown, N., Chebotar, Y., Cortes, O., David, B., Finn, C., Fu, C., Gopalakrishnan, K., Hausman, K., et al.: Do as i can, not as i say: Grounding language in robotic affordances. arXiv preprint arXiv:2204.01691 (2022)
+3. Bjorck, J., Blukis, V., Castan˜eda, F., Cherniadev, N., Da, X., Ding, R., Fan, L.J., Fang, Y., Fox, D., et al.: GR00T-N1.5: An improved open foundation model for generalist humanoid robots. https://research.nvidia.com/labs/gear/gr00t-n1_ 5/ (2025)
+4. Bjorck, J., Castan˜eda, F., Cherniadev, N., Da, X., Ding, R., Fan, L., Fang, Y., Fox, D., Hu, F., Huang, S., et al.: GR00T-N1: An open foundation model for generalist humanoid robots. arXiv preprint arXiv:2503.14734 (2025)
+5. Black, K., Brown, N., Darpinian, J., Dhabalia, K., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., et al.: π0.5: a vision-language-action model with open-world generalization. arXiv preprint arXiv:2504.16054 (2025)
+6. Black, K., Brown, N., Driess, D., Esmail, A., Equi, M., Finn, C., Fusai, N., Groom, L., Hausman, K., Ichter, B., et al.: π0: A Vision-Language-Action flow model for general robot control. In: Robotics: Science and Systems (RSS) (2025)
+7. Brohan, A., Brown, N., Carbajal, J., Chebotar, Y., Dabis, J., Finn, C., Gopalakrishnan, K., Hausman, K., Herzog, A., Hsu, J., et al.: Rt-1: Robotics transformer for real-world control at scale. arXiv preprint arXiv:2212.06817 (2022)
+8. Cai, W., Ponomarenko, I., Yuan, J., Li, X., Yang, W., Dong, H., Zhao, B.: Spatialbot: Precise spatial understanding with vision language models. In: 2025 IEEE International Conference on Robotics and Automation (ICRA). pp. 9490–9498. IEEE (2025)
+9. Chen, B., Xu, Z., Kirmani, S., Ichter, B., Sadigh, D., Guibas, L., Xia, F.: SpatialVLM: Endowing vision-language models with spatial reasoning capabilities. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). pp. 14455–14465 (June 2024)
+10. Chen, S., Garcia, R., Laptev, I., Schmid, C.: Sugar: Pre-training 3d visual representations for robotics. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR). pp. 18049–18060 (2024)
+11. Chi, C., Feng, S., Du, Y., Xu, Z., Cousineau, E., Burchfiel, B., Song, S.: Diffusion policy: Visuomotor policy learning via action diffusion. In: Robotics: Science and Systems (RSS) (2023)
+12. Comanici, G., Bieber, E., Schaekermann, M., Pasupat, I., Sachdeva, N., Dhillon, I., Blistein, M., Ram, O., Zhang, D., Rosen, E., et al.: Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic capabilities. arXiv preprint arXiv:2507.06261 (2025)
+13. Driess, D., Xia, F., Sajjadi, M.S., Lynch, C., Chowdhery, A., Ichter, B., Wahid, A., Tompson, J., Vuong, Q., Yu, T., et al.: PaLM-E: an embodied multimodal language model. In: Proceedings of the 40th International Conference on Machine Learning. pp. 8469–8488 (2023)
+14. Fang, X., Gao, J., Wang, Z., Chen, Z., Ren, X., Lyu, J., Ren, Q., Yang, Z., Yang, X., Yan, Y., Lyu, C.: Dens3R: A foundation model for 3d geometry prediction. arXiv preprint arXiv:2507.16290 (2025)
+15. Figure AI: Helix: A vision-language-action model for generalist humanoid control (February 20 2025), https://www.figure.ai/news/helix, accessed: 2026-01-21
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+17
+
+16. Ge, S., Zhang, Y., Xie, S., Zhang, W., Zhou, M., Wang, Z.: VGGT-DP: Generalizable robot control via vision foundation models. arXiv preprint arXiv:2509.18778 (2025)
+17. Goyal, A., Blukis, V., Xu, J., Guo, Y., Chao, Y.W., Fox, D.: RVT-2: Learning precise manipulation from few demonstrations. arXiv preprint arXiv:2406.08545 (2024)
+18. Han, B., Kim, J., Jang, J.: A dual process VLA: Efficient robotic manipulation leveraging VLM. arXiv preprint arXiv:2410.15549 (2024)
+19. Hu, E.J., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., Chen, W., et al.: LoRA: Low-rank adaptation of large language models. In: International Conference on Learning Representations (2022)
+20. Hu, W., Lin, J., Long, Y., Ran, Y., Jiang, L., Wang, Y., Zhu, C., Xu, R., Wang, T., Pang, J.: G2VLM: Geometry grounded vision language model with unified 3d reconstruction and spatial reasoning. In: IEEE Conf. on Computer Vision and Pattern Recognition (CVPR) (2026)
+21. Hu, Y., Cheng, C., Yu, S., Guo, X., Wang, H.: VGGT4D: Mining motion cues in visual geometry transformers for 4d scene reconstruction. arXiv preprint arXiv:2511.19971 (2025)
+22. Hu, Y., Guo, Y., Wang, P., Chen, X., Wang, Y.J., Zhang, J., Sreenath, K., Lu, C., Chen, J.: Video prediction policy: A generalist robot policy with predictive visual representations. arXiv preprint arXiv:2412.14803 (2024)
+23. Jia, Y., Liu, J., Chen, S., Gu, C., Wang, Z., Luo, L., Lee, L., Wang, P., Wang, Z., Zhang, R., et al.: Lift3d foundation policy: Lifting 2d large-scale pre-trained models for robust 3d robotic manipulation. arXiv preprint arXiv:2411.18623 (2024)
+24. Keetha, N., Mu¨ller, N., Scho¨nberger, J., Porzi, L., Zhang, Y., Fischer, T., Knapitsch, A., Zauss, D., Weber, E., Antunes, N., Luiten, J., Lopez-Antequera, M., Rota Bulo`, S., Richardt, C., Ramanan, D., Scherer, S., Kontschieder, P.: Mapanything: Universal feed-forward metric 3d reconstruction. arXiv preprint arXiv:2509.13414 (2025)
+25. Kim, M.J., Pertsch, K., Karamcheti, S., Xiao, T., Balakrishna, A., Nair, S., Rafailov, R., Foster, E., Lam, G., Sanketi, P., Vuong, Q., Kollar, T., Burchfiel, B., Tedrake, R., Sadigh, D., Levine, S., Liang, P., Finn, C.: OpenVLA: An opensource vision-language-action model. arXiv preprint arXiv:2406.09246 (2024)
+26. Kim, T., Lee, J., Koo, M., Kim, D., Lee, K., Kim, C., Seo, Y., Shin, J.: Contrastive representation regularization for vision-language-action models. arXiv preprint arXiv:2510.01711 (2025)
+27. Leroy, V., Cabon, Y., Revaud, J.: Grounding image matching in 3d with MASt3R. In: European Conf. on Computer Vision (ECCV). vol. 15130, pp. 71–91 (2024)
+28. Li, C., Wen, J., Peng, Y., Peng, Y., Feng, F., Zhu, Y.: Pointvla: Injecting the 3d world into vision-language-action models. arXiv preprint arXiv:2503.07511 (2025)
+29. Li, F., Song, W., Zhao, H., Wang, J., Ding, P., Wang, D., Zeng, L., Li, H.: Spatial forcing: Implicit spatial representation alignment for vision-language-action model. arXiv preprint arXiv:2510.12276 (2025)
+30. Lin, T., Li, G., Zhong, Y., Zou, Y., Du, Y., Liu, J., Gu, E., Zhao, B.: Evo-0: Vision-language-action model with implicit spatial understanding. arXiv preprint arXiv:2507.00416 (2025)
+31. Liu, B., Zhu, Y., Gao, C., Feng, Y., Liu, Q., Zhu, Y., Stone, P.: Libero: Benchmarking knowledge transfer for lifelong robot learning. arXiv preprint arXiv:2306.03310 (2023)
+32. McNemar, Q.: Note on the sampling error of the difference between correlated proportions or percentages. Psychometrika 12(2), 153–157 (1947)
+
+18
+
+Yang et al.
+
+33. Nasiriany, S., Maddukuri, A., Zhang, L., Parikh, A., Lo, A., Joshi, A., Mandlekar, A., Zhu, Y.: Robocasa: Large-scale simulation of everyday tasks for generalist robots. In: Robotics: Science and Systems (RSS) (2024)
+34. Ni, Z., He, Y., Qian, L., Mao, J., Fu, F., Sui, W., Su, H., Peng, J., Wang, Z., He, B.: Vo-dp: Semantic-geometric adaptive diffusion policy for vision-only robotic manipulation. arXiv preprint arXiv:2510.15530 (2025)
+35. Peng, H., Li, H., Dai, Y., Lan, Y., Luo, Y., Qi, T., Zhang, Z., Zhan, Y., Zhang, J., Xu, W., Liu, Z.: Omnivggt: Omni-modality driven visual geometry grounded transformer. arXiv preprint arXiv:2511.10560 (2025)
+36. Pertsch, K., Stachowicz, K., Ichter, B., Driess, D., Nair, S., Vuong, Q., Mees, O., Finn, C., Levine, S.: Fast: Efficient action tokenization for vision-language-action models. arXiv preprint arXiv:2501.09747 (2025)
+37. Physical Intelligence: Physical intelligence (π) (2026), https://www.pi.website/, accessed: 2026-01-21
+38. Qu, D., Song, H., Chen, Q., Yao, Y., Ye, X., Ding, Y., Wang, Z., Gu, J., Zhao, B., Wang, D., et al.: SpatialVLA: Exploring spatial representations for visuallanguage-action model. arXiv preprint arXiv:2501.15830 (2025)
+39. Rojas, S., Armando, M., Ghamen, B., Weinzaepfel, P., Leroy, V., Rogez, G.: HAMSt3R: Human-aware multi-view stereo 3d reconstruction. arXiv preprint arXiv:2508.16433 (2025)
+40. Snyder, D., Hancock, A.J., Badithela, A., Dixon, E., Miller, P., Ambrus, R.A., Majumdar, A., Itkina, M., Nishimura, H.: Is your imitation learning policy better than mine? policy comparison with near-optimal stopping (2025), https://arxiv. org/abs/2503.10966
+41. Steiner, R., Millane, A., Tingdahl, D., Volk, C., Ramasamy, V., Yao, X., Du, P., Pouya, S., Sheng, S.: mindmap: Spatial memory in deep feature maps for 3d action policies. arXiv preprint arXiv:2509.20297 (2025)
+42. Tesla, Inc.: Ai & robotics (2026), https://www.tesla.com/en_eu/AI, accessed: 2026-01-21
+43. TRI LBM Team, Barreiros, J., Beaulieu, A., Bhat, A., Cory, R., Cousineau, E., Dai, H., Fang, C.H., Hashimoto, K., Irshad, M.Z., Itkina, M., Kuppuswamy, N., Lee, K.H., Liu, K., McConachie, D., McMahon, I., Nishimura, H., Phillips-Grafflin, C., Richter, C., Shah, P., Srinivasan, K., Wulfe, B., Xu, C., Zhang, M., Alspach, A., Angeles, M., Arora, K., Guizilini, V.C., Castro, A., Chen, D., Chu, T.S., Creasey, S., Curtis, S., Denitto, R., Dixon, E., Dusel, E., Ferreira, M., Goncalves, A., Gould, G., Guoy, D., Gupta, S., Han, X., Hatch, K., Hathaway, B., Henry, A., Hochsztein, H., Horgan, P., Iwase, S., Jackson, D., Karamcheti, S., Keh, S., Masterjohn, J., Mercat, J., Miller, P., Mitiguy, P., Nguyen, T., Nimmer, J., Noguchi, Y., Ong, R., Onol, A., Pfannenstiehl, O., Poyner, R., Rocha, L.P.M., Richardson, G., Rodriguez, C., Seale, D., Sherman, M., Smith-Jones, M., Tago, D., Tokmakov, P., Tran, M., Hoorick, B.V., Vasiljevic, I., Zakharov, S., Zolotas, M., Ambrus, R., Fetzer-Borelli, K., Burchfiel, B., Kress-Gazit, H., Feng, S., Ford, S., Tedrake, R.: A careful examination of large behavior models for multitask dexterous manipulation (2025),
+https://arxiv.org/abs/2507.05331 44. Wang, H., Agapito, L.: AMB3R: Accurate feed-forward metric-scale 3d reconstruc-
+tion with backend. arXiv preprint arXiv:2511.20343 (2025) 45. Wang, J., Chen, M., Karaev, N., Vedaldi, A., Rupprecht, C., Novony, D.: VGGT:
+Visual geometry grounded transformer. arXiv preprint arXiv:2503.11651 (2025) 46. Wang, S., Leroy, V., Cabon, Y., Chidlovskii, B., Revaud, J.: DUSt3R: Geometric
+3d vision made easy. In: IEEE Conf. on Computer Vision and Pattern Recognition (CVPR). pp. 20697–20709 (2024)
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+19
+
+47. Wofk, D., Ma, F., Yang, T.J., Karaman, S., Sze, V.: FastDepth: Fast Monocular Depth Estimation on Embedded Systems. In: IEEE International Conference on Robotics and Automation (ICRA) (2019)
+48. Wu, D., Liu, F., Hung, Y.H., Duan, Y.: Spatial-MLLM: Boosting MLLM capabilities in visual-based spatial intelligence. In: Advances in Neural Information Processing Systems (NeurIPS) (2025)
+49. Yang, L., Kang, B., Huang, Z., Zhao, Z., Xu, X., Feng, J., Zhao, H.: Depth anything v2. arXiv: 2406.09414 (2024)
+50. Ze, Y., Zhang, G., Zhang, K., Hu, C., Wang, M., Xu, H.: 3d diffusion policy: Generalizable visuomotor policy learning via simple 3d representations. arXiv preprint arXiv:2403.03954 (2024)
+51. Zhang, Z., Li, H., Dai, Y., Zhu, Z., Zhou, L., Liu, C., Wang, D., Tay, F.E.H., Chen, S., Liu, Z., Liu, Y., Li, X., Zhou, P.: From spatial to actions: Grounding vision-language-action model in spatial foundation priors. arXiv preprint arXiv:2510.17439 (2025)
+52. Zhen, H., Qiu, X., Chen, P., Yang, J., Yan, X., Du, Y., Hong, Y., Gan, C.: 3D-VLA: A 3d vision-language-action generative world model. arXiv preprint arXiv:2403.09631 (2024)
+53. Zheng, D., Huang, S., Li, Y., Wang, L.: Learning from videos for 3D world: Enhancing MLLMs with 3D vision geometry priors. In: Advances in Neural Information Processing Systems (NeurIPS) (2025)
+54. Zhu, C., Wang, T., Zhang, W., Pang, J., Liu, X.: LLaVA-3d: A simple yet effective pathway to empowering lmms with 3d capabilities. arXiv preprint arXiv:2409.18125 (2024)
+55. Zust, L., Cabon, Y., Marrie, J., Antsfeld, L., Chidlovskii, B., Revaud, J., Csurka, G.: PanSt3R: Multi-view consistent panoptic segmentation. arXiv preprint arXiv:2506.21348 (2025)
+
+20
+
+Yang et al.
+
+A Appendix: Details about Architectures
+
+This appendix complements the discussion in Section 3, where we introduced the Early and Late Fusion models, and discussed the implementation of the fusion module as a cross-attention layer with attention gating.
+As we mentioned in Section 3, the fusion module X˜ = fuse(X, G) has the goal of fusing GR00T tokens X ∈ RPx×Dx with VGGT tokens G ∈ RPg×Dg . We only select the visual tokens from GR00T; similarly, we only select the image tokens from VGGT (and disregard the register tokens). Note that GR00T and VGGT tokenize the image into a different number of patches and use different image pre-processing pipelines, hence usually Px ≠ Pg.
+Positional Embeddings. Since tokens in X and G are associated to image patches, we use learned positional embeddings to allow the model to retain the association between tokens and their spatial arrangement in the image. In particular, we add modality-specific positional embeddings:
+
+  \MX \leftarrow \MX + \mathbf {E}^{2D}, \qquad \MG \leftarrow \MG + \mathbf {E}^{3D}
+
+(7)
+
+where E2D and E3D encode spatial layouts for the GR00T and VGGT tokens.
+
+Cross Attention. After adding learnable positional embeddings, the to-
+
+kens are passed through a cross-attention layer, following the computation in
+
+eqs. (3)-(5). In our implementation, we follow standard practice and parameter-
+
+ize the linear projections WQ, WK , WV , WO as LoRA (Low-Rank Adaptation)
+
+layers [19] with rank 8.
+
+Attention Gating. Not all 3D information is equally useful at every spatial
+
+location. We therefore introduce a learnable gate A and apply it to the cross-
+
+attention results Z:
+
+  \tilde {\MX } = \MX + \MA \odot \MZ 
+
+(8)
+
+The gate is applied element-wise and is designed to select relevant portions of the residual correction Z, to produce the fused tokens X˜ . We initialize the gate close to zero, in order to more gradually introduce the residual Z from the VGGT tokens; indeed, we observed that the residual —if introduced too suddenly— could bring the action expert off-distribution and disrupt the finetuning process (see experiments without the attention gate in Appendix B.1). We also experimented with making the gate input-dependent:
+
+  \MA = \sigma \left ( \MX \MG _a + \vb _a \right ), 
+
+(9)
+
+where Ga and ba are learned weights applied to the tokens X, and σ is a nonlinear activation. However, we did not see significant performance gains from this input-dependent gating mechanism (see Appendix B.1).
+Additional Implementation Details. For the Early Fusion and Late Fusion approaches, we trained the corresponding models with batch size 12 and learning rate 1e−4, using Adam optimizer. When finetuning the LLM in Spatial Forcing, we reduce the batch size to 6 to avoid memory issues. For finetuning, we train the networks for 100 epochs. For mid-training (Section 5.3), we train the
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+21
+
+Fig. A.1: Ablation of fusion module within the Early Fusion (EF) strategy.
+corresponding networks for 10 epochs, followed by 50 epochs of finetuning on the specific task. We train all models using an NVIDIA A100 GPU cluster with 320 GB GPU Memory. Finetuning takes 2-3 days (depending on the model), while mid-training (Section 5.3) takes around 1 week. When finetuning GR00T, we follow the standard protocol and only train the action expert initializing with pre-trained weights. For the Early Fusion and the Late Fusion models, we train the fusion module and the action expert and keep everything else frozen. For Spatial Forcing, we apply the alignment loss to layer 9 (out of 13) of the GR00T LLM and only finetune the linear projection between the vision encoder and the LLM. Layer 9 is chosen by analogy with the OpenVLA and π0 implementations, where the alignment loss is applied at around 70% of the depth of the LLM backbone. We also attempted to finetune the LLM in Spatial Forcing, but obtained worse results (see Appendix B.3). For evaluation purposes, we fix the random seeds to 42 for repeatability, without any attempt at tuning the seed for performance. This ensures that the benchmarking assets are randomized but the testing setup is identical across VLAs. We also fix the noise generation in the diffusion transformer of GR00T to be deterministic, and use the same generation method across all models.
+B Appendix: Ablations
+B.1 Ablation of Early Fusion Architecture
+This appendix provides an ablation of the main choices we made in the design of the fusion module of Section 3.2. In particular, we focus on the Early Fusion model, and discuss the impact of the attention gate and positional embeddings. Fig. A.1 shows that a variation of our Early Fusion model without attention gating and positional embeddings has consistently poor performance across all subtasks (5-27% success rate). Adding a learned attention gate dramatically improves performance, with most tasks jumping to 64-89% success rate. Making the attention gate input-dependent (“+Dynamic Attn Gate” in the figure), does
+
+22
+
+Yang et al.
+
+not lead to consistent improvements, as already mentioned in Appendix A. Surprisingly, even the use of positional embeddings shows mixed performance, and leads to better performance in certain tasks (e.g., CounterToCab, CounterToMicrowave) but worse in others (e.g., SinkToCounter, StoveToCounter).
+
+B.2 Best Checkpoint Analysis for Early Fusion Approach
+Fig. A.2 shows the performance of the Early Fusion model at different stages of the training process. We observe task-specific training dynamics indicating distinct convergence patterns: for instance, PnPCounterToSink achieves 92% success by epoch 5, while PnPCounterToCab requires 50 epochs to reach 65.3% peak performance. We observe evidence of multi-task interference in PnPCounterToMicrowave, which peaks at 76% (epoch 35) but degrades to 40% by epoch 50, indicating potential catastrophic forgetting. Cabinet-related tasks consistently underperform (52-65.3%), identifying cabinet manipulation as a key bottleneck. These results highlight the challenges of multi-task visuomotor learning and suggest that task-specific training schedules or adaptive learning rates may be necessary to optimize performance across heterogeneous manipulation tasks.
+
+Fig. A.2: Early Fusion: success rate for different model checkpoints/epochs on RoboCasa. Training dynamics are task-dependent and often exhibit large fluctuations.
+B.3 Spatial Forcing: Finetuning LLM For completeness, we report results obtained with two different settings when implementing the Spatial Forcing strategy; these results guided our design for the evaluations in the main paper. In the first setting, we apply the Spatial
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+23
+
+Forcing alignment loss to Layer 9 of the LLM and only finetune the projection module that connects the vision encoder with the LLM in GR00T-N1.5. These are the results reported in the main paper. In the second setting, we apply the alignment loss to the same LLM layer, but we also finetune the LLM in addition to the projection module. Table A.1 reports the results for the two settings across all the RoboCasa tasks. We notice that the version that does not finetune the LLM is superior across the board (in a statistically significant way). Intuitively, the version that finetunes the LLM has many more free parameters, and is more prone to overfitting to the training data, hindering performance. This motivates our choice to focus on the first setting in the main paper.
+
+Method
+
+CabToCtr CtrToCab CtrToMicrowave CtrToSink CtrToStove MicrowaveToCtr SinkToCtr StoveToCtr Average
+
+Spatial Forcing (no LLM ft.) 29.3
+
+68.0
+
+66.7
+
+Spatial Forcing (LLM ft.) 16.0 (p=0.123) 24.0 (p¡0.001) 26.7 (p¡0.001)
+
+76.0
+
+72.0
+
+60.0
+
+13.3 (p¡0.001) 38.7 (p¡0.001) 22.7 (p¡0.001)
+
+84.0
+
+90.7
+
+68.3
+
+53.3 (p¡0.001) 54.7 (p¡0.001) 31.2 (p¡0.001)
+
+Table A.1: RoboCasa results with Spatial Forcing, with and without LLM fine-
+
+tuning. Green indicates best result per column. p values are computed against
+
+the results without LLM finetuning.
+
+C Appendix: McNemar’s Statistical Test
+
+To assess whether the performance difference (i.e., difference in the success rate) between two VLAs is statistically significant, we employ the two-sided McNemar’s test [32], a statistical test for paired binary data. The test is two-sided in that it evaluates whether the two methods produce statistically different outcomes, without assuming a priori which method performs better. This test is appropriate because our models have binary outcomes on each trial (SUCCESS/FAIL), hence they involve binary data; moreover, we evaluate both models on the same set of experiments (i.e., identical testing conditions), hence we have paired observations. Next, we provide a standard introduction to the test.
+Contingency Table Construction. Consider the case where we compare two VLAs, namely VLA1 and VLA2. Let x(1) and x(2) be the binary vectors containing the outcomes of the tests for VLA1 and VLA2, respectively. For instance, xi(1) contains the outcome (SUCCESS/FAIL) of VLA1 on the i-th trial.3 To compute the p values from the McNemar test, we start by constructing the 2 × 2 contingency table:
+
+ \begin {aray}{c|c} & \text {VLA2 Suces} & \text {VLA2 Failure} \ \hline \text {VLA1 Suces} & a & b \ \text {VLA1 Failure} & c & d \ \end {aray} 
+
+(10)
+
+where a is the number of trials where both VLA1 and VLA2 succeeded, b is the number of trials where VLA1 succeeded while VLA2 failed, c is the number of
+
+3 In RoboCasa, we have 5 episodes per task, and 15 runs per episodes, hence we have 75 trials to compute p values for each task, and 600 trials to compute p values across all tasks.
+
+24
+
+Yang et al.
+
+trials where VLA2 succeeded while VLA1 failed, and d is the number of trials where they both failed.
+Test Statistic Computation. McNemar’s test focuses on the discordant pairs (b and c), which represent episodes where the two models disagree. Under the null hypothesis H0 that both models have equal probability of success, we expect b = c. Following standard practice, for small sample sizes (b + c < 25), we use the exact binomial test:
+
+  p = 2 \sum _{i=0}^{\min (b,c)} \binom {b+c}{i} \cdot 0.5^{b+c} 
+
+(11)
+
+For larger sample sizes (b + c ≥ 25), we use the chi-squared approximation with Yates’ continuity correction:
+
+  \chi ^2 = \frac {(|b - c| - 1)^2}{b + c} 
+
+(12)
+
+The p-value is then computed as:
+
+  p = 1 - F_{\chi ^2_1}(\chi ^2) 
+
+(13)
+
+where Fχ21 is the cumulative distribution function of the chi-squared distribution with 1 degree of freedom. A small p value indicates that the two methods differ significantly in their success rates on the paired trials. We return p = 1.0 when b + c = 0 (no discordant pairs, i.e., identical performance).
+Aggregated Analysis. For overall model comparison across multiple tasks, we aggregate all task-level success/failure outcomes and apply McNemar’s test to the combined contingency table, providing a single p value for the overall performance difference.
+
+D Appendix: Taming the Randomness
+New papers often claim state-of-the-art performance from small increments in the success rate. In this appendix, we show that the average success rate alone might be a poor indicator of improved performance, since small increments are sometimes hard to distinguish from stochasticity. Our results reinforce recent efforts in the community (e.g., [43,40]) to push for higher standards in VLA experimentation, based on more rigorous statistical analysis.
+More in detail, this appendix shows that even when (i) removing all sources of randomness in the benchmarking infrastructure (i.e., fixing randomization seeds such that the simulation setup is identical across different VLAs), and (ii) increasing the number of trials beyond what is commonly done in the literature, the mean success rates have non-negligible fluctuations when repeating the same experiment multiple times. Intuitively, even when the testing setup is fixed, the randomization in the diffusion transformer in the VLA’s action expert causes relatively large changes in the mean success rate. This observation
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+25
+
+has two implications. First, one can get widely different results even in identical testing conditions and —even when fixing the randomization seed for the action expert— the choice of the seed is consequential for the evaluation. Second, one should be careful in drawing conclusions just by looking at mean success rate (as done by most VLA papers in the literature), since the success rate largely varies even when repeating the same experiment.
+
+Trials per episode Mean Std. Dev. Min Max
+
+10 38.2 2.2 34 42
+
+20 38.5 1.2 36 40
+
+Epoch 20 30 40 39.1 38.6 1.0 1.1 37.3 36.5 40 40
+
+50 39.0 0.8 37.6 40
+
+100 38.4 0.8 37 39.6
+
+10 20.6 4.8 12 28
+
+20 20.8 2.6 15 25
+
+Epoch 80 30 40 21.7 19.9 2.1 1.9 19.3 16 25.3 22
+
+50 20.0 1.7 17.2 23.2
+
+100 21.2 1.0 19.6 22.6
+
+Table A.2: Success rate statistics across 10 repetitions of the same experiment,
+
+for different numbers of trials for GR00T-N1.5 at Epoch 20 and Epoch 80.
+
+To investigate the impact of the action expert randomness on the average success rate, for each RoboCasa episode, we use the same scene across trials and we do not fix the noise in the diffusion process of the action expert. We focus on the PnPCabToCounter RoboCasa task and we evaluate two checkpoints of GR00T-N1.5 (epoch 20 and epoch 80) to understand if the randomness in the action expert behavior decreases with more training iterations. For each checkpoint, we repeat 10, 20, 30, 40, 50, and 100 trials for each episode and use the trials to compute the overall success rate. Then, we repeat the same experiment 10 times to assess variations in the success rate. Table A.2 reports, for each epoch and for each number of trials, the mean success rate, its standard deviation, as well as the minimum and maximum success rate.
+First of all, we note that for the number of trials typically done in related work (10-20, cf . [4] in the main paper), there is a very large fluctuation in the experimental results, with a standard deviation of 4.8 at Epoch 80; this translates into fluctuations of 8-10% in mean success rate across identical experiments, while often related work claims performance advantages from more modest increases in success rates. Second, while the success rate variability decreases with more runs, the action expert randomness is still responsible for fluctuations in the order of 2-3%. Note that performing 100 trials per episode, leads to 4000 overall experiments across all RoboCasa tasks, which requires substantial computational resources. Third, the checkpoint at Epoch 20 consistently outperformed checkpoint Epoch 80 (37-39.6% vs. 19.6-22.6% success rate); while this is not surprising from the analysis we provided in Appendix B.2, it is interesting to notice that weaker models (Epoch 80) show higher success rate variations overall.
+In summary, the randomness in the success rate of VLAs based on diffusion policies cannot be fully tamed by just increasing the number of trials, even assuming one has access to enough computational resources. Therefore, the mean success rate cannot be taken at face value as the only indicator when comparing two VLAs. The path we took in this paper to address this concern is twofold: (i) we fixed randomization seeds and used deterministic noise in the action expert to ensure repeatability (and without any effort to tune them for performance),
+
+26
+
+Yang et al.
+
+and (ii) we computed p values using McNemar’s test (Appendix C) to assess significance levels of the test results.
+
+E Appendix: Additional Experiments
+
+E.1 LIBERO Results
+
+In this section, we complement Section 5.2 with additional experiments on the LIBERO benchmark. Table A.3 summarizes the results of our evaluation of the GR00T baseline and the implemented geometric VLAs. We do not test on LIBERO-GOAL due to a known issue with GR00T on this benchmark4. The average success rates in Table A.3 seem to suggest that Late Fusion and Spatial Forcing outperform the baseline, while Early Fusion lags slightly behind. However, from a closer inspection of the p values —and consistently with Section 5.2— the differences between the baseline and the geometric VLAs are not statistically significant and are likely the result of random fluctuations rather than actual performance gain or loss.
+
+Spatial
+
+Ob ject
+
+LIBERO-10 LIBERO-90 Average
+
+GR00T-N1.5 96.7
+
+95.3
+
+78.0
+
+81.8
+
+87.9
+
+Early Fusion 94.0 (p=0.289) 94.0 (p=0.804) 76.0 (p=0.755) 82.2 (p=0.307) 86.6 (p=0.138)
+
+Late Fusion 93.3 (p=0.227) 96.0 (p=1.000) 83.3 (p=0.230) 91.1 (p=0.804) 90.9 (p=0.561)
+
+Spatial Forcing 95.3 (p=0.727) 96.0 (p=1.000) 84.7 (p=0.144) 90.0 (p=1.000) 91.5 (p=0.295)
+
+Table A.3: LIBERO benchmark results. Green indicates best result per column;
+
+yellow indicates second best. p values are computed against GR00T-N1.5.
+
+E.2 Impact of Training Data Scaling: Mid-training GR00T-N1.5
+In this section, we present a variation of the experiments from Section 5.3, where we compare the mid-trained geometric VLAs against a mid-trained version of the GR00T baseline. This is important to confirm that the advantage observed in the geometric VLAs is actually due to the use of VGGT rather than information leakage results from the mid-training.
+RoboCasa. Table A.4 reports the results on the RoboCasa results. The results confirm that (i) the performance of the Early Fusion approach significantly improves thanks to mid-training even with respect to a mid-trained version of the baseline, and that (ii) the advantage becomes more statistically significant even when compared to the mid-trained GR00T baseline. In the table, we also report, for each task, average depth metrics, including RMSE, δ1, and Mean Absolute Error (MAE). However, due to task differences, it is not immediate to correlate VGGT depth prediction quality with success rate in this case (cf . the more insightful visualization in Fig. 3).
+4 See https://github.com/huggingface/lerobot/issues/2457
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+27
+
+Method
+
+CabToCtr CtrToCab CtrToMicrowave CtrToSink CtrToStove MicrowaveToCtr SinkToCtr StoveToCtr Average
+
+GR00T (mid-trained)
+
+50.7
+
+72.0
+
+80.0
+
+100.0
+
+81.3
+
+61.3
+
+66.7
+
+65.3
+
+72.2
+
+Early Fusion (mid-trained) 52.0 (p=1.000) 72.0 (p=1.000) 69.3 (p=0.134)
+
+94.7 (p=0.125) 80.0 (p=1.000) 68.0 (p=0.424)
+
+81.3 (p=0.063) 84.0 (p=0.004) 75.2 (p=0.168)
+
+Depth RMSE
+
+0.114±0.035 0.094±0.025 0.114±0.041
+
+0.064±0.026 0.085±0.038 0.082±0.011
+
+0.069±0.024 0.084±0.035 0.088±0.035
+
+Depth δ1 Depth MAE
+
+0.830±0.062 0.869±0.041 0.829±0.060 0.068±0.027 0.056±0.021 0.071±0.029
+
+0.927±0.021 0.894±0.061 0.869±0.034 0.037±0.017 0.057±0.035 0.048±0.009
+
+0.925±0.033 0.873±0.062 0.877±0.060 0.038±0.018 0.056±0.035 0.054±0.028
+
+Table A.4: Performance of mid-trained VLAs on RoboCasa. Green indicates best
+
+result per column; yellow indicates second best. For each task, we also report
+
+average depth metrics, including RMSE, δ1 score, and the Mean Absolute Error (MAE).
+
+LIBERO. Table A.5 shows mid-training results for LIBERO, complementing the results in Section 5.3. Consistently with RoboCasa, we observe that after mid-training, the success rate of the Early Fusion approach increases. At the same time, the p value for the overall experiment remains large, hence we cannot draw a very strong conclusion in this case.
+
+Spatial
+
+Ob ject
+
+LIBERO-10 LIBERO-90 Average
+
+GR00T-N1.5
+
+96.7
+
+95.3
+
+78.0
+
+81.8
+
+87.9
+
+Early Fusion (mid-trained) 98.0 (p=0.727) 94.7 (p=1.000) 76.0 (p=0.735) 82.2 (p=0.327) 87.7 (p=0.440)
+
+Table A.5: Performance of mid-trained VLAs on LIBERO. Green indicates best result.
+
+E.3 Inspecting the Attention Masks in Early Fusion
+Fig. A.3 shows the original RGB observations and the corresponding attention masks produced by the Early Fusion model on a sample image from the RoboCasa benchmark. While the mask is fairly noisy, higher attention values tend to concentrate around the robot arm and end-effector regions. This hints to the fact that the model learns spatially-aware representations and captures task-relevant geometric structure for manipulation.
+
+Fig. A.3: Early Fusion: RGB image, attention mask, and attention mask overlaid on original image for a sample input of the RoboCasa dataset.
+E.4 Linear Probing for Normals Estimation This appendix provides extra results to further support our findings in Section 4. In that section, we argue that Early and Late Fusion allow injecting geometric
+
+28
+
+Yang et al.
+
+Mean Error (↓) Median Error (↓) Within 30◦ (↑)
+
+GR00T - vision encoder probe 44.97
+
+45.26
+
+0.33
+
+GR00T - VLM probe
+
+44.43
+
+44.15
+
+0.34
+
+VGGT probe
+
+39.62
+
+33.86
+
+0.45
+
+Early Fusion probe
+
+41.29
+
+34.40
+
+0.44
+
+Late Fusion probe
+
+42.34
+
+38.96
+
+0.39
+
+Table A.6: Surface normal probing. Mean and median angular errors between
+
+predicted and ground truth normals and fraction of normals with angular error
+
+≤ 30◦.
+
+information into a VLA, by showing that the resulting architectures are able to predict monocular depth via linear probes, while the GR00T-N1.5 baseline falls short in predicting accurate depth. However, one might argue that predicting depth is only one aspect of geometric understanding, and other aspects are also important for manipulation. This section shows that our findings hold even when predicting other types of geometric information, namely surface normals.
+Surface normal estimation is a fundamental capability for robotic manipulation because manipulation depends on making physically meaningful contact with object surfaces. While object pose and depth indicate where objects are located, surface normals describe how a robot can interact with them by encoding local contact geometry and feasible force directions. Normals are essential for grasp synthesis, since stable grasps often require alignment with opposing or complementary surface orientations. In this sense, surface normal estimation forms a key bridge between visual perception and physical interaction.
+Probing Setup. We follow the same probing protocol as Section 4, but now we train the linear probe to predict a 3D vector (surface normal) for each pixel in the input image instead of a scalar depth value. We train the linear probe for 10 epochs on the NYU Depth V2 dataset. We use a cosine similarity loss; more precisely, we minimize 1 − nTpredngt, where npred is the predicted normal at a pixel and ngt is the ground truth. To evaluate probing performance, we compute —for each pixel— the angle (in degrees) between the estimated and ground truth normal, and then report the mean and median error (↓), as well as fraction of pixels with angular error less than 30◦ (↑), across the validation set.
+Probing Results. The results in Table A.6 confirm our findings in Section 4. VGGT achieves top performance across the spectrum: as expected, the GFM has a good geometric understanding of the image and can perform surface normal prediction, even when using a simple linear probe. On the other hand, the original GR00T-N1.5 VLA achieves much higher errors, both when probed after the vision encoder, as well as when probed after the VLM, consistently with the results in Section 4. Finally, the Early and Late Fusion architectures allow to inject geometric information into the VLA, reducing the normal estimation errors. In particular, the Early Fusion probe achieves results close to VGGT, leading to a similar conclusion as the one we provided in Section 4.
+
+Understanding the Impact of Geometric Foundation Models on VLAs
+
+29
+
+E.5 Invariance to Object Appearance
+In this appendix, we report additional results that were not discussed in the main paper due to space constraints but that shed light on the models’ sensitivity to object appearance. In particular, we test the invariance of the Early Fusion approach, as well as the GR00T-N1.5 baseline, to object appearance. Intuitively, we want to test if the use of geometry in Early Fusion gives the approach extra invariance to the object appearance, which is typically a nuisance and irrelevant for the task.5 To evaluate this hypothesis, we randomize object appearances in the RoboCasa benchmark while keeping the underlying geometry fixed. More precisely, in the main paper, we used the standard RoboCasa setup, where, for each episode, we repeat N trials (N = 15 in our case) where the appearance of all assets is randomized. However, in this section, we apply a slight modification of the RoboCasa pipeline and we only randomize the appearance of the target object across the N trials, while keeping all the remaining assets fixed. Sample images showing the object appearance variations are given in Fig. A.4.
+
+Fig. A.4: RoboCasa: object appearance variations to test VLA invariance to object color. The figure shows the images from the 3 cameras (left, right, wrist) at different time steps (0, 50, 100, 150) for two trials with randomized object appearance. Top (Run 1): Ladle rendered in magenta. Bottom (Run 2): Ladle rendered in green.
+
+Using this setup, Table A.7 reports results for both the Early Fusion approach and the GR00T baseline across the RoboCasa tasks.
+
+Method
+
+CabToCtr CtrToCab CtrToMicrowave CtrToSink CtrToStove MicrowaveToCtr SinkToCtr StoveToCtr Average
+
+GR00T-N1.5 (mid-trained) 29.3
+
+78.7
+
+89.3
+
+Early Fusion (mid-trained) 48.0 (p=0.026) 76.0 (p=0.625) 88.0 (p=1.000)
+
+97.3
+
+82.7
+
+65.3
+
+98.7 (p=1.000) 89.3 (p=0.302) 56.0 (p=0.210)
+
+60.0
+
+92.0
+
+74.3
+
+84.0 (p=0.004) 73.3 (p¡0.001) 76.7 (p=0.279)
+
+Table A.7: RoboCasa with randomized object appearance. Green indicates best
+
+result.
+
+The quantitative results in Table A.7 support empirically that (i) the advantage of the Early Fusion approach is retained also in this case, but (ii) the relative advantage between Early Fusion and baseline remains similar to the original testing setup (cf . Table A.4). Hence the object appearance variations do not pose a particular challenge for neither the baseline nor the Early Fusion approach. This was somewhat expected since the vision encoder in both
+5 This is not true in general, since the task might involve appearance (e.g., “pick-up the red mug”), but it is true on the RoboCasa benchmark, where objects to manipulate are specified by semantics, rather than appearance.
+
+30
+
+Yang et al.
+
+approaches abstracts low-level pixel appearance into a suitable feature space, which is less sensitive to appearance variations by design.
+
+

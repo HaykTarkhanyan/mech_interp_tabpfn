@@ -1,0 +1,46 @@
+{
+  "id": "2605.30834",
+  "title": "Hide-and-Seek in Trajectories: Discovering Failure Signals for VLA Runtime Monitoring",
+  "first_author": "Park",
+  "year": 2026,
+  "venue": "NeurIPS 2026 (per the paper's footer)",
+  "tier": "core",
+  "models": ["OpenVLA (LIBERO-10)", "pi0 (LIBERO-10)", "pi0.5 (VLABench; LoRA-finetuned on real xArm 6)"],
+  "action_head": "mixed: discrete action tokens (OpenVLA; embeddings averaged over all layers and DoF) and flow/diffusion action expert (pi0, pi0.5; hidden state before velocity head at the final denoising step)",
+  "methods": ["single-layer LSTM detector on windowed action embeddings", "inter-trajectory max-margin contrastive loss (multiple-instance style)", "intra-trajectory pre/post proxy-onset contrastive loss", "functional conformal prediction thresholds", "layer-wise ablation on OpenVLA", "verifier-guided action selection (appendix)"],
+  "question": "Can a failure detector trained only with trajectory-level success/failure labels learn to localize where failure begins, and beat uniform label propagation (SAFE) at multi-task failure detection on VLAs?",
+  "key_findings": [
+    "LIBERO-10 OpenVLA (51.0% SR), bACC seen/unseen: Hide-and-Seek 0.852 / 0.834 vs SAFE-MLP 0.823 / 0.775 vs Cosine k-NN 0.758 / 0.639; token entropy/NLL baselines near chance (0.49-0.53) (Table 1, 3 seeds).",
+    "LIBERO-10 pi0 (84.2% SR): 0.885 / 0.892 vs SAFE-MLP 0.870 / 0.801 (Table 1).",
+    "VLABench pi0.5 (40.3% SR): 0.856 / 0.713 vs SAFE-MLP 0.788 / 0.641 (Table 2).",
+    "Real xArm 6 with pi0.5: CUBE bACC 0.966 seen / 0.914 unseen (SAFE-MLP 0.992 / 0.797); KITCHEN 0.968 / 0.972 (SAFE-MLP 0.784 / 0.878; LogpZO 0.895 / 0.837) (Table 3).",
+    "Uniform trajectory-label propagation under otherwise identical settings is worse by 19.4 bACC points on OpenVLA and 18.6 on pi0 (Fig. 4a); inter loss alone 0.825 / 0.856, intra alone 0.579 / 0.601, both 0.843 / 0.888 (Table 5).",
+    "Per-step MLP backbone is much worse than recurrent ones (OpenVLA 0.765 vs LSTM 0.843), so temporal context carries much of the signal (Table 4).",
+    "OpenVLA layer sweep (layers 0-31): no sharp peak; mid-to-late layers (20-31) slightly better, within about 3% bACC; layer-averaged features match or exceed the best single layer (85.2% seen, 83.4% unseen) (App. C.3).",
+    "A Qwen3-VL-8B video monitor reaches 0.712 bACC vs 0.843, at 2.343 s vs 0.001 s per step (Table 6).",
+    "Using the detector to pick the lowest-risk of N sampled pi0 action chunks raises held-out LIBERO-10 success from 83.4% to 87.4% (App. Table 12)."
+  ],
+  "evidence": {
+    "setting": "both (LIBERO-10, VLABench; real UFactory xArm 6)",
+    "benchmarks": ["LIBERO-10", "VLABench", "real xArm 6 CUBE and KITCHEN suites (4 tasks each)"],
+    "scale": "LIBERO-10: 500 episodes per policy (50 per task). Real: 98 success + 62 failure (CUBE), 102 + 58 (KITCHEN), 3 seen + 1 unseen task per suite. 3 random seeds; metrics averaged over alpha in {0.15, 0.20, 0.25}",
+    "statistics": "partial: mean +/- std over 3 seeds in simulation; real-robot table has no std; no significance tests",
+    "baselines": "12 baselines: Mahalanobis, Cosine k-NN, PCA-KMeans, RND, LogpZO, cluster entropy, EigenScore, STAC, ACE, SAFE-LSTM, SAFE-MLP, token entropy/NLL (OpenVLA), uniform-label ablation, Qwen3-VL-8B monitor"
+  },
+  "causal_validation": "None on internals. The only intervention is verifier-guided selection among sampled action chunks (appendix), which tests usefulness of the score, not what the embeddings represent.",
+  "closed_loop": "Mainly offline detection on recorded rollouts. One closed-loop use in the appendix: best-of-N action-chunk selection with pi0 on held-out LIBERO-10 tasks (+4.0 points SR), seeds not reported for it.",
+  "limitations_stated": [
+    "Averaging over the degree-of-freedom dimension may discard kinematic structure relevant to joint-specific failures.",
+    "Some failure modes are perceptual and may not be captured by action-level embeddings; visual features could be complementary.",
+    "Does not close the loop with correction, recovery or interaction; detectors can still give false negatives and false positives."
+  ],
+  "critique": [
+    "A clear methodological improvement over SAFE's uniform labeling, but the gain over SAFE-MLP is modest in simulation (2-7 bACC points) with overlapping std on some splits.",
+    "Real-robot 'unseen' is a single held-out task per suite, so the strong unseen KITCHEN number (0.972) is one task; SAFE-MLP beats it on seen CUBE.",
+    "Failure-onset references for the timeliness plot are annotated by GPT-5.2 on videos (with a human-agreement check in the appendix), so 'detects near onset' depends on an LLM labeler.",
+    "No explicit guard is described in the parts read against episode-length shortcuts (LIBERO failures run to the time limit), which SAFE handled by truncation; the LSTM could partly exploit elapsed time.",
+    "The layer sweep is a useful negative result for mechanistic work: failure information in OpenVLA is spread across layers with no localized site."
+  ],
+  "code": "project page referenced in the abstract (URL not given in the text)",
+  "one_line": "Training an LSTM failure detector on VLA action embeddings with contrastive losses that find the most failure-like steps, instead of copying the trajectory label to every step, beats SAFE and 11 other baselines on OpenVLA, pi0 and pi0.5 in simulation and on a real arm."
+}

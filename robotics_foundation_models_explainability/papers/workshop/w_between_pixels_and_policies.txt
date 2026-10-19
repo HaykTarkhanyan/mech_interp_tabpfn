@@ -1,0 +1,243 @@
+URL: https://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html
+OpenReview: []
+
+Between pixels and policies: Toward interpretable representations for (inter)action | EECS at UC Berkeley
+Skip to Content
+Expand Search Form
+Collapse Search Form
+Expand Main Menu
+Collapse Main Menu
+Search for:
+Search
+For Students
+For Faculty/Staff
+Industry
+News
+Events
+Give
+Search for:
+Search
+About
+About
+Expand Submenu
+About
+About Overview
+History
+Expand Submenu
+The First Women of EECS
+Joseph Thomas Gier
+Diversity
+Expand Submenu
+Hear From Women in EECS
+Broadening Participation in EECS
+Visiting
+By the Numbers
+Special Events
+Expand Submenu
+2022-23
+2020-21
+2019-20
+2018-19
+2017-18
+The Department of Electrical Engineering and Computer Sciences (EECS) at UC Berkeley offers one of the strongest research and instructional programs in this field anywhere in the world.
+Blog
+Academics
+Academics
+Expand Submenu
+Academics
+Academics Overview
+Undergraduate Admissions & Programs
+Expand Submenu
+CS Major
+EECS Major
+EECS/CS Program Comparison Chart
+Second Bachelor's Degree
+Summer Research
+Cal Day
+Graduate Admissions & Programs
+Expand Submenu
+Grad Admissions FAQ
+Industry-Oriented Programs
+Research-Oriented Programs
+Fellowships
+Adding the EECS/CS M.S. From Another Department
+Recommended Coursework
+For Current Students
+Expand Submenu
+ed | EECS 101
+Courses
+Expand Submenu
+EE Courses
+CS Courses
+Unlike many institutions of similar stature, regular EE and CS faculty teach the vast majority of our courses, and the most exceptional teachers are often also the most exceptional researchers.
+View Courses
+Research
+Research
+Expand Submenu
+Research
+Research Overview
+Areas
+Centers & Labs
+Colloquium
+Expand Submenu
+Archive
+BEARS Symposium
+Expand Submenu
+Archive
+Technical Reports
+Ph.D. Dissertations
+Research is the foundation of Berkeley EECS. Faculty, students, and staff work together on cutting-edge projects that cross disciplinary boundaries to improve everyday life and make a difference.
+EECS Research
+People
+People
+Expand Submenu
+People
+People Overview
+Directory
+Leadership
+Faculty
+Expand Submenu
+In Memoriam
+Students
+Expand Submenu
+Student Awards
+Student Organizations
+Staff
+Expand Submenu
+Student Affairs
+Faculty  Support
+Course Support
+Facilities and Engineering Services
+Financial Services
+HR
+IT Support
+Industrial & Public Relations
+Alumni
+Expand Submenu
+EE Distinguished Alumni
+CS Distinguished Alumni
+EECS faculty, students, staff, and alumni are central to our success as one of the most thriving and distinguished departments on the Berkeley campus.
+Latest News
+Connect
+Connect
+Expand Submenu
+Connect
+Connect Overview
+Support EECS
+Expand Submenu
+EECS Excellence Fund
+Memorial Funds
+K-12 Outreach
+Student Affairs
+Faculty Positions
+Staff Positions
+Contact
+Expand Submenu
+In an Emergency
+Consider reaching out for a conversation, attending a department seminar or conference, viewing a lecture on any one of our public channels, or supporting us via a gift to the university. You can help strengthen our dedication to education and outreach, solidify close ties to industry, and nourish a supportive and inclusive culture.
+Contact us
+Home
+/
+Research
+/
+Technical Reports
+/
+Between pixels and policies: Toward interpretable representations for (inter)action
+Between pixels and policies: Toward interpretable representations for (inter)action
+Kaylene Stocking
+EECS Department, University of California, Berkeley
+Technical Report No. UCB/EECS-2025-155
+August 13,
+2025
+This publication is archived. It is kept only for reference purposes, so it is no longer being updated and may not meet accessibility standards. If you need this content in a different format, please email webteam@eecs.berkeley.edu.
+http://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/Archive/EECS-2025-155.pdf
+Robots and other embodied agents use an internal representation of their surrounding environment to pick actions that are appropriate for their purpose or goal. In robotics, this representation is often computed directly from camera images by using deep learning algorithms to extract relevant high-level features. However, unlike in other computer vision applications, robot representations must support closed-loop interaction, where current actions affect future observations. Furthermore, the need for safety and transparency in robotics motivates closer scrutiny of the contents and limitations of learned representations.
+This dissertation argues that performant and interpretable robot representations are a goal of both scientific interest and practical importance. Two possible paths toward these representations are new representation learning algorithms that are engineered with interpretability in mind (
+design''), and better tools for improving our understanding of the representations learned by existing algorithms (
+interpretation''). However, current techniques fall far short of the goal of both strong learning performance and deep mechanistic understanding. This dissertation describes research that advances the state of the art along both paths. Part I proposes two algorithms that learn symbolic representations that facilitate a robot's ability to reason about other agents. By focusing on more realistic settings than prior works, these chapters show that interpretable-by-design algorithms need not be limited to simple toy problems. Part II introduces interpretability tools from other disciplines to robotics for the first time, leading to novel insights about the representations learned by a deep end-to-end neural network trained for autonomous driving (similar to human drivers' representations for low-level vision but not for representations of other agents) and vision-language-action models (deeply semantic despite being fine-tuned to only output actions). A common thread throughout both parts is making connections between robot representations and the representations that support human cognition and action. Whether the design path or the interpretation path ultimately proves more fruitful, this research works toward a holistic understanding of how capable embodied agents represent their environments.
+Advisors:
+Claire Tomlin
+BibTeX citation:
+@phdthesis{Stocking:EECS-2025-155,
+Author= {Stocking, Kaylene},
+Title= {Between pixels and policies: Toward interpretable representations for (inter)action},
+School= {EECS Department, University of California, Berkeley},
+Year= {2025},
+Month= {Aug},
+Url= {http://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html},
+Number= {UCB/EECS-2025-155},
+Abstract= {Robots and other embodied agents use an internal representation of their surrounding environment to pick actions that are appropriate for their purpose or goal. In robotics, this representation is often computed directly from camera images by using deep learning algorithms to extract relevant high-level features. However, unlike in other computer vision applications, robot representations must support closed-loop interaction, where current actions affect future observations. Furthermore, the need for safety and transparency in robotics motivates closer scrutiny of the contents and limitations of learned representations.
+This dissertation argues that performant and interpretable robot representations are a goal of both scientific interest and practical importance. Two possible paths toward these representations are new representation learning algorithms that are engineered with interpretability in mind (``design''), and better tools for improving our understanding of the representations learned by existing algorithms (``interpretation''). However, current techniques fall far short of the goal of both strong learning performance and deep mechanistic understanding. This dissertation describes research that advances the state of the art along both paths. Part I proposes two algorithms that learn symbolic representations that facilitate a robot's ability to reason about other agents. By focusing on more realistic settings than prior works, these chapters show that interpretable-by-design algorithms need not be limited to simple toy problems. Part II introduces interpretability tools from other disciplines to robotics for the first time, leading to novel insights about the representations learned by a deep end-to-end neural network trained for autonomous driving (similar to human drivers' representations for low-level vision but not for representations of other agents) and vision-language-action models (deeply semantic despite being fine-tuned to only output actions). A common thread throughout both parts is making connections between robot representations and the representations that support human cognition and action. Whether the design path or the interpretation path ultimately proves more fruitful, this research works toward a holistic understanding of how capable embodied agents represent their environments.},
+}
+EndNote citation:
+%0 Thesis
+%A Stocking, Kaylene
+%T Between pixels and policies: Toward interpretable representations for (inter)action
+%I EECS Department, University of California, Berkeley
+%D 2025
+%8 August 13
+%@ UCB/EECS-2025-155
+%U http://www2.eecs.berkeley.edu/Pubs/TechRpts/2025/EECS-2025-155.html
+%F Stocking:EECS-2025-155
+About
+History
+Diversity
+Visiting
+Special Events
+People
+Directory
+Leadership
+Faculty
+Staff
+Students
+Alumni
+Connect
+Support Us
+K-12 Outreach
+Faculty Positions
+Staff Positions
+Contact
+Academics
+Undergrad Admissions & Programs
+Graduate Admissions & Programs
+Courses
+Prospective Women Students
+Current Students
+Resources
+Room Reservations
+My EECS Info
+For Students
+For Grads
+For Undergrads
+For ASEs
+IT Services
+Facilities/Safety
+For Faculty/Staff
+Visiting Scholars
+Research
+Areas
+Centers & Labs
+Projects
+Technical Reports
+PhD Dissertations
+Joint Colloquium
+BEARS Symposium
+Industry
+Recruit Students
+Corporate Access
+Learn more about the Campaign for Berkeley and Graduate Fellowships.
+Give to EECS
+Berkeley EECS on Twitter
+Berkeley EECS on Instagram
+Berkeley EECS on LinkedIn
+Berkeley EECS on YouTube
+EE
+CS
+UC Berkeley
+Berkeley Engineering
+CDSS
+Accessibility
+Nondiscrimination
+Privacy
+Contact
+© 2023 UC Regents

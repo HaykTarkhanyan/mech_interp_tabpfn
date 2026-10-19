@@ -1,0 +1,41 @@
+{
+  "id": "2602.07050",
+  "title": "Interpreting Physics in Video World Models",
+  "first_author": "Joseph",
+  "year": 2026,
+  "venue": "arXiv",
+  "tier": "adjacent",
+  "models": ["V-JEPA 2 encoders (Large, Huge, Giant)", "VideoMAE-v2 (G and smaller variants)"],
+  "action_head": "n/a (video encoders, no actions)",
+  "methods": ["layerwise linear and attentive-MLP probes on the residual stream", "IntPhys possible-vs-impossible classification and synthetic Kubric ball dataset with ground-truth velocity/acceleration", "subspace overlap analysis with random baselines", "iterative probe orthogonalization (nullspace-style) to estimate dimensionality", "targeted suppression of local spatiotemporal attention in the emergence zone", "multi-direction activation steering of decoded motion direction"],
+  "question": "Where and in what form do video world-model encoders represent physical variables, and are these compact physics-engine-like states or distributed task-specific codes?",
+  "key_findings": [
+    "Possible-vs-impossible probe accuracy jumps from ~50% to ~85-95% at about one-third depth in all V-JEPA 2 sizes ('Physics Emergence Zone'), peaks mid-network and degrades toward the output; smaller VideoMAE-v2 variants do not show reliable emergence.",
+    "Speed and acceleration magnitude are decodable from early layers, while motion direction becomes accessible only at the emergence zone; acceleration is decodable without an explicit velocity intermediate.",
+    "Direction and possible-impossible judgments occupy nearly orthogonal subspaces (task-specific, not shared latent physics).",
+    "Suppressing local spatiotemporal attention in the emergence zone drops direction R2 from 0.97 to 0.14 and IntPhys probe accuracy from 78.3% to 61.7%, while ImageNet probe accuracy barely moves (33.7% to 33.1%) (Table 2).",
+    "Direction is a circular population code needing ~40-50 orthogonal probe directions (up to 80 near the output); single-direction steering leaves >80 degree error, while steering across all probe directions at layer 8 gives <0.5 degree error."
+  ],
+  "evidence": {
+    "setting": "offline dataset only",
+    "benchmarks": ["IntPhys", "synthetic Kubric toy-ball videos", "control tasks: CLEVRER counting, ImageNet, Something-Something-v2"],
+    "scale": "multiple model scales; dataset sizes in appendix (not extracted)",
+    "statistics": "partial: random-subspace baselines for overlaps; no CIs on probe accuracies in the parts read",
+    "baselines": "random subspaces, control tasks, spatial-only vs temporal-only attention ablations"
+  },
+  "causal_validation": "Yes: attention-locality ablations with task-specific controls and multi-dimensional activation steering of the decoded direction (steering effect measured on probe readouts, not on downstream predictions).",
+  "closed_loop": "n/a (no agent)",
+  "limitations_stated": [
+    "Only encoder-based masked-objective video transformers; autoregressive or diffusion video models may differ.",
+    "Covers coarse spatiotemporal reasoning, not contact dynamics or force inference.",
+    "Characterizes accessibility and coarse causal influence, not a full circuit; synthetic ball data may not reflect natural video."
+  ],
+  "critique": [
+    "Methodologically strong template for robotics interpretability: layer sweeps with control tasks, dimensionality estimates via iterative nullspace, and ablations with task-specific controls.",
+    "Key lesson for VLA steering papers: physically meaningful variables may be high-dimensional population codes that single-direction steering cannot move; failures of single-vector steering in VLAs should not be read as absence of the variable.",
+    "Steering success is measured on the same probes used to define the subspace, so it shows the subspace controls the probe readout, not that the model's predictions follow.",
+    "Relevant to world-action models (2606.01095) and to the position paper's (2606.30686) question of whether physical variables are represented at all; V-JEPA-style encoders are used in some WAMs."
+  ],
+  "code": "not reported",
+  "one_line": "Physical information in V-JEPA 2 and VideoMAE-v2 appears abruptly about one-third into the network, motion direction is a distributed circular code that needs dozens of dimensions to steer, and local spatiotemporal attention there is causally needed for physics judgments."
+}

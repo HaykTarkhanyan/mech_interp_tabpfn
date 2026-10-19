@@ -1,0 +1,42 @@
+{
+  "id": "2609.38401",
+  "title": "Memorize, Adapt, Ignore: Diagnosing Robot Learning Mechanisms under Training Data Variation",
+  "first_author": "Zhang",
+  "year": 2026,
+  "venue": "arXiv preprint",
+  "tier": "core",
+  "models": ["CNN size regressor (toy)", "CNN RL policies (ManiSkill pick-cube)", "ACT policies (peg insertion; real cube pick-and-place)", "OpenVLA, OpenVLA-OFT, RIPT-VLA (LIBERO lighting probes)", "OpenVLA-OFT (RoboTwin shortcut and data-composition studies)"],
+  "action_head": "mixed: regression heads (CNN, ACT, OpenVLA-OFT), discrete action tokens (OpenVLA); no flow-matching VLA studied",
+  "methods": ["empirical neural tangent kernel (eNTK), restricted to LoRA adapters for large models", "kernel effective rank and block structure (memorize vs adapt regimes)", "Factor Sensitivity Ratio / SNR: mean kernel distance for task-relevant vs nuisance factor changes on matched probe pairs", "CKA of kernel with factor label kernels", "comparison with last-hidden-layer and output kernels"],
+  "question": "Can representation kernels tell whether a policy memorizes, adapts to, or ignores a factor of training-data variation, and predict OOD robustness or shortcut learning without rollouts?",
+  "key_findings": [
+    "Toy and RL settings: with few randomized colors the eNTK is block-structured (memorize regime); with more colors it flattens (adapt) and nuisance variation collapses (ignore); the OOD success jump coincides with the effective-rank turnover, while in-distribution success is near perfect throughout.",
+    "ManiSkill RL: kernel cosine similarity correlates with success on unseen colors (Spearman rho 0.57-0.92 across four training settings, p <= 0.0019).",
+    "ACT peg insertion: the no-variation policy has the lowest validation loss but the worst OOD success; eNTK SNR tracks OOD success from 0.05 to 0.43, and joint-probe SNR orders four training-composition conditions by joint OOD success.",
+    "VLAs: lighting SNR ranks OpenVLA, OpenVLA-OFT and RIPT-VLA in the same order as their LIBERO-plus lighting robustness, with OpenVLA most lighting-sensitive (three models).",
+    "Shortcut detection in OpenVLA-OFT (RoboTwin): when a third task breaks a scene-language confound, the scene-to-language FSR falls and is lower than a continued-training control (which stays at 15.0) at all 10 step-matched checkpoints; eNTK and last-hidden kernels detect this (p = 0.002), the output kernel does not (4/10, p = 0.16).",
+    "Independent vs confounded variation at equal budget (RoboTwin place-object-scale): lower action error on novel categories (0.0755 vs 0.0846) with similar in-distribution error (0.0587 vs 0.0605).",
+    "Hardware ACT cube task: lightness randomization raises training SNR from 2.5 to 5.5, and success rises from 1/10 to 8/10 (bright), 1/10 to 6/10 (dark), 6/10 to 10/10 (in-distribution)."
+  ],
+  "evidence": {
+    "setting": "both (simulation: ManiSkill, LIBERO, RoboTwin; real robot ACT study)",
+    "benchmarks": ["toy square-size CNN", "ManiSkill pick-cube", "LIBERO / LIBERO-plus lighting", "RoboTwin 2.0 (adjust bottle, shake bottle, place object on scale)", "real cube pick-and-place"],
+    "scale": "toy: 10 color subsets per Ncolor; VLA model ranking over 3 models; shortcut study 10 step-matched checkpoints and 80 grasp-frame probes; hardware 10 trials per condition",
+    "statistics": "partial: Spearman correlations with p-values, sign-test style p-values across checkpoints, mean +/- SD for some SNRs; no CIs on success rates",
+    "baselines": "validation loss as a robustness proxy; last-hidden and output kernels as alternative diagnostics; confounded vs independent data design"
+  },
+  "causal_validation": "Indirect: the causal manipulations are of training data (which factors vary), and kernel statistics are shown to track the resulting OOD behavior. No interventions on model internals.",
+  "closed_loop": "OOD success numbers are closed-loop (simulation and hardware); the kernel diagnostics themselves are computed on static probe sets without rollouts, which is the point of the method. The VLA data-composition result uses offline action error.",
+  "limitations_stated": [
+    "Requires probe sets built around known factors, so it cannot discover unknown sources of variation.",
+    "Kernel metric magnitudes are not comparable across kernel types; conclusions rest on within-kernel trends."
+  ],
+  "critique": [
+    "The VLA evidence is thin: model ranking is a 3-model ordering match, and the shortcut study is one task family on OpenVLA-OFT; the strongest quantitative support comes from small CNN/ACT policies.",
+    "No flow-matching or diffusion-head VLA is analyzed, so whether eNTK-on-LoRA diagnostics behave the same for pi0-style action experts is open.",
+    "Useful methodological point for the review: output-space and last-hidden kernels have complementary blind spots, and validation loss can rank policies opposite to OOD robustness.",
+    "Connects to the 'memorized trajectory family' findings (2609.39971, 2604.18000): confounded training data yields memorize-like geometry, and breaking confounds shifts representations toward the task-relevant factor."
+  ],
+  "code": "not reported",
+  "one_line": "Empirical NTK statistics on matched probe sets distinguish policies that memorize, adapt to, or ignore a factor of training-data variation and track OOD robustness and visual shortcut learning, demonstrated mostly on small policies and briefly on OpenVLA-family models."
+}

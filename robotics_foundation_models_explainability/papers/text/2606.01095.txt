@@ -1,0 +1,1692 @@
+Beyond Task Success: Behavioral and Representational Diagnostics for WAM and VLA
+
+Hung PQ. Mai National Economics University, Vietnam
+N2TP Technology
+
+Bin Zhu∗ Singapore Management University
+binzhu@smu.edu.sg
+
+Tuan Do Phenikaa University, Vietnam
+N2TP Technology tuan.do@n2tp.com
+
+arXiv:2606.01095v1 [cs.RO] 31 May 2026
+
+VLA Input
+
+VLA
+
+Action
+
+WAM Input
+
+WAM Action Future
+
+Behavioral Analysis
+
+Two Analysis lenses
+
+success
+
+target progress
+
+motion smooth
+
+distractor stabability
+
+Feature-space Analysis
+
+....
+
+....
+
+....
+
+Sparse Autoencoder
+
+Predictive Anticipate outcomes
+Reactive Respond to change
+Memorize Recall from data
+
+Figure 1: Overview of our WAM–VLA analysis framework. We compare direct VLA policies and WAM variants through two complementary lenses: behavioral rollout diagnostics and sparse-autoencoder featurespace analysis. The framework evaluates not only task success, but also motion smoothness, target-object progress, distractor stability, and future-oriented internal representations.
+
+Abstract: Vision-language-action (VLA) policies and World-Action Models (WAM) represent two increasingly important paradigms for robotic manipulation. However, it remains unclear whether future prediction in WAMs leads to behaviorally meaningful improvements beyond final task success. In this paper, we ask whether WAMs merely add future prediction, or whether they change robot behavior and internal representations in ways that are actionable for control. We introduce a model-agnostic diagnostic framework that compares WAMs and VLAs through two complementary lenses: behavioral rollout analysis and sparseautoencoder-based feature analysis. The behavioral protocol measures action dynamics consistency, target-object progress, distractor disturbance, and runtime cost. The feature-space protocol characterizes internal representations as memorized, reactive, or predictive, revealing whether models encode future-oriented structure. Across LIBERO and RoboTwin2.0, we evaluate 7 policies spanning direct VLAs and joint, sequential, and auxiliary WAMs. Our results show that success alone hides key differences: WAMs often improve object-level behavior and target selectivity, but their gains depend on architecture and incur higher inference cost. Sequential WAMs show the clearest predictive structure, while auxiliary and joint WAMs respectively compress or entangle future information. These findings suggest future directions for WAMs design to preserve behaviorally actionable future representations for efficient manipulation.
+
+Keywords: World Action Model, VLA, Behavioral Diagnostics ∗Corresponding author
+
+1 Introduction
+Vision-language-action (VLA) policies [1, 2, 3, 4] have become a dominant paradigm for generalpurpose robot manipulation. By mapping visual observations and language instructions directly to actions or action chunks, recent VLA models have shown strong performance across diverse manipulation tasks. However, most VLA policies remain fundamentally reactive action predictors: given the current observation and task instruction, they predict what the robot should do next, without explicitly modeling how the scene should evolve as a consequence of those actions. World-Action Models (WAMs) [5, 6] have recently emerged as a promising alternative. Instead of predicting actions alone, WAMs couple action generation with future prediction. Some models jointly generate future observations and actions [7, 5], some first imagine future states before acting [6, 8], and others use future prediction only as an auxiliary training signal [9, 10]. In principle, this future-oriented modeling should make robot policies less reactive and more coherent: a policy that can anticipate how an object should move, deform, or change state may be better able to select the correct object, avoid distractors, maintain consistent progress, and recover from intermediate uncertainty.
+Previous work [11] empirically compared the success rates between WAMs and VLAs families. Yet it remains unclear whether WAMs actually provide these benefits beyond improving final task success. A higher success rate does not reveal how a policy succeeds. It does not tell us whether the robot moves smoothly, whether the target object makes steady progress toward the goal, or whether the model internally represents future task evolution in a way that is useful for action selection. Conversely, a WAM may contain explicit future prediction modules but still fail to translate future information into better control. This raises the central question of this paper: Do WAMs merely add future prediction, or do they change robot behavior and internal representations in ways that are behaviorally actionable?
+We study this question through a model-agnostic diagnostic framework for comparing WAMs and VLA policies. Instead of treating task success as the sole measure of policy quality, we analyze two complementary aspects. As shown in Fig. 1, first, we perform behavioral rollout diagnostics, measuring action dynamics, chunk-boundary consistency, target-object progress, wrong-object disturbance, manipulation-stage completion, and runtime cost. These metrics reveal whether a policy produces stable, selective, and goal-directed interaction, rather than merely completing the task. Second, we perform feature-space diagnostics using Sparse Autoencoders (SAEs [12, 13]), which allow us to characterize internal features as memorized, reactive, or predictive. This provides a representation-level view of whether WAMs expose future-oriented structure that is largely absent from direct VLA policies.
+Across LIBERO and RoboTwin2.0, we evaluate 7 policies spanning direct VLAs and three WAM families: joint/parallel WAMs, sequential WAMs, and auxiliary/training-only WAMs. Our analysis shows that success alone hides important differences. WAMs often improve object-level behavior, including stronger target-object progress and reduced wrong-object disturbance, but their benefits are architecture-dependent. Sequential WAMs expose predictive structure most clearly, auxiliary WAMs compress future information into a more VLA-like policy, and joint WAMs encode richer but more entangled trajectory-level information. At the same time, explicit future modeling introduces a non-trivial deployment cost, especially for inference-time imagination. Our findings suggest that the key question for future WAM design is not simply whether a model predicts the future, but whether its future representation is actionable. Effective WAMs should preserve enough future-oriented structure to improve target-object selectivity, distractor stability, and replanning consistency, while remaining efficient enough for closed-loop robotic control. This perspective reframes WAM evaluation: future prediction should not be judged only by visual plausibility or task success, but by whether it produces measurable improvements in robot behavior and interpretable predictive representations.
+2 Related Work
+VLA policies such as RT-2 [1], π0.5 [3], and Octo [4] have become a central paradigm for generalist robot learning, mapping visual observations and language instructions to actions through scal-
+2
+
+able multimodal pretraining, language grounding, diffusion or flow-matching decoders, and crossembodiment training [14, 4, 15]. However, because most VLAs primarily predict actions without explicitly modeling how the scene should evolve, recent WAMs couple action generation with future imagination, latent dynamics, or world-modeling objectives, building on predictive world models [16, 17, 18] and recent visual world models such as V-JEPA2 [19, 20] or Cosmos [21]. Regarding Fig. 2, we organize WAM-style methods into joint or parallel WAMs, which predict future observations and actions together, as in Cosmos Policy [7] and DreamZero [5]; sequential WAMs, which imagine future visual states before inferring actions, as in LingBot-VA [6] and Dream4Manip [8]; and auxiliary or training-only WAMs, which use future prediction or alignment during training but remove explicit future rollout at inference, as in FastWAM [10], GigaWorld-Policy [22], VLA-JEPA [9], and FRAPPE [23]; we distinguish these from latent world-model planners such as LeWorldModel [24], which select actions by predicting future latents under candidate actions with MPC or search. Since standard robot benchmarks (eg. LIBERO, DROID) [25, 26, 27, 28, 29, 30] often report only aggregate success, return, or completion time, which can hide differences in motion quality, replanning, object interaction, distractor disturbance, and representation use, recent work motivates more diagnostic evaluation of trajectories, action consistency, perturbation sensitivity, failure modes, nearest training examples, and feature structure [14, 31, 32, 33]. Following this view, we compare WAMs and VLAs using both task outcomes and diagnostic measures of action dynamics, chunk-boundary consistency, object-state progress, manipulation-stage completion, wrong-object disturbance, latency, and learned feature representations.
+
+Type 1: Joint/Parallel WAM Future prediction and action generation happen together
+
+Current Observation
+Language/ Task
+
+Shared World-Action
+Model
+
+Action Chunk
+Future Observation/ Video
+
+Planning/ Value
+
+Future prediction and action generation happen together
+
+Type 2: Sequential WAM Imagine the future observation/representation then decode action
+
+Language/ Task
+Current Observation
+
+World Model/ Future
+Imagination
+
+Imagine future states before action
+
+Action Decoder/
+Policy
+
+Action Chunk
+
+Robot execution (closed-loop)
+
+Type 3: Auxiliary WAM Future prediction only serves as a training target
+
+auxiliary world model loss
+
+Language/ Task
+Current Observation
+
+World Model
+Policy Backbone
+
+Future Observation
+Action Chunk
+
+Language/ Task
+Current Observation
+
+World Model
+Policy Backbone
+
+Future Observation
+Action Chunk
+
+Training
+
+Inference
+
+World modeling shapes representation during training as an auxiliary target during training, but is dismissed during inference
+
+Forward pass path
+
+Auxiliary/ training-only path
+
+Feedback loop (closed-loop control)
+
+Figure 2: Overview of the three World-Action Model (WAM) paradigms.
+
+3 Evaluation Protocols
+3.1 Preliminary We study robot policies that map observations ot ∈ O, robot or environment states est ∈ S, and task instructions g ∈ G to executed actions at ∈ A. Many policies predict action chunks Ct =
+3
+
+(at, . . . , at+H−1) ∈ AH , where H is the chunk horizon. A standard VLA policy directly maps the current observation and instruction to actions, whereas a WAM incorporates future prediction during training or inference. We consider three WAM families, illustrated in Fig. 2: joint/parallel WAMs [7], which predict future states and actions together; sequential WAMs [6], which first imagine future observations or representations and then decode actions; and auxiliary WAMs [9, 10], which use future prediction only as a training objective and discard it at inference time. This taxonomy clarifies how future modeling enters each policy.
+
+3.2 Behavioral Rollout Analysis
+
+Analyzing the action space of robotic policies requires looking beyond rollout success and examining both the executed robot actions and their interactions with objects. Prior behavioraldiagnostic studies have emphasized this need, such as research in trajectory-planning [33], runtimemonitoring [34], and action-consistency [35, 36]. Inheriting from this foundation, we consider three groups of diagnostics: standard outcome metrics (e.g., success rate); action-dynamics metrics, which characterize motion efficiency and stability; and object-interaction metrics, which measure whether the policy moves the target object while avoiding unnecessary distractor motion.
+
+For action dynamics, we measure smoothness using the first-, second-, and third-order finite differences of the executed action sequence, corresponding to delta, acceleration, and jerk [36]:
+
+∆at = at − at−1,
+
+∆2at = at − 2at−1 + at−2,
+
+∆3at = at − 3at−1 + 3at−2 − at−3.
+
+Intuitively, lower values of these metrics indicate smoother and more stable control. However, smoothness alone can be misleading on difficult benchmarks, since a failed policy may appear smooth simply because the robot barely moves (see Appendix C.1). To account for this case, we introduce low-motion failure, which measures failed episodes with very small average action change:
+
+100 Mlowfail = N
+
+N
+
+1{y(e) = 0}1{m¯ (e) < τmotion},
+
+e=1
+
+where
+
+m¯ (e)
+
+=
+
+1 Te − 1
+
+Te
+∥∆a(te)∥2.
+t=2
+
+Besides, we measure whether a new policy chunk query causes an abrupt change in the executed
+command. For valid action chunk query steps Q = {q : sq > 1}, let Bq = (asq − asq−1)/σa 2. We report the episode-level mean boundary jump M√bdry = |Q|−1 q∈Q Bq and its horizonnormalized variant Mbdry/√H = |Q|−1 q∈Q Bq/ H. Also, we report auxiliary action-scale diagnostics, including normalized action magnitude ∥at/σa|∥2 and sliding-window action standard deviation, which captures local action variability. Due to space constraints, full details on action-
+dynamics space metrics are deferred to Appendix A.1.
+
+For object-interaction, we quantify robot-object interaction through object-level motion and stability
+diagnostics. For example, we measure final progress, accumulated normalized progress, and the number of backward progress steps via goal positions pgoal using dt = ∥pttar − ptgoal∥2:
+
+Mprog = d0 − dT ,
+
+MprogAUC
+
+=
+
+1 T
+
+T t=1
+
+d0 − dt , d0 + ϵ
+
+T −1
+Mrev = 1{dt+1 > dt + ϵrev}.
+t=1
+
+To capture unintended interactions, we measure final distractor drift and total distractor path length over distractor objects D as
+
+1 Mwrongmotion = |D|
+
+∥pTi − p0i ∥2,
+
+i∈D
+
+1 Mwrongpath = |D|
+
+T −1
+∥pit+1 − pti∥2.
+
+i∈D t=1
+
+We also study other object-interaction metrics: net displacement, motion directness, and coarse manipulation stages. Due to space constraints, the full formal definitions of object-interaction metrics are fully described in Appendix A.2.
+
+4
+
+3.3 Interpreting Feature-Space via Sparse Autoencoders
+
+Feature-space comparison between WAMs and VLAs is difficult due to polysemanticity [13] and architectural misalignment across models. Recent VLA interpretability work [37, 38] suggests that object-state and action information is often encoded in internal activations, but probe-based extraction alone does not provide a reusable feature basis for cross-model comparison. Hence, motivated by recent advances in mechanistic interpretability [13, 39, 31], which demonstrate the effectiveness and high interpretability of Sparse Autoencoders (SAEs) [12] across both LLM and VLA studies, we adopt SAEs on comparable latent activation families, including current visual latents, future imagined latents, and action latents, for both VLAs and WAMs. This gives each model its own sparse feature basis while preserving a common set of feature-level diagnostics. The goal is to use SAEs as feature-level diagnostics to: 1) examine whether stronger object selectivity and target progress are associated with more future-oriented or temporally structured SAE statistics, and 2) test whether each policy family’s internal representations align with rollout-level behavioral differences.
+
+SAEs. Let x(te) ∈ Rd be the last or near-last hidden latent extracted from each modality-specific stream (vision, future, and action) of each model at timestep t of episode e. For each latent type of
+
+each model, we train a TopK SAE with an AuxK auxiliary reconstruction loss. After centering and
+
+normalizing the activation to x˜t(e), the SAE computes
+
+zt(e) = ReLU TopK(Wencx˜(te), k) ,
+
+x˜ˆt(e) = Wdeczt(e),
+
+where encoded latent zt(,ej) is the activation strength of SAE feature j. Full normalization, optimization, and SAE-training details are given in Appendix B.1.
+
+Metrics. For each feature j, we define fj(x(te)) = zt(,ej) and an active state st(,ej) = 1[fj(x(te)) >
+τ ]. Firstly, we summarize features’ activation pattern by inheriting 4 metrics proposed by Dr.VLA [31]: episode coverage (c), onset count (o¯), relative run length (ℓ¯), and activation magnitude (a¯).
+
+Further, to leverage our question concerning future modelling of WAM, we introduce 3 WAM-
+
+oriented futuristic metrics: FCS, HS, and AP. Specifically, Let dj be the decoder direction of feature j, and let yt(+e)δ denote a future latent state. The Future Consistency Score (FCS) measures whether an active feature points toward future latent structure:
+
+1
+
+FCSj
+
+=
+
+|Aj |
+
+max simcos
+(e,t)∈Aj δ∈[1,Hf ]
+
+dj , y˜t(+e)δ
+
+,
+
+where Aj = {(e, t) : st(,ej) = 1}. Horizon Stability (HS) measures whether the feature remains coherent across future horizons, and Action Predictiveness (AP) measures how well its activation
+
+explains future action segments:
+
+1 HSj = H
+
+h = 1H
+
+e e
+
+T (e)−h t=1
+
+st(,ej)s(t+e)h,j
+
+T (e)−h t=1
+
+st(,ej)
+
++
+
+ϵ
+
+,
+
+APj = R2 at(+e)1:t+Ha ← fj (x(te)) .
+
+Together, these metrics form a feature descriptor used to assign probabilistic feature labels:
+
+predictive-general, reactive-general, or memorized. The full formal definitions of 7 metrics (c, o¯, ℓ¯, a¯, FCS, HS, AP) are provided in Appendix B.2.
+
+Feature labelling & classification. For these feature labels, memorized features capture mean-
+ingful but highly specific patterns, such as particular episodes, objects, or short trajectory fragments. Reactive-general features describe the current observation, robot state, or execution phase, such as grasping, lifting, or placing, and are shared across many episodes. Predictive-general features
+instead provide evidence about future states or actions through future-latent consistency or early
+activation before a later phase, or correlation with future action chunks across many episodes, especially in WAM future streams. Then, given mj = [cj, o¯j, ℓ¯r,j, a¯j, FCSj, HSj, APj], we train a class-balanced multinomial logistic classifier on the manually audited features sample set as P (yj = k | mj) = σ(wk⊤mj + bk), which is used for classifying all non-dead SAE features across all models for each dataset. Full labelling and auditing details are provided in Appendix B.3.
+
+5
+
+4 Experiment
+
+4.1 Experimental Setup
+We evaluate 7 representative VLA and WAM robot policies on action-space behavior, feature-space structure, and computational cost on a single RTX 6000 Ada GPU. The evaluated VLAs include π0 [2], π0.5 [3], and X-VLA [15]; since π0 was not originally evaluated in simulation, we use the LeRobot-finetuned checkpoint [40] instead. The WAMs cover the three design families: Cosmos Policy [7] as a joint WAM, LingBot-VA [6] as a sequential WAM, and FastWAM [10] plus VLAJEPA [9] as auxiliary WAMs. We evaluate on LIBERO [26] and RoboTwin2.0 [28]. On LIBERO, all seven policies are evaluated on the spatial, object, goal, and long suites with 50 trials per task, yielding 2,000 episodes; LingBot-VA is evaluated only on LIBERO-10 because this is the released checkpoint. On RoboTwin2.0, we evaluate the public-checkpoint subset (LingBot-VA, FastWAM, π0.5) on 50 tasks, two setups per task, and 10 rollouts per setup, also yielding 2,000 episodes.
+Table 1: √LIBERO task success and motion regularity. Lower delta, acceleration, jerk, boundary jump, boundary/ H, window standard deviation, and low-motion failure indicate better executed control. Row colors denote WAM subtype respectively: joint WAM , sequential WAM , and auxiliary WAM .
+
+VLA WAM
+
+Model
+
+Success Ep. len. Delta Accel Jerk Boundary Bo√undary Window Norm. action Low-motion
+
+↑
+
+↓ L2 ↓ L2 ↓ L2 ↓ jump ↓ / H ↓ std. ↓
+
+L2
+
+fail. (%) ↓
+
+Cosmos
+
+98.0 153 0.104 0.104 0.185 0.387 0.097 0.219
+
+1.489
+
+0.5
+
+Lingbot-VA 98.0 276 0.079 0.093 0.173 0.153 0.038 0.170
+
+1.438
+
+0.8
+
+FastWAM
+
+95.3 161 0.096 0.098 0.176 0.298 0.053 0.212
+
+1.515
+
+0.9
+
+VLA-JEPA 97.1 151 0.110 0.117 0.208 0.156 0.059 0.226
+
+1.507
+
+0.2
+
+π0
+
+66.9 220 0.141 0.199 0.367 0.666 0.094 0.257
+
+1.475
+
+9.3
+
+π0.5
+
+96.6 160 0.113 0.124 0.220 0.298 0.094 0.227
+
+1.493
+
+1.3
+
+X-VLA
+
+95.8 178 0.136 0.245 0.485 0.161 0.029 0.368
+
+1.910
+
+0.9
+
+Table 2: LIBERO object interaction and distractor stability. Object metrics are computed on episodes with decoded target-object states. Wrong-object metrics report mean distractor displacement or path length.
+
+VLA WAM
+
+Model
+
+Prog. Prog. Rev. Target Direct. Wrong Wrong Grasp Lift Transport Place ↑ AUC ↑ ↓ path ↓ ↑ motion ↓ path ↓ (%) ↑ (%) ↑ (%) ↑ (%) ↑
+
+Cosmos 0.166 Lingbot-VA 0.199 FastWAM 0.127 VLA-JEPA 0.162
+
+0.084 23.8 0.240 2.4 0.057 37.2 0.062 22.3
+
+0.314 0.413 0.482 0.304
+
+0.744 0.668 0.456 0.407
+
+0.011 0.017 52.5 50.2 0.157 0.174 69.4 66.8 0.212 0.673 68.3 54.2 0.030 0.036 52.0 49.6
+
+63.2 41.8 50.7 50.0 62.7 40.5 64.3 40.4
+
+π0 π0.5 X-VLA
+
+0.074 0.029 74.0 0.446 0.415 0.128 0.056 53.2 0.497 0.647 0.119 0.047 39.3 0.481 0.442
+
+0.225 0.814 61.6 42.5 0.211 0.687 67.6 54.1 0.220 0.736 68.0 53.6
+
+48.9 30.0 64.2 42.1 61.7 39.4
+
+4.2 Action-Space Results
+LIBERO. Table 1 shows that task success alone does not tell the whole story, especially on a highsuccess benchmark like LIBERO, the motion diagnostics reveal a clearer separation between the two families. WAM policies generally produce smoother executed control, with lower acceleration, jerk, boundary discontinuity, and low-motion failure rates. For further explainability, Table 2 helps clarify this difference at the object level. The object metrics show that WAMs generally achieve stronger target progress, more direct object movement, and lower wrong-object disturbance, indicating better spatial grounding and target-object selectivity during manipulation. Auxiliary WAMs are especially informative in this case: since these inference-time policies remain closer to a direct VLA, their object-level behavior often lies between explicit inference-time WAMs and VLAs. This supports the importance of imagination during inference of WAMs. Although auxiliary WAMs designs try to omit the imagination phase to reduce computational cost, our results suggest that doing so can also reduce the spatial-awareness benefits provided by future object prediction.
+
+6
+
+Table 3: Runtime and deployment cost on LIBERO. Runtime trade-off. Table 3 highlights a
+
+well-known deployment trade-off: WAMs are often substantially more expensive at inference Model
+
+p50 p95 Chunks/s Eff. Hz GPU
+
+(ms) ↓ (ms) ↓ ↑
+
+↑ (MB)
+
+than direct VLA policies. This is expected because WAMs require additional computation to imagine future states or rollouts before select-
+
+Cosmos FastWAM LingBot-VA VLA-JEPA
+
+956 1418 4701 1588
+
+977 1529 4911 1738
+
+1.049 0.681 0.216 0.569
+
+16.780 9,762 6.810 27,891 3.460 24,130 3.982 5,462
+
+ing actions, with the cost especially visible for sequential WAMs (Lingbot-VA). Thus, the behavioral and object-space advantages of WAM-
+
+π0 π0.5 X-VLA
+
+194 228 100 103 329 360
+
+4.348 217.381 8,631 7.096 70.963 9,124 6.895 29.850 7,089
+
+like policies do not come for free. A key open
+
+problem is how to reduce this inference cost while preserving the benefits of future imagination.
+
+Table 4: RoboTwin2.0 task success and motion regularity. RoboTwin2.0 uses dual-arm qpos targets, so these values are not directl√y comparable with LIBERO delta-action metrics. Lower delta, acceleration, jerk, boundary jump, boundary/ H, window standard deviation, and low-motion failure indicate better executed control.
+
+Model
+
+Success Ep. len. Delta Accel Jerk Boundary Bo√undary Window Norm. action Low-motion
+
+↑
+
+↓ L2 ↓ L2 ↓ L2 ↓ jump ↓ / H ↓ std. ↓
+
+L2
+
+fail. (%) ↓
+
+LingBot-VA 81.6 318 0.030 0.020 0.036 0.065 0.012 0.067
+
+2.310
+
+6.1
+
+FastWAM
+
+67.3 367 0.052 0.025 0.043 0.038 0.007 0.110
+
+2.066
+
+32.7
+
+π0.5
+
+44.3 410 0.044 0.015 0.022 0.011 0.002 0.100
+
+2.043
+
+53.0
+
+RoboTwin2.0. Table 4 shows a different regime from LIBERO: overall success is substantially lower, and the motion metrics appear at first glance to follow the opposite trend. However, this should be interpreted together with the low-motion failure rate. The very high low-motion failure of π0.5 indicates that many of its failed rollouts involve little effective robot operation, which can make the trajectory appear artificially smooth (see Appendix C.1, Table 8). Thus, lower acceleration, jerk, or boundary jump in this setting does not necessarily imply better control. Instead, RoboTwin result reinforces three points: 1) WAMs maintain reasonable smoothness while actively manipulating objects, 2) WAMs therefore still benefit from imagination under harder tasks, and 3) motion metrics are most informative when success rates are high or nearly comparable across models, such as those results in Table 1.
+
+4.3 Feature-Space Result
+Table 5 shows that future-oriented SAE features are strongly architecture-dependent. Direct VLA baselines have extremely low predictive features rate, while WAMs expose a non-zero predictive structure, with LingBot-VA showing the clearest future-oriented representation due to its sequential imagine-then-act design. Auxiliary WAMs are more mixed: VLA-JEPA retains a noticeably larger predictive share than FastWAM, which is consistent with its cleaner object interaction in Table 2. More broadly, comparing the SAE statistics with the object metrics (eg. Lingbot-VA, VLA-JEPA & FastWAM) suggests that models with stronger future-visualization capacity, whether used during training or inference, tend to have better spatial grounding and target-object selectivity. LingBot-VA illustrates this most clearly: even when its absolute number of manually audited predictive features is not larger than VLA-JEPA in Table 6, predictive features form a dominant proportion of its active representation, matching both its model design and its rollout behavior. These results support the view that future-oriented representations help explain the object-level advantages of WAMs, we further enhance this view in Appendix C.4.
+Phase alignment. To further validate SAE features, we visualized the temporal phase alignment to a set of sampled features as shown in Fig. 3. Predictive features tend to activate before or across phase transitions, suggesting sensitivity to upcoming task stages, while reactive features concentrate around execution-heavy phases such as grasp and carry. Memorized features are sparse and episodespecific. This visualization supports the quantitative SAE analysis, and again confirms the high interpretability of survived SAE features, which align with prior works [13, 31].
+
+7
+
+Table 5: Per-model SAE feature classification by representation space. #Active Feat. denotes the number of active non-dead SAE features. Dead percentage is computed over all learned SAE features. Percentages for memorized, reactive, and predictive features are computed over non-dead features with joint weak labels. Red, orange, and blue indicate the highest value among current, future, and action features, respectively.
+
+WAM
+
+Model
+
+Space
+
+#Active Dead Mem. React. Pred. Feat. (%) (%) (%) (%)
+
+Cosmos
+
+Current 12,122 1.4 83.7 13.6 2.7 Future 11,811 3.9 80.0 14.1 5.9 Action 4,093 0.1 84.9 13.1 2.0
+
+Current 2,170 64.7 10.3 72.7 17.0
+
+LingBot-VA Future 5,997 2.4 5.0 41.8 53.2
+
+Action
+
+376 81.6 30.1 65.6 4.3
+
+Current
+
+583 85.8 25.2 70.8 4.0
+
+FastWAM Future
+
+246 94.0 2.0 90.7 7.3
+
+Action 2,707 11.9 75.9 22.1 2.0
+
+Current 3,957 3.4 76.0 10.8 13.2
+
+VLA-JEPA Future 2,537 38.1 59.8 23.3 16.9
+
+Action
+
+92 91.0 2.2 38.0 59.8
+
+π0 π0.5 X-VLA
+
+Current 1,310 68.0 67.4 31.8 0.8 Action 1,021 0.3 52.3 47.2 0.5
+
+Current 5,108 37.6 64.1 34.7 1.2
+
+Action
+
+242 88.2 44.4 54.8 0.8
+
+Current 2,028 1.0 99.4 0.3 0.3
+
+Action
+
+529 74.2 36.5 62.6 0.9
+
+VLA
+
+Figure 3: Phase-aligned sparse feature activations. 2 Cosmos LIBERO-10 rollouts are shown with task phases and selected SAE activations. General features show phase-specific patterns, e.g., f1644 during carry/lift and f1828 during grasp, while the memorized feature f1701 appears only in one rollout near place/release.
+4.4 Discussion
+Our results show that comparing WAMs and VLAs only by success rate misses an important part of the story. The action-space and object-space diagnostics reveal that WAMs tend to produce smoother and more object-oriented behavior, with better target-object selectivity and fewer unintended interactions. The SAE analysis provides a complementary feature-space view: WAMs expose more futureoriented representations than direct VLAs, and these representations are associated with stronger object-level behavior. While this evidence is still associative rather than being causal, it partially explains why future prediction help WAMs achieve better spatial grounding and cleaner object interaction.
+Meanwhile, the runtime results show that these benefits come with a clear deployment cost, and therefore, balancing cost and future imagination is non-trivial. A key direction for future work is therefore to make WAMs more efficient without removing the property that makes them useful:
+8
+
+explicit future prediction. Sequential WAMs expose future information clearly but are expensive, while joint WAMs such as Cosmos reduce the explicit separation between imagination and action and can make the representation more entangled. Auxiliary designs are efficient, but they risk compressing or weakening the future-modeling signal at inference time. This requires a better balance between sequential and joint designs. Future architectures should therefore preserve lightweight inference-time imagination, rather than treating future prediction only as a training auxiliary loss. For example, latent video world models such as V-JEPA 2-style architectures [20, 41] suggest a promising path: if future latent prediction can be used directly during policy inference, rather than only as a vision encoder or auxiliary target, WAMs may retain their spatial-awareness benefits while reducing runtime cost.
+5 Conclusion & Limitation
+In conclusion, our study shows that WAMs and VLAs differ in ways that are not captured by task success alone. By combining rollout-level behavioral diagnostics with SAE-based feature analysis, we find that WAMs often produce stronger target-object progress, lower distractor disturbance, and more future-oriented internal representations, suggesting that explicit future modeling can be behaviorally useful for manipulation. However, our evidence remains associative rather than causal: SAE feature labels are weak probabilistic annotations, object-state metrics depend on available decoded traces, and the evaluated models are limited to simulation benchmarks and public checkpoints. In addition, WAMs introduce a clear runtime cost, highlighting the need for future designs that preserve actionable future prediction while remaining efficient for closed-loop robot control.
+9
+
+References
+[1] B. Zitkovich, T. Yu, S. Xu, P. Xu, T. Xiao, F. Xia, J. Wu, P. Wohlhart, S. Welker, A. Wahid, Q. Vuong, V. Vanhoucke, H. Tran, R. Soricut, A. Singh, J. Singh, P. Sermanet, P. R. Sanketi, G. Salazar, M. S. Ryoo, K. Reymann, K. Rao, K. Pertsch, I. Mordatch, H. Michalewski, Y. Lu, S. Levine, L. Lee, T.-W. E. Lee, I. Leal, Y. Kuang, D. Kalashnikov, R. Julian, N. J. Joshi, A. Irpan, B. Ichter, J. Hsu, A. Herzog, K. Hausman, K. Gopalakrishnan, C. Fu, P. Florence, C. Finn, K. A. Dubey, D. Driess, T. Ding, K. M. Choromanski, X. Chen, Y. Chebotar, J. Carbajal, N. Brown, A. Brohan, M. G. Arenas, and K. Han. Rt-2: Vision-language-action models transfer web knowledge to robotic control. In J. Tan, M. Toussaint, and K. Darvish, editors, Proceedings of The 7th Conference on Robot Learning, volume 229 of Proceedings of Machine Learning Research, pages 2165–2183. PMLR, 06–09 Nov 2023.
+[2] K. Black, N. Brown, D. Driess, A. Esmail, M. R. Equi, C. Finn, N. Fusai, L. Groom, K. Hausman, B. Ichter, S. Jakubczak, T. Jones, L. Ke, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, L. X. Shi, L. Smith, J. Tanner, Q. Vuong, A. Walling, H. Wang, and U. Zhilinsky. π0: A Vision-Language-Action Flow Model for General Robot Control. In Proceedings of Robotics: Science and Systems, LosAngeles, CA, USA, June 2025.
+[3] K. Black, N. Brown, J. Darpinian, K. Dhabalia, D. Driess, A. Esmail, M. R. Equi, C. Finn, N. Fusai, M. Y. Galliker, D. Ghosh, L. Groom, K. Hausman, b. ichter, S. Jakubczak, T. Jones, L. Ke, D. LeBlanc, S. Levine, A. Li-Bell, M. Mothukuri, S. Nair, K. Pertsch, A. Z. Ren, L. X. Shi, L. Smith, J. T. Springenberg, K. Stachowicz, J. Tanner, Q. Vuong, H. Walke, A. Walling, H. Wang, L. Yu, and U. Zhilinsky. π0.5: a vision-language-action model with open-world generalization. In J. Lim, S. Song, and H.-W. Park, editors, Proceedings of The 9th Conference on Robot Learning, volume 305 of Proceedings of Machine Learning Research, pages 17–40. PMLR, 27–30 Sep 2025.
+[4] Octo Model Team, D. Ghosh, H. Walke, K. Pertsch, K. Black, O. Mees, S. Dasari, J. Hejna, C. Xu, J. Luo, T. Kreiman, Y. Tan, L. Y. Chen, P. Sanketi, Q. Vuong, T. Xiao, D. Sadigh, C. Finn, and S. Levine. Octo: An open-source generalist robot policy. In Proceedings of Robotics: Science and Systems, Delft, Netherlands, 2024.
+[5] S. Ye, Y. Ge, K. Zheng, S. Gao, S. Yu, G. Kurian, S. Indupuru, Y. L. Tan, C. Zhu, J. Xiang, A. Malik, K. Lee, W. Liang, N. Ranawaka, J. Gu, Y. Xu, G. Wang, F. Hu, A. Narayan, J. Bjorck, J. Wang, G. Kim, D. Niu, R. Zheng, Y. Xie, J. Wu, Q. Wang, R. Julian, D. Xu, Y. Du, Y. Chebotar, S. Reed, J. Kautz, Y. Zhu, L. J. Fan, and J. Jang. World action models are zero-shot policies, 2026.
+[6] L. Li, Q. Zhang, Y. Luo, S. Yang, R. Wang, F. Han, M. Yu, Z. Gao, N. Xue, X. Zhu, Y. Shen, and Y. Xu. Causal world modeling for robot control. arXiv preprint arXiv:2601.21998, 2026.
+[7] M. J. Kim, Y. Gao, T.-Y. Lin, Y.-C. Lin, Y. Ge, G. Lam, P. Liang, S. Song, M.-Y. Liu, C. Finn, and J. Gu. Cosmos policy: Fine-tuning video models for visuomotor control and planning. In The Fourteenth International Conference on Learning Representations, 2026.
+[8] S. Gu, Y. Cai, T. Wang, S. Wu, and Y. Fu. Say, dream, and act: Learning video world models for instruction-driven robot manipulation. arXiv preprint arXiv:2602.10717, 2026.
+[9] J. Sun, W. Zhang, Z. Qi, S. Ren, Z. Liu, H. Zhu, G. Sun, X. Jin, and Z. Chen. Vla-jepa: Enhancing vision-language-action model with latent world model, 2026.
+[10] T. Yuan, Z. Dong, Y. Liu, and H. Zhao. Fast-wam: Do world action models need test-time future imagination? arXiv preprint arXiv:2603.16666, 2026.
+[11] Z. Zhang, Z. Li, B. Rahmati, R. H. Yang, Y. Ma, A. Rasouli, S. Pakdamansavoji, Y. Wu, L. Zhang, T. Cao, F. Wen, X. Wang, X. Quan, and Y. Zhang. Do world action models generalize better than vlas? a robustness study, 2026.
+10
+
+[12] R. Huben, H. Cunningham, L. R. Smith, A. Ewart, and L. Sharkey. Sparse autoencoders find highly interpretable features in language models. In The Twelfth International Conference on Learning Representations, 2024.
+[13] M. Lan, P. Torr, A. Meek, D. Krueger, and F. Barez. Sparse autoencoders reveal universal feature spaces across large language models, 2025.
+[14] C. Chi, Z. Xu, S. Feng, E. Cousineau, Y. Du, B. Burchfiel, R. Tedrake, and S. Song. Diffusion policy: Visuomotor policy learning via action diffusion. The International Journal of Robotics Research, 2024.
+[15] J. Zheng, J. Li, Z. Wang, D. Liu, X. Kang, Y. Feng, Y. Zheng, J. Zou, Y. Chen, J. Zeng, T. Wang, Y.-Q. Zhang, J. Liu, and X. Zhan. X-VLA: Soft-prompted transformer as scalable cross-embodiment vision-language-action model. In The Fourteenth International Conference on Learning Representations, 2026.
+[16] D. Ha and J. Schmidhuber. Recurrent world models facilitate policy evolution. In S. Bengio, H. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, and R. Garnett, editors, Advances in Neural Information Processing Systems, volume 31. Curran Associates, Inc., 2018.
+[17] J. Bruce, M. Dennis, A. Edwards, J. Parker-Holder, Y. J. Shi, E. Hughes, M. Lai, A. Mavalankar, R. Steigerwald, C. Apps, Y. Aytar, S. Bechtle, F. Behbahani, S. Chan, N. Heess, L. Gonzalez, S. Osindero, S. Ozair, S. Reed, J. Zhang, K. Zolna, J. Clune, N. De Freitas, S. Singh, and T. Rockta¨schel. Genie: generative interactive environments. In Proceedings of the 41st International Conference on Machine Learning, ICML’24. JMLR.org, 2024.
+[18] D. Hafner, J. Pasukonis, J. Ba, and T. Lillicrap. Mastering diverse control tasks through world models. Nature, 640(8059):647–653, 2025.
+[19] M. Assran, A. Bardes, D. Fan, Q. Garrido, R. Howes, M. Komeili, M. Muckley, A. Rizvi, C. Roberts, K. Sinha, A. Zholus, S. Arnaud, A. Gejji, A. Martin, F. Robert Hogan, D. Dugas, P. Bojanowski, V. Khalidov, P. Labatut, F. Massa, M. Szafraniec, K. Krishnakumar, Y. Li, X. Ma, S. Chandar, F. Meier, Y. LeCun, M. Rabbat, and N. Ballas. V-jepa 2: Selfsupervised video models enable understanding, prediction and planning. arXiv preprint arXiv:2506.09985, 2025.
+[20] L. Mur-Labadia, M. Muckley, A. Bar, M. Assran, K. Sinha, M. Rabbat, Y. LeCun, N. Ballas, and A. Bardes. V-jepa 2.1: Unlocking dense features in video self-supervised learning. arXiv preprint arXiv:2603.14482, 2026.
+[21] A. Ali, J. Bai, M. Bala, Y. Balaji, A. Blakeman, T. Cai, J. Cao, T. Cao, E. Cha, Y.-W. Chao, et al. World simulation with video foundation models for physical ai. arXiv preprint arXiv:2511.00062, 2025.
+[22] A. Ye, B. Wang, C. Ni, G. Huang, G. Zhao, H. Li, H. Li, J. Li, J. Lv, J. Liu, M. Cao, P. Li, Q. Deng, W. Mei, X. Wang, X. Chen, X. Zhou, Y. Wang, Y. Chang, Y. Li, Y. Zhou, Y. Ye, Z. Liu, and Z. Zhu. Gigaworld-policy: An efficient action-centered world-action model. arXiv preprint arXiv:2603.17240, 2026.
+[23] H. Zhao, J. Wang, W. Song, S. Chen, Y. Liu, Y. Wang, H. Li, and D. Wang. Frappe: Infusing world modeling into generalist policies via multiple future representation alignment. arXiv preprint arXiv:2602.17259, 2026.
+[24] L. Maes, Q. L. Lidec, D. Scieur, Y. LeCun, and R. Balestriero. Leworldmodel: Stable endto-end joint-embedding predictive architecture from pixels. arXiv preprint arXiv:2603.19312, 2026.
+11
+
+[25] A. Mandlekar, D. Xu, J. Wong, S. Nasiriany, C. Wang, R. Kulkarni, L. Fei-Fei, S. Savarese, Y. Zhu, and R. Mart´ın-Mart´ın. What matters in learning from offline human demonstrations for robot manipulation. In 5th Annual Conference on Robot Learning, 2021.
+[26] B. Liu, Y. Zhu, C. Gao, Y. Feng, qiang liu, Y. Zhu, and P. Stone. LIBERO: Benchmarking knowledge transfer for lifelong robot learning. In Thirty-seventh Conference on Neural Information Processing Systems Datasets and Benchmarks Track, 2023.
+[27] S. Tao, F. Xiang, A. Shukla, Y. Qin, X. Hinrichsen, X. Yuan, C. Bao, X. Lin, Y. Liu, T. kai Chan, Y. Gao, X. Li, T. Mu, N. Xiao, A. Gurha, V. N. Rajesh, Y. W. Choi, Y.-R. Chen, Z. Huang, R. Calandra, R. Chen, S. Luo, and H. Su. Maniskill3: Gpu parallelized robotics simulation and rendering for generalizable embodied ai. Robotics: Science and Systems, 2025.
+[28] T. Chen, Z. Chen, B. Chen, Z. Cai, Y. Liu, Q. Liang, Z. Li, X. Lin, Y. Ge, Z. Gu, et al. Robotwin 2.0: A scalable data generator and benchmark with strong domain randomization for robust bimanual robotic manipulation. arXiv preprint arXiv:2506.18088, 2025.
+[29] A. Khazatsky, K. Pertsch, S. Nair, A. Balakrishna, S. Dasari, S. Karamcheti, S. Nasiriany, M. K. Srirama, L. Y. Chen, K. Ellis, P. D. Fagan, J. Hejna, M. Itkina, M. Lepert, Y. J. Ma, P. T. Miller, J. Wu, S. Belkhale, S. Dass, H. Ha, A. Jain, A. Lee, Y. Lee, M. Memmel, S. Park, I. Radosavovic, K. Wang, A. Zhan, K. Black, C. Chi, K. B. Hatch, S. Lin, J. Lu, J. Mercat, A. Rehman, P. R. Sanketi, A. Sharma, C. Simpson, Q. Vuong, H. R. Walke, B. Wulfe, T. Xiao, J. H. Yang, A. Yavary, T. Z. Zhao, C. Agia, R. Baijal, M. G. Castro, D. Chen, Q. Chen, T. Chung, J. Drake, E. P. Foster, J. Gao, D. A. Herrera, M. Heo, K. Hsu, J. Hu, D. Jackson, C. Le, Y. Li, X. Lin, Z. Ma, A. Maddukuri, S. Mirchandani, D. Morton, T. K. Nguyen, A. O’Neill, R. Scalise, D. Seale, V. Son, S. Tian, E. Tran, A. E. Wang, Y. Wu, A. Xie, J. Yang, P. Yin, Y. Zhang, O. Bastani, G. Berseth, J. Bohg, K. Goldberg, A. Gupta, A. Gupta, D. Jayaraman, J. J. Lim, J. Malik, R. Mart´ın-Mart´ın, S. Ramamoorthy, D. Sadigh, S. Song, J. Wu, M. C. Yip, Y. Zhu, T. Kollar, S. Levine, and C. Finn. DROID: A large-scale in-the-wild robot manipulation dataset. In RSS 2024 Workshop: Data Generation for Robotics, 2024.
+[30] A. O’Neill, A. Rehman, A. Maddukuri, A. Gupta, A. Padalkar, A. Lee, A. Pooley, A. Gupta, A. Mandlekar, A. Jain, A. Tung, A. Bewley, A. Herzog, A. Irpan, A. Khazatsky, A. Rai, A. Gupta, A. Wang, A. Singh, A. Garg, A. Kembhavi, A. Xie, A. Brohan, A. Raffin, A. Sharma, A. Yavary, A. Jain, A. Balakrishna, A. Wahid, B. Burgess-Limerick, B. Kim, B. Scho¨lkopf, B. Wulfe, B. Ichter, C. Lu, C. Xu, C. Le, C. Finn, C. Wang, C. Xu, C. Chi, C. Huang, C. Chan, C. Agia, C. Pan, C. Fu, C. Devin, D. Xu, D. Morton, D. Driess, D. Chen, D. Pathak, D. Shah, D. Bu¨chler, D. Jayaraman, D. Kalashnikov, D. Sadigh, E. Johns, E. P. Foster, F. Liu, F. Ceola, F. Xia, F. Zhao, F. Stulp, G. Zhou, G. S. Sukhatme, G. Salhotra, G. Yan, G. Feng, G. Schiavi, G. Berseth, G. Kahn, G. Wang, H. Su, H. Fang, H. Shi, H. Bao, H. B. Amor, H. I. Christensen, H. Furuta, H. Walke, H. Fang, H. Ha, I. Mordatch, I. Radosavovic, I. Leal, J. Liang, J. Abou-Chakra, J. Kim, J. Drake, J. Peters, J. Schneider, J. Hsu, J. Bohg, J. Bingham, J. Wu, J. Gao, J. Hu, J. Wu, J. Wu, J. Sun, J. Luo, J. Gu, J. Tan, J. Oh, J. Wu, J. Lu, J. Yang, J. Malik, J. Silve´rio, J. Hejna, J. Booher, J. Tompson, J. Yang, J. Salvador, J. J. Lim, J. Han, K. Wang, K. Rao, K. Pertsch, K. Hausman, K. Go, K. Gopalakrishnan, K. Goldberg, K. Byrne, K. Oslund, K. Kawaharazuka, K. Black, K. Lin, K. Zhang, K. Ehsani, K. Lekkala, K. Ellis, K. Rana, K. Srinivasan, K. Fang, K. P. Singh, K.-H. Zeng, K. Hatch, K. Hsu, L. Itti, L. Y. Chen, L. Pinto, L. Fei-Fei, L. Tan, L. J. Fan, L. Ott, L. Lee, L. Weihs, M. Chen, M. Lepert, M. Memmel, M. Tomizuka, M. Itkina, M. G. Castro, M. Spero, M. Du, M. Ahn, M. C. Yip, M. Zhang, M. Ding, M. Heo, M. K. Srirama, M. Sharma, M. J. Kim, N. Kanazawa, N. Hansen, N. Heess, N. J. Joshi, N. Su¨nderhauf, N. Liu, N. D. Palo, N. M. M. Shafiullah, O. Mees, O. Kroemer, O. Bastani, P. R. Sanketi, P. T. Miller, P. Yin, P. Wohlhart, P. Xu, P. D. Fagan, P. Mitrano, P. Sermanet, P. Abbeel, P. Sundaresan, Q. Chen, Q. Vuong, R. Rafailov, R. Tian, R. Doshi, R. Mart´ın-Mart´ın, R. Baijal, R. Scalise, R. Hendrix, R. Lin, R. Qian, R. Zhang, R. Mendonca, R. Shah, R. Hoque, R. Julian, S. Bustamante, S. Kirmani, S. Levine, S. Lin, S. Moore, S. Bahl, S. Dass, S. D. Sonawani, S. Song, S. Xu, S. Haldar, S. Karamcheti, S. Adebola, S. Guist,
+12
+
+S. Nasiriany, S. Schaal, S. Welker, S. Tian, S. Ramamoorthy, S. Dasari, S. Belkhale, S. Park, S. Nair, S. Mirchandani, T. Osa, T. Gupta, T. Harada, T. Matsushima, T. Xiao, T. Kollar, T. Yu, T. Ding, T. Davchev, T. Z. Zhao, T. Armstrong, T. Darrell, T. Chung, V. Jain, V. Vanhoucke, W. Zhan, W. Zhou, W. Burgard, X. Chen, X. Wang, X. Zhu, X. Geng, X. Liu, L. Xu, X. Li, Y. Lu, Y. J. Ma, Y. Kim, Y. Chebotar, Y. Zhou, Y. Zhu, Y. Wu, Y. Xu, Y. Wang, Y. Bisk, Y. Cho, Y. Lee, Y. Cui, Y. Cao, Y.-H. Wu, Y. Tang, Y. Zhu, Y. Zhang, Y. Jiang, Y. Li, Y. Li, Y. Iwasawa, Y. Matsuo, Z. Ma, Z. Xu, Z. J. Cui, Z. Zhang, and Z. Lin. Open x-embodiment: Robotic learning datasets and rt-x models : Open x-embodiment collaboration. In ICRA, pages 6892–6903, 2024.
+[31] A. Swann, L. McGranahan, H. Buurmeijer, M. Kennedy III, and M. Schwager. Sparse autoencoders reveal interpretable and steerable features in vla models. arXiv preprint arXiv:2603.19183, 2026.
+[32] J. Gao, S. Belkhale, S. Dasari, A. Balakrishna, D. Shah, and D. Sadigh. A taxonomy for evaluating generalist robot manipulation policies. IEEE Robotics and Automation Letters, 11 (3):3182–3189, 2026.
+[33] C. Agia, R. Sinha, J. Yang, Z. Cao, R. Antonova, M. Pavone, and J. Bohg. Unpacking failure modes of generative policies: Runtime monitoring of consistency and progress. In 8th Annual Conference on Robot Learning, 2024.
+[34] K. Black, M. Y. Galliker, and S. Levine. Real-time execution of action chunking flow policies. In The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2026.
+[35] A. Gasparetto and V. Zanotto. A new method for smooth trajectory planning of robot manipulators. Mechanism and Machine Theory, 42(4):455–471, 2007. ISSN 0094-114X.
+[36] Y. R. Wang, C. Ung, C. Tan, G. Tannert, J. Duan, J. Li, A. Le, R. Oswal, M. Grotz, W. Pumacay, Y. Deng, R. Krishna, D. Fox, and S. Srinivasa. Roboeval: Where robotic manipulation meets structured and scalable evaluation, 2026.
+[37] H. Buurmeijer, C. A. Alonso, A. Swann, and M. Pavone. Observing and controlling features in vision-language-action models, 2026.
+[38] M. A. Khan, N. Boskov, F. M. Anwar, and M. A. Khan. Controlling vision–language–action policies through sparse latent directions. In Mechanistic Interpretability Workshop at NeurIPS 2025, 2025.
+[39] L. Gao, T. D. la Tour, H. Tillman, G. Goh, R. Troll, A. Radford, I. Sutskever, J. Leike, and J. Wu. Scaling and evaluating sparse autoencoders. In The Thirteenth International Conference on Learning Representations, 2025.
+[40] R. Cadene, S. Alibert, F. Capuano, M. Aractingi, A. Zouitine, P. Kooijmans, J. Choghari, M. Russi, C. Pascal, S. Palma, D. Aubakirova, M. Shukor, J. Moss, A. Soare, Q. Lhoest, Q. Galloue´dec, and T. Wolf. Lerobot: An open-source library for end-to-end robot learning. In The Fourteenth International Conference on Learning Representations, 2026.
+[41] M. Assran, A. Bardes, D. Fan, Q. Garrido, R. Howes, Mojtaba, Komeili, M. Muckley, A. Rizvi, C. Roberts, K. Sinha, A. Zholus, S. Arnaud, A. Gejji, A. Martin, F. R. Hogan, D. Dugas, P. Bojanowski, V. Khalidov, P. Labatut, F. Massa, M. Szafraniec, K. Krishnakumar, Y. Li, X. Ma, S. Chandar, F. Meier, Y. LeCun, M. Rabbat, and N. Ballas. V-jepa 2: Self-supervised video models enable understanding, prediction and planning, 2025.
+13
+
+A High-Level Behavioral Metrics
+
+This appendix defines the rollout metrics used in our behavioral analysis. Each rollout is converted into a canonical episode record containing the executed action stream a1:T , optional action chunks C ∈ RQ×H×A, policy-query timesteps {sq}qQ=1, robot and end-effector states, reward or success traces, object-state traces when available, and runtime measurements. This common record allows metrics to be computed across policies with different action adapters, chunk horizons, replanning schedules, and logging formats. Metrics are computed only when the required streams are available; for example, object metrics are computed only for episodes with decoded object trajectories.
+
+A.1 Action Metrics
+
+Outcome metrics. We report standard task-level outcomes including success rate, episode length, final step, completion ratio, return, final reward, maximum reward, and first-success timestep when reward traces are available. These metrics indicate whether a policy solves the task, but they do not explain how the policy moves, how it replans, or why it fails.
+
+Executed action magnitude. Given executed actions at ∈ RA, we compute the raw action magni-
+
+tude using ∥at∥2. When comparing policies with different action scales or adapters, we use a global
+
+action scale σa and report
+
+1T Mact = T
+t=1
+
+at . σa 2
+
+When available, we also compute separate translation, rotation, and gripper components.
+
+Action smoothness. We measure local action smoothness using finite differences of the executed
+
+action stream:
+
+∆at = at − at−1, ∆2at = at − 2at−1 + at−2, ∆3at = at − 3at−1 + 3at−2 − at−3.
+
+These correspond to executed action change, acceleration, and jerk. For each episode, we summarize
+
+them by mean L2 magnitude:
+
+1T M∆ = T − 1 ∥∆at∥2,
+
+1 M∆2 = T − 2
+
+T
+
+∥∆2at∥2,
+
+1 M∆3 = T − 3
+
+T
+
+∥∆3at∥2.
+
+t=2
+
+t=3
+
+t=4
+
+Lower values indicate smaller step-to-step changes, fewer abrupt control changes, and less high-
+
+frequency oscillation. We also report median, p95, and maximum values when appropriate.
+
+Sliding-window action variation. To capture short-horizon instability, we compute a sliding-
+
+window action standard deviation. For window size w, let a˜t = at/σa and Wt = {a˜t−w+1, . . . , a˜t}.
+
+The window variation score is
+
+1
+
+T
+
+Mwin = T − w + 1 ∥Std(Wt)∥2 .
+
+t=w
+
+This metric captures local action variability that may be hidden by episode-level averages.
+
+Boundary discontinuity. For chunked policies, we measure whether a new policy query causes
+
+an abrupt change in the executed command. At query step sq, define Bq = (asq − asq−1)/σa 2. The episode-level boundary scores are
+
+1
+
+Mbdry = |Q|
+
+Bq ,
+
+q∈Q
+
+Mbdry/√H
+
+=
+
+1 |Q|
+
+q∈Q
+
+√Bq , H
+
+where Q contains valid query steps with sq > 1. When needed, we also compute the boundary-to-
+
+non-boundary ratio
+
+Rbdry = |Tnon|−1
+
+|Q|−1 q∈Q Bq
+
+,
+
+t∈Tnon ∥(at − at−1)/σa∥2 + ϵ
+
+where Tnon denotes non-boundary timesteps.
+
+14
+
+Low-motion failure. Smoothness metrics can be misleading when a failed policy barely moves. For episode e, define its mean action displacement as
+
+m¯ (e)
+
+=
+
+1 Te − 1
+
+Te t=2
+
+∥∆at(e)∥2.
+
+The low-motion failure rate is
+
+1 Mlowfail = 100 · N
+
+N
+
+1{y(e) = 0}1{m¯ (e) < τmotion}.
+
+e=1
+
+This counts failed episodes in which the policy produces very little motion.
+
+Runtime and deployment cost. We report policy inference latency, client round-trip latency, server inference latency, throughput in chunks per second, effective control frequency, real-time ratio, and GPU memory usage. Latency is summarized using mean, p50, and p95. These metrics capture whether a policy is practical to deploy, rather than only whether it achieves high success.
+
+A.2 Object Metrics
+Object metrics are computed when decoded object trajectories are available. Let pttar denote the target-object position at timestep t, and let ptgoal denote the goal or receptacle position. We define the target-goal distance as
+dt = pttar − ptgoal .
+2
+For RoboTwin2.0, the same definitions are applied to mapped reference objects; therefore, progress metrics should be interpreted as benchmark-local reference-object diagnostics.
+
+Target/reference progress. Progress measures the final improvement in object-to-goal distance, Mprog = d0 − dT . Higher values indicate that the object ends closer to the goal.
+
+Progress AUC. Progress AUC measures whether the object stays closer to the goal throughout the trajectory, rather than only at the final timestep:
+
+MprogAUC
+
+=
+
+1 T
+
+T t=1
+
+d0 − dt . d0 + ϵ
+
+Higher values indicate steadier object-level progress.
+
+Progress reversals. goal:
+
+Progress reversals count how often the target object moves farther from the
+T −1
+Mrev = 1{dt+1 > dt + ϵrev}.
+t=1
+
+Lower values indicate more monotonic manipulation.
+
+Target-object path and directness. We measure target-object efficiency using path length, net displacement, and directness:
+
+T −1
+
+Ltar =
+
+ptt+ar1 − pttar 2 ,
+
+t=1
+
+Dtar = pTtar − pt0ar 2 ,
+
+Dirtar
+
+=
+
+Dtar . Ltar + ϵ
+
+Lower path length and higher directness indicate more efficient object movement.
+
+15
+
+Wrong-object motion. Let D denote the set of distractor or non-target objects, and let pit be the position of distractor i. We measure unintended distractor movement using final displacement and
+full trajectory path length:
+
+1 Mwrongmotion = |D|
+
+pTi − pi0 2 ,
+
+i∈D
+
+1 Mwrongpath = |D|
+
+T −1
+pit+1 − pti 2 .
+
+i∈D t=1
+
+Lower values indicate fewer unintended interactions with non-target objects. The path metric also captures distractors that move during execution even if they later return close to their initial positions.
+
+Manipulation-stage completion. We report grasp, lift, transport, and place completion rates:
+
+1 Mstage = 100 · N
+
+N
+
+1{Cs(tea)ge},
+
+e=1
+
+where Cs(tea)ge is the stage-specific completion condition for episode e. Grasp indicates that the target object is held, lift indicates sufficient vertical displacement, transport indicates sufficient movement
+toward the goal, and place indicates final placement within a goal threshold.
+
+B Details on Feature-Space Analysis
+
+B.1 Details on Sparse Autoencoder
+
+For each model and latent family, we collect hidden activations x(te) ∈ Rd, where e indexes episodes and t indexes timesteps. Each activation is centered by a learned pre-bias bpre, then normalized by
+subtracting the per-sample mean and scaling by its ℓ2 norm:
+
+xc(e,t) = xt(e) − bpre,
+
+x˜t(e)
+
+=
+
+xc(e,t) ∥x(ce,t) −
+
+− µ(x(ce,t)) µ(x(ce,t))∥2
+
++
+
+ϵ
+
+.
+
+The encoder maps this normalized activation into a sparse feature vector, and the decoder reconstructs the normalized activation:
+
+h(te) = Wencx˜t(e), zt(e) = ReLU TopK(ht(e), k) , xˆ˜t(e) = Wdeczt(e).
+
+Here TopK(·, k) keeps only the k largest coordinates and sets the remaining coordinates to zero. Decoder columns are unit-normalized so that each SAE latent corresponds to a feature direction and zt(,ej) gives the activation strength of feature j.
+The SAE objective combines normalized reconstruction loss with an auxiliary residual reconstruction branch over inactive or underused latents:
+
+Lrec = ∥x˜(te) − xˆ˜t(e)∥22, Laux = ∥rt(e) − rˆt(,ea)ux∥22,
+
+rt(e) = x˜(te) − xˆ˜t(e), LSAE = Lrec + αLaux,
+
+1 α= .
+32
+
+This objective encourages sparse feature activations while allowing unused latents to specialize to remaining reconstruction error.
+
+B.2 Feature-Space Metrics
+This appendix gives the full definition of the feature-space metrics used in Section 3.3. The first four metrics follow the activation-pattern statistics used in Dr.VLA [31], while the remaining metrics are introduced to measure future-oriented structure in WAM representations.
+
+16
+
+Notation. Let E = {1, . . . , N } be the set of evaluation episodes, and let episode e have length T (e). For SAE feature j, its activation and binary activity indicator are
+
+fj (x(te)) = zt(,ej),
+
+s(t,ej) = 1 fj (xt(e)) > τ .
+
+The active-episode set for feature j is
+
+Ej+ = e ∈ E : ∃t ∈ {1, . . . , T (e)} such that s(t,ej) = 1 .
+
+Unless otherwise stated, all averages below are computed only over active episodes Ej+. If |Ej+| = 0, the feature is treated as inactive for metric computation.
+
+Episode Coverage. Episode coverage measures how broadly a feature activates across the dataset: cj = |Ej+|/|E|. A high value of cj indicates that feature j appears across many episodes or tasks, while a low value indicates that the feature is rare. Importantly, low coverage does not necessar-
+ily mean the feature is dead: it may correspond to a specific object layout, rare failure mode, or
+memorized trajectory fragment.
+
+Mean Onset Count. An onset is a transition from inactive to active. For each episode e, the onset count and mean onset count are
+
+T (e)
+
+oj(e) =
+
+max 0, s(t,ej) − s(t−e)1,j ,
+
+t=1
+
+s(0e,j) = 0,
+
+o¯j
+
+=
+
+1 |Ej+|
+
+oj(e).
+e∈Ej+
+
+This metric measures burstiness. A high o¯j means that the feature turns on repeatedly within active episodes, which is typical of event-locked features such as repeated contact, grasping, or approach phases. A low o¯j means that the feature activates once and remains active for a long interval, which is often associated with episode-level or scene-level memorization.
+
+Relative Run Length. The run length measures how long the feature remains active after each
+
+onset:
+
+rj(e)
+
+=
+
+T (e) t=1
+
+s(t,ej)
+
+,
+
+max(oj(e), 1)
+
+ℓr(e,j)
+
+=
+
+rj(e) , T (e)
+
+ℓ¯r,j
+
+=
+
+1 |Ej+|
+
+ℓ(re,j).
+e∈Ej+
+
+Values near zero indicate short, bursty activations. Values near one indicate sustained activations
+
+over a large fraction of the episode. For VLAs, long sustained activations often indicate memorized
+
+episode structure. For WAMs, longer run length can also be meaningful when combined with high
+
+future consistency, because predictive features may persist across imagined or planned future states.
+
+Mean Activation Magnitude. Mean activation magnitude measures the typical peak strength of
+
+a feature when it fires:
+
+aj(e)
+
+=
+
+max
+1≤t≤T (e)
+
+fj (xt(e)),
+
+a¯j
+
+=
+
+1 |Ej+|
+
+e∈Ej+
+
+aj(e).
+
+This metric separates features that barely cross the threshold from features that activate strongly and consistently. We use it together with coverage and onset statistics, since a rare feature with high peak activation may still be a meaningful memorized or rare-reactive feature.
+
+Future Consistency Score. Future Consistency Score (FCS) measures whether an SAE feature is aligned with a future latent state. Let dj be the decoder direction of SAE feature j, and let yt(+e)∆ be the aligned future latent target at offset ∆. For WAM future streams, yt(+e)∆ is the realized currentobservation latent at a later hidden timestep. We define
+
+y¯t(+e)∆
+
+=
+
+yt(+e)∆ ∥yt(+e)∆∥2 +
+
+, ϵ
+
+qt(,ej,∆)
+
+=
+
+cos(dj , y¯t(+e)∆)
+
+=
+
+d⊤j y¯t(+e)∆ ∥dj ∥2∥y¯t(+e)∆∥2
+
+. +ϵ
+
+17
+
+FCS is computed as an activation-weighted average:
+
+FCSj(∆) =
+
+e e
+
+T (e)−∆ t=1
+
+fj
+
+(xt(e))qt(,ej,∆)
+
+T (e)−∆ t=1
+
+fj
+
+(xt(e))
+
++
+
+ϵ
+
+,
+
+1H
+
+FCSj = H
+
+FCSj (∆).
+
+∆=1
+
+A high FCS means that when the feature activates, its decoder direction is consistent with future latent states. This is especially meaningful for WAM future streams. For WAMs, FCS is computed on explicit future/imagination streams. For direct VLAs, which do not expose imagined future latents, FCS is computed only as a post-hoc alignment between current/action SAE features and realized future rollout latents. Thus, VLA FCS should be interpreted as temporal correlation with future states, not as evidence of explicit future imagination.
+
+Horizon Stability. Horizon Stability (HS) measures whether a feature remains coherent across future timesteps. For a scalar SAE activation, we use a conditional persistence score:
+
+HSj(h) =
+
+e e
+
+T (e)−h t=1
+
+st(,ej)s(t+e)h,j
+
+T (e)−h t=1
+
+st(,ej)
+
++
+
+ϵ
+
+,
+
+1H HSj = H HSj(h).
+h=1
+
+This score can be interpreted as the probability that a feature remains active over the next H timesteps, conditioned on being active now. Low HS indicates a short event-triggered feature. High HS indicates that the feature persists over a rollout horizon. For WAMs, high HS together with high FCS suggests a temporally stable predictive feature. For VLAs, high HS without FCS may instead indicate sustained memorization or scene-level activation.
+
+Magnitude-Weighted Horizon Stability. As an optional variant, we also compute a magnitudeweighted stability score:
+
+HSmj ag(h) =
+
+e
+
+T (e)−h t=1
+
+fj
+
+(x(te))fj
+
+(x(t+e)h)
+
+.
+
+e t fj (x(te))2
+
+e t fj (x(t+e)h)2 + ϵ
+
+This variant is useful when a feature is active over many timesteps but its activation strength varies smoothly over the episode. In the main analysis, we use the binary HS score for interpretability and report the magnitude-weighted version only as an auxiliary check.
+
+Action Predictiveness. Action Predictiveness (AP) measures whether a feature is informative about future actions. Let at(e) be the executed action or action chunk at timestep t. For horizon Ha, define the flattened future action segment as
+
+A(t,eH) a = vec at(e), at(+e)1, . . . , a(t+e)Ha−1 .
+
+For each feature j, we fit a scalar linear predictor from the feature activation to the future action segment,
+Aˆt(,eH) a = β0,j + β1,j fj (x(te)),
+and define AP using an R2 score:
+
+APj = 1 −
+
+e,t e,t
+
+At(,eH) a A(t,eH) a
+
+− −
+
+Aˆ(t,eH) a
+
+A¯
+
+2
++
+
+2
+
+2 2
+ϵ
+
+.
+
+Here A¯ is the mean future action segment. In practice, this score can be computed with a held-out split or cross-validation to avoid overestimating predictiveness. High AP indicates that a feature is informative about future control, not merely about the current visual state.
+
+18
+
+Alignment Across Different Temporal Resolutions. Some models produce one hidden activation per policy query, while others execute a chunk of multiple low-level actions per query. When hidden timesteps and action timesteps are not identical, we align them using the policy query index. If hidden timestep t corresponds to low-level action interval [ℓt, ℓt+1), then
+At(,eH) a = vec aℓ(et), aℓ(et+) 1, . . . , a(ℓet+) Ha−1 .
+This prevents AP from unfairly favoring models that log actions at a finer temporal resolution.
+
+Dead Feature Filtering. A feature is excluded as dead only when it has no meaningful activation across episodes. In implementation, we use the strict rule
+
+max
+e,t
+
+fj (xt(e))
+
+=0
+
+⇒
+
+dead feature.
+
+We do not mark a feature as dead only because it has low coverage. This is important because lowcoverage features may correspond to memorized episodes, rare task phases, rare object layouts, or failure recovery behaviors.
+
+Metric Vector for Classification. For each non-dead feature, we collect
+
+mj = cj, o¯j, ℓ¯r,j, a¯j, FCSj, HSj, APj ,
+
+P (yj | mj),
+
+where
+
+yj ∈ {memorized, reactive-general, predictive-general}.
+
+Missing values are allowed when a metric is not applicable to a stream. For example, AP is unavailable if no aligned action trace exists, and FCS is unavailable if no future latent target exists. In these cases, missing values are imputed from non-dead features within the same SAE group before classifier training.
+
+Interpretation. The metrics should not be interpreted independently. A low-coverage feature with high activation magnitude may be memorized rather than inactive. A high-run-length feature may be memorized if it has low FCS, but predictive if it also has high FCS and appears in a WAM future stream. Similarly, high AP indicates control relevance, but not necessarily future prediction. We therefore use these metrics jointly and treat the resulting labels as weakly supervised probabilistic annotations rather than hard ground truth.
+
+B.3 Feature Labelling, Classification, and Verification
+This appendix describes how SAE features are assigned semantic labels after the feature-space metrics in Appendix B.2 have been computed. The purpose of this procedure is not to obtain perfect ground-truth labels for every SAE latent. Instead, we use a weakly supervised labelling pipeline to estimate the distribution of feature types across WAM and VLA latent groups.
+
+B.3.1 Feature Types and Dead Feature Filtering
+For each non-dead SAE feature j, we assign probabilities over three primary semantic types:
+yj ∈ {memorized, reactive-general, predictive-general}.
+These labels describe the role of a feature in the policy representation, not whether the feature is useful or harmful. A predictive feature is not inherently better than a reactive feature; the two capture different computational roles.
+Memorized. A feature is labeled memorized if it activates meaningfully but only in a small number of episodes, layouts, objects, task variants, failures, or trajectory fragments. Such features often have low episode coverage and top-activating examples that share a specific visual or trajectory pattern. They are not treated as dead if their activations are real and interpretable.
+
+19
+
+Reactive-general. A feature is labeled reactive-general if it responds to the current observation, robot state, action, or execution phase. These features describe what is happening now, such as approach, grasp, lift, carry, place, release, retract, or recovery. They usually show clear phase alignment across multiple episodes but do not need to activate before the relevant event.
+
+Predicitve-general. A feature is labeled predictive-general if it provides evidence about a future latent state, robot phase, or action. Importantly, a feature is not predictive merely because it comes from a future stream. We assign this label only when there is future-oriented evidence, such as high future consistency, temporal persistence across horizons, activation before the corresponding future phase, or correlation with future action chunks.
+
+During manual inspection, we also use auxiliary labels for quality control:
+
+{rare-reactive, candidate-predictive, uncertain, inactive/dead}.
+
+A rare-reactive feature aligns with a phase but appears in too few episodes to be considered general. A candidate-predictive feature shows future correlation but lacks sufficient timing evidence for a predictive-general label. An uncertain feature has nontrivial activation but no reliable interpretation. An inactive/dead feature has no meaningful activation across episodes.
+
+We use a conservative dead-feature rule because low coverage alone may indicate memorization rather than inactivity: cj ≈ 0 ⇏ inactive/dead. A feature is excluded only if it has no meaningful activation. In implementation, the strict dead-feature criterion is
+
+max
+e,t
+
+fj (xt(e))
+
+= 0.
+
+For manual inspection, we also check whether maximum activations are near zero, whether active timesteps are negligible, and whether top-activating examples are empty or noisy. If a feature has meaningful top activations, it is inspected as a possible memorized, rare-reactive, candidatepredictive, or uncertain feature rather than removed as dead.
+
+Table 6: Manual audit label counts for SAE features. Rows are grouped by model family. Train features denote labels used for training the feature classifier, while main-analysis features denote labels retained for the final analysis.
+
+VLA WAM
+
+Model
+
+#Total original
+
+Memorized
+
+Reactive
+
+Rare reactive
+
+Candidate predictive
+
+Predictive
+
+Uncertain
+
+Train feats
+
+Main-analysis feats
+
+Cosmos
+
+45
+
+15
+
+13
+
+2
+
+11
+
+4
+
+0 32
+
+32
+
+LingBot-VA
+
+45
+
+15
+
+15
+
+0
+
+11
+
+4
+
+0 32
+
+34
+
+FastWAM
+
+45
+
+15
+
+16
+
+0
+
+13
+
+1
+
+0 32
+
+32
+
+VLA-JEPA
+
+45
+
+15
+
+10
+
+5
+
+6
+
+9
+
+0 34
+
+34
+
+π0
+
+45
+
+15
+
+14
+
+2
+
+0
+
+0
+
+14 28
+
+29
+
+π0.5
+
+45
+
+15
+
+14
+
+3
+
+0
+
+0
+
+13 29
+
+29
+
+X-VLA
+
+45
+
+15
+
+20
+
+0
+
+10
+
+0
+
+0 35
+
+45
+
+B.3.2 Manual Seed Labelling and Phase Evidence
+The feature classifier is trained from a small manually inspected seed set. For each model and SAE group, we initially sample approximately 45 features, covering diverse metric regimes rather than only the most active features. These include features with high, medium, and low episode coverage, different onset counts and run lengths, high future consistency, high action predictiveness, and random active features. This sampling strategy encourages the classifier to see both easy and ambiguous cases. For each sampled feature j, we inspect its metric vector
+mj = [cj, o¯j, ℓ¯r,j, a¯j, FCSj, HSj, APj],
+together with its top-activating episodes and activation timeline. When rollout states are available, we also inspect end-effector motion, gripper state, object motion, reward, and done signals. Each
+20
+
+feature is assigned a semantic label, an optional dominant phase, a confidence score, and a short rationale. We do not force the final label distribution to be balanced, since some models may naturally contain more reactive, memorized, or predictive features than others. Labels are assigned using a simple decision procedure. We first check whether the feature has meaningful activation; features with no coherent top examples or near-zero activation are marked inactive/dead, while weak but nontrivial cases are marked uncertain. If a feature activates only in a few highly specific episodes, layouts, objects, failures, or trajectory fragments, it is labeled memorized. If it aligns with the current execution phase, such as approach, grasp, lift, carry, place, release, or retract, it is labeled reactive-general when it appears broadly, and rare-reactive when it appears only rarely. If the feature activates before a later phase, has high future consistency, remains stable across future horizons, or predicts future action chunks, it is labeled predictive-general when the evidence is strong and candidate-predictive when the evidence is suggestive but insufficient. Features without reliable semantic evidence are labeled uncertain and excluded from classifier training. We visualize the activation of each type of feature for each model as follows.
+Figure 4: Phase-aligned sparse feature activations of Lingbot-VA.
+Figure 5: Phase-aligned sparse feature activations of VLAJEPA.
+Figure 6: Phase-aligned sparse feature activations of XVLA. To support phase interpretation, we estimate a dominant phase for each feature. Let
+Φ = {approach, grasp, lift/carry, release/place}. 21
+
+Figure 7: Phase-aligned sparse feature activations of π0.
+
+Figure 8: Phase-aligned sparse feature activations of π0.5.
+
+For each timestep, we estimate a soft phase distribution P (ϕt = ϕ | rollout) from rollout states when available, and from a weaker normalized-time proxy otherwise. The feature-level phase probability is computed by activation-weighted aggregation:
+
+P (ϕ | j) =
+
+e
+
+t
+
+fj
+
+(x(te))P (ϕ(te) = ϕ e t fj (x(te)) +
+
+| ϵ
+
+rollout)
+
+.
+
+The predicted phase is ϕˆj = arg maxϕ∈Φ P (ϕ | j). This phase label is used only as auxiliary evidence and is not treated as ground truth unless verified by manual inspection.
+
+Table 7: Aggregate SAE feature metrics by dataset and model. Numeric metrics are averaged over active SAE features. Dead percentage is computed over all learned SAE features. Row colors group WAM model families.
+
+VLA WAM
+
+Model
+
+#Feat.
+
+#Active
+
+Dead (%)
+
+Cov.
+
+Run len.
+
+Onsets
+
+Future cons.
+
+Action pred.
+
+Horizon stab.
+
+Active frac.
+
+LIBERO
+
+Cosmos 28,672 LingBot-VA 14,336 FastWAM 11,264 VLA-JEPA 9,216
+
+21,431 8,508 3,533 6,568
+
+25.3 0.012 0.108 40.7 0.932 0.468 68.6 0.342 0.195 28.7 0.108 0.367
+
+1.033 0.019 2.237 -0.006 1.388 0.035 1.056 0.031
+
+0.004 0.016 0.010 0.008
+
+0.095 0.711 23.282 0.286
+
+0.002 0.634 0.124 0.055
+
+π0 π0.5 X-VLA
+
+5,120 10,240 4,096
+
+2,291 55.3 0.136 0.584 1.536 0.000 0.014 0.693 0.064 5,330 47.9 0.125 0.120 1.298 0.011 0.004 0.272 0.037 2,555 37.6 0.170 0.203 1.362 0.009 0.004 27.550 0.050
+
+RoboTwin
+
+LingBot-VA 10,240 5,120 50.0 0.134 0.266 1.433 0.062 0.001 0.314 0.052 FastWAM 11,264 5,831 48.2 0.190 0.335 1.494 0.032 0.004 39.527 0.094
+
+π0.5
+
+5,120 2,860 44.1 0.112 0.242 1.373 0.000 0.003 0.281 0.051
+
+22
+
+B.3.3 Weakly Supervised Type–Phase Classifier
+
+After manual seed labelling, we train a weakly supervised probabilistic classifier to assign featuretype probabilities to each non-dead SAE feature. Each feature j is represented by the metric vector
+
+mj = [cj, o¯j, ℓ¯r,j, a¯j, FCSj, HSj, APj].
+
+Features are then standardized using statistics from the seed set. The SAE feature metrics statistics
+
+are shown in Table 7. We use a multinomial logistic classifier over the standardized SAE metric vec-
+
+tor and trained with class-balanced weights so that rare labels, especially predictive-general features,
+
+are not ignored:
+
+P (yj = k | mj) =
+
+exp(bk + k′ exp(bk′
+
+wk⊤m˜ j ) + wk⊤′ m˜ j
+
+)
+
+.
+
+k ∈ {memorized, reactive-general, predictive-general},
+
+For LIBERO, the fitted standardized coefficients for (memorized, reactive, predictive) are
+
+βc = (−0.860, 0.549, 0.310), βo = (−0.220, 0.272, −0.052),
+
+βℓr = (−0.327, −0.428, 0.755), βa = (0.043, −0.089, 0.046),
+
+βFCS = (−0.469, −0.428, 0.897), βHS = (−0.138, 0.077, 0.061),
+
+βAP = (−0.832, 1.047, −0.215),
+
+with intercepts
+
+β0 = (0.153, 0.955, −1.108).
+
+This classifier achieves 90.5% cross-validation accuracy and macro-F1 0.859 on 222 labeled LIBERO examples.
+
+For RoboTwin, the fitted standardized coefficients are
+
+βc = (−1.138, 1.051, 0.088), βo = (−0.159, 0.004, 0.155),
+
+βℓr = (−0.278, −0.737, 1.015), βa = (0.453, −0.003, −0.450),
+
+βFCS = (−0.787, 0.048, 0.739), βHS = (0.105, 0.315, −0.420),
+
+βAP = (−0.523, 0.833, −0.311),
+
+with intercepts
+
+β0 = (0.389, 0.591, −0.980).
+
+This classifier achieves 93.8% cross-validation accuracy and macro-F1 0.895 on 96 labeled RoboTwin examples.
+
+C Extensive Result
+C.1 Additional RoboTwin Result
+RoboTwin action-space metrics require benchmark-local interpretation. Unlike LIBERO, RoboTwin logs absolute qpos targets for two arms. Thus, acceleration, jerk, and boundary jumps measure changes in commanded joint targets rather than changes in end-effector delta commands. These metrics are still useful within RoboTwin, but should not be averaged with LIBERO metrics.
+Success-conditioned smoothness. Table 8 separates successful and failed episodes. The low aggregate smoothness of π0.5 is explained by stalled failures: 95.3% of its failed episodes are lowmotion episodes. FastWAM shows a similar but weaker pattern, while Lingbot-VA has far fewer low-motion failures. This supports the interpretation that smooth RoboTwin qpos trajectories do not necessarily imply better task completion.
+
+23
+
+Table 8: Success-conditioned RoboTwin smoothness.
+
+Model
+π0.5 π0.5 Lingbot-VA Lingbot-VA FastWAM FastWAM
+
+Outcome
+Success Failure Success Failure Success Failure
+
+Delta ↓
+0.0576 0.0336 0.0295 0.0346 0.0600 0.0312
+
+Accel ↓
+0.0159 0.0135 0.0173 0.0328 0.0208 0.0216
+
+Jerk ↓
+0.0237 0.0211 0.0311 0.0599 0.0339 0.0375
+
+Boundary ↓
+0.0102 0.0110 0.0631 0.0736 0.0381 0.0295
+
+B./non-B. ↓
+0.281 0.507 1.125 1.110 0.932 1.359
+
+Low-motion eps. ↓
+25.1 95.3 25.0 32.9 25.0 99.8
+
+RoboTwin object diagnostics. RoboTwin object metrics are heuristic because task objects and reference objects are mapped from task names rather than following the LIBERO target-object schema. Table 9 should therefore be read as a benchmark-local diagnostic. Lingbot-VA improves over π0.5 in completion-related metrics, with higher transport and place rates. FastWAM shows the most stable object interaction: it has the best reference progress, far fewer reversals, shorter target-object paths, higher directness, and the lowest wrong-object disturbance. This suggests that, although Lingbot-VA achieves stronger completion than π0.5, FastWAM produces more direct and less distracting object-level behavior on RoboTwin.
+
+Table 9: RoboTwin2.0 object interaction diagnostics. The table reports the same object-level metrics as LIBERO. Progress metrics are computed only on episodes with mapped reference objects, so they should be read as benchmark-local diagnostics.
+
+Family Model
+
+Prog. Prog. Rev. Target Direct. Wrong Wrong Grasp Lift Transport Place ↑ AUC ↑ ↓ path ↓ ↑ motion ↓ path ↓ (%) ↑ (%) ↑ (%) ↑ (%) ↑
+
+VLA π0.5
+
+-0.375 -1.332 106.2 0.896 0.398
+
+WAM Lingbot-VA -0.113 -0.451 79.4 0.924 0.413
+
+WAM FastWAM -0.065 -0.239 4.1 0.465 0.568
+
+0.005 0.010 74.5 73.7 0.093 0.106 81.7 81.7 0.002 0.004 74.2 74.2
+
+56.3 39.0 85.1 59.6 71.2 53.7
+
+Table 10 shows a similar runtime pattern on RoboTwin: direct VLA inference remains the fastest, while WAM-style models introduce additional deployment cost due to future prediction or rolloutstyle reasoning. Among the WAMs, FastWAM is much more efficient than LingBot-VA, suggesting that future-aware policies can be made substantially cheaper depending on how the future model is integrated.
+
+Table 10: Runtime and deployment cost on RoboTwin.
+
+Model
+
+p50 p95 Chunks/s Eff. Hz GPU
+
+(ms) ↓ (ms) ↓ ↑
+
+↑ (MB)
+
+LingBot-VA 6444 6871
+
+FastWAM
+
+687 695
+
+0.163 4.700 32,031 1.456 41.900 34,152
+
+π0.5
+
+159 178 6.289 62.893 10,341
+
+Chunk-alignment audit. For RoboTwin, π0.5 and FastWAM action chunks align with executed actions under the common evaluator. Lingbot-VA, however, stores chunks with shape (Q, 16, 2, 16), and simple flattening does not reconstruct the executed 16-D action stream. Therefore, LingbotVA RoboTwin chunk-space quantities should be treated as representation/logging diagnostics rather than directly comparable policy-quality metrics.
+Protocol interpretation. The apparent RoboTwin smoothness advantage of π0.5 is not a competence reversal. π0.5 uses horizon 32 with query gap 32, consuming the full chunk before the next query. FastWAM uses horizon 32 with query gap 24 and therefore switches plans before the old chunk is fully consumed. This early replanning increases qpos boundary sensitivity. Combined with the high low-motion failure rate of π0.5, the RoboTwin result suggests that smooth qpos trajecto-
+24
+
+ries can correspond to stalled failures, while WAM policies complete more tasks but incur larger replanning discontinuities during active manipulation.
+C.2 Additional detail for Feature-space Analysis
+C.2.1 Detail Analysis
+Combined interpretation across feature, action, and object spaces. Taken together, the featurespace, action-space, and object-space results suggest that the advantage of WAMs is not simply that they achieve higher success, but that their architectures change how manipulation is internally organized. In LIBERO, WAM-family policies generally produce smoother executed actions, with lower acceleration, jerk, boundary discontinuity, and low-motion failure than direct VLA baselines. The object diagnostics further show that this smoother control often corresponds to more object-oriented behavior: WAMs tend to make stronger target progress and reduce unintended distractor motion. The SAE results provide a complementary explanation for this trend. Models with explicit or latent future-modeling components expose non-zero predictive feature structure, whereas direct VLAs are dominated by reactive features. Thus, the behavioral difference is consistent with a representational difference: WAMs appear to encode not only the current observation–instruction–action mapping, but also information about how the scene is expected to evolve.
+Lingbot-VA. This interpretation is clearest for the sequential WAM, LingBot-VA. Its current representation contains the largest predictive fraction among all models, while its future representation remains highly active and contains both reactive and predictive structure. This matches the imaginethen-act design: before the future state is realized, the current representation must encode what should happen next; after the future branch is constructed, many features become reactive with respect to the imagined state itself. This architectural separation also helps explain its rollout behavior. LingBot-VA achieves very smooth actions, low boundary discontinuity, strong target progress, high progress AUC, and very few progress reversals. In other words, its explicit future branch seems to support temporally coherent manipulation, where the policy can maintain a stable notion of the next object-centric phase instead of repeatedly reacting to the current frame.
+Cosmos, as a joint WAM, shows a different but still informative pattern. It has many active features in current, future, and action spaces, but most are labeled as memorized rather than predictive. This does not necessarily mean that future information is absent. Instead, it suggests that the future signal is entangled inside a shared generative trajectory representation, rather than isolated into clean sparse predictive variables. This interpretation is consistent with its rollout behavior: Cosmos achieves high success, low action irregularity, and the lowest wrong-object disturbance in LIBERO. Its object behavior is therefore highly selective, but the SAE does not recover this as a large set of simple predictive features. A plausible explanation is that joint generative WAMs encode future evolution as high-dimensional video-trajectory templates, which are useful for avoiding distractor interaction but harder to decompose into separate future-state features.
+FastWAM. The auxiliary WAMs illustrate why the WAM label alone is insufficient. FastWAM has smooth action-space behavior, but its current and future SAE spaces are very sparse, with high deadfeature rates and only a small predictive fraction. Its action space is much more active, suggesting that the future-prediction signal is compressed into the final policy rather than preserved as an explicit inference-time representation. This helps explain why FastWAM can look strong in low-level motion metrics while being weaker in object selectivity: its wrong-object path and wrong-object motion are close to the VLA range. In other words, action smoothness alone does not guarantee object-aware manipulation. If future modeling is used mainly as a training regularizer, the policy may inherit some motion stability but lose part of the explicit spatial reasoning that helps separate the target object from distractors.
+VLA-JEPA behaves differently from FastWAM and is closer to an intermediate case. Its future space retains a moderate predictive fraction and its object disturbance is much lower than FastWAM and the direct VLA baselines. This is consistent with a JEPA-style latent prediction objective: the model learns future-sensitive structure in representation space, even if it does not perform full pixel-
+25
+
+level or rollout-level imagination at inference time. However, its action representation is extremely small in terms of active features, so the high predictive percentage in the action row should not be over-interpreted. The more important pattern is that VLA-JEPA preserves some future-oriented latent structure and correspondingly shows cleaner distractor behavior than FastWAM. This supports our broader argument that latent future prediction can be useful, but only if the learned future representation remains accessible to action selection rather than being reduced to a weak auxiliary signal.
+VLA. The direct VLA baselines provide the contrast case. For π0 and π0.5, predictive SAE features are absent in both current and action spaces, and their active features are mainly reactive. This matches their architecture: they condition on the current visual-language context and map it directly to actions without an explicit future-state branch. Their rollout behavior also follows this pattern. Although π0.5 reaches high success on LIBERO, its object metrics show higher progress reversals and substantially larger wrong-object disturbance than the strongest WAMs. X-VLA is somewhat different because its current representation is mostly memorized, suggesting that it may encode task- or demonstration-level templates, but its action space is still reactive and it does not expose predictive features. Overall, the VLA results suggest that strong current-state grounding and largescale training can produce competent manipulation, but they do not automatically yield explicit future-oriented structure or the same degree of object-level selectivity.
+These results therefore support the discussion in two ways. First, they suggest that future-oriented representations are behaviorally meaningful: models that retain clearer future structure tend to show smoother execution, stronger target progress, and cleaner object interaction. Second, they show that the form of future modeling matters. Sequential WAMs expose future information most clearly but are computationally expensive; joint WAMs can produce strong object selectivity but encode future information in a more entangled way; auxiliary WAMs are more efficient but may compress or weaken the future signal at inference time. Thus, the design goal should not be to remove imagination entirely, but to make it lightweight and usable for action selection. A promising direction is to preserve explicit or latent future prediction during inference, while avoiding the full runtime cost of sequential video rollout. This would keep the main benefit observed in our analysis—future-aware, object-selective manipulation— without making WAMs impractical for deployment.
+C.3 Result on RoboTwin
+Table 11 reports the SAE feature classification result on RoboTwin; overall, the report presents the same trend as that of LIBERO.
+
+Table 11: RoboTwin per-model SAE feature classification by representation space. #Active Feat. denotes the number of active non-dead SAE features. Dead percentage is computed over all learned SAE features. Percentages for memorized, reactive, and predictive features are computed over non-dead features with joint weak labels.
+
+Model
+
+Space
+
+#Active Dead Mem. React. Pred. Feat. (%) (%) (%) (%)
+
+WAM
+
+FastWAM LingBot-VA
+
+Current Future Action
+Current Future Action
+
+2,660 35.1 71.0 440 89.3 19.8
+2,743 10.7 62.3
+1,929 52.9 70.3 2,138 47.8 62.7 1,061 48.2 59.0
+
+26.5 2.5 76.3 3.9 35.2 2.5
+11.5 18.2 10.2 27.1 23.3 17.7
+
+π0.5
+
+Current 2,694 34.2 95.5 4.5 0.0
+
+Action
+
+168 83.6 19.6 80.4 0.0
+
+VLA
+
+C.4 Additional SAE-Behavior Probe Results To test whether the predictive SAE features identified in the representation analysis are behaviorally informative, we aggregate SAE statistics at the episode level and use them to predict roll-
+26
+
+after removing predictive SAE statistics
+
+0.2
+
+Current
+
+Future
+
+Action
+
+0.0
+
+0.2
+
+0.4
+
+0.6 Success
+
+Transport
+
+PlaceTarget progrWesrsong-objecWt proanthg-objecBtomunodtiaorny jump / sqrt(H) AcceleratPiorongress reversals
+
+Figure 9: SAE-behavior probe deltas. Each bar reports the change in probe performance after removing predictive SAE statistics, computed as ∆ = scoreall − scorew/o pred.. Positive values indicate that predictive SAE statistics improve behavioral prediction.
+
+out outcomes. For each episode, we compute activation mass by feature type, active feature ratios, activation- weighted future consistency score (FCS), activation-weighted horizon stability, activation-weighted action predictiveness, and top predictive-feature activation mass. We then train lightweight probes with task-level GroupKFold splits to avoid leakage across episodes from the same task. Binary outcomes are evaluated with AUC, while continuous outcomes are evaluated with R2. We compare probes using all SAE statistics against probes where predictive SAE statistics are removed; therefore, a positive ∆ indicates that predictive SAE statistics add behavioral information. Figure 9 visualizes these deltas across representation spaces, and Table 12 reports the corresponding values. These results should be interpreted as associative evidence rather than as a causal intervention on the policy.
+
+Table 12: Score change after removing predictive SAE statistics. Positive values indicate that predictive SAE statistics improve behavioral prediction. The mixed signs for low-level metrics show that predictive features are more strongly associated with task/object-level behavior than with all smoothness diagnostics.
+
+Target
+
+Score Current ∆ Future ∆ Action ∆
+
+Success Transport Place Target progress Wrong-object path Wrong-object mo√tion Boundary jump/ H Acceleration Progress reversals
+
+AUC
+AUC
+AUC R2 R2 R2 R2 R2 R2
+
+-0.028 +0.090 +0.208 +0.108 +0.128 +0.026
+-0.004 -0.027 -0.003
+
++0.060 +0.116 -0.001 +0.095 +0.129 -0.012 +0.067 -0.204 -0.015
+
++0.112 +0.081 +0.010 -0.005 -0.582 -0.657 -0.018 -0.222 -0.242
+
+Table 12 summarizes the same ablation across representation spaces. Predictive SAE statistics provide the clearest gain for completion-related and object-level metrics, including success, transport, target progress, and wrong-object path. In contrast, low-level smoothness metrics such as acceleration and progress reversals show mixed or negative deltas. This suggests that predictive SAE features are more closely associated with task and object-level manipulation quality than with all forms of low-level action regularity. The latter can also depend on the action decoder, chunking protocol, and controller interface. Establishing a causal role for these features would require direct feature intervention during policy rollout.
+27
+
+C.5 SAE Ablation and Null-Control Validation
+To make the SAE-based feature analysis credible, we need to rule out two simple failure modes. First, an SAE could produce features that look interpretable but do not faithfully reconstruct the original hidden activations, or it could rely on a small number of active latents while most dictionary elements are dead. Second, the future-consistency score (FCS) could be an artifact of the decoder geometry, task identity, or episode ordering rather than evidence of structured future-related information. This appendix therefore serves as a sanity check for the feature-space analysis rather than as a new model comparison. We keep only the compact SAE-health/null-normalized table and the real-vs-null FCS figure because they directly answer these two questions. The full SAE-health grid is mostly diagnostic, the label-threshold sensitivity results belong to weak-label robustness, and the future-vs-past contrast is omitted because it was not run for the full grid.
+
+Table 13: Compact SAE ablation and null-normalized future consistency on FastWAM LIBERO-10. NMSE denotes normalized reconstruction error. Dead percentage is computed over all learned SAE features. The default and AUX-OFF runs are numerically identical in these completed runs, indicating that the auxiliary dead-latent loss was effectively inactive. zFCS normalizes the real FCS against the available null controls.
+
+Run / stream
+
+Seed
+
+Setting NMSE ↓ Dead (%) ↓ Active feat. zFCS ↑
+
+Current, representative 101 Future, representative 101 Future, aux-active stress 202
+
+Default / AUX-OFF 0.000504 Default / AUX-OFF 0.001994 Default / AUX-OFF 0.002512
+
+0.269 0.000 0.000
+
+4085
+
+0.58
+
+4096
+
+6.59
+
+4096
+
+9.60
+
+Table 13 shows that the representative FastWAM LIBERO-10 SAEs are well behaved: they reconstruct the analyzed hidden streams with low NMSE and have almost no dead features. The current stream has only (0.269%) dead features, while both future-stream runs use all 4096 learned latents. Intuitively, this means that the sparse dictionaries are not merely fitting noise with a collapsed or mostly inactive basis. Disabling the auxiliary dead-latent loss gives identical NMSE, dead-feature rate, active-feature count, FCS, and AP in these completed runs. Thus, we do not claim that AuxK is unnecessary in general; rather, the result shows that the FastWAM feature statistics reported here are not driven by an active auxiliary-loss effect.
+Figure 10 then asks whether the future-consistency signal still appears when the feature–future relationship is deliberately broken. If FCS only came from arbitrary decoder directions or from tasklevel correlations, then random decoder directions, future-time shuffling, or within-task episode shuffling should give similar values to the real pairing. Instead, the future stream keeps a positive and clearly higher FCS than these null controls, and the same pattern appears in the seed-202 stress run. The current stream, by contrast, stays near zero or negative and does not show the same futurealigned structure. This supports the interpretation that future-stream SAE features capture structured variation associated with future states. However, because time reversal does not substantially reduce FCS, and because the future-vs-past contrast was not run for the full grid, these controls do not prove a strict temporal arrow or causal influence on behavior. We therefore treat SAE labels as probabilistic feature annotations and interpret SAE–behavior relationships as associative evidence.
+Table 13 shows that the representative FastWAM LIBERO-10 SAEs reconstruct the analyzed hidden streams with low error and almost no dead features. The current stream has (0.269
+Figure 10 further tests whether future consistency is preserved under null controls. In the representative future stream, real FCS remains positive and is substantially above random decoder directions and future/episode shuffles; the same pattern holds in the seed-202 stress run. By contrast, the current stream has real FCS near zero or negative and does not exhibit the same future-aligned signal. However, time reversal does not substantially reduce FCS, and the future-vs-past contrast was not run for the full grid. These controls therefore support the presence of structured future-associated variation in future-stream SAE features, but they do not establish a strict temporal arrow or causal influence on robot behavior. We consequently use SAE labels as probabilistic annotations and interpret SAE–behavior relationships as associative evidence.
+28
+
+FCS median
+cccccffffffffffuuuuuuuuuuuuuuurrrrrttttttttttrrrrreeeeeuuuuuuuuuurrrrrrrrrrnnnnnrrreeeeeeeeeetttttwwwiiiaaa_______________tttnnnooooooooooooooohhhdddbbbbbbbbbbiiibbbbbsssssssssssssssooonnn__________________tttmmmhhhhhhhhhhhhhhhiiiiiiiiiiiiiii___aaafffdddddddddddddddsssddduuudddddddddddddddkkkttteee___eeeeeeeeeeeeeeecccuuurrreeennnnnnnnnnnnnnnoooeee_______________pppdddtttiii___iiipppppppppppppppeeetttsssrrrrrrrrrrrrrrriiirrrmmmoooeeeeeeeeeeeeeee___eeemmmdddpppppppppppppppddd___iiirrrrrrrrrrrrrrreeeeeerrrrrr______oooooooooooooooeeejjjjjjjjjjjjjjjeeessssss_______________vvvccchhhhhhttteeeiiiuuuuuummmmmmmmmmmmmmmrrrrrrffffffoooeeeeeeeeeeeeeeeffffffssseeellllllnnnaaaaaaaaaaaaaaaaaaaaaeeellleeelllsssnnnnnnnnnnnnnnn
+
+0.0050 0.0025 0.0000 0.0025 0.0050
+Figure 10: Real-vs-null future consistency. Real future-stream features retain higher median FCS than random decoder directions and temporal/episode shuffles, while the current stream does not show the same positive future-aligned structure.
+C.6 Multi-seed training ablation To verify that the SAE features used in our analysis are not artifacts of a particular random initialization, we train multiple SAEs with 5 independent seeds on the same activation data and compare the most stable top features for a fixed rollout. Figure 11 shows that both X-VLA and Cosmos recovers temporally consistent activation patterns across seeds. In X-VLA, the strongest features are mostly inactive at the beginning and then activate persistently after the manipulation phase begins. Cosmos also shows stable cross-seed structure, although its activations are more heterogeneous, with several features alternating between early/middle activity and late-stage activation. These shared temporal patterns across independent SAE trainings suggest that the selected features reflect structure in the underlying policy representations rather than seed-specific SAE artifacts.
+(a) X-VLA
+(b) Cosmos Figure 11: Multi-seed SAE stability ablation. We train SAEs from 5 independent random seeds on the same activation data and visualize the stable top-5 features for a fixed rollout. Activations are normalized for visualization and ordered by cross-seed consistency. Both X-VLA and Cosmos exhibit recurring temporal activation patterns across independent SAE initializations, suggesting that the selected features reflect structure in the underlying policy representations rather than seed-specific SAE artifacts.
+29
+
+

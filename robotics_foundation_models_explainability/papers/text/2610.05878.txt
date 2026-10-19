@@ -1,0 +1,964 @@
+OGAM: Connecting Systematic Testing to Runtime Assurance through Object-Grounded Attention Monitoring for VLA Policies
+Haki Darwish1, Xiangyu Yin2, Changwen Li3, Rongjie Yan3, Francisco Gomes de Oliveira Neto, Chih-Hong Cheng1,4∗
+
+arXiv:2610.05878v1 [cs.LG] 5 Oct 2026
+
+Abstract— Benchmarks expose vision-language-action (VLA) policies to few canonical instructions, while exhaustive deployment testing is impossible. We introduce Object-Grounded Attention Monitoring (OGAM), connecting systematic testing to runtime assurance: testing reveals attention divergence between successful and failed executions, and OGAM uses this signal to stop failures beyond the finite suite. We generate scene-grounded instructions through pairwise combinations of action templates and objects, and separately test meaning-preserving paraphrases. All 87 out-ofbenchmark cases reveal problematic behavior across OpenVLA, OpenVLA-OFT, UniVLA, and π0.5: none completes any of the 24 feasible instructions, while infeasible or hazardous requests also trigger behavior substitution. At each action query, we project gradientweighted visual attention through object masks and group it by instruction role for comparison across tasks and policies. Dynamic time warping aligns this course with a successful reference despite speed differences; conformal calibration on successful episodes sets the early-stopping threshold for sustained deviations, with a nominal false-stop target of α = 0.05. Across four policies, OGAM stops 87–100% of failed episodes at median times of 5–12 s within a 20 s budget, with observed false-stop rates of 3–5%, without failure-labeled training. Finite testing thus identifies attention patterns that support online intervention before failure fully unfolds.
+I. INTRODUCTION
+Vision-language-action (VLA) models [1]–[4] control robots through natural-language instructions, but
+1 Carl von Ossietzky University of Oldenburg, Germany. 2 Huadian Electric Power Research Institute, China. The work was conducted during his service at Chalmers University of Technology, Sweden. 3 Institute of Software, Chinese Academy of Science, China. 4 Chalmers University of Technology, Sweden ∗ Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Health and Digital Executive Agency (HADEA). Neither the European Union nor the granting authority can be held responsible for them. RobustifAI project, ID 101212818.
+
+assessing their reliability beyond standard benchmarks remains difficult. Benchmarks contain few canonical instructions close to the policy’s fine-tuning distribution. Deployment instead exposes the robot to a combinatorial space of unusual, infeasible, or hazardous requests. Exhaustive testing is impossible, generated instructions often lack simulator goal predicates, and failures may become obvious only after many incorrect actions.
+We address these problems through a coveragedriven testing and runtime monitoring framework. We extract action templates and interaction objects from the scene specification, then use pairwise combinatorial testing [5] to select a compact instruction suite. An LLM labels each instruction-scene pair as feasible, infeasible, or hazardous, followed by blind human review. Meaning-preserving paraphrases separately test linguistic robustness. Although positions and orientations can be added as combinatorial factors, we focus on instruction combinations and paraphrasing. Pairwise coverage makes exploration systematic, but no finite suite can exhaust deployment instructions. We therefore use testing to identify a signal for continued supervision: successful and failed runs often exhibit different attention courses. This divergence motivates ObjectGrounded Attention Monitoring (OGAM), which asks whether a new execution still resembles a successful attention pattern.
+To obtain a comparable signal, we construct an object-level attention course at every action query. We extract gradient-weighted attention over image patches to reflect their influence on the predicted action, then project it onto segmented objects and group the shares by instruction role: the named objects, the strongest competing object, the remaining objects, and the gripper. Because the channels describe roles rather than object identities, they are comparable across instructions, tasks, and VLA architectures. The design uses successful and failed test behavior, but thresholds use successes only, without failure-labeled training.
+At deployment, an LLM maps a free-form request
+
+to a canonical action schema and checks its safety and feasibility. For an admissible command, the system retrieves a successful reference with the same action type and named objects. Time-step comparison would be too rigid because successful executions may perform the same phases at different speeds. We therefore use dynamic time warping (DTW) [6] to align phases while preserving their order. Two complementary readouts follow: on-track measures adherence to a successful path, while completion measures whether the complete attention program has appeared. Conformal prediction [7], using leave-one-out calibration, sets the threshold height from successful episodes’ normalized sustained deviations, accounting for both readouts and the sustain window with a nominal 5% false-stop target. If either deviation remains above its threshold for a sustained period, OGAM stops the policy early.
+We evaluate OpenVLA, OpenVLA-OFT, UniVLA, and π0.5 on LIBERO-Goal [8]. On existing benchmark tasks, the policies achieve the original goals in 48–92% of episodes under paraphrased instructions. However, none of the four VLA policies completes any of the 24 feasible instructions generated by combinatorial testing, exposing a shared limitation beyond existing benchmark tasks. OGAM detects 87–100% of failed episodes while falsely stopping 3–5% of successful episodes. Median stopping times are 5–12 s within a 20 s budget, saving 39–72% of failing-episode time. Ablations assess component contributions and compare other detectors under the same rule.
+Contributions. (1) Coverage-driven VLA testing that combines scene-derived instruction generation, combinatorial coverage, expected behavior labels, and paraphrasing. (2) An action-relevant, object-level attention course whose instruction-role channels are comparable across tasks and policies. (3) A training-free monitor combining open-end DTW, on-track and completion readouts, and success-only conformal calibration of sustained deviations for early stopping, which complements test coverage without failure-labeled training or per-model hyperparameter tuning.
+II. RELATED WORK
+Testing language-conditioned policies. LIBERO [8] benchmarks language-conditioned manipulation. LIBERO-Para [9] shows that rewording instructions can sharply reduce success, while [10] finds that policies may execute commands contradicting the scene. Combinatorial software testing [5] covers parameter interactions with small suites. We use action templates
+
+and scene objects as factors to isolate linguistic variation. Each command receives an expected behavior label, building on command feasibility, help seeking, and harmful compliance [11]–[14]. Existing VLA testing platforms use language models to mutate scenes or generate instructions [15], [16], primarily as black-box tests. Our tests additionally supply object-grounded attention for runtime monitoring and reveal behavior substitution and failure on all 24 feasible generated instructions across four policies.
+Failure detection for robot policies. Runtime detectors judge rollouts with separate models [17], monitor outputs through action-chunk consistency [18], entropy and observation out-of-distribution scores [19], learned action probes [20], or internal features [21], [22]. SAFE, ActProbe, and hide-and-seek require labeled successes and failures. Sentinel and FIPER calibrate on successes; FIPER adds a conformal guarantee. Our monitor uses success-only leave-one-out conformal calibration with a nominal target and empirically assessed false-stop rates (Sec. III-D). It grounds action-relevant attention in object roles and uses DTW to compare patterns across execution speeds. Unlike FIPER, it needs neither repeated generative-policy sampling nor a separately trained observation model, and supports stepwise and chunked policies. The closest attention-head monitor [23] does not combine object-role grounding, time-warped alignment, and sustained early stopping.
+Attention in VLA models. Attention supports policy modification through safety filters [24], training-free recalibration [10], and visual token pruning [25]. For post-hoc diagnosis, VLA-Trace [26] uses techniques related to attention rollout [27] and gradient-weighted relevance [28], [29]. We leave policies unchanged and, given debate over attention’s explanatory meaning [30], validate whether its DTW-aligned course detects failures early enough to stop them. Like [10], [25], we connect grounding failures with attention, but make the signal object-level, temporal, and actionable through a runtime stop rule.
+III. METHOD
+A. Combinatorial Testing for VLAs
+We combine an action template and scene objects into an instruction. Fig. 1 summarizes instruction extraction, covering-suite generation, expected-behavior labeling, and rollout comparison.
+Instruction space and coverage. The scene-specific set O includes movable objects, fixed objects, and
+
+1 Scene & tasks (task suite)
+
+Scene / task specification
+BDDL example Objects: bowl, plate, cream cheese, drawer, stove, . . .
+Fixtures: cabinet (drawer), stove Goal: In(bowl, drawer)
+2 Extraction
+
+Task instructions
+“put the bowl in the drawer” “put the bowl on the plate” “open the top drawer
+of the cabinet” . . .
+scene-specific instructions
+
+Object set O (per scene)
+
+Template set V (per suite)
+
+O = {bowl, plate, cream cheese, drawer, stove, . . .}
+scene-specific (from scene Si)
+
+V = {put ⟨o⟩ in ⟨d⟩, put ⟨o⟩ on ⟨d⟩, open ⟨o⟩, . . .}
+abstracted once per suite
+
+3 Pairwise generation
+
+scene context
+
+Slot filling + pairwise selection
+T ⊆V ×O×O (or V × O for unary templates)
+every value pair covered
+4 Labeling
+
+Pairwise test suite T
+put the bowl in the drawer open the plate put the cream cheese on the stove compact subset of all combinations per scene
+
+LLM labeling Classify each test case w.r.t. the given scene
+
+feasible
+
+Expected behavior by label
+“put the bowl in the drawer” expect: task success
+
+infeasible
+
+“open the plate” expect: no task success, controlled failure
+
+hazardous
+
+“put the cream cheese on the stove” expect: non-compliance / action not executed
+
+5 VLA execution and evaluation
+
+Execute rollouts Compare observed vs. expected behavior
+
+data flow
+
+data artifact
+
+process
+
+Fig. 1. Combinatorial instruction testing for VLA policies
+
+articulated parts. Benchmark instructions supply templates such as “put ⟨o⟩ in ⟨d⟩”, “put ⟨o⟩ on ⟨d⟩”, and “open ⟨o⟩”. Pairwise testing [5] covers every actionobject, action-destination, and object-destination value pair without enumerating the full Cartesian product.
+Expected and observed behavior. Following [11]– [13], we label instruction-scene pairs feasible (should be completed), infeasible (cannot be meaningfully executed and should fail safely), or hazardous (realizable but unsafe to follow indiscriminately). An LLM assigns scene-conditioned labels for independent human validation. We compare rollouts against these expectations rather than potentially absent goal predicates, recording actions, observations, and attention.
+LIBERO-Goal instantiation. We extract objects from the BDDL scene description and templates from the benchmark instructions. Exhaustive instantiation produces 234 candidates; pairwise coverage reduces them to 90. After removing three canonical tasks, 87 tests remain.
+
+B. Instruction Perturbation and Object Poses
+Paraphrasing. Whereas the combinatorial suite varies what is requested, paraphrasing varies how a fixed task is expressed. We use the 13 LIBERO-Para types [9]: three rename the object and ten rephrase the action using lexical, structural, or pragmatic changes. Each paraphrase preserves the action, objects, and outcome; adds no visual or spatial attribute; and avoids references confusable with other scene objects. Applying one type to each of the ten LIBERO-Goal tasks yields 130 instructions per policy, all retaining their simulator goal predicates.
+Extension to object poses. Position and orientation can be discretized as additional covering-array factors, after which instantiated objects are perturbed to the selected poses. This directly follows the combination, instantiation, and perturbation in testing autonomous driving systems such as ComOpT [31]. The extension is straightforward, but the present experiments keep object poses fixed to isolate linguistic variation.
+
+C. Object-level Attention
+
+The policy’s internal attention is turned into a compact, task-comparable time series in three steps.
+Step 1 (one attention map per action query). At each action query, we extract gradient-weighted attention over image patches, in the spirit of GradCAM [28]. Weighting by influence on the predicted action emphasizes action-relevant regions. Maps exist only at policy queries; sampling intervals depend on the action interface (Sec. IV).
+Step 2 (projection onto scene objects). Object masks make patch-level maps comparable across time and episodes. In simulation, we use the environment’s per-pixel masks. On a real robot, the same projection can use masks predicted by a segment-everything model [32], here SAM 2 prompted by Grounding DINO [33], [34]. Let ap(t) be the attention of the query at time t on patch p, normalized to sum to one over the P 2 patches, and let c(pt,)o ∈ [0, 1] be the fraction of patch p covered by the segmentation mask of object o. The attention share of o is
+
+s(ot) =
+
+ap(t) c(pt,)o.
+
+(1)
+
+p
+
+Step 3 (collapse into role channels). Different instructions name different objects, so the share vector is still instruction-specific. Let R be the set of objects named by the instruction. We define four role channels
+
+f (t) = u(t), m(t), r(t), g(t) , (2)
+
+where u(t) = o∈R so(t) is the attention on the named targets, m(t) = maxo∈/R s(ot) the strongest competitor, r(t) = o∈/R so(t) − m(t) the remainder, and g(t) the share of the gripper. For “put the bowl on the plate”, R = {bowl, plate}. If the stove has the largest share among the remaining objects, then m(t) = ss(tto)ve. The square root compresses the heavy-tailed shares so that
+the distance of Sec. III-D is not dominated by a large
+share. All channels are resampled at 0.2 s intervals
+(Sec. IV). The attention course states whether attention
+is on what was asked or on something else, with the
+same meaning across tasks, instructions, and policies.
+
+D. Runtime Monitor
+
+Runtime use. First, an LLM removes irrele-
+
+vant wording and maps commands to canonical
+
+schemas such as grasp(A) or move(A,B): For
+
+example, a sentence like “VLA, put wine to wine-
+
+rack!” becomes move(wine,wine-rack). It re-
+
+jects unsafe or infeasible requests in the cur-
+
+rent scene; cached combinations found unreliable
+
+during testing can raise warnings. For admissible
+
+requests, retrieval selects the successful reference
+
+with the same action schema and greatest object
+
+overlap. Thus, move(apple,wine-rack) is pre-
+
+ferred over a reference sharing no objects with
+
+move(wine,wine-rack). Source and destination
+
+are bound to scene masks, and the monitor tracks their
+
+attention alongside other objects and the gripper, with
+
+background implicit. Role channels permit comparison
+
+even without an exact object match. Further fine-
+
+grained matching by shapes is left as future work.
+
+Reference and alignment. Each canonical task has
+
+one successful reference b1, . . . , bM ; at time k, the running course is e1, . . . , ek. Directly comparing ei with bi would require synchronization, although successful
+
+runs may spend different times orienting, grasping,
+
+transferring, and releasing. DTW [6] aligns one sample
+
+with multiple consecutive samples in the other course
+
+while preserving phase order. The same progression at
+
+different speeds can have low cost; detours incur cost
+
+because time warping cannot change attention patterns.
+
+With local cost c(i, j) = ∥ei − bj∥1 over the four
+
+channels,
+
+
+
+D(i−1, j),
+
+
+
+D(i, j) = c(i, j) + min D(i, j−1),
+
+(3)
+
+D(i−1, j−1).
+
+Here D(0, 0) = 0, and D(i, j) is the cheapest alignment cost between the first i episode samples
+
+and j reference samples. Predecessors advance through the episode, reference, or both, allowing local time stretching. Complete sequences use D(N, M ); forcing D(k, M ) during execution would align the current sample to the reference’s end. Open-end alignment [35] instead reads the last row or column, normalized by i+j to account for sequence length:
+
+D(k, j)
+
+track(k) = min
+
+,
+
+(4)
+
+1≤j≤M k + j
+
+D(i, M )
+
+comp(k) = min
+
+.
+
+(5)
+
+1≤i≤k i + M
+
+On-track (eq. 4) aligns the episode so far to the best reference prefix. It rises when attention leaves the reference sequence. Completion (eq. 5) aligns some episode prefix to the entire reference. It falls toward zero once the whole sequence has appeared and stays high if it never does. An episode that stalls at the first phase remains on-track (waiting is a legal alignment) but never completes; a wrong-object detour is caught by on-track before missing completion becomes visible.
+DTW is efficiently updated one row per attention sample in O(M ) time and O(M ) working memory, where M is the reference length.
+Stop rule. Let xi(k) denote either readout and Sτ the successful episodes of task τ . The stop decision has three stages.
+
+1) Task-relative normalization. Subtract the task’s
+
+mean successful readout at each k, excluding a
+
+scored success:
+
+1
+
+x˜i(k)
+
+=
+
+xi(k)
+
+−
+
+|Sτ
+
+\
+
+i|
+
+xj (k).
+j∈Sτ \i
+
+(6)
+
+The excess alignment cost x˜ is zero when alignment
+
+matches the task’s typical success.
+
+2) Band, burn-in, and sustain. Let S be the set of
+
+all successful episodes of the policy and s(k) the
+
+standard deviation of their excess at time step k.
+
+The band is
+
+θ(k) = q s(k),
+
+(7)
+
+with height q calibrated below. We pool spread
+
+across tasks because normalized excess is compa-
+
+rable (eq. 6) and individual tasks have too few
+
+successes for stable estimates. A readout stops ex-
+
+ecution at
+
+σ = min{k ≥ k0+w :
+
+(8)
+
+x˜(κ) > θ(κ) ∀κ ∈ (k−w, k]},
+
+with k0 = 2 s burn-in (initial settling period) for initially diffuse attention and w = 3 s sustain to
+
+offline · once per policy
+1 successful episodes
+Successful episodes S
+
+attention traces, see ③
+recorded once per policy
+
+n successes one per task → reference b (length M)
+
+2 conformal calibration
+
+Conformal calibration
+
+every success scored against b, exactly as online
+
+standardized excess x̃(k) / s(k) of success j
+
+q
+
+j
+
+r : highest
+j
+w-step minimum
+
+k₀
+
+w
+
+q = ⌈(n+1)(1−α)⌉-th smallest rj, α = 0.05
+
+r sorted
+j
+
+nominal target: a new success is stopped with probability ≤ α
+
+reference b online · at every step k of the running episode
+3 attention trace
+Attention trace e (running episode)
+
+named objects u
+
+strongest other m rest r
+
+gripper g
+
+e ∈ ℝ⁴ k
+attention × segmentation trace e₁ … e of the running episode
+k
+
+k
+
+N?
+
+one sample per policy query; length N unknown
+
+4 open-end DTW
+
+Open-end DTW against b
+episode i ↑ · reference j →
+
+N?
+
+not yet recorded
+
+k 0.48 0.20 0.07 0.09 0.23 row k → track(k) min = 0.07
+
+0.33 0.10 0.05 0.11 0.21 col. M → comp(k)
+min = 0.21
+0.17 0.05 0.14 0.27 0.40 shaded: cheapest path
+boxed: minimum read out 1 0.05 0.20 0.38 0.54 0.68 cell: D(i,j)/(i+j)
+
+1
+
+j
+
+M
+
+ends not forced together — track: any prefix of b; comp: any prefix of e
+
+Threshold q · spread s(k) (per policy)
+excess x̃(k) of the successes, band above the mean q·s(k) 0
+
+k₀
+one q per policy
+
+step k
+
+q, s(k)
+
+5 stop rule
+
+Stop rule
+
+standardized excess x̃(k) / s(k)
+
+stop
+
+k₀
+continue excess within the band
+
+q
+
+failing episode
+
+successes 0
+
+w steps above q
+stop → counted as failure w consecutive steps above q, on either score
+
+data flow
+
+data artifact
+
+process
+
+phase
+
+Fig. 2. The monitor. Offline, once per policy: (1) successful episodes S supply one reference per task; (2) leave-one-out scoring produces one sustained-deviation score rj per success. Sorting these scores sets the shared height q using the nominal false-stop target α = 0.05. Online: (3) object-grounded attention forms the running trace; (4) open-end DTW supplies on-track and completion scores from normalized row and column minima; (5) either readout triggers a stop after remaining above its success-relative band for the full sustain window after the initial settling period. The α annotation denotes a nominal target (Sec. III-D).
+
+tolerate brief detours followed by recovery. Exe-
+
+cution stops at the first sustained violation, σ =
+
+min(σtrack, σcomp).
+
+3) Conformal calibration at a nominal false-stop tar-
+
+get. We use a leave-one-out (jackknife) conformal
+
+calibration variant on successful episodes S [7] [36],
+
+with α = 0.05 as the nominal false-stop target for
+
+the complete rule, including both readouts and the
+
+sustain window. Each success j ∈ S is held out in
+
+turn to compute its score
+
+rj
+
+=
+
+max max min
+score k≥k0+w κ∈(k−w,k]
+
+x˜j(κ) . s(κ)
+
+(9)
+
+We store one score rj per held-out success, recomputing its task mean (eq. 6) and spread without it; canonical references stay fixed. Runtime uses one monitor fitted on all successes (Sec. IV). Reading inside out, the ratio measures normalized excess cost; the minimum gives the lowest ratio within a 3 s window; and the maxima select the largest window minimum across all eligible windows and both readouts. Each readout uses its corresponding excess and spread under leave-one-out scoring; this
+
+dependence is implicit. For these scoring quantities, rj is the smallest threshold height that avoids stopping episode j: the rule triggers exactly when rj > q. Finally, we sort all n = |S| stored scores and choose q as the ⌈(n + 1)(1 − α)⌉-th smallest, using nominal α = 0.05. This height is fixed at runtime, with θ(k) = q s(k) for each readout. Here α = 0.05 is nominal. Split conformal gives the marginal bound Pr(rnew > q) ≤ α for exchangeable calibration and new-success scores with a scoring function fixed independently of calibration [37]. Our jackknife procedure reuses successes to estimate task means and spread; we claim no such finite-sample bound [36]. We assess false stops by leave-one-out refitting and report a split with a fixed training part (Sec. V-C).
+IV. EXPERIMENTAL SETUP
+Environment, benchmark and policies. Simulations ran on an NVIDIA RTX 6000 workstation with 128 GB RAM and Ubuntu 24.04 LTS. We use LIBEROGoal [8]’s ten kitchen tasks with fixed initial states and object poses, deterministic execution, and 20 s episodes
+
+(200 steps at 10 Hz). In-benchmark success uses simulator goal predicates. The fine-tuned policies are OpenVLA-7B [1], OpenVLA-OFT [2], UniVLA [3], and π0.5 [4]. OpenVLA and UniVLA query every 0.1 s; we retain every second attention map (0.2 s). OFT predicts 8-step chunks (0.8 s); π0.5 predicts 50step chunks and executes 10 (1.0 s). Interpolation to the shared 0.2 s grid reads the following query. Nativegrid detection and false-stop counts are unchanged (Table III); OFT’s median stop moves from 9.6 to 7.2 s. We reconstruct stops from rollouts recorded to success or 20 s. Apart from interpolation’s one-query look-ahead, the rule reads no later query; saved time is rollout time after the stop.
+Instruction suites. Ten canonical instructions and 130 LIBERO-Para paraphrases [9] (13 per task; Sec. III-B) evaluate four policies using unchanged goal predicates. The 87 pairwise instructions (Sec. III-A) test all four policies beyond benchmark coverage in the task-0 scene. Without goal predicates, rollouts receive human review, free-text behavior notes, and tags.
+Data split and calibration. Each policy’s ten successful canonical episodes serve only as references. The 130 paraphrases supply evaluation failures and successes (Table II); the successes also calibrate task means (eq. 6), spread s(k), and q. The deployed monitor fits all successes and scores every failure. Each success is scored by refitting on the others, excluding it from its own threshold. The leave-oneout score quantile (Sec. III-D) at nominal α = 0.05 gives q = 1.99, 1.79, 2.83, and 2.04 for OpenVLA, OFT, UniVLA, and π0.5, respectively. Burn-in (2 s) and sustain (3 s) are shared; no failure data or per-policy hyperparameter tuning enter.
+Masks and ablation. All policies use gradientweighted attention (Sec. III-C), primarily with simulator masks. In the segmenter ablation, Grounding DINO [34] instead grounds nine object classes in the first frame, retaining the first accepted box from one or two prompts per class. SAM 2 [33] propagates instances on attention-sampling frames. At 256 × 256 resolution, the three drawers and cabinet body are indistinguishable and form one instance. The gripper retains its simulator mask; on hardware, this would come from kinematics. Attention maps, reference selection, calibration procedure, and stop rule are unchanged; we recalibrate the band height (Sec. V-C).
+
+TABLE I EXPECTED VERSUS OBSERVED BEHAVIOR OF OPENVLA ON THE
+87 GENERATED INSTRUCTIONS, BY LLM LABEL. BEHAVIOR TAGS FROM THE REVIEW NOTES ARE NOT EXCLUSIVE.
+
+LLM label
+
+n followed trained task unnamed object hazard froze or idle
+
+feasible (expect success)
+
+24 0
+
+17
+
+infeasible (expect safe failure) 62 0
+
+26
+
+hazardous (expect refusal) 1 0
+
+0
+
+8
+
+4
+
+5
+
+33
+
+9
+
+6
+
+1
+
+0
+
+1
+
+V. RESULTS
+A. Combinatorial testing exposes failures on feasible instructions
+Feasibility labels. The LLM classified 87 cases as 24 feasible, 62 infeasible, and 1 hazardous. Blind human review agreed on 74 (85%). The 13 disagreements chiefly concern whether “put X in Y ” with a noncontainer means placement or literal containment.
+Failure on feasible instructions. OpenVLA completes none of the 24 feasible instructions, exposing poor generalization beyond canonical benchmark tasks. The other three VLAs likewise follow none of the 87 generated instructions, including all 24 feasible cases.
+Behavior substitution. OpenVLA executed or visibly attempted a trained task in 43 of 87 episodes (Table I), ignoring the requested verb and relation. Naming the plate triggered bowl interactions, as in “put the bowl on the plate”; 42 episodes involved unnamed objects.
+Hazards out of harmless requests. Thirteen OpenVLA episodes produced unrequested hazards: winebottle tipping during failed grasps (three times), cream cheese squeezed between plate and stove during a reenacted push, a bowl dropped from height, and an activated stove left unattended for “put the rack in the stove”. Non-completion alone does not distinguish safe non-execution from these substitutions and hazards.
+B. Paraphrase robustness differs across VLAs
+All four policies succeed on all ten canonical instructions. Under paraphrases, success drops to 63/130 (48%) for OpenVLA, 105/130 (81%) for UniVLA, 115/130 (88%) for OFT, and 119/130 (92%) for π0.5. With task, scene, and initial state fixed, wording alone produces this variation, motivating runtime monitoring.
+C. Runtime monitoring detects failures across policies
+Table II applies the union rule with the same nominal α = 0.05, sustain, and burn-in to every policy. It detects 87–100% of failures with 3–5% false stops; median stops at 5–12 s save 39–72% of failing-episode time. These observed false-stop rates do not establish a bound
+
+TABLE II
+
+TABLE III
+
+EARLY STOPPING WITH NOMINAL α = 0.05 AND 3 S SUSTAIN.
+
+ABLATIONS AND OTHER MONITORS: DETECTION IN % PER
+
+DETECTED/FALSE STOPS: FRACTIONS OF FAILURES/SUCCESSES
+
+POLICY AND WORST CASE. SAME RULE, NOMINAL α = 0.05,
+
+STOPPED. MEDIAN STOP TIME: DETECTED FAILURES ONLY;
+
+BURN-IN, AND SUSTAIN; OBSERVED FALSE STOPS: 3–5%. THE
+
+SAVED: FAILING-EPISODE ROLLOUT TIME AVOIDED.
+
+SPLIT BOUND IS MARGINAL UNDER EXCHANGEABILITY. †:
+
+Policy
+
+Detected False stops Med. stop Saved
+
+FAILURE-LABELED TRAINING; –: SIGNAL UNAVAILABLE.
+
+OpenVLA
+
+58/67 (87%) 3/63 (4.8%)
+
+OpenVLA-OFT 13/15 (87%) 5/115 (4.3%)
+
+UniVLA
+
+24/25 (96%) 3/105 (2.9%)
+
+10.3 s 9.6 s 11.5 s
+
+39% 41% 41%
+
+Score
+Ablations of the monitor Full monitor (on-track ∪ completion)
+on-track readout only
+
+OpenVLA OFT UniVLA π0.5 worst
+
+87
+
+87 96 100 87
+
+63
+
+67 96 100 63
+
+π0.5
+
+11/11 (100%) 5/119 (4.2%) 5.0 s 72%
+
+completion readout only
+
+72
+
+67 72 100 67
+
+target channel only, no role channels
+
+66
+
+60 88 100 60
+
+ntion
+
+ngargamrdaeidedineotn-bwtj-eewciegtsihgthetdedatatsettnreotninotginoenst other object naonmtahmeedredobojebcjetscts gstrsripotrpnoegnregsetsottohtehcroeonrbtoijnbeujcenetcdot wtiimtheooutwohttaethhrrepeorinbmogjbeojcn(etficsitxotser d timgergipirnippdeperexr) cocnotnintiun6eu9dedwiwthitohu7ot3utthtehemmo6no0intoitror 100 60
+
+objectsnacmoemdposletbrtjioeoncngtsexsct eosthsesrtroobogngjnrgeora-ercantdatrsd-aidteibrecioaneakntcnnh-tket-wde-wxweerqocexieoetgichgibshgehjsthesrettecsdeotddbaajetatcetstetnestnotnitopticoitnoohncnmeormpoglpebrltijepiebotpcuinoetrsner x-eicnxecsessgcsorinpntpnsianeuamaursmmeteaedbdeidnadwbonowiabotdbhnjbicenjodeqjoceducntqcotsttswitsnhueemd owsnssitstirtthttrosoorootnporonugnpgtegetsehstsetotomtohtthboeheunrebrrinruotnoarbo-bnritjbniej-vejicenectcttquerysouogstoshutrtthieshadetrei,anrroinonwboobjbiwenjejrceidenctcosstdtsawsomwplingggrgripripippepererr
+
+ccoc8ono7ntnitntiniunueuededdw8ww7itihtithohouoututtht9theh6eemmmoononin1tioti0toro0rr 87
+
+ecxcocco5bmoem.am0spnpslpsedlelte9iqtsotioitnsoonnepexexcx2cec0ebsensasssnsannssamadt(momaeqp(e)daedd)oo(bo(ab(ajg9bea)jb2rej)bcsea)a0bctadcnsbat(sntsibdeunso3sdnrdn).tqn38ot-q-q-t.opwr8iosnaoenc3s-ni3s-tkg.3-srtt8.strahr8.tera8otrtcasrxoecsnokcscndk4gnkeegb.(seags2sxbesutsstxeotctuxssr)totecs2pneocstepont0-septotsaiosnih5tsosithsne.hn50erew.r0soriobno5sbc5bsjdb4.5eboj0.tuboej.s0ocmue20ruswcsttnrpcsoputrnssct-n5clpsi-osecn-.ositn4tmtosianitmo(otmoibsponpnpplp)peolweseloteoxtithnootichoiehdnoepensreonssreunosrweuoxeasuboxsbctmx5sj9bcatejc.ta4eji4ac9essni.csdnti2scnsstswtsowssw9ibsn9i9njitdesnbosdcosdapotwo9nsww.gd4grgqirsbpribpiabpapnaepnednsredrtdr5rqoq.2q4n02gss0es9ts.ocs4tc2optc2o0o2sno0tn0pthnsitsnetissnisurnt2suoteou0tepodbepdspbjdewuwc(writbnihti(-th)bosshinoepuo)ugltbu(ibt(m9bttub(bhut.boruth)ce42erhn)trea)nn0he-nsml-tieimn--ismbnisreon4oruvono.as4n2ebinttt.rijioat2eisyotoirocntn4rshtr4,s.4wi2.sn2.fsi2iunssgxussudsestmosdattawiaanitgnsirnr2kawiwp0iswinpni5sniiednn.d5r4odgo.wo4swpw5sa5s.5r4.tts4.o4cstpsoospnssttsitontouoppepd
+
+w8it5hou9t.94th.4se7sm6onitor
+
+82
+
+8997.94.4.4sss
+
+84 92
+
+1200200s s 76 100 22028002sss
+
+0ssssstsottopopp
+
+999
+
+3.8 s 220200sss
+
+5.0 s (s(b(btb)o)p)
+
+44.42.2.2sss9 s
+
+55.54.4.4ssssst2sot0topopsp
+
+(b99.O)94.4.t4shsesr sig4n.a2lss, same2202r0u0slses a5.n4dscastloibpration
+
+9.4 s
+
+20 s
+
+reference reference reference
+rrreeefffeeerrreeennnccceee
+
+reference
+
+rrreeefffeeerrreeennnccceee
+
+reference
+
+referenc referernecfeerenc
+rrreeefffeeerrreeennnccceee reference
+
+Attention share of the named objects
+
+51
+
+53 40 82 40
+
+Action trace under the same DTW rule
+
+72
+
+80 100 100 72
+
+17.7 s
+
+suc1c7e.7sss
+
+17.7 s
+
+success
+
+success
+
+11717.77.7.7sss
+
+ssusucuccccecesesssss
+
+171.7.s7 s suscuccecsesss 6P.3esr-step dist. of role7.3vesc. to suscuccecsessess [19] 6.36.5s37s
+
+53
+
+474.37.s3 s 55 susc4ucc4ecsesss
+
+6.3 s
+
+17.7 s6.31171s7.77.7.7sss7su.c3cess6s6.s63s.u3s.u3scucsccscecesessssusPPAsc7orcc.o3eltibsiscoseyno-ucnnhcuhenirdsk7tuda7.c73e.ic3c.nn3osetsnsyssssti[as1tte9esn]†cssyu[su2cucc[1cc1ec]es8ess]sss
+
+– 66.63.3.3sss 93
+
+88 77.73.38.3s2ss – ssusucuccccecesesssss
+
+6.3 s 15
+
+– 7.3 s 60 suc9c1ess –
+
+73 100 80 82 73
+
+episode episode episode
+eeepppiiisssooodddeee
+
+episode
+
+eeepppiiisssooodddeee
+
+episode
+
+episode episoedpeisode
+eeepppiiisssooodddeee episode
+
+one of three on OpenVLA) or the masks themselves
+
+(two on OpenVLA; intersection over union 0.85–0.99).
+
+excess [spreaedxsc]ess
+[sepxrceeasdss] [spreads] [[[ssseeepppxxxrrrccceeeeeeaaasssdddssssss]]]
+
+[[[ssseeepppxxxrrrccceeeeeeaaasssdddssssss]]] excess
+[spreads]
+
+excess [spreads]
+
+excess [[[[sssseeeeppppxrxxxrrr[[ceccceeesseaeeeeaaasppdxsssrrdddsscsssee]sss]]]eaasddsss]] excess [spreads]
+
+The gripper retains its simulator mask as a stand-in
+
+qq
+
+q
+
+foqrqkinematics; segmenter tracking expands it into the
+
+0 0q qqq q
+
+q
+
+10
+
+000 000 0 15
+
+5 50
+
+0 2q0qq 1010
+
+1515
+
+aqrm0 0, qmqq oving detection to 76, 93, 84, and 100% for
+
+202100 0 0 0 000
+
+15
+
+55
+
+20 1010
+
+1515
+
+2020
+
+OpAenbVlaLtiAon, sOaFnTd, UonthiVerLAm,oannitdorπs. T. able III compares 2es0s[sss]s7tsot.to2po1pp5s11tistm.it2mti1moe10es10pe[0s[s[]s]2]ti0mse1F11[51s(i1].1cg2.(2.).c2ss)s3(21(c.00(1cc).2)2)000s10(s15dM1556) o06snsi6t26o620s2sr02s0e0sds4(sds5O)200p57se52.527n2020.0V2s 75sL7s(.7(d2.t4(As2.do2d)0stsp)0so)0s05p0se0.s2tstptito(mitomdstiopi1epsme)p0o[se[ssttd]][ito5msit4mei]1p4me140sse10es[0.ss[1s[t]si]5m1T]11..e122o04.[2spsss1]11ss15.1r2t.5o2.o52swps91s5.:52t5.i5m2st.2.1h2es01se[1ss515s]5s5trsote.2to2po1f0p2p5es0s9rt.isetm22itmti21nm0oe2s100e1c00pe[s0s[se2s[]ss0]2]ti0mse(1d9[5s9(2.)9]22d.022.(020)sdss)
+
+290.2 0s00 4
+((d(dd)2))041s151s55
+
+4s
+
+s
+
+20 5
+444sss 220200sss
+
+20 5.2
+
+s55s52.52520s20.t02sop5s5s.52.ts2.o2tistpmsos1ep0ss[tstsitom]totopiepmp[est][itm9sitmi]1.me120e10e[0ss[0s[]9s].].592.2s
+
+s15 99.92.2.2sss
+
+variants and other signals under the same rule and at the same moments and at its end. Middle row: the paraphrased
+
+115155 2020s 2s0
+
+20 s
+
+220200sss
+
+220200
+
+instruction-failing episode before the stop, at the stop (red frame), calibration. Each readout alone loses up to 24 points;
+
+reference reference reference
+rrreeefffeeerrreeennnccceee
+
+reference
+
+rrreeefffeeerrreeennnccceee
+
+reference
+
+reference refreerfeernceence rrreeefffeeerrreeennnccceee reference
+
+the target channel alone loses 27 on OFT; fixed-time 7.8 s 8.4 s
+
+a7n.8ds, dashed, cont8i.n4 sued wistuhccoeusst the mo7.n87.is8tos r. Bottom: t8h.48e.s4ms onitsouscrucecedcsesss
+
+ssiugc8c.n4easssls andsutchceesisr divergence.
+
+7.8 s 77.78.8.8sss
+
+8.4 s 88.84.4.4ssss1u7cc.7esssssusucuccccecesessssussc1c7e.7sss
+
+alignment loses 36 on UniVLA. Native-grid detection is 77.78.8.8sss
+
+88.84.4.4sss
+
+ssusucuccccecesesssss
+
+17.7 s
+
+success
+
+success
+
+11717.77.7.7sss
+
+ssusucuccccecesesssss
+
+171.7.s7 s suscuccecsesss
+
+17.7 s
+
+s11u717c.77c.7.e7sssss
+
+ssusucuccccecesesssss
+
+for new episodes. Missed failures predominantly have unchanged. Fixing task means and spread on a third of
+
+episode episode episode
+eeepppiiisssooodddeee
+
+episode
+
+eeepppiiisssooodddeee
+
+episode
+
+episode eepipsiosdoede eeepppiiisssooodddeee episode
+
+correct attention: the policy attends to the right object the successes and calibrating q on the rest gives split
+
+but misses physically. Detecting these near-misses may conformal under exchangeability. Detection averaged
+
+require finer-grained analysis of attended objects, left over 20 splits is 85, 76, 84, and 100%, with wide
+
+excess [sepxrceeasds] [sepxrceeasdss] [spreads] [[[ssseeepppxxxrrrccceeeeeeaaasssdddssssss]]]
+
+[[[ssseeepppxxxrrrccceeeeeeaaasssdddssssss]]] excess
+[spreads]
+
+excess [[[ssseeepppxxxrrr[[[ccceeessseeeeeaaapppxxsssrrrdddccssseeessse]]]eaaassdddsssss]]] excess [spreads]
+
+to future work.
+
+variation from only 38–75 calibration scores.
+
+excess [spreads]
+
+Aq qq
+0 00
+
+qquqqaliqtative
+
+exqample
+
+can
+
+b0qe
+
+shown
+
+in
+
+Fig.
+
+3,
+
+where
+
+Among q q q
+0 0 0 qqq
+
+attention-free,
+
+untrained
+
+signals
+
+available
+
+0 e [s]
+
+15
+
+110100
+
+for the problematic episode, its signal exceeds the band 10 from the end of burn-in at 2 s. From 4 s the plate takes iosn time1[5s]
+
+0 00 000 0 15 20 000 0 20 115155
+
+5 550
+
+2q0qq 110010
+
+115515
+
+0 555 5 000 ttimimtieme [e[ss][5s]110100 10
+
+10115155 15
+
+220200
+
+000
+
+titmitmimeee[s[s[t]si]m] e [s] 555 time [s]
+
+20202100 0 time1[5s2]20200
+110100
+
+s0 2t0a0rl0o0l00n01015g15f5oesutr152(0wp5 oo5lri5scti5e5252cs020,0aseth2ti0me17e0[2tsim]a%t1iem0c1[es0)tt][iit.msitmoi]1me10e1n0Pe[0s[s[]se]] rt-rsat1ce5ep
+
+1u515nder DTW 20 2020 Ma11h5155alanobis
+
+220200
+
+titmitmimeee[s[s[]s]] over while attention on the bowl and drawer vanishes, titmitmimeee[s[s[]s]] distance of role vectors to successes [19] falls to
+
+whereas in the reference it rises. The sustained violation 44%, and target attention share to 40%. Action-chunk
+
+stops execution at 5.0 s, the earliest permitted stop, consistency [18] is competitive for chunked policies;
+
+avoiding 15 s of wrong-object manipulation. In some policy uncertainty [19] ranges from 15% to 91%.
+
+false stops we examined, attention shifts from gripper A hidden-state probe trained leave-one-task-out with
+
+to target a second earlier than in the reference. The failure labels [21] detects 73–100% but stops later on
+
+symmetric cost penalizes this advance, although the OFT (12.8 s versus 9.6 s). No other signal reaches 87%
+
+uninterrupted episode succeeds later.
+
+on all four policies.
+
+Masks from a segmenter. Segmenter masks, recali- Attention evidence without successful references.
+
+brated on the same successes, lose at most five detection For OpenVLA’s pairwise instructions (Sec. V-A),
+
+points (Table III), at 3–5% false stops and median no successful references are available. We examine
+
+stop times within 0.8 s of Table II. Lost detections whether attention signals engagement with the most
+
+trace to the merged cabinet instance (UniVLA, and analogous named object. A segmentation-based prox-
+
+imity proxy identifies 23/87 episodes engaging that object. Their median early attention share is 0.26, versus 0.06 for non-engaging episodes (AUC 0.79). All cases are rejected by our monitoring mechanism, supporting our claim of object-driven attention as an early rejection signal.
+VI. CONCLUSION
+Across four policies, systematic testing reveals failures on feasible instructions, behavior substitution, hazards, and attention divergence that motivate runtime assurance beyond finite instruction coverage. Our monitor grounds action-relevant attention in object roles and combines DTW comparison with successful references and conformal calibration of sustained deviations. Across four VLA architectures, it stops 87–100% of failures at median times of 5–12 s within 20 s, with 3–5% false stops, without trained failure detectors, failure-labeled calibration, or per-model hyperparameter tuning. Segment-everything masks cost five percentage points of detection on OpenVLA without extra false stops. While our framework is not restricted to simulation, evaluation on hardware robots remains future work.
+REFERENCES
+[1] M. J. Kim, K. Pertsch, S. Karamcheti, T. Xiao et al., “OpenVLA: An open-source vision-language-action model,” in CoRL, vol. 270, 2024, pp. 2679–2713.
+[2] M. J. Kim, C. Finn, and P. Liang, “Fine-tuning visionlanguage-action models: Optimizing speed and success,” in RSS, 2025.
+[3] Q. Bu, Y. Yang, J. Cai, S. Gao et al., “UniVLA: Learning to act anywhere with task-centric latent actions,” in RSS, 2025.
+[4] K. Black, N. Brown, J. Darpinian, K. Dhabalia et al., “π0.5: A vision-language-action model with open-world generalization,” in CoRL, vol. 305, 2025, pp. 17–40.
+[5] C. Nie and H. Leung, “A survey of combinatorial testing,” ACM Computing Surveys, vol. 43, no. 2, pp. 1–29, 2011.
+[6] H. Sakoe and S. Chiba, “Dynamic programming algorithm optimization for spoken word recognition,” IEEE Transactions on Acoustics, Speech, and Signal Processing, vol. 26, no. 1, pp. 43–49, 1978.
+[7] J. Diquigiovanni, M. Fontana, and S. Vantini, “Conformal prediction bands for multivariate functional data,” Journal of Multivariate Analysis, vol. 189, p. 104879, 2022.
+[8] B. Liu, Y. Zhu, C. Gao, Y. Feng et al., “LIBERO: Benchmarking knowledge transfer for lifelong robot learning,” in NeurIPS, vol. 36, 2023.
+[9] C. Kim, M. Kim, M. Kang, H. Kim et al., “LIBERO-Para: A diagnostic benchmark and metrics for paraphrase robustness in VLA models,” arXiv preprint arXiv:2603.28301, 2026.
+[10] N. Zhang, B. Zhu, S. Zhou, and J. Chen, “Restoring linguistic grounding in VLA models via train-free attention recalibration,” in ECCV, 2026.
+
+[11] J. Park, S. Lim, J. Lee, S. Park et al., “CLARA: Classifying and disambiguating user commands for reliable interactive robotic agents,” IEEE Robotics and Automation Letters, vol. 9, no. 2, pp. 1059–1066, 2024.
+[12] A. Z. Ren, A. Dixit, A. Bodrova, S. Singh et al., “Robots that ask for help: Uncertainty alignment for large language model planners,” in CoRL, vol. 229, 2023, pp. 661–682.
+[13] B. Zhang, Y. Zhang, J. Ji, Y. Lei et al., “SafeVLA: Towards safety alignment of vision-language-action model via constrained learning,” in NeurIPS, vol. 38, 2025.
+[14] Z. Chen, Y. Gao, L. Wang, Y. Zhao et al., “HazardArena: Evaluating semantic safety in vision-language-action models,” arXiv preprint arXiv:2604.12447, 2026.
+[15] Z. Wang, Z. Zhou, J. Song, Y. Huang et al., “VLATest: Testing and evaluating vision-language-action models for robotic manipulation,” FSE, vol. 2, pp. 1615–1638, 2025.
+[16] ——, “LADEV: A language-driven testing and evaluation platform for vision-language-action models in robotic manipulation,” arXiv preprint arXiv:2410.05191, 2024.
+[17] Y. Du, K. Konyushkova, M. Denil, A. Raju et al., “Visionlanguage models as success detectors,” in CoLLAs, vol. 232, 2023, pp. 120–136.
+[18] C. Agia, R. Sinha, J. Yang, Z.-a. Cao et al., “Unpacking failure modes of generative policies: Runtime monitoring of consistency and progress,” in CoRL, 2024.
+[19] R. Ro¨mer, A. Kobras, L. Worbis, and A. P. Schoellig, “Failure prediction at runtime for generative robot policies,” in NeurIPS, vol. 38, 2025.
+[20] B. Huang, X. Li, X. Wang, L. Mi et al., “ActProbe: Actionspace probe for early failure detection of generative robot policies,” arXiv preprint arXiv:2606.08508, 2026.
+[21] Q. Gu, Y. Ju, S. Sun, I. Gilitschenski et al., “SAFE: Multitask failure detection for vision-language-action models,” in NeurIPS, vol. 38, 2025.
+[22] S. Park, W. Li, C. Oh, M.-H. Yeh et al., “Hide-and-seek in trajectories: Discovering failure signals for VLA runtime monitoring,” in ICML, 2026.
+[23] J. Jeong, E. Zhu, J. Lin, E. Jaimes et al., “Your visionlanguage-action model already has attention heads for path deviation detection,” arXiv preprint arXiv:2603.13782, 2026.
+[24] S. Park, F. Zhang, B. Mirzasoleiman, S. Talebi et al., “Your model already knows: Attention-guided safety filter for visionlanguage-action models,” arXiv preprint arXiv:2606.09749, 2026.
+[25] C. Li, J. Liu, B. Li, B. Gao et al., “DTP: A simple yet effective distracting token pruning framework for visionlanguage action models,” arXiv preprint arXiv:2601.16065, 2026.
+[26] H. Shi, X. Ren, Y. Zhang, Q. Zhang et al., “VLA-Trace: Diagnosing vision-language-action models through representation and behavior tracing,” arXiv preprint arXiv:2605.30117, 2026.
+[27] S. Abnar and W. Zuidema, “Quantifying attention flow in transformers,” in ACL, 2020, pp. 4190–4197.
+[28] R. R. Selvaraju, M. Cogswell, A. Das, R. Vedantam et al., “Grad-CAM: Visual explanations from deep networks via gradient-based localization,” in ICCV, 2017, pp. 618–626.
+[29] H. Chefer, S. Gur, and L. Wolf, “Generic attention-model explainability for interpreting bi-modal and encoder-decoder transformers,” in ICCV, 2021, pp. 397–406.
+[30] A. Bibal, R. Cardon, D. Alfter, R. Wilkens et al., “Is attention explanation? An introduction to the debate,” in ACL, 2022, pp. 3889–3900.
+[31] C. Li, C.-H. Cheng, T. Sun et al., “ComOpT: Combination
+
+and optimization for testing autonomous driving systems,” in ICRA. IEEE, 2022, pp. 7738–7744. [32] A. Kirillov, E. Mintun, N. Ravi, H. Mao et al., “Segment anything,” in ICCV, 2023, pp. 3992–4003. [33] N. Ravi, V. Gabeur, Y.-T. Hu, R. Hu et al., “Sam 2: Segment anything in images and videos,” in ICLR, vol. 2025, 2025, pp. 28 085–28 128. [34] S. Liu, Z. Zeng, T. Ren, F. Li, H. Zhang et al., “Grounding dino: Marrying dino with grounded pre-training for open-set object detection,” in ECCV. Springer, 2024, pp. 38–55. [35] P. Tormene, T. Giorgino, S. Quaglini, and M. Stefanelli, “Matching incomplete time series with dynamic time warping: an algorithm and an application to post-stroke rehabilitation,” AIIM, vol. 45, no. 1, pp. 11–34, 2009. [36] R. F. Barber, E. J. Cande`s, A. Ramdas, and R. J. Tibshirani, “Predictive inference with the jackknife+,” The Annals of Statistics, vol. 49, no. 1, pp. 486–507, 2021. [37] J. Lei, M. G’Sell, A. Rinaldo, R. J. Tibshirani, and L. Wasserman, “Distribution-free predictive inference for regression,” JASA, vol. 113, no. 523, pp. 1094–1111, 2018.
+
+

@@ -1,0 +1,46 @@
+{
+  "id": "2607.03372",
+  "title": "Present but Not Remembered: Auditing How Frozen VLAs Encode, Deploy, and Steer Visual History",
+  "first_author": "Liao",
+  "year": 2026,
+  "venue": "arXiv preprint (Jul 2026)",
+  "tier": "core",
+  "models": ["Octo-Small (27M)", "Octo-Base (93M)", "CronusVLA-0.5B (Qwen-class backbone + diffusion transformer head)"],
+  "action_head": "diffusion policy head (Octo) and diffusion transformer action head (CronusVLA)",
+  "methods": ["ridge probes for previous-frame content (A1) and history-unique residual (A4, 81-config sweep)", "layer-wise interchange intervention on history tokens with self-swap noise correction", "attention knockout (readout -> history keys)", "graded current-frame degradation ladder", "activation injection ('injectability gate')", "bootstrap CIs, 5-seed sign consistency, sign-flip permutation tests"],
+  "question": "In frozen multi-frame VLAs, is the previous frame encoded as information distinct from the current frame, is it causally used for the action, and where in depth does the use stop?",
+  "key_findings": [
+    "Previous-frame content is decodable at all depths in Octo-Small (peak R2 0.398 at L4, >0.30 through the last block), but only +0.014 to +0.025 above a current-frame-only baseline.",
+    "History-unique information is ~0: A4 ceiling +0.019 (Octo-Small), +0.015 (Octo-Base), -0.011 (CronusVLA) vs A1 0.389 / 0.362 / 0.142 (Table 3).",
+    "Octo-Small deploy gap (full occlusion minus clean) is significant only through L4 (L0 +0.125, L2 +0.090, L4 +0.054, CI [0.028, 0.079]) and vanishes at L6 (-0.005, CI [-0.023, 0.014]) (Table 2); permutation p = 0.0004 at L4, 5/5 seeds.",
+    "Attention knockout finds the same cutoff: gap +0.137 at L4 vs +0.045 at L6, with a small significant residual after L6 (Table 4).",
+    "Only full black-out of the current frame triggers history use; partial occlusion, heavy occlusion and blur are not significant.",
+    "Regime flip: Octo's history contribution rises under occlusion (fallback), while CronusVLA's falls from +0.0498 to +0.0357 (standing use).",
+    "Injection: in Octo, injected history is localized and donor-specific but content-blind (no occlusion repair, recovered -0.010, CI [-0.42, 0.41]). In CronusVLA, injection steers the action toward the donor (+0.167, CI [0.106, 0.227]) (Table 5).",
+    "Naturally occluded pairs are rare: 3 of 250 at the loosest threshold. Octo-Base deploys history at ~31% of Octo-Small's normalized rate."
+  ],
+  "evidence": {
+    "setting": "offline dataset only (open-loop forward passes on BridgeData V2 frames)",
+    "benchmarks": ["BridgeData V2 (frozen, content-hashed set of 250 matched pairs, 213 instructions)"],
+    "scale": "n = 200 pairs for main layer analysis, n = 160 ladder; 5 seeds for Octo statistics, 3 seeds and 3 donors for CronusVLA steering; diffusion outputs averaged over N samples",
+    "statistics": "yes: paired bootstrap 95% CIs, multi-seed sign consistency, sign-flip permutation tests (5000 resamples); claims made only where all three agree",
+    "baselines": "current-frame-only decode baseline, shuffled-label probe control, self-swap noise floor, temporal-shuffle control"
+  },
+  "causal_validation": "Yes: interchange interventions and attention knockout localize where history affects the action (through L4, gone by L6 in Octo). Injection tests whether re-supplied history steers the action (no in Octo, yes in CronusVLA). All effects are measured on predicted actions.",
+  "closed_loop": "No. Everything is open-loop action prediction on fixed stimuli; the authors argue this is needed for layer-resolved interventions and leave closed-loop/real-robot to future work.",
+  "limitations_stated": [
+    "Open-loop evaluation on ~250 controlled pairs, not behavioral episodes.",
+    "Only two architecture families (no third frozen, open, multi-frame model found that fits on a consumer GPU).",
+    "Single consumer GPU bounds model size.",
+    "A4 residualizes against a linear read of the raw previous frame, so abstract history (progress, intent) that is not a linear function of t-1 pixels is not excluded."
+  ],
+  "critique": [
+    "None of the models is a large VLM-based VLA (no OpenVLA, pi0, GR00T); Octo is a small non-VLM transformer. The 'frozen VLAs' framing generalizes from 27M-0.5B models.",
+    "Decode targets are low-level frame summaries (best config uses RGB16 features), so A4 ~ 0 says the past frame's pixels are redundant with the present. That is almost true by construction for consecutive Bridge frames, not a deep fact about memory.",
+    "Inducing non-Markovness by blacking out the whole current frame is an extreme OOD input; 'fallback' behavior under that input may reflect OOD handling rather than a designed memory pathway.",
+    "Action shifts are small in absolute terms (gap 0.054 vs a self-swap noise floor of ~0.15 that had to be subtracted). The statistics are careful, but the behavioral relevance of these shifts is not shown.",
+    "The cross-architecture 'law' rests on one model per regime; calling it a law is premature. Prose is heavily promotional relative to the scale of evidence."
+  ],
+  "code": "build script and stimulus hash released per reproducibility statement (URL not given in text)",
+  "one_line": "In Octo and CronusVLA, the previous frame is decodable but carries almost nothing beyond the current frame, and Octo only uses it when the current frame is blacked out and stops using it by mid-network, while CronusVLA uses it routinely and can be steered through it."
+}
