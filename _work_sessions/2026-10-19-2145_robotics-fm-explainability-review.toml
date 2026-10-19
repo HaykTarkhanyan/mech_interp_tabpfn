@@ -53,7 +53,9 @@ files = [
   "README.md",
 ]
 
-commits = []
+commits = [
+  "a69ecf7 Add literature review on explaining robot foundation models (238 files, PDFs gitignored)",
+]
 
 notes = """
 Cost: subagents used about 2.0M tokens (web sweep 0.2M, readers 0.57M + 0.57M + 0.69M), about 60% more per
