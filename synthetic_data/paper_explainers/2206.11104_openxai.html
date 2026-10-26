@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>OpenXAI explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: OpenXAI explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"OpenXAI: Towards a Transparent Evaluation of Post hoc Model Explanations", explained</h1>
+<p class="sub">Chirag Agarwal, Satyapriya Krishna, Eshika Saxena, Martin Pawelczyk, Nari Johnson, Isha Puri, Marinka Zitnik, Himabindu Lakkaraju (Harvard, Adobe, Tübingen, CMU). NeurIPS 2022 Datasets and Benchmarks track (proceedings PDF: 16 pages including the checklist, no appendix). arXiv 2206.11104v5 (13 Mar 2024, 26 pages, adds Dan Ley as an author and changes several results). Code: github.com/AI4LIFE-GROUP/OpenXAI. Citations: 112 on OpenAlex for the arXiv record only (checked 2026-10-26), certainly an undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/agarwal2022_openxai.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: SynthGauss and its theorem</a></li>
+<li><a href="#f2">Finding 2: ground-truth faithfulness on real data</a></li>
+<li><a href="#f3">Finding 3: stability and fairness</a></li>
+<li><a href="#demo">Try it: a proxy feature steals attribution</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye. "NeurIPS" means the 2022 proceedings version, "v5" the 2024 arXiv revision.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Feature-attribution methods (LIME, SHAP, gradients) are compared in scattered, small experiments with home-made metrics. Can one open library benchmark them reproducibly across datasets, models and metrics?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>A library plus leaderboards.</b> Seven real tabular datasets and one synthetic generator, two pre-trained models per dataset (logistic regression and a two-layer neural network, so 16 models), six explainers plus a random baseline, and 22 metrics: 8 for faithfulness, 3 for stability, 11 for fairness (Section 2).</li>
+<li><b>Ground truth must describe the model, not the data.</b> If the label depends on features A and B, but A is correlated with C, an accurate model may use C. An explanation that correctly says "C" is then marked wrong against the data's ground truth (Section 2, citing Faber et al.).</li>
+<li><b>Their fix for synthetic data: make features independent.</b> SynthGauss draws well-separated Gaussian clusters with identity covariance, and a theorem claims the most accurate model must then follow the data's ground truth (Appendix, Theorem 1).</li>
+<li><b>Benchmark results</b> (NeurIPS version): gradient methods are perfect on four ground-truth metrics; LIME leads on sign agreement (+61.6%); SmoothGrad leads on PGU (+43.03%); no method is the most stable everywhere; Gradient x Input shows the least disparity (+8.9%). Several of these changed in v5.</li>
+</ol>
+<div class="take"><b>My take, one line.</b> Valuable as infrastructure and for stating the data-versus-model ground-truth problem cleanly. Weak as evidence about explainers: on real data its "ground truth" is the logistic regression's coefficient vector, which gradients reproduce by construction, and the published rankings changed between versions without an erratum.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Post hoc feature attribution.</b> Given a trained model and one input, return one number per feature saying how much it mattered. OpenXAI includes LIME (fit a local linear surrogate on perturbed samples), KernelSHAP (a sampling approximation of Shapley values), Vanilla Gradients (the derivative of the output), Gradient x Input, SmoothGrad (gradients averaged over noisy copies of the input) and Integrated Gradients (gradients averaged along a path from a baseline).</p>
+<p><b>Data-level versus model-level ground truth.</b> This is the paper's central conceptual point, and it is the right one. Data-level ground truth says which features the label-generating process uses. Model-level ground truth says which features the trained model uses. Post hoc explanations are supposed to describe the model, so scoring them against the data is unfair whenever the two differ:</p>
+<svg class="schem" viewBox="0 0 720 170" aria-label="The proxy-feature problem">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="20" width="160" height="62" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="88" y="46" text-anchor="middle" font-size="13">label uses A and B</text>
+  <text x="88" y="66" text-anchor="middle" font-size="13">(data-level truth)</text>
+  <rect x="8" y="98" width="160" height="52" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="88" y="121" text-anchor="middle" font-size="13">A correlated with C,</text>
+  <text x="88" y="139" text-anchor="middle" font-size="13">B with D</text>
+  <line x1="168" y1="85" x2="214" y2="85" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="216" y="52" width="160" height="66" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="296" y="78" text-anchor="middle" font-size="13">accurate model</text>
+  <text x="296" y="98" text-anchor="middle" font-size="13">uses C and D</text>
+  <line x1="376" y1="85" x2="414" y2="85" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="416" y="52" width="130" height="66" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="481" y="78" text-anchor="middle" font-size="13">explanation</text>
+  <text x="481" y="98" text-anchor="middle" font-size="13">says "C, D"</text>
+  <line x1="546" y1="75" x2="572" y2="45" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="546" y1="95" x2="572" y2="125" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="574" y="18" width="140" height="50" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="644" y="39" text-anchor="middle" font-size="13">vs data truth:</text>
+  <text x="644" y="57" text-anchor="middle" font-size="13">"wrong"</text>
+  <rect x="574" y="102" width="140" height="50" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="644" y="123" text-anchor="middle" font-size="13">vs model truth:</text>
+  <text x="644" y="141" text-anchor="middle" font-size="13">right</text>
+</svg>
+<p class="caption">Schematic of the example on page 4 of the NeurIPS version. The demo in Section 6 lets you move the correlation and see how much attribution moves to the proxy.</p>
+<p><b>The four metric families.</b></p>
+<ul class="tight">
+<li><b>Ground-truth faithfulness</b> (from Krishna et al.'s "disagreement problem" paper): Feature Agreement (share of shared top-K features), Rank Agreement (same features at the same ranks), Sign Agreement, Signed Rank Agreement, Rank Correlation (Spearman) and Pairwise Rank Agreement. FA, RA, SA and SRA are reported as the area under the curve over all K (v5, Appendix A).</li>
+<li><b>Predictive faithfulness:</b> PGI and PGU, the change in predicted probability when the top-K (PGI) or the other (PGU) features get small Gaussian noise.</li>
+<li><b>Stability:</b> RIS, RRS and ROS, the largest relative change in the explanation divided by the relative change in the input, a hidden layer, or the output, over nearby points with the same prediction.</li>
+<li><b>Fairness:</b> the gap between a metric's average for majority (male) and minority (female) instances.</li>
+</ul>
+<p><b>What "ground truth" is on the real datasets.</b> The NeurIPS main text never says. The v5 appendix does: ground-truth explanations are the "coefficients of logistic regression models" (Appendix A), and v5 evaluates ground-truth faithfulness only for logistic regression models (Section 3).</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: SynthGauss and its theorem</h2></summary>
+<p><b>What they built</b> (Section 2; v5 Appendix C, Algorithm 1). Draw each point from one of K clusters, cluster k being N(μ_k, I) with centers on the axes at distance δ = 6. Each cluster gets a random mask m_k (each feature included with probability 0.25) and random weights w_k ~ U(-1, 1). The class probability is the sigmoid of (w_k ⊙ m_k)·x, and the label is 1 when that probability is above the median, so classes are balanced. The mask m_k is the ground-truth explanation for every point in cluster k. Defaults: d = 20 features, K = 10 clusters (v5 D.3).</p>
+<p><b>The guarantee they claim</b> (Theorem 1): with independent features, well-separated clusters and a unique ground truth per cluster, "the most accurate model trained on such a dataset will adhere to the unique ground truth explanation of each local neighborhood". The proof is by contradiction: if a model's top-T features differ from the truth, "we can construct another model M' ... and the accuracy of M' will be higher".</p>
+<div class="take"><b>My take: the guarantee does not reach the reported numbers.</b> Three gaps.
+<ul class="tight">
+<li>The proof asserts the key step (a better model can always be constructed) without showing it, and "the top-T features used by a model" is never defined for a nonlinear model.</li>
+<li>The premise is the most accurate model. The labels are a deterministic function of x, so near-perfect accuracy is possible, yet OpenXAI's own models reach 81.76% (logistic regression) and 90.32% (neural network) on the synthetic data (v5 Table 7). A single logistic regression cannot even represent ten cluster-specific weight vectors.</li>
+<li>In v5, Vanilla Gradients scores a perfect 1.000 on all six ground-truth metrics for the synthetic dataset (Table 16). That is only possible if the reference there is the logistic regression's coefficient vector, not the cluster masks m_k, so the theorem's ground truth is not what the synthetic-data tables measure.</li>
+</ul>
+<span class="sure">How sure: high on the first two; high that the v5 synthetic tables use coefficients (the perfect gradient scores force it), medium for the NeurIPS tables, which do not say.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: ground-truth faithfulness on real data</h2></summary>
+<p><b>What they did.</b> Explain the logistic regression model on HELOC and Adult Income with all methods and score against the ground truth (Tables 2-3; more datasets in the appendix).</p>
+<p><b>What they found, and how it changed.</b> NeurIPS: "Vanilla Gradients, SmoothGrad, and Integrated Gradients produce explanations that achieve perfect scores on four ground-truth faithfulness metrics" and LIME "outperforms other methods on the signed agreement (SA) [+61.6%] and signed-rank agreement (SRA) [+65.3%] metrics". v5: the same three gradient methods are perfect on all six metrics, and LIME is described as "approaching the performance of the above gradient-based explanations". HELOC, logistic regression:</p>
+<table id="tbl-heloc">
+<colgroup><col style="width:22%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:13%"><col style="width:13%"></colgroup>
+<thead><tr><th>Method</th><th class="n">RC NeurIPS</th><th class="n">RC v5</th><th class="n">FA NeurIPS</th><th class="n">FA v5</th><th class="n">SA NeurIPS</th><th class="n">SA v5</th></tr></thead>
+<tbody>
+<tr><td>Random</td><td class="n">0.005</td><td class="n">0.002</td><td class="n">0.498</td><td class="n">0.149</td><td class="n">0.251</td><td class="n">0.076</td></tr>
+<tr><td>Vanilla Gradients</td><td class="n">1.0</td><td class="n">1.000</td><td class="n">0.957</td><td class="n">1.000</td><td class="n">0.469</td><td class="n">1.000</td></tr>
+<tr><td>Integrated Gradients</td><td class="n">1.0</td><td class="n">1.000</td><td class="n">0.957</td><td class="n">1.000</td><td class="n">0.469</td><td class="n">1.000</td></tr>
+<tr><td>Gradient x Input</td><td class="n">0.390</td><td class="n">0.291</td><td class="n">0.582</td><td class="n">0.205</td><td class="n">0.255</td><td class="n">0.205</td></tr>
+<tr><td>SmoothGrad</td><td class="n">1.0</td><td class="n">1.000</td><td class="n">0.957</td><td class="n">1.000</td><td class="n">0.274</td><td class="n">1.000</td></tr>
+<tr><td>SHAP</td><td class="n">0.384</td><td class="n">0.291</td><td class="n">0.586</td><td class="n">0.195</td><td class="n">0.269</td><td class="n">0.195</td></tr>
+<tr><td>LIME</td><td class="n">0.994</td><td class="n">0.946</td><td class="n">0.932</td><td class="n">0.910</td><td class="n">0.929</td><td class="n">0.910</td></tr>
+</tbody>
+</table>
+<p class="caption">NeurIPS Table 2 versus v5 Table 2 (means; standard errors omitted). The random baseline's FA drops from 0.498 to 0.149, so the metric itself was redefined or recomputed (v5 reports the area under the curve over all K and uses the first 1,000 test instances).</p>
+<div id="chart-sa"></div>
+<div class="take"><b>My take: the perfect scores are built into the metric.</b> For a logistic regression f(x) = σ(w·x + b), the gradient is σ'(w·x + b)·w, a positive multiple of the coefficient vector at every input. Rank it, compare signs, take the top-K: it matches the coefficients exactly, always. SmoothGrad averages such gradients, and Integrated Gradients with <code>multiply_by_inputs=False</code> (v5 D.3) also averages them, so all three are perfect by algebra. SHAP and Gradient x Input are scored as poor because they return local contributions (for a linear model SHAP gives w_i(x_i - E[x_i])), which rank features by |w_i·(x_i - baseline)|, not by |w_i|. On German Credit, v5 reports SHAP's rank correlation with the "ground truth" as -0.001, no better than random (Table 17), for a method that is exact for linear models under its own definition. The benchmark is asking "which method returns the coefficient vector", not "which explanation is correct".
+<br><br>The NeurIPS sign agreement of 0.469 for gradients fits one specific bug: explaining the predicted class instead of a fixed class flips every sign whenever the prediction is class 0. HELOC is close to balanced, which would give about half. <span class="sure">How sure: high on the algebra; low on the cause of the NeurIPS numbers, which the papers never explain.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: stability and fairness</h2></summary>
+<p><b>Stability.</b> NeurIPS: on the synthetic data, Gradient x Input is the most stable (+93.5% on RIS, +59.2% on RRS; Table 4), but degrades on real data; SmoothGrad has 63.2% higher RRS than the others on average across real datasets; "no single explanation method is consistently the most stable". v5 reports log averages, drops RRS for logistic regression ("equivalent to ROS within this model class"), and concludes the opposite on the synthetic data: Integrated Gradients is best with log averages of 1.95 (RIS) and 1.86 (ROS) across datasets; Gradient x Input sits at 3.37 and 4.49.</p>
+<p><b>Fairness.</b> NeurIPS: there are male/female disparities in PGU for Vanilla Gradients, Integrated Gradients and SmoothGrad, and Gradient x Input shows the least disparity (+8.9%), "a trade-off between various evaluation metrics" (Figs. 2-3). v5: the notable disparities are "most notably, Gradient x Input and SHAP on the Adult Income dataset".</p>
+<div class="take"><b>My take.</b> Both verdicts flipped between versions. On the figures themselves, the NeurIPS gaps are small. On Adult Income (Fig. 3) the largest gaps, for Vanilla Gradients and Integrated Gradients, are about 0.004 on bars near 0.08 (approx.). On German Credit (Fig. 2) the error bars of every pair except Integrated Gradients overlap, SmoothGrad's gap looks smaller than Gradient x Input's (approx.), which contradicts "Gradient x Input results in the least amount of disparity", and the legend box covers the LIME bars. No test is reported. The NeurIPS Table 5 caption says "values closer to zero are desirable" while several values are negative (SmoothGrad -4.780 on German Credit); for a log of a ratio where smaller means more stable, "closer to zero" is not the right reading, and v5 treats the lowest values as best (Integrated Gradients wins with the smallest log scores). <span class="sure">How sure: high on the version differences; medium on the caption, because the NeurIPS main text does not define the scale.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: a proxy feature steals attribution</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Correlation of A and its proxy C, ρ <input id="demo-rho" type="range" min="0" max="99" step="1" value="80"> <b id="demo-rho-val"></b></label>
+  <label>Ridge penalty λ <input id="demo-lam" type="range" min="0" max="6" step="1" value="3"> <b id="demo-lam-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Exact population formulas, not the paper's experiment: the label is y = A + noise, A and C are standard normal with correlation ρ, and the model is ridge regression on (A, C), whose weights are (Σ + λI)⁻¹·Cov(x, y). The data-level ground truth gives A all the importance and C none. It illustrates the example on page 4 of the paper.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It made benchmarking cheap: loaders, pre-trained models, a common API and public leaderboards, the bar every later tabular benchmark is measured against. It states the data-versus-model ground-truth problem clearly and builds the synthetic generator around it. The library is open and has been maintained, and v5 documents hyperparameters, seeds and model accuracies in detail.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>On real data the "ground truth" is the logistic regression's coefficient vector, which gradient-based methods reproduce exactly by algebra, so their perfect scores are not a finding.</td><td>v5 Appendix A; Tables 2-3, 16-19</td><td>High</td></tr>
+<tr><td>2</td><td>Methods that target local contributions (SHAP, Gradient x Input) are scored against a global coefficient vector; SHAP's rank correlation on German Credit is -0.001.</td><td>v5 Table 17</td><td>High</td></tr>
+<tr><td>3</td><td>Published conclusions changed between the NeurIPS version and v5 without an erratum: gradient sign agreement 0.469 to 1.000, LIME's sign lead gone, the stability and fairness winners reversed.</td><td>NeurIPS vs v5, Tables 2, 4-5, Section 3</td><td>High</td></tr>
+<tr><td>4</td><td>Theorem 1 is a proof sketch, and its premise (the most accurate model) does not hold for the models used: 81.76% and 90.32% accuracy on deterministic labels.</td><td>v5 Appendix C, Table 7</td><td>High</td></tr>
+<tr><td>5</td><td>The synthetic masks are not the reference in the reported synthetic tables: gradients reach 1.000 there, which only coefficient ground truth allows.</td><td>v5 Table 16</td><td>High (v5), Medium (NeurIPS)</td></tr>
+<tr><td>6</td><td>Counts disagree: "seven" explainers listing six; "six leaderboards" and "only six datasets" (checklist) against seven real plus one synthetic; synthetic size 5,000 (Table 1) against <code>n_samples: 1000</code> (v5 D.3); 70/30 split (NeurIPS) against 80/20 (v5).</td><td>Sections 1-2, checklist 1(b), v5 D.1, D.3</td><td>High (low impact)</td></tr>
+<tr><td>7</td><td>Fairness claims rest on small gaps with mostly overlapping error bars, one metric (PGU) and no test; the "least disparity" winner is not the smallest gap in Fig. 2, where the legend also hides the LIME bars.</td><td>NeurIPS Figs. 2-3 (approx.)</td><td>Medium</td></tr>
+<tr><td>8</td><td>Making features independent removes exactly the dependence that makes explaining real data hard, so the synthetic arm cannot say how explainers behave under realistic dependence.</td><td>Section 2 (my synthesis)</td><td>Medium</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It names the problem your pilot already solves.</b> OpenXAI avoids the proxy problem by forbidding dependence. Your transfer pilot keeps dependence and computes the model-level truth exactly instead: <code>run_task</code> in <code>synthetic_data/scripts/transfer_pilot_v2.py</code> records <code>err_model</code> (against the trained model's exact SHAP values), <code>err_data</code> (against the true function's) and <code>model_gap</code> between them. <code>model_gap</code> is a direct measurement of OpenXAI's A/C effect in every world; report it per generator, because it is the number that shows why independence is not realistic.</p>
+<p><b>The coefficient lesson applies to you too.</b> Your estimand is interventional SHAP (DECISIONS #22). Path-dependent TreeSHAP, Saabas, LIME, occlusion and mean-baseline SHAP target other quantities, so the pilot ranks them as estimators of interventional SHAP. That is fine for the transfer question, but say it in the paper, and consider a cheap robustness check: re-score one world family against a second estimand and see whether the transfer conclusion survives. If it does not, the estimand choice is driving the result, exactly as here.</p>
+<p><b>Your "independent" generator is the OpenXAI-style world.</b> It drops all dependence while keeping the real marginals, so in the pilot it measures what OpenXAI's design choice costs in ranking transfer.</p>
+<p><b>Version drift.</b> If the paper compares with OpenXAI numbers, cite the version (NeurIPS or v5), because they disagree. Your own setup (exact pins in <code>synthetic_data/pyproject.toml</code>, raw JSON per run) is the defence against the same thing happening to you.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Data-level ground truth</b></td><td>Which features the label-generating process uses.</td></tr>
+<tr><td><b>Model-level ground truth</b></td><td>Which features the trained model uses; can differ when features are correlated.</td></tr>
+<tr><td><b>SynthGauss</b></td><td>OpenXAI's generator: separated Gaussian clusters with independent features and a per-cluster feature mask.</td></tr>
+<tr><td><b>FA, RA, SA, SRA</b></td><td>Share of top-K features shared with the reference, also matching rank, sign, or both.</td></tr>
+<tr><td><b>RC, PRA</b></td><td>Spearman rank correlation with the reference, and the share of feature pairs ordered the same way.</td></tr>
+<tr><td><b>PGI, PGU</b></td><td>Prediction change when noise is added to the top-K (PGI) or the other (PGU) features.</td></tr>
+<tr><td><b>RIS, RRS, ROS</b></td><td>Relative stability: explanation change over input, hidden-layer or output change.</td></tr>
+<tr><td><b>Gradient x Input, SmoothGrad, Integrated Gradients</b></td><td>The gradient times the input; the gradient averaged over noisy inputs; the gradient averaged along a path from a baseline.</td></tr>
+<tr><td><b>Ridge regression</b></td><td>Linear regression with a penalty on large weights; it spreads weight across correlated features.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>NeurIPS pages 1-4: contributions, related work, and the A/B/C/D proxy example (page 4). Read in full.</li>
+<li>Pages 5-7: datasets, explainers and the metric list.</li>
+<li>Pages 8-10: Tables 2-5 and Figures 2-3. Read them next to v5 Section 3, because the numbers differ.</li>
+<li>v5 Appendix A (metric definitions, and the one sentence saying ground truth is the logistic regression's coefficients), Appendix C (SynthGauss and Theorem 1), D.3-D.4 (hyperparameters and model accuracies).</li>
+<li>Skip on a first read: the leaderboard snapshot (Fig. 1) and the per-dataset tables 8-35 in v5.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from the NeurIPS 2022 proceedings PDF (16 pages, read in full) and arXiv v5 (26 pages: main text compared line by line, Appendices A-E read, per-dataset tables skimmed). Figures 1-3 were checked as images.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Sign agreement on HELOC with the logistic regression model, NeurIPS Table 2 versus arXiv v5 Table 2.
+barChart("chart-sa", {
+  label: "Sign agreement on HELOC, NeurIPS version versus arXiv v5",
+  groups: ["Random", "VanillaGrad", "IntegratedGrad", "Grad x Input", "SmoothGrad", "SHAP", "LIME"],
+  series: [
+    { name: "NeurIPS 2022", color: "#0033A0", values: [0.251, 0.469, 0.469, 0.255, 0.274, 0.269, 0.929] },
+    { name: "arXiv v5 (2024)", color: "#F2A800", values: [0.076, 1.000, 1.000, 0.205, 1.000, 0.195, 0.910] }
+  ],
+  min: 0, max: 1.12, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 260, barMax: 30
+});
+
+// Demo: population ridge regression on a feature A that drives the label and a correlated proxy C.
+(function demo() {
+  const rhoIn = need("demo-rho"), lamIn = need("demo-lam"), rhoOut = need("demo-rho-val"), lamOut = need("demo-lam-val");
+  const text = need("demo-text"), box = need("demo-chart");
+  const lams = [0, 0.1, 0.3, 1, 3, 10, 30];
+  function render() {
+    const rho = Number(rhoIn.value) / 100, lam = lams[Number(lamIn.value)];
+    rhoOut.textContent = rho.toFixed(2);
+    lamOut.textContent = String(lam);
+    // w = (Sigma + lam I)^-1 c with Sigma = [[1, rho], [rho, 1]] and c = Cov(x, y) = [1, rho] for y = A + noise.
+    const det = (1 + lam) * (1 + lam) - rho * rho;
+    const wA = ((1 + lam) - rho * rho) / det, wC = (rho * lam) / det;
+    const shareC = wC / (wA + wC);
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Data-level truth versus the trained model's attribution shares",
+      groups: ["A (drives the label)", "C (correlated proxy)"],
+      series: [
+        { name: "data-level ground truth", color: "#0033A0", values: [1, 0] },
+        { name: "share in the trained model", color: "#F2A800", values: [1 - shareC, shareC] }
+      ],
+      min: 0, max: 1.15, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 250, barMax: 70
+    });
+    text.textContent = "Ridge weights: A " + wA.toFixed(3) + ", C " + wC.toFixed(3) + ". The proxy C carries " +
+      (100 * shareC).toFixed(0) + "% of the model's attribution. A perfect explanation of this model reports that share, and " +
+      "is then marked " + (100 * shareC).toFixed(0) + "% wrong against the data-level truth. With no penalty (λ = 0) and " +
+      "infinite data C gets nothing; any penalty moves weight to C, and as ρ approaches 1 the split approaches 50/50.";
+  }
+  rhoIn.addEventListener("input", render);
+  lamIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

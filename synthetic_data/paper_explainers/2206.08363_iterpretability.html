@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>ITErpretability explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: ITErpretability explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Benchmarking Heterogeneous Treatment Effect Models through the Lens of Interpretability" (ITErpretability), explained</h1>
+<p class="sub">Jonathan Crabbé, Alicia Curth, Ioana Bica, Mihaela van der Schaar (Cambridge, Oxford, The Alan Turing Institute, UCLA). NeurIPS 2022 Datasets and Benchmarks track (proceedings PDF: 15 pages including the checklist). Appendices read from arXiv 2206.08363v1 (16 Jun 2022, 21 pages). Code: github.com/JonathanCrabbe/ITErpretability and github.com/vanderschaarlab/ITErpretability. Citations: 7 on OpenAlex for the arXiv record only (checked 2026-10-26), an undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/crabbe2022_iterpretability.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: stronger effects are easier to attribute</a></li>
+<li><a href="#f2">Finding 2: nonlinearity and the choice of explainer</a></li>
+<li><a href="#f3">Finding 3: confounding</a></li>
+<li><a href="#demo">Try it: chance level and correlated covariates</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye; the paper reports no tables of numbers.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Treatment-effect models are almost always judged by how accurately they estimate the effect (PEHE). In medicine it matters at least as much whether they find the right <i>drivers</i> of the effect: which patient characteristics make the treatment work better or worse. Do they?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>A semi-synthetic benchmark.</b> Keep the covariates of a real dataset (TCGA gene expression, Twins births, News word counts, ACIC2016 perinatal data; 39 to 100 features), pick random disjoint sets of "prognostic" and "predictive" covariates, and simulate treatment and outcomes from them (Algorithm 1). The predictive covariates are then known.</li>
+<li><b>A metric.</b> Explain each fitted model's effect estimate with Integrated Gradients and measure Attr<sub>pred</sub>, the share of the absolute attribution that lands on the true predictive covariates (Eq. 2).</li>
+<li><b>Findings.</b> Stronger predictive effects are easier to attribute; the S-learner is consistently worst; nonlinearity lowers attribution but does not change which learner is best; confounding hurts most when treatment is assigned on the predictive covariates; CFRNet's balancing penalty can destroy attribution (Figs. 2-4).</li>
+<li><b>Attribution and accuracy disagree.</b> The S-learner has the best PEHE when effects are weak but the worst attribution (Section 5.1).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> A clean idea, and the closest precedent for "keep real feature rows, simulate the target, know the relevant features". But it ranks treatment-effect learners, not explainers; its ground truth is a feature set, not attribution values; its targets are random functions, not fitted to any real outcome; and the metric has an unstated chance level of about 0.4 that several curves never leave.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Treatment effects.</b> Each patient has two potential outcomes, Y(1) if treated and Y(0) if not; only one is ever observed. The conditional average treatment effect is τ(x) = E[Y(1) - Y(0) | X = x]. PEHE is the root mean squared error of an estimate of τ on test data.</p>
+<p><b>Prognostic versus predictive covariates.</b> Prognostic covariates (say, age) shift the outcome whether or not you are treated, so they cancel in τ. Predictive covariates (say, hormone-receptor status in cancer) change how much the treatment helps, so τ depends on them. A good effect model should attribute its estimate of τ to the predictive ones only.</p>
+<p><b>The learners compared</b> (all neural networks from the CATENets package, matched in capacity, Appendix C.1): the <b>S-learner</b> fits one model with the treatment as an extra input; the <b>T-learner</b> fits one model per treatment arm and subtracts; <b>TARNet</b> shares a representation between the two arms; <b>CFRNet</b> adds a penalty that makes that representation look alike across arms; the <b>DR-</b> and <b>X-learners</b> regress directly on pseudo-outcomes built from first-stage estimates.</p>
+<svg class="schem" viewBox="0 0 720 150" aria-label="The ITErpretability pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="40" width="120" height="70" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="66" y="66" text-anchor="middle" font-size="13">real covariates</text>
+  <text x="66" y="86" text-anchor="middle" font-size="13">X (kept as is)</text>
+  <line x1="126" y1="75" x2="148" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="150" y="40" width="150" height="70" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="225" y="62" text-anchor="middle" font-size="13">random feature sets,</text>
+  <text x="225" y="80" text-anchor="middle" font-size="13">simulated W, Y(0),</text>
+  <text x="225" y="98" text-anchor="middle" font-size="13">Y(1) (Algorithm 1)</text>
+  <line x1="300" y1="75" x2="322" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="324" y="40" width="120" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="384" y="66" text-anchor="middle" font-size="13">fit a CATE</text>
+  <text x="384" y="86" text-anchor="middle" font-size="13">learner</text>
+  <line x1="444" y1="75" x2="466" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="468" y="40" width="120" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="528" y="66" text-anchor="middle" font-size="13">Integrated</text>
+  <text x="528" y="86" text-anchor="middle" font-size="13">Gradients</text>
+  <line x1="588" y1="75" x2="610" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="612" y="40" width="102" height="70" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="663" y="66" text-anchor="middle" font-size="13">Attr_pred</text>
+  <text x="663" y="86" text-anchor="middle" font-size="13">(Eq. 2)</text>
+</svg>
+<p class="caption">Schematic of Fig. 1. Only the orange step is synthetic; the explainer (Integrated Gradients) is a fixed measuring instrument, not what is being evaluated.</p>
+<p><b>The data-generating process</b> (Algorithm 1). With n<sub>I</sub> = floor(0.2·d), draw 3·n<sub>I</sub> distinct covariates and split them into a prognostic set I<sub>prog</sub> and two predictive sets I<sub>0</sub>, I<sub>1</sub>. Then Y(0) = μ<sub>prog</sub>(x<sub>Iprog</sub>) + ω<sub>pred</sub>·μ<sub>pred0</sub>(x<sub>I0</sub>) and Y(1) = μ<sub>prog</sub>(x<sub>Iprog</sub>) + ω<sub>pred</sub>·μ<sub>pred1</sub>(x<sub>I1</sub>), plus Gaussian noise; τ depends only on I<sub>pred</sub> = I<sub>0</sub> ∪ I<sub>1</sub>. Data are split 80/20; feature importance is computed for up to 1,000 test points with a zero baseline; results average 30 seeds (Experiments 1-2) or 10 (Experiment 3) (Appendix C.2-C.3).</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: stronger effects are easier to attribute</h2></summary>
+<p><b>What they did.</b> Linear prognostic and predictive functions with weights drawn from U(-1, 1); vary the predictive scale ω<sub>pred</sub> over {0.001, 0.01, 0.1, 0.5, 1}; treatment assigned at random (Section 5.1, Fig. 2).</p>
+<p><b>What they found.</b> Attr<sub>pred</sub> "substantially increase[s]" with ω<sub>pred</sub> for all learners and datasets, and prognostic misattribution falls. The S-learner "does substantially worse" on Attr<sub>pred</sub>; the other learners "perform very similar to each other". The S-learner has the best PEHE at low ω<sub>pred</sub>, which "does not translate into better discoveries", because PEHE rewards any method that shrinks effects toward zero.</p>
+<div id="chart-f1"></div>
+<p class="caption">Attr<sub>pred</sub> at ω<sub>pred</sub> = 1, read off Fig. 2 (approx.): the best learner and the S-learner, against the score of an attribution spread evenly over all covariates (my computation, 2·floor(0.2·d)/d).</p>
+<div class="take"><b>My take: the floor is about 0.4, not 0.</b> The paper says Attr<sub>pred</sub> = 0 "corresponds to a model that does not identify any predictive covariate". But by construction 40% of the covariates are predictive (2·n<sub>I</sub> of d: 40/100 for TCGA and News, 22/55 for ACIC2016, 14/39 = 0.36 for Twins), so an attribution spread evenly scores 0.40. At ω<sub>pred</sub> ≤ 0.01 every learner sits at about 0.36 to 0.40 (approx.), which is chance. On ACIC2016 even the best learner reaches only about 0.50 at the strongest effect, ten points above an explainer that knows nothing. The direction of every finding survives, but the effect sizes are much smaller than the 0-to-1 scale suggests. <span class="sure">How sure: high on the arithmetic; the plotted values are approx.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: nonlinearity and the choice of explainer</h2></summary>
+<p><b>Nonlinearity</b> (Section 5.2, Fig. 3). Mix a linear and a nonlinear part with weight ω<sub>nl</sub> ∈ [0, 1], each nonlinear function drawn from ten candidates (|x|, exp(-x²), 1/(1+x²), cos, sin, arctan, tanh, log(1+x²), √(1+x²), cosh; Appendix C.4). As ω<sub>nl</sub> grows, Attr<sub>pred</sub> falls for every learner and prognostic confusion rises, but "the relative ordering of methods does not change".</p>
+<p><b>Which explainer</b> (Appendix B). Integrated Gradients is chosen because it satisfies sensitivity, completeness, linearity and implementation invariance (Appendix Table 1) and is cheap (about 50 backward passes per point). Repeating Experiments 1-2 with other explainers (Figs. 5-6): Shapley values (Monte Carlo sampling) are "nearly identical" to Integrated Gradients, feature ablation is "marginally lower", and feature permutation "substantially underperforms"; the ordering of learners is unchanged.</p>
+<div class="take"><b>My take.</b> Appendix B.2 is the only place explainers are compared, and it is done against data-level truth: whether attribution lands on the covariates the simulation used. With correlated real covariates (expression levels of genes, like TCGA's 100 most variable ones, are usually strongly correlated; I did not measure it here), an explainer that correctly reports that the model uses a correlated stand-in is scored as wrong, the exact problem OpenXAI warns about (see the OpenXAI explainer). The paper never discusses correlation between covariates; the only mentions of "correlated" are about treatment assignment. <span class="sure">How sure: high that it is not discussed; medium on how much it moves the numbers (the demo below shows the mechanism).</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: confounding</h2></summary>
+<p><b>What they did</b> (Section 5.3, Fig. 4). Assign treatment with probability sigmoid(ω<sub>π</sub>·Zscore[ψ(x)]) for three choices of ψ: the predictive part (doctors treat those who will respond), the prognostic part (those who would do well anyway get treated) or one irrelevant covariate. Add CFRNet with three balancing strengths γ.</p>
+<p><b>What they found.</b> Attribution worsens as assignment becomes more biased, most under predictive confounding, "a result of less observed variation across predictive covariates within a group". Prognostic confounding hurts least; on News it even hurts less than confounding on an irrelevant covariate, which the authors explain by two competing effects. CFRNet's balancing can cause "a very large drop" in Attr<sub>pred</sub> under predictive confounding: on TCGA the strongest penalty (γ = 0.01) falls from about 0.7 to about 0.4 (approx., Fig. 4a), back to chance.</p>
+<div class="take"><b>My take.</b> The experiment is well designed, and separating the three kinds of confounding is new, as the authors say. The bands in the ACIC2016 and Twins panels are wide and overlapping, so the learner differences there are not resolved (approx., Fig. 4b, 4d). <span class="sure">How sure: medium (read off small plots).</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: chance level and correlated covariates</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Correlation among covariates ρ <input id="demo-rho" type="range" min="0" max="9" step="1" value="6"> <b id="demo-rho-val"></b></label>
+  <label>Predictive scale ω<sub>pred</sub> <input id="demo-w" type="range" min="0" max="4" step="1" value="4"> <b id="demo-w-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">A seeded simulation (seed 509), not the paper's data: 20 Gaussian covariates with equal pairwise correlation ρ; 4 prognostic, 4 + 4 predictive and 8 irrelevant covariates; linear Algorithm 1 outcomes with weights from U(-1, 1), noise sd 0.5, random treatment, 1,000 training and 500 test points, averaged over 10 replicates. The learner is a T-learner made of two ridge regressions (λ = 1); for a linear model Integrated Gradients with a zero baseline is exactly coefficient times feature value.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It asks a question PEHE cannot answer and shows the answer differs (the S-learner result). The data-generating process is simple, documented and reusable with any covariate set. The three-way split of confounding is a genuinely new experimental knob. The learners are matched in capacity, results average 30 seeds, and the explainer choice is checked against alternatives.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>The metric's chance level (about 0.40) is never stated; weak-effect results sit at it, and ACIC2016 barely leaves it.</td><td>Eq. 2, Algorithm 1, Fig. 2</td><td>High (values approx.)</td></tr>
+<tr><td>2</td><td>Ground truth is data-level, but the covariates are real and correlated; a model that reaches the effect through a correlated covariate is counted as wrong. Correlation between covariates is never discussed.</td><td>Sections 4-5, Appendix C.2</td><td>High</td></tr>
+<tr><td>3</td><td>The truth is a feature set; Attr<sub>pred</sub> ignores whether attribution magnitudes or signs are right, and whether the importance is spread correctly inside the set.</td><td>Eq. 2</td><td>High</td></tr>
+<tr><td>4</td><td>The explainer is fixed: Integrated Gradients with a zero baseline. Zero is the minimum for TCGA (features scaled to [0, 1]), the mean for News (principal components), and of unclear meaning for categorical covariates (Twins, ACIC2016).</td><td>Appendix C.2-C.3</td><td>Medium</td></tr>
+<tr><td>5</td><td>The outcomes are random functions of randomly chosen covariates. The real data contribute only the input distribution, so "realistic" covers X, not the effect.</td><td>Algorithm 1</td><td>High (by design)</td></tr>
+<tr><td>6</td><td>The noise level σ, an input to Algorithm 1, is not given for any experiment.</td><td>Algorithm 1, Sections 5.1-5.3</td><td>High (low impact)</td></tr>
+<tr><td>7</td><td>Results exist only as curves with standard-error bands; effect sizes must be read off small plots.</td><td>Figs. 2-4</td><td>High (low impact)</td></tr>
+<tr><td>8</td><td>The NeurIPS text points to a higher-dimensional experiment in "Appendix C.4"; in arXiv v1, C.4 is the list of nonlinear functions. The camera-ready supplement may differ; I could only read v1.</td><td>Section 5.1 vs arXiv Appendix C.4</td><td>Low</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the precedent a reviewer will raise first.</b> The ChatGPT conversation of 2026-10-24 (<code>synthetic_data/chatgpt_conference_submission_plan.md</code>) flagged it, and your review (81 references) does not cite it yet. The overlap is the construction "keep real rows, simulate the target, know what matters". The differences are what your paper should say plainly:</p>
+<ul class="tight">
+<li>it evaluates treatment-effect learners with a fixed explainer; your pilot evaluates explainers;</li>
+<li>its targets are random functions on random covariates; your builder targets (additive, forest, MLP in <code>TARGETS</code> of <code>transfer_pilot_v2.py</code>) are fitted to the real target in D;</li>
+<li>its truth is a feature set scored at data level; you compute exact attribution values at model level (<code>err_model</code>, with <code>err_data</code> and <code>model_gap</code> alongside);</li>
+<li>it ignores dependence between covariates; dependence is your whole premise.</li>
+</ul>
+<p><b>An extra arm it suggests.</b> Every builder in your grid fits its target to D. Adding an ITErpretability-style target, a random function on the same real rows, isolates whether fitting the target to real labels matters for ranking transfer, or whether realistic rows alone carry the effect. It is one more entry in <code>TARGETS</code>, cheap compared with a new generator.</p>
+<p><b>The chance-level lesson.</b> Put every agreement number next to its null. Your primary metric (agreement on reality's resolved pairs, DECISIONS #24) has an obvious null of 0.5 for random pair orientation, plus the generic null world; keep both in every table and figure.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Potential outcomes</b></td><td>Y(1) and Y(0), a unit's outcome with and without treatment; only one is observed.</td></tr>
+<tr><td><b>CATE</b></td><td>Conditional average treatment effect, τ(x) = E[Y(1) - Y(0) | X = x].</td></tr>
+<tr><td><b>PEHE</b></td><td>Root mean squared error of an estimated τ on test points.</td></tr>
+<tr><td><b>Prognostic covariate</b></td><td>Affects the outcome equally under both treatments, so it cancels in τ.</td></tr>
+<tr><td><b>Predictive covariate</b></td><td>Changes the size of the treatment effect, so τ depends on it.</td></tr>
+<tr><td><b>Attr<sub>pred</sub>, Attr<sub>prog</sub></b></td><td>Share of absolute attribution on the true predictive, or prognostic, covariates, averaged over test points.</td></tr>
+<tr><td><b>S-, T-, X-, DR-learner</b></td><td>One model with treatment as input; one model per arm; two direct effect regressions combined; a regression on a doubly robust pseudo-outcome.</td></tr>
+<tr><td><b>TARNet, CFRNet</b></td><td>A shared representation with one head per arm; the same plus a penalty making the arms' representations look alike.</td></tr>
+<tr><td><b>Confounding</b></td><td>Treatment assignment depends on covariates that also affect the outcome.</td></tr>
+<tr><td><b>Integrated Gradients</b></td><td>The gradient averaged along a straight path from a baseline to the input, times the input difference.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-5: introduction, the prognostic/predictive distinction (Section 3) and the benchmark (Section 4, Algorithm 1, Eq. 2). Read in full.</li>
+<li>Page 7: Fig. 2 and the three numbered observations under it.</li>
+<li>Pages 8-10: Figs. 3-4 and the confounding discussion.</li>
+<li>arXiv Appendix B (why Integrated Gradients; Figs. 5-6 compare explainers) and C.2-C.3 (datasets, seeds, zero baseline).</li>
+<li>Skip on a first read: Appendix A (background on identification) and Fig. 7.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from the NeurIPS 2022 proceedings PDF (15 pages, read in full) and arXiv v1 (21 pages; Appendices A-C read). Figures 2 and 4 were checked as images, Fig. 2 zoomed at 300 dpi.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Fig. 2 read by eye at omega_pred = 1 (approx.) next to the even-spread chance level 2*floor(0.2 d)/d (my computation).
+barChart("chart-f1", {
+  label: "Attr_pred at the strongest predictive effect versus chance level",
+  groups: ["TCGA (d=100)", "Twins (d=39)", "News (d=100)", "ACIC2016 (d=55)"],
+  series: [
+    { name: "even spread (chance)", color: "#888888", values: [0.40, 14 / 39, 0.40, 0.40] },
+    { name: "S-learner (approx.)", color: "#D90012", values: [0.69, 0.58, 0.70, 0.44] },
+    { name: "best learner (approx.)", color: "#0033A0", values: [0.79, 0.62, 0.83, 0.50] }
+  ],
+  min: 0, max: 1, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2), height: 260, barMax: 34
+});
+
+// Demo: seeded linear Algorithm-1 simulation with equicorrelated covariates and a ridge T-learner.
+(function demo() {
+  const rhoIn = need("demo-rho"), wIn = need("demo-w"), rhoOut = need("demo-rho-val"), wOut = need("demo-w-val");
+  const text = need("demo-text"), box = need("demo-chart");
+  const D = 20, NTR = 1000, NTE = 500, LAM = 1, SD = 0.5, REPS = 10;
+  const PROG = [0, 1, 2, 3], P0 = [4, 5, 6, 7], P1 = [8, 9, 10, 11], PRED = P0.concat(P1);
+  const omegas = [0.001, 0.01, 0.1, 0.5, 1];
+  const rand = mulberry32(509);
+  const normal = () => { const u = 1 - rand(), v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const unif = () => 2 * rand() - 1;
+  // Fixed base draws per replicate, so moving a slider changes only rho or omega, never the noise.
+  function base(n) {
+    return Array.from({ length: n }, () => ({ z0: normal(), z: Array.from({ length: D }, normal), w: rand() < 0.5 ? 1 : 0, e: normal() }));
+  }
+  const reps = Array.from({ length: REPS }, () => ({
+    aProg: PROG.map(unif), a0: P0.map(unif), a1: P1.map(unif), train: base(NTR), test: base(NTE)
+  }));
+  const feats = (r, rho) => r.z.map(zi => Math.sqrt(rho) * r.z0 + Math.sqrt(1 - rho) * zi);
+  function outcome(rep, x, w, om) {
+    let y = 0;
+    PROG.forEach((j, k) => { y += rep.aProg[k] * x[j]; });
+    if (w) P1.forEach((j, k) => { y += om * rep.a1[k] * x[j]; });
+    else P0.forEach((j, k) => { y += om * rep.a0[k] * x[j]; });
+    return y;
+  }
+  function solve(A, b) {                       // Gaussian elimination with partial pivoting
+    const n = b.length, M = A.map((row, i) => row.concat([b[i]]));
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]];
+      if (Math.abs(M[c][c]) < 1e-12) throw new Error("singular system in ridge solve");
+      for (let r = c + 1; r < n; r++) {
+        const f = M[r][c] / M[c][c];
+        for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+      }
+    }
+    const x = new Array(n).fill(0);
+    for (let r = n - 1; r >= 0; r--) {
+      let s = M[r][n];
+      for (let k = r + 1; k < n; k++) s -= M[r][k] * x[k];
+      x[r] = s / M[r][r];
+    }
+    return x;
+  }
+  function ridge(X, y) {                       // centred ridge regression, returns slopes only
+    const n = X.length, mx = new Array(D).fill(0);
+    let my = 0;
+    X.forEach((x, i) => { x.forEach((v, j) => { mx[j] += v / n; }); my += y[i] / n; });
+    const A = Array.from({ length: D }, () => new Array(D).fill(0)), b = new Array(D).fill(0);
+    X.forEach((x, i) => {
+      const xc = x.map((v, j) => v - mx[j]), yc = y[i] - my;
+      for (let j = 0; j < D; j++) { b[j] += xc[j] * yc; for (let k = 0; k < D; k++) A[j][k] += xc[j] * xc[k]; }
+    });
+    for (let j = 0; j < D; j++) A[j][j] += LAM;
+    return solve(A, b);
+  }
+  function render() {
+    const rho = Number(rhoIn.value) / 10, om = omegas[Number(wIn.value)];
+    rhoOut.textContent = rho.toFixed(1);
+    wOut.textContent = String(om);
+    let pred = 0, prog = 0;
+    for (const rep of reps) {
+      const arms = [[[], []], [[], []]];
+      for (const r of rep.train) {
+        const x = feats(r, rho);
+        arms[r.w][0].push(x);
+        arms[r.w][1].push(outcome(rep, x, r.w, om) + SD * r.e);
+      }
+      const b1 = ridge(arms[1][0], arms[1][1]), b0 = ridge(arms[0][0], arms[0][1]);
+      const delta = b1.map((v, j) => v - b0[j]);
+      for (const r of rep.test) {
+        const a = feats(r, rho).map((v, j) => Math.abs(delta[j] * v));
+        const tot = a.reduce((s, v) => s + v, 0);
+        pred += PRED.reduce((s, j) => s + a[j], 0) / tot / (NTE * REPS);
+        prog += PROG.reduce((s, j) => s + a[j], 0) / tot / (NTE * REPS);
+      }
+    }
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Attr_pred for an even spread, a ridge T-learner and the true effect",
+      groups: ["even spread (chance)", "ridge T-learner", "true effect"],
+      series: [{ name: "Attr_pred", color: "#0033A0", values: [PRED.length / D, pred, 1] }],
+      colorOf: gi => ["#888888", "#0033A0", "#F2A800"][gi],
+      min: 0, max: 1.12, ticks: [0, 0.2, 0.4, 0.6, 0.8, 1], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2), height: 240, barMax: 90
+    });
+    text.textContent = "At ρ = " + rho.toFixed(1) + " and ω_pred = " + om + ", the T-learner puts " + (100 * pred).toFixed(0) +
+      "% of its attribution on the 8 predictive covariates and " + (100 * prog).toFixed(0) + "% on the 4 prognostic ones; " +
+      "an even spread scores 40%. Raising ρ spreads the estimate's noise across correlated covariates, so attribution drifts " +
+      "off the true set even though the model is the right kind and the data are clean.";
+  }
+  rhoIn.addEventListener("input", render);
+  wIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

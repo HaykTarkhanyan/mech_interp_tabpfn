@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>WGAN Monte Carlo explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: WGAN Monte Carlo explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Using Wasserstein Generative Adversarial Networks for the Design of Monte Carlo Simulations", explained</h1>
+<p class="sub">Susan Athey, Guido W. Imbens, Jonas Metzger, Evan Munro (Stanford). Journal of Econometrics 240(2), 105076 (2024); read from arXiv 1909.02210v3 (July 2020, 42 pages). Code: github.com/gsbDBI/ds-wgan. Citations: 60 on OpenAlex for the journal record (checked 2026-10-26); Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/athey2024_wgan_monte_carlo.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: how close is the generated data?</a></li>
+<li><a href="#f2">Finding 2: which estimator wins depends on the setting</a></li>
+<li><a href="#f3">Finding 3: how robust is the ranking?</a></li>
+<li><a href="#demo">Try it: the winner moves with the WGAN fit</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Numbers are from the arXiv v3 tables; the 2024 journal version may differ.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Monte Carlo studies that compare estimators are discounted because researchers pick the designs, often smooth and with little dependence. Can a generator trained on a real dataset remove that discretion, and tell an applied researcher which estimator works best on data like theirs?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Fit a conditional WGAN to the real data</b>: one generator for the covariates given treatment, one for the potential outcomes given covariates and treatment. Draw a population of 1,000,000 units with both potential outcomes, so the true average effect on the treated is known; then draw 2,000 samples of the original size (Sections 2-3).</li>
+<li><b>The generated data look like the real data</b>: similar means and standard deviations, a Wasserstein distance a third of a fitted multivariate normal's, and similar predictive R² (Tables 2-4).</li>
+<li><b>No single estimator wins everywhere</b>: on the Lalonde-Dehejia-Wahba data, all 13 estimators are close on the experimental sample, but on the CPS and PSID comparison samples some are badly biased and doubly robust methods do consistently well (Tables 6-8).</li>
+<li><b>The ranking is "relatively robust"</b> to subsampling, architecture and training size (Tables 9-11), and constraints such as monotonicity can be imposed on the generator (Section 6).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> The right idea and the most direct ancestor of your transfer study, but it never checks the thing that matters most, whether the ranking in generated data matches the ranking in the true process, and its own robustness tables show the ranking moving as much between WGAN fits as between estimators.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>The estimand.</b> The average treatment effect on the treated, τ = E[Y(1) - Y(0) | W = 1], identified under unconfoundedness (treatment independent of potential outcomes given covariates) and overlap (Section 3.1).</p>
+<p><b>A WGAN.</b> A generator turns random noise into fake data; a critic scores how real a point looks. Training plays them against each other so that the Wasserstein distance between real and fake data shrinks. The Wasserstein distance is the minimal "earth moving" needed to turn one distribution into the other; it stays informative even when the two distributions do not overlap, which makes training more stable than the original GAN (Section 2.4). Here both networks have three hidden layers of 128 units, the critic is regularized with a gradient penalty (λ = 5, 15 critic steps per generator step), and the generator with dropout (Algorithm 1, Section 3.3).</p>
+<p><b>Conditional generation.</b> To keep the number of treated units fixed and to generate both potential outcomes for the same unit, the WGANs are conditional: covariates given treatment, then each potential outcome given covariates and treatment (Section 2.6, Algorithm 2).</p>
+<svg class="schem" viewBox="0 0 720 150" aria-label="The WGAN Monte Carlo pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="40" width="112" height="70" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="62" y="66" text-anchor="middle" font-size="13">real data</text>
+  <text x="62" y="86" text-anchor="middle" font-size="13">(LDW)</text>
+  <line x1="118" y1="75" x2="138" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="140" y="40" width="140" height="70" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="210" y="62" text-anchor="middle" font-size="13">conditional</text>
+  <text x="210" y="80" text-anchor="middle" font-size="13">WGANs: X | W,</text>
+  <text x="210" y="98" text-anchor="middle" font-size="13">Y(0), Y(1) | X, W</text>
+  <line x1="280" y1="75" x2="300" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="302" y="40" width="140" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="372" y="62" text-anchor="middle" font-size="13">population of</text>
+  <text x="372" y="80" text-anchor="middle" font-size="13">10^6, true ATT</text>
+  <text x="372" y="98" text-anchor="middle" font-size="13">known</text>
+  <line x1="442" y1="75" x2="462" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="464" y="40" width="120" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="524" y="66" text-anchor="middle" font-size="13">2,000 samples,</text>
+  <text x="524" y="86" text-anchor="middle" font-size="13">13 estimators</text>
+  <line x1="584" y1="75" x2="604" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="606" y="40" width="108" height="70" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="660" y="66" text-anchor="middle" font-size="13">RMSE, bias,</text>
+  <text x="660" y="86" text-anchor="middle" font-size="13">coverage</text>
+</svg>
+<p class="caption">Sections 3.3-4. The red box is the ranking an applied researcher would act on. Nothing in the pipeline compares it with the ranking under the real process.</p>
+<p><b>The data.</b> Lalonde-Dehejia-Wahba: the job-training experiment (185 treated, 260 controls), and the same treated units combined with 15,992 CPS or 2,490 PSID non-experimental controls; eight covariates, outcome 1978 earnings (Section 3.2).</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: how close is the generated data?</h2></summary>
+<p><b>What they report.</b> Means and standard deviations are "fairly similar" (Table 2 against Table 1), and the authors stress that this is "only limited comfort", since a bootstrap or a normal distribution matches two moments too. Marginal histograms, correlations and conditional histograms match visually, including the different shapes of 1978 earnings for people with and without 1974 earnings (Figs. 1-3). The exact Wasserstein distance is well below that of a multivariate normal fitted to the same data (Table 3). Linear, random-forest and neural-net regressions reach similar out-of-sample R² on real and generated data, in the same order (Table 4).</p>
+<div id="chart-wd"></div>
+<p class="caption">Table 3: exact Wasserstein distance to the empirical distribution, averaged over 10 generated samples (3 for CPS). Ratios 0.32, 0.33 and 0.56.</p>
+<div class="take"><b>My take.</b> Every check here measures resemblance, and the strongest one uses a weak baseline (a multivariate normal). None measures what drives estimator bias: the joint shape of the propensity score and the outcome surface, and the overlap between groups. Table 2 also shows visible gaps for the 185 treated units in the experimental sample: 92% black in generated data against 84% in real data, mean 1974 earnings 3.07 against 2.10, and mean 1978 earnings 5.31 against 6.35 (thousands). <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: which estimator wins depends on the setting</h2></summary>
+<p><b>What they did.</b> Compare 13 estimators of the effect on the treated: difference in means (DIFF), bias-corrected matching (BCM), three ways to use nuisance models (outcome model, inverse propensity weighting, doubly robust), each with linear/logit, random-forest or neural-net nuisances, plus causal forest (CF) and residual balancing (RB). 2,000 replications per setting (Section 4).</p>
+<table id="tbl-rmse">
+<colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+<thead><tr><th>Estimator</th><th class="n">Experimental</th><th class="n">CPS</th><th class="n">PSID</th></tr></thead>
+<tbody>
+<tr><td>Difference in means</td><td class="n">0.49</td><td class="n">11.12</td><td class="n">18.81</td></tr>
+<tr><td>Bias-corrected matching</td><td class="n" data-v="0.58">0.58</td><td class="n" data-v="0.73">0.73</td><td class="n" data-v="0.98">0.98</td></tr>
+<tr><td>Outcome model, linear</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="2.14">2.14</td><td class="n" data-v="1.95">1.95</td></tr>
+<tr><td>Outcome model, forest</td><td class="n" data-v="0.51">0.51</td><td class="n" data-v="1.00">1.00</td><td class="n" data-v="2.30">2.30</td></tr>
+<tr><td>Outcome model, neural net</td><td class="n" data-v="1.32">1.32</td><td class="n" data-v="0.63">0.63</td><td class="n" data-v="2.97">2.97</td></tr>
+<tr><td>Propensity weighting, logit</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="0.51"><b>0.51</b></td><td class="n" data-v="1.11">1.11</td></tr>
+<tr><td>Propensity weighting, forest</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="1.00">1.00</td><td class="n" data-v="2.21">2.21</td></tr>
+<tr><td>Propensity weighting, neural net</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="0.65">0.65</td><td class="n" data-v="1.82">1.82</td></tr>
+<tr><td>Doubly robust, linear</td><td class="n" data-v="0.51">0.51</td><td class="n" data-v="0.53">0.53</td><td class="n" data-v="0.98"><b>0.98</b></td></tr>
+<tr><td>Doubly robust, forest</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="0.54">0.54</td><td class="n" data-v="0.98"><b>0.98</b></td></tr>
+<tr><td>Doubly robust, neural net</td><td class="n" data-v="0.79">0.79</td><td class="n" data-v="0.62">0.62</td><td class="n" data-v="0.98"><b>0.98</b></td></tr>
+<tr><td>Causal forest</td><td class="n" data-v="0.50"><b>0.50</b></td><td class="n" data-v="0.55">0.55</td><td class="n" data-v="1.13">1.13</td></tr>
+<tr><td>Residual balancing</td><td class="n" data-v="0.52">0.52</td><td class="n" data-v="0.57">0.57</td><td class="n" data-v="1.06">1.06</td></tr>
+</tbody>
+</table>
+<p class="caption">RMSE from Tables 6-8 (2,000 replications each). Coloured cells are relative to the median of all coloured cells (green = lower error), so PSID, the hardest setting, is red throughout; difference in means is left uncoloured because its errors are off the scale. Bold = lowest per column excluding difference in means, which is 0.49 on the experimental sample, as low as any.</p>
+<p><b>The paper's reading.</b> On the experimental sample "it is not surprising that all methods perform fairly well"; on CPS and PSID "the double robust methods generally do well", and some others are badly biased with poor coverage. Its recommendation for a single all-purpose estimator: doubly robust with random forests or neural nets (Section 7).</p>
+<div class="take"><b>My take.</b> The CPS winner is the plain logit propensity-weighting estimator (0.51), not a doubly robust one, and on PSID matching ties the doubly robust methods at 0.98. The broad message (difference in means is hopeless, flexible doubly robust methods are never far from the best) is well supported; a fine-grained ranking is not, as the next section shows. The text says RMSEs on the experimental sample range "from 0.49 (for the residual balancing estimator)"; 0.49 is difference in means, residual balancing is 0.52. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: how robust is the ranking?</h2></summary>
+<p><b>What they did</b> (Section 5, all on CPS). Train a WGAN on each of 10 random 80% subsamples (Table 9); try two other generator and critic architectures (Table 10); train on 20% to 100% of the data (Table 11). The paper notes that the method yields "a unique ranking of a set of estimators" for a given data set but "does not come with a measure of robustness".</p>
+<p><b>What they conclude.</b> Over subsamples "there is substantial variation", but "the conclusion that the doubly-robust methods generally outperform the other methods still holds", and "the averages are close to the point estimates" from the full sample; results are not "overly sensitive" to architecture; and "within a particular sample the results appear to be relatively robust" (Section 7).</p>
+<div class="take"><b>My take: the tables say the ranking is not stable.</b> From Tables 9-11 (my computations):
+<ul class="tight">
+<li>Over the 10 subsample WGANs, the linear outcome model averages 1.09 (sd 0.48) against 2.14 in the full-sample WGAN, and the logit weighting estimator 0.75 (sd 0.30) against 0.51. These are not "close", and the spread between WGAN fits (sd 0.11 to 0.48) is as large as the gaps between the good estimators.</li>
+<li>The second alternative architecture agrees with the main one at Kendall τ = 0.23 over the 12 estimators (excluding difference in means), and doubles the RMSE of the logit-based estimators (0.51 to 1.15, 0.53 to 1.11).</li>
+<li>Across training fractions, τ with the full-data ranking ranges from 0.09 to 0.91, and seven different estimators are the best, alone or tied, at some fraction. The linear outcome model wins at 40% and 50% of the data and is the worst estimator besides difference in means at 100%.</li>
+</ul>
+Only the coarse conclusion survives. For an applied researcher who wants "the" best estimator for their data, the answer depends on which WGAN fit they got. <span class="sure">How sure: high on the numbers (typed from the tables, verified against the text); the τ values are mine.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: the winner moves with the WGAN fit</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Share of the CPS data used to train the WGAN <input id="demo-frac" type="range" min="0" max="8" step="1" value="8"> <b id="demo-frac-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Real numbers from Table 11 (RMSE of each estimator on LDW-CPS when the WGAN is trained on a fraction of the data; difference in means, about 10-11 throughout, is left out). Orange marks the winner. Kendall τ-b compares this ranking with the ranking at 100%. O = outcome model, W = propensity weighting, DR = doubly robust; L, RF, NN = linear/logit, random forest, neural net.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It names the credibility problem of hand-picked Monte Carlo designs and offers a concrete, reproducible fix with released code. It is honest that matching moments is weak evidence, generates genuinely new observations (unlike a bootstrap, which would create duplicate units and propensity scores of 0 or 1), and shows how to impose economic restrictions on a generator. The estimator set is broad and the replication counts are large.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>It never checks whether the ranking in WGAN data matches the ranking under the true process, the question Advani et al. (2019) raised; only resemblance is measured.</td><td>Sections 3.3-4</td><td>High</td></tr>
+<tr><td>2</td><td>The robustness tables show the ranking changing between WGAN fits about as much as between estimators, while the text calls it robust.</td><td>Tables 9-11; my τ values</td><td>High</td></tr>
+<tr><td>3</td><td>The fidelity checks are moments, a Wasserstein comparison against a multivariate normal, and R² rankings; none targets the propensity-outcome structure that drives bias, and the experimental treated group is visibly off.</td><td>Tables 2-4</td><td>High</td></tr>
+<tr><td>4</td><td>Each reported RMSE comes from one generator fit; uncertainty from fitting the generator is not carried into the main tables.</td><td>Tables 6-8 vs 9</td><td>High</td></tr>
+<tr><td>5</td><td>One dataset, eight covariates, one estimand.</td><td>Section 3.2</td><td>High (scope)</td></tr>
+<tr><td>6</td><td>Small slips: "0.49 (for the residual balancing estimator)" is difference in means; "twelve estimators" next to tables of thirteen; the appendix entry for doubly robust with neural nets points to the weighting estimator.</td><td>Sections 4.3-4.5, appendix</td><td>High (low impact)</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>This is your builder, without the check.</b> The applied researcher here fits a generator to one dataset and ranks methods in the generated worlds, which is exactly the builder in your nested design (DECISIONS #22). What the paper does not have, and your pilot does, is a reality whose truth is known, an oracle at the same number of tasks, a generic null world and a pre-registered agreement metric on resolved pairs (DECISIONS #24). That missing check is your contribution, now for explainers.</p>
+<p><b>Its Section 5 is evidence for your replicate design.</b> The ranking from one generator fit is noisy. Your pilot draws a fresh D and refits every builder world in each replicate, which measures exactly the Table 9 effect. Report the spread of each builder's ranking across replicates next to its agreement with reality, so a builder that agrees "on average" but varies wildly is visible.</p>
+<p><b>Resemblance is not the outcome.</b> Tables 2-4 are fidelity measures; Karim's Remark 5 says fidelity bounds the gap in the target quantity, not the ranking. Your pilot measures ranking agreement directly; keep fidelity (for example the Wasserstein distance of each world to D) as a covariate, and test whether it predicts agreement. If it does not, that is a finding.</p>
+<p><b>Why ARF and not a WGAN.</b> A reviewer may ask. This paper shows WGAN results depend on architecture and training size (Tables 10-11); ARF has few hyperparameters and an explicit density. The released <code>ds-wgan</code> code makes a WGAN builder a cheap extra arm if needed.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Monte Carlo study</b></td><td>Simulate many datasets from a known process and measure each estimator's error.</td></tr>
+<tr><td><b>ATT</b></td><td>Average treatment effect on the treated, E[Y(1) - Y(0) | W = 1].</td></tr>
+<tr><td><b>Unconfoundedness, overlap</b></td><td>Treatment is as good as random given covariates; every covariate value has some chance of either treatment.</td></tr>
+<tr><td><b>GAN, WGAN</b></td><td>Generator against discriminator (or critic) training; the WGAN version minimizes the Wasserstein distance.</td></tr>
+<tr><td><b>Wasserstein distance</b></td><td>The least "mass times distance" needed to turn one distribution into another.</td></tr>
+<tr><td><b>Doubly robust estimator</b></td><td>Combines an outcome model and a propensity model; consistent if either is right.</td></tr>
+<tr><td><b>Bias-corrected matching</b></td><td>Match treated to control units, then regress away the remaining covariate differences.</td></tr>
+<tr><td><b>Residual balancing</b></td><td>Weights that balance covariates, combined with an elastic-net outcome model.</td></tr>
+<tr><td><b>Kendall τ</b></td><td>Rank agreement: (concordant pairs - discordant pairs) / all pairs; 1 is the same order, 0 unrelated.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-2: the motivation. Read in full.</li>
+<li>Pages 3-12: WGAN background and Algorithms 1-2; skip if you know GANs.</li>
+<li>Pages 14-21: related simulation designs (Section 3.1), the data and the fidelity evidence (Tables 1-4, Figs. 1-3).</li>
+<li>Pages 22-27: estimators and Tables 5-8.</li>
+<li>Pages 27-30: Section 5 and Tables 9-11; read them against the text.</li>
+<li>Skip on a first read: Section 6 (monotonicity penalties) and the Adam appendix.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from arXiv v3 (42 pages, read in full). Table 9 was checked against the page image; the rows of Tables 10-11 were matched by their full-data column, which equals Table 7. τ values are computed from the table entries.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 3: exact Wasserstein distance of generated data to the empirical distribution.
+barChart("chart-wd", {
+  label: "Wasserstein distance to the real data, WGAN versus multivariate normal",
+  groups: ["Experimental controls", "CPS controls", "PSID controls"],
+  series: [
+    { name: "WGAN", color: "#0033A0", values: [1606, 1629, 3152] },
+    { name: "multivariate normal", color: "#F2A800", values: [4972, 5005, 5586] }
+  ],
+  min: 0, max: 6300, ticks: [0, 2000, 4000, 6000], tickFmt: t => String(t), fmt: v => String(v), height: 240, barMax: 60
+});
+
+heat("tbl-rmse", false);
+
+// Demo: Table 11, RMSE on LDW-CPS by share of data used to train the WGAN (difference in means left out).
+(function demo() {
+  const fracIn = need("demo-frac"), fracOut = need("demo-frac-val"), text = need("demo-text"), box = need("demo-chart");
+  const fr = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+  const names = ["BCM", "O-L", "O-RF", "O-NN", "W-L", "W-RF", "W-NN", "DR-L", "DR-RF", "DR-NN", "CF", "RB"];
+  const t11 = [
+    [0.60, 0.73, 0.64, 0.72, 0.78, 0.71, 0.72, 0.65, 0.73], [1.87, 0.70, 0.48, 0.46, 1.37, 1.31, 0.52, 1.52, 2.14],
+    [0.62, 0.62, 0.73, 0.84, 0.94, 0.97, 0.61, 1.28, 1.00], [0.54, 0.74, 0.58, 0.60, 0.68, 0.59, 0.54, 0.79, 0.63],
+    [0.74, 0.66, 0.49, 0.76, 0.60, 0.53, 0.49, 1.37, 0.51], [0.94, 0.71, 0.69, 1.06, 1.10, 1.08, 0.89, 1.49, 1.00],
+    [0.54, 0.71, 0.57, 0.59, 0.68, 0.56, 0.61, 0.59, 0.65], [0.69, 0.67, 0.49, 0.72, 0.60, 0.54, 0.49, 1.34, 0.53],
+    [0.48, 0.70, 0.49, 0.53, 0.63, 0.53, 0.49, 0.70, 0.54], [0.51, 0.68, 0.57, 0.58, 0.67, 0.57, 0.58, 0.55, 0.62],
+    [0.49, 0.69, 0.54, 0.50, 0.66, 0.53, 0.53, 0.61, 0.55], [1.41, 0.82, 0.52, 0.49, 0.62, 0.56, 0.50, 1.20, 0.57]
+  ];
+  function tauB(a, b) {
+    let nc = 0, nd = 0, ta = 0, tb = 0;
+    for (let i = 0; i < a.length; i++) for (let j = i + 1; j < a.length; j++) {
+      const da = Math.sign(a[i] - a[j]), db = Math.sign(b[i] - b[j]);
+      if (da === 0) ta++;
+      if (db === 0) tb++;
+      if (da && db) { if (da === db) nc++; else nd++; }
+    }
+    const n0 = a.length * (a.length - 1) / 2;
+    return (nc - nd) / Math.sqrt((n0 - ta) * (n0 - tb));
+  }
+  const full = t11.map(r => r[8]);
+  function render() {
+    const k = Number(fracIn.value), col = t11.map(r => r[k]), best = Math.min(...col);
+    fracOut.textContent = Math.round(fr[k] * 100) + "%";
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "RMSE of 12 estimators for one WGAN training size", groups: names,
+      series: [{ name: "RMSE", color: "#0033A0", values: col }],
+      colorOf: gi => (col[gi] === best ? "#F2A800" : "#0033A0"),
+      min: 0, max: 2.3, ticks: [0, 0.5, 1, 1.5, 2], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2), height: 260, barMax: 40
+    });
+    const winners = names.filter((_, i) => col[i] === best).join(", ");
+    text.textContent = "Trained on " + Math.round(fr[k] * 100) + "% of the data: best " + winners + " (RMSE " + best.toFixed(2) +
+      "); Kendall τ-b with the ranking at 100% = " + tauB(col, full).toFixed(2) + ". The estimators and the real dataset are the same at every setting; only how much of it trained the WGAN changes.";
+  }
+  fracIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Credence explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Credence explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Validating Causal Inference Methods" (Credence), explained</h1>
+<p class="sub">Harsh Parikh (Duke), Carlos Varjao and Louise Xu (Amazon), Eric Tchetgen Tchetgen (University of Pennsylvania). ICML 2022, PMLR 162:17346-17358 (per the arXiv record); read from arXiv 2202.04208v5 (29 Jul 2022), 14 pages including appendices. Citations: 16 on OpenAlex (checked 2026-10-26), likely an undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/parikh2022_credence.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: a generator with a user-specified truth</a></li>
+<li><a href="#f2">Finding 2: does it reproduce the oracle ranking?</a></li>
+<li><a href="#f3">Finding 3: two real datasets</a></li>
+<li><a href="#demo">Try it: how much agreement is "agreement"?</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. The paper reports its results only as box plots and charts; values marked "approx." are read from them.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> No causal estimator is best everywhere, and hand-made simulations are stylized and "tend to a priori favor certain methods". Can a generator anchored at the data you actually have, with a causal effect you specify, tell you which estimator to trust on that data?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Credence.</b> Train conditional variational autoencoders on bootstrap copies of the observed sample to generate covariates, treatment and both potential outcomes. Penalties push each unit's generated effect toward a user-chosen function f(x) and the confounding bias toward g(x, z), with strengths α and β (Section 2).</li>
+<li><b>Synthetic check.</b> On two known processes (quadratic, Friedman; 2,500 units, 10 covariates), rankings of seven families of estimators on Credence data are "comparable" to the oracle's rankings (Fig. 3).</li>
+<li><b>Real check.</b> On Lalonde (job training) and Project STAR (class size), rankings on Credence data trained on the observational part are "largely similar" to rankings against the experimental estimate (Fig. 4).</li>
+<li><b>Use.</b> Run a suite of f and g, or search for the most adversarial ones, and pick the estimator that holds up (Section 4).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> The right design (anchor at the data, state the effect, sweep the assumptions), and the closest causal-inference analogue of a data-fitted benchmark with known truth. The evidence is thin: rankings are compared by eye with no agreement statistic or noise floor, for one of its two processes the headline synthetic configuration hands Credence the true effect function, and the real-data runs set the effect to zero while the benchmarks are $886 and 7.24 points.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Average treatment effect.</b> τ = E[Y(1) - Y(0)], identified from observational data if treatment is unconfounded given covariates and every covariate value can receive either treatment (Section 1).</p>
+<p><b>Three ways to validate a method on your data</b> (Section 1). Face validity (does the estimate match expert intuition), placebo or negative-control tests (estimate an effect known to be zero), and synthetic data tests (simulate from a known process). The paper argues the first two need strong assumptions and the third is usually too stylized.</p>
+<p><b>The two user-specified functions.</b> f(x) = E[Y(1) - Y(0) | X = x] is the effect, and g(x, z) = E[Y(z) | X = x, Z = z] - E[Y(z) | X = x, Z = 1 - z] is the confounding bias, the difference in potential outcomes between those who did and did not receive treatment. g = 0 means no unmeasured confounding.</p>
+<svg class="schem" viewBox="0 0 720 160" aria-label="The Credence pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="45" width="118" height="66" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="65" y="72" text-anchor="middle" font-size="13">observed sample</text>
+  <text x="65" y="91" text-anchor="middle" font-size="13">(X, Z, Y)</text>
+  <line x1="124" y1="78" x2="146" y2="78" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="148" y="45" width="190" height="66" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="243" y="66" text-anchor="middle" font-size="13">conditional VAEs for</text>
+  <text x="243" y="84" text-anchor="middle" font-size="13">X | Z and Y(1), Y(0) | X, Z</text>
+  <text x="243" y="102" text-anchor="middle" font-size="13">on bootstrap copies</text>
+  <rect x="148" y="122" width="190" height="34" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="243" y="144" text-anchor="middle" font-size="13">penalties: α toward f, β toward g</text>
+  <line x1="243" y1="122" x2="243" y2="113" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="338" y1="78" x2="360" y2="78" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="362" y="45" width="160" height="66" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="442" y="72" text-anchor="middle" font-size="13">generated data with</text>
+  <text x="442" y="91" text-anchor="middle" font-size="13">known effect</text>
+  <line x1="522" y1="78" x2="544" y2="78" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="546" y="45" width="168" height="66" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="630" y="72" text-anchor="middle" font-size="13">rank estimators by</text>
+  <text x="630" y="91" text-anchor="middle" font-size="13">bias on that data</text>
+</svg>
+<p class="caption">Section 2.2. Treatment itself is drawn from its observed share; the VAE for outcomes sees only one potential outcome per unit, and the f and g penalties are what tie the two together.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: a generator with a user-specified truth</h2></summary>
+<p><b>The objective</b> (Eq. 1, Section 2.2). Minimize a distance between generated and observed data plus α times the deviation of the generated effect from f, plus β times the deviation of the generated confounding bias from g. In Credence the distance is the VAE's reconstruction-plus-KL loss, and the two penalties are applied per unit, which the authors note is tighter than the population version, chosen "to primarily ensure efficient computation". With α = 0 the effect is free; with β = 0 the confounding is free. The generated ground truth is the mean of the generated Y(1) - Y(0).</p>
+<p><b>Fit checks</b> (Appendix C). Correlation matrices of generated and real covariates look "visually extremely similar" for Lalonde and STAR (Fig. 5), presented as "convincing evidence", although the same appendix says comparing first and second moments "is not a sufficient metric of similarity".</p>
+<div class="take"><b>My take.</b> Letting the user state the effect and the confounding is the paper's real contribution: it separates "how the data look" (learned) from "what the truth is" (chosen), which is what a benchmark needs. Two caveats. The penalties are soft, so the generated effect only approximates f, and by how much is not reported. And the abstract's "virtually indistinguishable" rests on correlation matrices, with no test of the kind RealCause runs (see that explainer). <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: does it reproduce the oracle ranking?</h2></summary>
+<p><b>What they did</b> (Section 3.1, Appendix B). Two known processes with 2,500 units and 10 covariates: a quadratic one (Gaussian covariates; Y(0) = βᵀX + noise, Y(1) = Y(0)² + αᵀX + noise) and Friedman's (uniform covariates, Y(1) = Y(0) + X<sub>3</sub>cos(πX<sub>1</sub>X<sub>2</sub>)). Train three Credence models on one sample of each: (b) f set to the effect function and g = 0; (c) f = g = 0; (d) f = 0 and g = 0.3T - 0.15. Compare estimator biases on Credence data with biases on data from the true process (Fig. 3).</p>
+<p><b>What they found.</b> Quadratic: the gradient-boosted S-learner is the most biased; linear S-learner, causal BART and linear DML do best; Credence (b) and (c) show the same. Under (d), with strong selection bias, "almost all methods are biased". Friedman: propensity matching is highly biased, causal BART, GBT DML and the GBT S-learner least biased, "similar" under (b), (c) and (d). Conclusion: Credence reproduces the oracle ranking "in cases where the constraints broadly align with the structure of true DGP".</p>
+<div class="take"><b>My take: part of the answer was given, and there is little to reproduce.</b>
+<ul class="tight">
+<li>For Friedman's process, configuration (b) sets f to exactly the true effect, X<sub>3</sub>cos(πX<sub>1</sub>X<sub>2</sub>) (panel label, caption and Appendix B agree), so it tests whether Credence can rebuild the data when told the truth. For the quadratic process the text and the panel label say f = (1ᵀX)², while the caption gives (βᵀX)² - βᵀX + αᵀX, the true effect minus a constant 1; which one was used is unclear.</li>
+<li>In the oracle panel for the quadratic process (Fig. 3a), the bias boxes of all 13 estimators overlap almost completely (approx.), so the oracle itself barely ranks them. Only Friedman's process has a clear outlier (propensity matching), and that is what every Credence panel reproduces.</li>
+<li>Configuration (c) is the interesting one: f = 0 is wrong, the biases shrink to about a thousandth of the oracle's (Fig. 3c axis, approx.), yet the ordering is called similar. That suggests the covariate and outcome structure, not the effect, drives what ordering there is. The paper does not discuss it.</li>
+<li>"Comparable" is judged from box plots, with no agreement statistic, no count of Monte Carlo replications and no estimate of how much two oracle runs agree.</li>
+</ul>
+<span class="sure">How sure: high on the text and caption; medium on readings from the box plots.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: two real datasets</h2></summary>
+<p><b>Why validation matters.</b> On the randomized Lalonde NSW sample itself, common estimators disagree widely (Table 1):</p>
+<div id="chart-nsw"></div>
+<p class="caption">Table 1: ATE estimates on Lalonde's randomized NSW sample, in 1978 dollars. Standard deviations: 277.37, 394.68, 184.46, 158.59.</p>
+<p><b>What they did</b> (Section 3.2). Lalonde: NSW treated units with PSID controls as the observational sample; benchmark ATE $886.30 from the experiment. Project STAR: a comparison group of 1,780 students from 21 non-randomized schools; benchmark 7.24 from the randomized schools. Rank estimators by bias against the benchmark on the observational data (variances from 50 bootstrap samples), then train Credence on the observational data with f = g = 0, generate 50 datasets, and rank again.</p>
+<p><b>What they found.</b> For Lalonde, the two rankings are "largely similar ... except with respect to estimated variance". For STAR, the observational estimate is "significantly different" from the experimental one, which "possibly indicates that the experimental sample lacks external validity"; "acknowledging this caveat", the "congruence between both rankings further highlights the validity of Credence".</p>
+<div class="take"><b>My take.</b> With f = 0 the generated data have a true effect of about zero, while the targets are $886 and 7.24 points. An estimator's bias with no effect need not match its bias with a large, heterogeneous one, so this compares two different questions. The scales show it: against the experimental benchmark, Lalonde biases run to tens of thousands of dollars and every STAR estimator is biased upward by roughly 10 to 25 points, while on Credence data the biases are a few hundredths (Fig. 4, approx.). The STAR benchmark is admitted to be unreliable, yet counted as support. As in Section 3.1, agreement is described rather than measured. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: how much agreement is "agreement"?</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Number of methods <input id="demo-m" type="range" min="4" max="15" step="1" value="10"> <b id="demo-m-val"></b></label>
+  <label>Evaluation noise / gap between methods <input id="demo-s" type="range" min="0" max="20" step="1" value="8"> <b id="demo-s-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">My illustration, not from the paper; seeded simulation (seed 509), 400 repetitions. The methods' true errors are evenly spaced, one "gap" apart. Each evaluation (an oracle run or a Credence run) measures every error with Gaussian noise of the chosen size, from finite replications or from generator refits. Bars: mean Kendall τ between two independent oracle evaluations, the best agreement a perfect generator could show; mean τ between one evaluation and the true order; and how often two oracle runs pick the same winner.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It asks the applied question (which method for my data), separates the learned data distribution from the user-stated truth, and makes sensitivity analysis over effects and hidden confounding part of the method rather than an afterthought. Using datasets with both experimental and observational arms is the right kind of real-data check, and the limitations section is candid about tuning and assumptions.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>"Reproduces the oracle ranking" is judged by eye: no agreement statistic, no replication counts for Fig. 3, no noise floor.</td><td>Sections 3.1-3.2, Figs. 3-4</td><td>High</td></tr>
+<tr><td>2</td><td>The headline synthetic configuration sets f to the true effect function for Friedman's process; for the quadratic one, text and caption disagree on what f was. And in the quadratic oracle panel the estimators' biases overlap so much that there is little ranking to reproduce.</td><td>Fig. 3, Appendix B</td><td>High (Friedman), Medium (overlap, read off box plots)</td></tr>
+<tr><td>3</td><td>Real-data validation uses f = 0 against benchmarks of $886 and 7.24, and the STAR benchmark is admitted to be unreliable.</td><td>Section 3.2</td><td>High</td></tr>
+<tr><td>4</td><td>"Virtually indistinguishable" rests on correlation matrices, which the appendix itself calls insufficient.</td><td>Abstract, Appendix C</td><td>High</td></tr>
+<tr><td>5</td><td>The penalties are soft; how far the generated effect and bias are from f and g is not reported.</td><td>Section 2.2</td><td>Medium</td></tr>
+<tr><td>6</td><td>Two synthetic processes and two real datasets; text and caption describe configuration (b) differently.</td><td>Section 3.1</td><td>High (scope, low impact)</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>Same claim, unmeasured.</b> "The data-anchored world reproduces the oracle ranking" is exactly what your transfer pilot tests for explainers (DECISIONS #22). Credence and Athey et al. propose and illustrate it; neither measures it. Your pilot measures it: agreement on reality's resolved pairs, an oracle with the same number of tasks as the noise floor, and a generic null world (DECISIONS #24). That framing, "proposed in causal inference, never tested, now tested for explainers", is a clean related-work paragraph.</p>
+<p><b>Keep the truth away from the builder.</b> Configuration (b) shows how easily the true function leaks into a validation. In your pilot the builders fit their targets to D only and never see reality's function; state that explicitly in the paper.</p>
+<p><b>A hypothesis their configuration (c) suggests.</b> If rankings are driven mostly by the covariate distribution rather than by the target, then in your generator x target grid, agreement with reality should vary more across generators than across targets. A two-way breakdown of agreement by generator and target answers that directly, and either outcome is interesting.</p>
+<p><b>Sweeping assumptions.</b> Their "suite of f and g" is the analogue of your target families, and of a possible random-target arm (real rows with a random target function): report how much each builder's ranking depends on the target assumption.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>ATE</b></td><td>Average treatment effect, E[Y(1) - Y(0)].</td></tr>
+<tr><td><b>Confounding bias g</b></td><td>How much potential outcomes differ between those who did and did not get a treatment, at the same covariates.</td></tr>
+<tr><td><b>Rigidness α, β</b></td><td>How strongly the generator is pushed toward the specified effect and confounding.</td></tr>
+<tr><td><b>Conditional VAE</b></td><td>A variational autoencoder whose decoder also receives the conditioning variables.</td></tr>
+<tr><td><b>Placebo test</b></td><td>Apply a method where the true effect is known to be zero.</td></tr>
+<tr><td><b>Meta-learners (S, T, X)</b></td><td>Ways to build an effect estimator from regression models.</td></tr>
+<tr><td><b>DML, TMLE, causal BART</b></td><td>Double machine learning, targeted maximum likelihood, Bayesian additive regression trees for causal effects.</td></tr>
+<tr><td><b>Noise floor</b></td><td>The agreement two equally valid evaluations reach by themselves; the yardstick for "agrees with the oracle".</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-3: motivation, the three kinds of validation, and Table 1.</li>
+<li>Pages 3-6: the framework (Eq. 1) and the Credence loss.</li>
+<li>Pages 6-9: experiments; read Fig. 3's caption next to Appendix B.</li>
+<li>Pages 8-10: discussion of choosing f and g, and limitations.</li>
+<li>Skip on a first read: the VAE background (Appendix A) and implementation notes (Appendix D).</li>
+</ol>
+<p class="caption">Written 2026-10-26 from arXiv v5 (14 pages, read in full). Figures 3-4 (box plots) and 5 (correlation heatmaps) were checked as images; their values are described, not quoted.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 1: ATE estimates on Lalonde's randomized NSW sample.
+barChart("chart-nsw", {
+  label: "ATE estimates on the randomized NSW sample",
+  groups: ["Difference of means", "Double ML", "Causal BART", "Propensity matching"],
+  series: [{ name: "ATE estimate", color: "#0033A0", values: [886.30, 370.94, 818.79, 1079.13] }],
+  min: 0, max: 1200, ticks: [0, 300, 600, 900, 1200], tickFmt: t => String(t), fmt: v => v.toFixed(0), height: 230, barMax: 80
+});
+
+// Demo (my illustration): agreement between two noisy evaluations of the same ranking problem.
+(function demo() {
+  const mIn = need("demo-m"), sIn = need("demo-s"), mOut = need("demo-m-val"), sOut = need("demo-s-val");
+  const text = need("demo-text"), box = need("demo-chart");
+  const REPS = 400;
+  function tau(a, b) {
+    let c = 0, d = 0;
+    for (let i = 0; i < a.length; i++) for (let j = i + 1; j < a.length; j++) {
+      const s = Math.sign(a[i] - a[j]) * Math.sign(b[i] - b[j]);
+      if (s > 0) c++; else if (s < 0) d++;
+    }
+    return (c - d) / (a.length * (a.length - 1) / 2);
+  }
+  const argmin = v => v.indexOf(Math.min(...v));
+  function render() {
+    const m = Number(mIn.value), s = Number(sIn.value) / 10;
+    mOut.textContent = String(m);
+    sOut.textContent = s.toFixed(1);
+    const rand = mulberry32(509);
+    const normal = () => { const u = 1 - rand(), v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    const truth = Array.from({ length: m }, (_, i) => i);
+    let tOO = 0, tOT = 0, same = 0;
+    for (let r = 0; r < REPS; r++) {
+      const a = truth.map(e => e + s * normal()), b = truth.map(e => e + s * normal());
+      tOO += tau(a, b) / REPS;
+      tOT += tau(a, truth) / REPS;
+      if (argmin(a) === argmin(b)) same += 1 / REPS;
+    }
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Agreement between noisy evaluations",
+      groups: ["oracle run vs oracle run (τ)", "one run vs true order (τ)", "same winner in both runs"],
+      series: [{ name: "agreement", color: "#0033A0", values: [tOO, tOT, same] }],
+      colorOf: gi => ["#D90012", "#0033A0", "#F2A800"][gi],
+      min: 0, max: 1.1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 240, barMax: 90
+    });
+    text.textContent = "With " + m + " methods and noise " + s.toFixed(1) + " times the gap between neighbours, two equally valid oracle runs agree at τ = " +
+      tOO.toFixed(2) + " and name the same winner " + Math.round(100 * same) + "% of the time. A generator whose ranking agrees with the oracle at that level " +
+      "is as good as the oracle itself; \"looks similar\" means nothing until it is compared with this floor.";
+  }
+  mIn.addEventListener("input", render);
+  sIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

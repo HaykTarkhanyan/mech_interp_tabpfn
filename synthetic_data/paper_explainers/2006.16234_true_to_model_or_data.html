@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>True to the Model or True to the Data explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: True to the Model or True to the Data explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"True to the Model or True to the Data?", explained</h1>
+<p class="sub">Hugh Chen and Joseph D. Janizek (equal contribution), Scott Lundberg, Su-In Lee (University of Washington, Microsoft Research). arXiv 2006.16234v1 (29 Jun 2020), 7 pages in an ICML-style template; the PDF names no venue. Citations: 224 on Semantic Scholar, 74 on OpenAlex (both checked 2026-10-26). Code: the linear explainer in the shap library. Local PDF: <code>synthetic_data/papers/chen2020_true_to_model_or_data.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: exact observational Shapley values for linear models</a></li>
+<li><a href="#f2">Finding 2: correlation moves credit, even to unused features</a></li>
+<li><a href="#f3">Finding 3: two use cases, two winners</a></li>
+<li><a href="#demo">Try it: who gets credit</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> To compute Shapley values for a model, you must say what the model "outputs" when some features are unknown. One camp fills them in from their conditional distribution given the known features (observational), the other from their marginal distribution, breaking dependence (interventional). Each camp has called the other wrong. Which is right?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Neither, in general.</b> The choice depends on the application: interventional values are "true to the model", observational values are "true to the data" (Sections 1, 4).</li>
+<li><b>An exact method for linear models.</b> With Gaussian features, observational Shapley values of a linear model can be computed exactly; the exponential part is a matrix computed once, after which each explanation is cheap (Section 2, Eqs. 7-9).</li>
+<li><b>Correlation moves credit.</b> Observational values split a coefficient's credit among correlated features, give credit to features the model never uses, and converge more slowly when estimated by sampling (Section 3, Figs. 1-2).</li>
+<li><b>Two real cases, two winners.</b> For loan applicants who want to change the model's decision, interventional values work better; for finding the genes that drive drug response, observational values recover more true genes from a Lasso model (Section 4, Figs. 3-4).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> The framing is right, short and widely used, and it is the standard citation for choosing an estimand. The evidence is thin: both "wins" are set up so the winning definition is also the scoring rule, and "observational" here means Gaussian with the sample covariance, not the data's true conditional distribution.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Shapley values for a prediction.</b> Treat the features as players and the model's output as the payout. A feature's Shapley value averages how much the output changes when it joins every possible group of the other features (Eq. 1). The catch: the model needs a value for every feature, so "only the features in S are known" has to be defined, through a value function v(S).</p>
+<svg class="schem" viewBox="0 0 720 170" aria-label="Two value functions">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="55" width="170" height="60" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="93" y="80" text-anchor="middle" font-size="13">known features x_S,</text>
+  <text x="93" y="99" text-anchor="middle" font-size="13">unknown ones?</text>
+  <line x1="178" y1="75" x2="236" y2="42" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="178" y1="95" x2="236" y2="128" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="238" y="10" width="250" height="62" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="363" y="34" text-anchor="middle" font-size="13">interventional: draw them from</text>
+  <text x="363" y="53" text-anchor="middle" font-size="13">their marginal, E[f(x) | do(S)]</text>
+  <rect x="238" y="98" width="250" height="62" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="363" y="122" text-anchor="middle" font-size="13">observational: draw them given</text>
+  <text x="363" y="141" text-anchor="middle" font-size="13">x_S, E[f(X) | X_S = x_S]</text>
+  <line x1="488" y1="41" x2="516" y2="41" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="488" y1="129" x2="516" y2="129" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="518" y="10" width="194" height="62" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="615" y="34" text-anchor="middle" font-size="13">"true to the model":</text>
+  <text x="615" y="53" text-anchor="middle" font-size="13">unused features get 0</text>
+  <rect x="518" y="98" width="194" height="62" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="615" y="122" text-anchor="middle" font-size="13">"true to the data": credit</text>
+  <text x="615" y="141" text-anchor="middle" font-size="13">spreads to correlated ones</text>
+</svg>
+<p class="caption">The two value functions of Section 1.1 (Eqs. 2-3) and the paper's names for them.</p>
+<p><b>The arguments each camp makes</b> (Section 1.2). Against observational values: they give credit to features the model never uses, violating the "Dummy" axiom proposed by Sundararajan and Najmi. Against interventional values: they evaluate the model on "impossible data points" off the data manifold, when breaking dependence creates combinations that never occur.</p>
+<p><b>For a linear model</b> f(x) = βx + b, the interventional Shapley value is simply φ<sub>i</sub> = β<sub>i</sub>(x<sub>i</sub> - μ<sub>i</sub>) (Eq. 4). The observational value needs conditional expectations of the unknown features, which is the hard part.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: exact observational Shapley values for linear models</h2></summary>
+<p><b>What they did</b> (Section 2.2). Assume the features are multivariate normal, x ~ N(μ, Σ). Then E[x | x<sub>S</sub>] has a closed form (Eq. 7), and because a linear model commutes with expectation, the observational Shapley value is a sum of such conditional means over all feature orderings. Factoring that sum gives φ(f, x) = β T<sup>(μ)</sup>μ + β T<sup>(x)</sup>x (Eq. 9): two matrices that depend only on Σ, not on the instance.</p>
+<p><b>Cost.</b> Computing T<sup>(μ)</sup> and T<sup>(x)</sup> is exponential in the number of features, O(|N|³ 2<sup>|N|</sup>), but done once; after that each explanation is a few matrix multiplications. The matrices can also be approximated by sampling orderings, which "converges much faster" than sampling each explanation separately. This is the "correlation_dependent" linear explainer in the shap library (footnote 1).</p>
+<div class="take"><b>My take.</b> A genuinely useful trick, and the reason linear models are a good testbed: one exact observational reference per covariance matrix. It is exact only under the Gaussian assumption; with real data the paper plugs in "the sampling covariance and mean" (Section 3.2), so the reference is the Gaussian approximation of the data's conditionals, not the conditionals themselves. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: correlation moves credit, even to unused features</h2></summary>
+<p><b>Simulation</b> (Section 3.1, Fig. 1). The model is f(x) = 1·x<sub>1</sub> + 2·x<sub>2</sub> + 3·x<sub>3</sub> with standard normal features, explained at x = (1, 1, 1). With independent features the observational values are exactly (1, 2, 3), the same as interventional ones, and sampling estimates converge at once. With correlation, "correlation splits the β as credit between correlated variables" and "higher levels of correlation leads to slower convergence" of sampled estimates (20 repeats per sample size).</p>
+<p><b>Real data</b> (Section 3.2, Fig. 2). NHANES, 5-year mortality, 25,535 people. A linear model uses age, income ratio, systolic blood pressure and waist circumference (test AUC 0.772), but not BMI. Interventional values give BMI nothing. Observational values depend on which features are listed as players: with BMI added to the explanation, BMI gets importance through its correlation with the others, and the other features' importance drops. The authors note this can reveal a model's hidden dependence on an excluded sensitive feature.</p>
+<div class="take"><b>My take.</b> The BMI example is the key fact for any benchmark: observational values are not a property of the model alone. They change with the set of features you choose to explain, so "the" observational ground truth exists only once that set is fixed. The demo below shows both effects. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: two use cases, two winners</h2></summary>
+<p><b>True to the model: loans</b> (Section 4.1, Fig. 3). A logistic regression predicts default on LendingClub data. For each applicant, rank features by their Shapley value and set them, one at a time and up to 10, to their mean; the faster the predicted log odds of default fall, the better the explanation. Interventional values lower the odds "much more" than observational ones, because observational values send applicants to change features the model does not use. In Fig. 3, after 10 changed features the mean change in log odds is about -15 for interventional and about -1 for observational, with wide, overlapping standard-deviation bands (approx.).</p>
+<p><b>True to the data: genes</b> (Section 4.2, Fig. 4). Take real RNA-seq data from leukaemia patients (1,000 genes), choose 40 genes at random as "causal" and simulate drug response as their sum plus Gaussian noise. Fit a Lasso, rank genes by mean absolute Shapley value, and count true genes found at each rank. Observational values recover more true genes than interventional ones: at rank 300, about 29 of the 40 against about 16 (approx., Fig. 4 left, single curves without error bands). But interventional values on an Elastic Net model do about as well, and that took "a matter of seconds" against 6 hours for the observational matrices with 1,000 samples on a 2018 MacBook Pro.</p>
+<div class="take"><b>My take: each test is built for its winner.</b> In the loan test, the score is the drop in log odds from mean-imputing a feature, which for a linear model is exactly β<sub>i</sub>(x<sub>i</sub> - μ<sub>i</sub>), the interventional Shapley value; the paper says as much ("the interventional approach will first change a feature i where |β<sub>i</sub>(x<sub>i</sub> - μ<sub>i</sub>)| is largest"). In the gene test, the truth is data-level (which genes generated the label), which is what observational values target. The paper's conclusion, that the estimand should follow the question, is right, but these experiments illustrate it rather than test it. The same pattern decided the winners in OpenXAI, Looking Glass and the 2026 synthetic ground-truth framework (see those explainers). <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: who gets credit</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>Correlation of x2 and x3 <input id="demo-r23" type="range" min="0" max="99" step="1" value="90"> <b id="demo-r23-val"></b></label>
+  <label>Correlation of x1 and the unused x4 <input id="demo-r14" type="range" min="0" max="99" step="1" value="80"> <b id="demo-r14-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Exact computation, the paper's Section 3.1 example plus one feature: f(x) = 1·x1 + 2·x2 + 3·x3 + 0·x4 on standard normal features, explained at x = (1, 1, 1, 1). Interventional values are β_i·x_i. Observational values enumerate every coalition with the Gaussian conditional mean E[X | X_S = x_S] (Eq. 7), once with x1-x3 as the players and once with x4 added as a fourth player.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It replaced a fight about which value function is "correct" with the better question of what the explanation is for. The exact linear-Gaussian algorithm is practical and shipped in shap. The NHANES example makes the dependence of observational values on the player set concrete, and the Elastic Net result is a useful reminder that modelling choices can do what an attribution method does, far more cheaply.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>The loan experiment scores explanations by mean imputation, which for a linear model is the interventional value itself, so interventional wins by construction.</td><td>Section 4.1, Eq. 4</td><td>High</td></tr>
+<tr><td>2</td><td>"Observational" values on real data assume a multivariate normal with the sample mean and covariance, although NHANES and LendingClub features are skewed or binary; differences may partly reflect that assumption.</td><td>Sections 2.2, 3.2</td><td>High</td></tr>
+<tr><td>3</td><td>The gene experiment uses one simulated label from 40 random genes; no repeats or error bars are described, and the result depends on how those genes happen to correlate.</td><td>Section 4.2, Fig. 4</td><td>Medium</td></tr>
+<tr><td>4</td><td>Everything is linear; how the trade-off behaves for nonlinear models is left to future work.</td><td>Section 5</td><td>High (acknowledged)</td></tr>
+<tr><td>5</td><td>Observational values depend on which features are explained; the paper shows this but offers no rule for choosing the set, which matters wherever they are used as a reference.</td><td>Section 3.2, Fig. 2</td><td>Medium</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>It is the citation for your estimand.</b> The transfer pilot scores explainers against interventional SHAP of the trained model (DECISIONS #22), the "true to the model" choice. That fits the question "does a benchmark rank explainers of a trained model correctly". Cite this paper when you state it, and say plainly that the conclusions are about that estimand.</p>
+<p><b>It is also the strongest argument for realistic generators.</b> An interventional truth of a fixed model barely depends on how features co-vary, since dependence between known and unknown features is broken by definition. An observational truth depends on it entirely. So the estimand for which realistic dependence matters most is the observational one, and that is where a data-fitted benchmark adds the most over Gaussian worlds.</p>
+<p><b>ARF makes the observational truth computable.</b> In a generator world, the generator is the true distribution, so E[f(X) | X<sub>S</sub> = x<sub>S</sub>] can be computed by sampling the generator's own conditionals. That is why XAI-BENCH used Gaussians. An ARF can do the same with realistic marginals and dependence, which is what conditional sampling (<code>forge(evidence=...)</code>, upstream arfpy issue #5, the candidate next feature for your fork) would provide. With it, the pilot could add an observational truth arm without changing anything else.</p>
+<p><b>A test to expect.</b> Chen et al.'s Fig. 1 shows sampling estimates of observational values converge more slowly under correlation. If you add that arm, explainer rankings should depend on dependence much more than under the interventional estimand.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Value function v(S)</b></td><td>What the model "outputs" when only the features in S are known; Shapley values average its changes.</td></tr>
+<tr><td><b>Interventional value</b></td><td>Unknown features drawn from their marginal distribution, ignoring dependence; "true to the model".</td></tr>
+<tr><td><b>Observational value</b></td><td>Unknown features drawn from their distribution given the known ones; "true to the data".</td></tr>
+<tr><td><b>Dummy axiom</b></td><td>A feature the model never uses must get zero attribution.</td></tr>
+<tr><td><b>Off-manifold</b></td><td>Feature combinations that never occur in real data, created when dependence is broken.</td></tr>
+<tr><td><b>Lasso, Elastic Net</b></td><td>Linear regression with an L1 penalty (picks one of a correlated group), or L1 plus L2 (spreads weight across the group).</td></tr>
+<tr><td><b>NHANES</b></td><td>US National Health and Nutrition Examination Survey.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-2: the two value functions and the arguments against each. Read in full.</li>
+<li>Pages 2-3: the linear-Gaussian algorithm; skim the matrix algebra unless you need to implement it.</li>
+<li>Pages 3-4: Fig. 1 and the NHANES example (Fig. 2).</li>
+<li>Pages 4-6: the two use cases and Figs. 3-4.</li>
+<li>Page 6: the conclusion's last paragraph, on independent reparameterisations.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from the arXiv v1 PDF (7 pages, read in full; figures checked as images).</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Demo: exact interventional and observational Shapley values for a linear model on Gaussian features.
+(function demo() {
+  const r23In = need("demo-r23"), r14In = need("demo-r14"), r23Out = need("demo-r23-val"), r14Out = need("demo-r14-val");
+  const text = need("demo-text"), box = need("demo-chart");
+  const beta = [1, 2, 3, 0], x = [1, 1, 1, 1];
+  function inv(A) {                                    // Gauss-Jordan inverse of a small positive-definite matrix
+    const n = A.length, M = A.map((r, i) => r.concat(A.map((_, j) => (i === j ? 1 : 0))));
+    for (let c = 0; c < n; c++) {
+      let p = c;
+      for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      [M[c], M[p]] = [M[p], M[c]];
+      if (Math.abs(M[c][c]) < 1e-12) throw new Error("singular covariance block");
+      const d = M[c][c];
+      for (let k = 0; k < 2 * n; k++) M[c][k] /= d;
+      for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c]; for (let k = 0; k < 2 * n; k++) M[r][k] -= f * M[c][k]; }
+    }
+    return M.map(r => r.slice(n));
+  }
+  function value(S, Sig) {                             // v(S) = beta . E[X | X_S = x_S], zero means
+    if (!S.length) return 0;
+    const Ainv = inv(S.map(i => S.map(j => Sig[i][j])));
+    const w = Ainv.map(row => row.reduce((s, a, k) => s + a * x[S[k]], 0));
+    let v = 0;
+    for (let i = 0; i < 4; i++) v += beta[i] * S.reduce((s, j, k) => s + Sig[i][j] * w[k], 0);
+    return v;
+  }
+  function shapley(players, Sig) {
+    const n = players.length, fact = k => (k <= 1 ? 1 : k * fact(k - 1)), phi = [0, 0, 0, 0];
+    for (const i of players) {
+      const others = players.filter(p => p !== i);
+      for (let mask = 0; mask < (1 << others.length); mask++) {
+        const S = others.filter((_, b) => mask & (1 << b));
+        const wgt = fact(S.length) * fact(n - S.length - 1) / fact(n);
+        phi[i] += wgt * (value(S.concat([i]), Sig) - value(S, Sig));
+      }
+    }
+    return phi;
+  }
+  function render() {
+    const r23 = Number(r23In.value) / 100, r14 = Number(r14In.value) / 100;
+    r23Out.textContent = r23.toFixed(2);
+    r14Out.textContent = r14.toFixed(2);
+    const Sig = [[1, 0, 0, r14], [0, 1, r23, 0], [0, r23, 1, 0], [r14, 0, 0, 1]];
+    const inter = beta.map((b, i) => b * x[i]);
+    const obs3 = shapley([0, 1, 2], Sig), obs4 = shapley([0, 1, 2, 3], Sig);
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Interventional and observational Shapley values", groups: ["x1 (β = 1)", "x2 (β = 2)", "x3 (β = 3)", "x4 (β = 0, unused)"],
+      series: [
+        { name: "interventional", color: "#0033A0", values: inter },
+        { name: "observational, players x1-x3", color: "#F2A800", values: obs3 },
+        { name: "observational, players x1-x4", color: "#D90012", values: obs4 }
+      ],
+      min: 0, max: 3.4, ticks: [0, 1, 2, 3], tickFmt: t => t.toFixed(0), fmt: v => v.toFixed(2), height: 270, barMax: 30
+    });
+    text.textContent = "All three rows sum to f(x) = 6. Observational values move credit from x3 to x2 as they correlate (" +
+      obs3[1].toFixed(2) + " and " + obs3[2].toFixed(2) + "), and once x4 is listed as a player it takes " + obs4[3].toFixed(2) +
+      " from x1 although the model never uses it. Which of these is the ground truth is a choice, not a fact about the model.";
+  }
+  r23In.addEventListener("input", render);
+  r14In.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

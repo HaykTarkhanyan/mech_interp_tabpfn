@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Through the Looking Glass explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Through the Looking Glass explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"Through the looking glass: evaluating post hoc explanations using transparent models", explained</h1>
+<p class="sub">Mythreyi Velmurugan, Chun Ouyang, Renuka Sindhgatta, Catarina Moreira (Queensland University of Technology, IBM Research India, University of Technology Sydney). International Journal of Data Science and Analytics 20, 615-635 (2025 issue; published online 12 Sep 2023; open access), doi 10.1007/s41060-023-00445-1. 21 pages, no appendix. Citations: 24 on OpenAlex for the journal record (checked 2026-10-26); not found on Semantic Scholar. Local PDF: <code>synthetic_data/papers/velmurugan2023_looking_glass.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: "SHAP fails on linear models"</a></li>
+<li><a href="#f2">Finding 2: "precise but incomplete"</a></li>
+<li><a href="#f3">Finding 3: the threshold, LINDA-BN, ACV and the tests</a></li>
+<li><a href="#demo">Try it: the reference picks the winner</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. Values marked "approx." were read off the paper's figures by eye.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> How faithfully do model-agnostic explanation methods describe what a model actually computes ("internal fidelity"), on tabular data, where such checks are rare? Use models whose reasoning can be read directly, glass boxes, and compare.</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Setup.</b> 14 public datasets (7 classification, 7 regression), 35 glass-box models: a CART decision tree everywhere, logistic regression and Gaussian naive Bayes for classification, linear regression for regression. Four explainers: LIME, SHAP, LINDA-BN and ACV (Sections 4.1-4.3).</li>
+<li><b>Reference.</b> For a tree, the "true features" are those on the instance's decision path; for linear and logistic models, those whose coefficient is within the top 5% of the coefficient range; for naive Bayes, the analogous likelihood difference. Rankings by path position or coefficient size (Table 5).</li>
+<li><b>Results.</b> LIME and SHAP are "generally precise" but incomplete; no method ranks features well; LIME is poor on naive Bayes and good on linear models; SHAP is poor on linear and logistic models but very precise on trees; all differences are significant (Tables 7-10).</li>
+<li><b>Conclusion.</b> No method is best everywhere; the explanation mechanism and the setup decide quality, so experts are needed to choose (Section 7).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> Using glass boxes as the reference is the right idea, and the paper is honest that it is not looking for a winner. But its two headline verdicts come from how the reference is defined: "SHAP fails on linear models" because the reference is coefficient size while SHAP reports contributions, and "precise but incomplete" because on trees the reference set is the whole decision path while the explanation set is usually one feature.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Internal versus external fidelity</b> (Section 2.3). External fidelity asks whether an explanation's implied prediction matches the model's prediction. Internal fidelity asks whether the explanation matches how the model computed it, for example the weights it uses or the path it follows in a tree. Only a model you can read lets you check the second.</p>
+<p><b>The four explainers.</b> <b>LIME</b> fits a ridge regression to the model's outputs on perturbed copies of the instance and returns its coefficients. <b>SHAP</b> returns Shapley values; here TreeSHAP for trees, LinearSHAP for linear and logistic models, and the exact or permutation explainer for naive Bayes. <b>LINDA-BN</b> learns a small Bayesian network around the instance; the paper turns it into importances as |P(f(x)) - P(f(x) | x<sub>i</sub>)| (Eq. 15). <b>ACV</b> trains a random-forest surrogate and returns minimal sets of features sufficient for the prediction, with a "local explanatory importance" score for ranking.</p>
+<svg class="schem" viewBox="0 0 720 160" aria-label="How Looking Glass scores an explanation">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="8" y="14" width="190" height="56" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="103" y="37" text-anchor="middle" font-size="13">glass-box model:</text>
+  <text x="103" y="56" text-anchor="middle" font-size="13">path or coefficients</text>
+  <rect x="8" y="90" width="190" height="56" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="103" y="113" text-anchor="middle" font-size="13">explainer: weights,</text>
+  <text x="103" y="132" text-anchor="middle" font-size="13">averaged over 5 runs</text>
+  <line x1="198" y1="42" x2="246" y2="42" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="198" y1="118" x2="246" y2="118" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="248" y="14" width="200" height="56" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="348" y="37" text-anchor="middle" font-size="13">true set x_t and</text>
+  <text x="348" y="56" text-anchor="middle" font-size="13">ranking r_t</text>
+  <rect x="248" y="90" width="200" height="56" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="348" y="113" text-anchor="middle" font-size="13">top 5% of range: x_e,</text>
+  <text x="348" y="132" text-anchor="middle" font-size="13">ranking r_e</text>
+  <line x1="448" y1="42" x2="500" y2="70" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <line x1="448" y1="118" x2="500" y2="90" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="502" y="52" width="210" height="56" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="607" y="75" text-anchor="middle" font-size="13">precision, recall</text>
+  <text x="607" y="94" text-anchor="middle" font-size="13">and Kendall tau-b</text>
+</svg>
+<p class="caption">The evaluation (Sections 3.2, 4.2-4.4). "Top 5% of range" keeps every weight at or above max - 0.05·(max - min) (Eqs. 11, 14), which often keeps a single feature.</p>
+<p><b>Preprocessing</b> (Section 4.1). Categorical variables one-hot encoded (up to 117 columns for Mushroom), numeric features min-max scaled to [0, 1], classification data balanced by downsampling, a 70/30 split, and the explainers run on a sample of the test set.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: "SHAP fails on linear models"</h2></summary>
+<p><b>What they found.</b> SHAP "does show poor performance when explaining logistic and linear regression models", while LIME's explanations for those models "are more faithful than that of SHAP" (Section 5). On linear regression (Table 8), LIME's precision falls below 0.5 only for the two all-continuous datasets (Real Estate 0.40, Wine Quality 0.43), and is perfect on Facebook, Solar Flare and Student Scores. SHAP reaches 0.08 on Student Scores. Across the 14 linear and logistic models, LIME is more precise in 11 (my count from Tables 7-8).</p>
+<div id="chart-linr"></div>
+<p class="caption">Precision of the explanation set against the top-5% coefficient set, linear regression models (Table 8).</p>
+<p><b>The paper's own explanation</b> (Section 6.3): SHAP values "are not defined as the importance of a feature to the model"; LinearSHAP computes φ<sub>i</sub> = w<sub>i</sub>(x<sub>i</sub> - E[x<sub>i</sub>]) (Eq. 16), which "do[es] not fully align with model importance". Table 11 then lists, among SHAP's weaknesses, "Cannot accurately work with linear and logistic regression models", and recommends SHAP for "End user decision-making", "Not for investigations of model quality".</p>
+<div class="take"><b>My take: the diagnosis is right; the verdict should have gone the other way.</b> For a linear model, w<sub>i</sub>(x<sub>i</sub> - E[x<sub>i</sub>]) is the exact Shapley value of that model, so SHAP is correct by its own definition. LIME fits a ridge regression to a linear function and recovers w<sub>i</sub> almost exactly, which matches a reference defined as coefficient size by construction. The comparison measures which method returns the coefficient vector, the same trap OpenXAI falls into (see that explainer). Section 6.3 sees this and then keeps the verdict. With min-max-scaled features, an instance near a feature's mean gets a small SHAP value for a large coefficient; whether that is an error depends on the question, not on the method. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: "precise but incomplete"</h2></summary>
+<p><b>What they found.</b> "LIME explanations generally have high precision coupled with low-to-moderate recall scores, indicating that a large number of relevant features are missing from the subset"; SHAP likewise shows "high precision ... but poor recall" (Section 5.1). For users: "highly weighted features are truly relevant", but "other factors could have impacted on the model prediction" (Section 6.1).</p>
+<div id="chart-gap"></div>
+<p class="caption">Mean precision minus recall by glass-box type, my computation from Tables 7-8 (14 decision trees, 7 logistic regressions, 7 linear regressions, 7 naive Bayes models).</p>
+<div class="take"><b>My take: the gap is mostly a set-size effect.</b> The precision-recall gap is about 0.55-0.60 for decision trees and about zero for logistic regression and naive Bayes. For a tree, the true set is every feature on the decision path, usually several. The explanation set is everything within 5% of the top weight, often one feature. A one-feature set that hits the path has precision 1 and recall 1/(path length), whatever the explainer does. Where the true set uses the same top-5% rule (logistic regression, naive Bayes), precision and recall are nearly equal, often identical (0.68/0.68, 0.82/0.82 in Table 7), which is what single-feature sets on both sides produce. So "precise but incomplete" describes the scoring rule more than the explainers. The ranking metric (Kendall tau-b) avoids this and is the more trustworthy column; SHAP's mean tau on trees is 0.66 against LIME's 0.41 (my averages). <span class="sure">How sure: high on the pattern; medium on the exact set sizes, which the paper does not report.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: the threshold, LINDA-BN, ACV and the tests</h2></summary>
+<p><b>Choosing 5%</b> (Section 4.4, Fig. 3). For every dataset, model and explainer, they tried thresholds from 0.05 to 0.5 and computed the F1 match between true and explanation sets. Out of 126 experiments, 38 were ties and were set aside; of the remaining 88, 0.05 gave "the most faithful subsets" in 49 (Fig. 3: about 49 at 0.05, about 12 at 0.5, 2 to 5 at each value in between, approx.). So 0.05 was chosen.</p>
+<p><b>LINDA-BN and ACV.</b> LINDA-BN has high recall and low precision because, when the model is confident, many features get similar scores and a large set is returned (Section 6.1). ACV is the least consistent and "generally performed poorly across all measures"; its surrogate was tuned to high external fidelity, which "does not translate into high internal fidelity" (Section 6.5).</p>
+<p><b>Significance.</b> Wilcoxon signed-rank tests find every pair of explainers different on every metric, with p printed as 0.00 throughout (Tables 9-10).</p>
+<div class="take"><b>My take.</b> Choosing the threshold that maximizes measured fidelity, then reporting fidelity at that threshold, tunes the evaluation on its own outcome; the 0.05 choice also produces the single-feature sets behind Finding 2. The counting in Section 4.4 sets the 38 ties aside and then counts "another 38" ties among the remaining 88. The Wilcoxon statistics (T up to about 540,000) imply per-instance pairs pooled across datasets and models, so the tests treat thousands of correlated instances as independent; p = 0.00 says little. The naive Bayes reference, a difference of two class-conditional Gaussian densities at x<sub>i</sub> (Eq. 13), grows when a feature's class distributions are narrow, which is a scale effect, not importance. <span class="sure">How sure: high on the counting and the threshold choice; medium on the tests (the pairing unit is not stated) and on the naive Bayes reference.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: the reference picks the winner</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>x1 of the instance <input id="demo-x1" type="range" min="0" max="20" step="1" value="11"> <b id="demo-x1-val"></b></label>
+  <label>x2 of the instance <input id="demo-x2" type="range" min="0" max="20" step="1" value="4"> <b id="demo-x2-val"></b></label>
+  <label>Reference <select id="demo-ref"><option value="coef">coefficient size |w_i| (the paper)</option><option value="contrib">contribution |w_i(x_i - E[x_i])| (Shapley)</option></select></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">Made-up linear model, not from the paper: f(x) = 2.0·x1 - 1.5·x2 + 1.0·x3 + 0.3·x4 on min-max-scaled features with means (0.5, 0.3, 0.6, 0.5); x3 = 0.9 and x4 = 0.2 are fixed. LIME is idealized as recovering the coefficients exactly, which a ridge fit of a linear model nearly does; SHAP is LinearSHAP, w_i(x_i - E[x_i]). Bars are normalized absolute importances; scores are Kendall tau-b against the chosen reference.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> Glass-box references are the cleanest way to check internal fidelity, and the paper uses 14 datasets with varied variable types rather than the usual two or three. It explains why each method behaves as it does (surrogate choice, permutation scheme, SHAP implementation) instead of only ranking them. It says plainly that it is not looking for a best method, that glass-box fidelity may not transfer to black boxes, and that LINDA-BN and ACV were not designed for attribution.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>For linear and logistic models the reference is coefficient size, a global quantity; SHAP returns exact local Shapley values and is marked as failing. The paper diagnoses this (Section 6.3) but keeps the verdict in Table 11.</td><td>Eqs. 11, 16; Tables 7-8, 11</td><td>High</td></tr>
+<tr><td>2</td><td>"Precise but incomplete" is largely a set-size artifact: decision-path reference sets against usually single-feature explanation sets; the gap vanishes where both sides use the same rule.</td><td>Tables 5, 7-8; my averages</td><td>High</td></tr>
+<tr><td>3</td><td>The 5% threshold was chosen because it maximized the measured fidelity.</td><td>Section 4.4, Fig. 3</td><td>High</td></tr>
+<tr><td>4</td><td>Significance tests pool correlated per-instance results across datasets and models; every p-value is 0.00.</td><td>Tables 9-10</td><td>Medium</td></tr>
+<tr><td>5</td><td>The naive Bayes reference (a density difference) depends on feature scale and is not an established importance measure.</td><td>Eq. 13</td><td>Medium</td></tr>
+<tr><td>6</td><td>The reference sets and their sizes are never reported, so precision and recall cannot be interpreted without them.</td><td>Sections 4.2-4.4</td><td>High</td></tr>
+<tr><td>7</td><td>Section 4.4 counts the 38 ties twice; small but it makes the 49-of-88 claim hard to check.</td><td>Section 4.4</td><td>High (low impact)</td></tr>
+<tr><td>8</td><td>Glass boxes are evaluated directly, never a model trained to imitate them, so the results say nothing about explaining learned black boxes, which the authors acknowledge.</td><td>Section 6.7</td><td>High (acknowledged)</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>Same idea as your "reality", one step shorter.</b> A known function as the reference is your nested design's reality (DECISIONS #22). Looking Glass explains the glass box itself; your pilot trains a model on data from the known function and scores against that trained model's exact interventional SHAP values (<code>err_model</code>), with the known function's values alongside (<code>err_data</code>). That extra step is what makes the result about learned models, which is the limitation the authors name in Section 6.7.</p>
+<p><b>The cautionary example for your estimand section.</b> Your reference is interventional SHAP, so occlusion, LIME, Saabas and path-dependent TreeSHAP in your explainer list are scored as estimators of it. Looking Glass shows what happens when that is not stated: a correct method gets labeled as broken. Cite it when you justify the estimand, and state the scope of your rankings.</p>
+<p><b>Keep continuous metrics.</b> Your primary metric is pairwise agreement on reality's resolved pairs, and explainer error is a continuous relative error. If you add any top-k set metric, use equal set sizes on both sides, or Finding 2 happens to you.</p>
+<p><b>Fix evaluation choices before seeing results.</b> DECISIONS #24 fixed the primary metric before the full run; Looking Glass's threshold choice is the counterexample to point at.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>Glass-box model</b></td><td>A model whose reasoning can be read directly: a decision tree, a linear or logistic regression, naive Bayes.</td></tr>
+<tr><td><b>Internal fidelity</b></td><td>Does the explanation match how the model computed the prediction?</td></tr>
+<tr><td><b>External fidelity</b></td><td>Does the explanation's implied prediction match the model's prediction?</td></tr>
+<tr><td><b>Precision, recall</b></td><td>Share of explanation features that are true features; share of true features the explanation found.</td></tr>
+<tr><td><b>Kendall tau-b</b></td><td>Rank correlation that handles ties; 1 means identical orderings.</td></tr>
+<tr><td><b>LinearSHAP</b></td><td>Exact Shapley values for a linear model, w_i(x_i - E[x_i]), assuming independent features.</td></tr>
+<tr><td><b>LINDA-BN</b></td><td>A local Bayesian network fitted around one instance.</td></tr>
+<tr><td><b>ACV</b></td><td>Active Coalition of Variables: minimal sufficient feature sets from a random-forest surrogate.</td></tr>
+<tr><td><b>ICE plot</b></td><td>Individual conditional expectation: the prediction as one feature varies, one curve per instance.</td></tr>
+<tr><td><b>Wilcoxon signed-rank test</b></td><td>A paired, rank-based test of whether two methods' scores differ.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-6: motivation, the three research questions (Section 2.4) and the metrics (Section 3.2).</li>
+<li>Pages 7-12: how the true and explanation sets are extracted (Tables 5-6, Eqs. 11-15, Section 4.4 and Fig. 3). This is where the results are decided.</li>
+<li>Pages 13-14: Tables 7-8. Read them with the decision-tree rows and the linear rows side by side.</li>
+<li>Pages 15-19: the discussion, especially Section 6.3 (SHAP) and Table 11.</li>
+<li>Skip on a first read: the LINDA-BN and ACV background (Sections 2.2.3-2.2.4) and Tables 9-10.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from the published PDF (21 pages, read in full). Tables 7-8 were read from a layout-preserving extraction and checked against the paper's own sentences about them; Table 11 and Figures 3-4 were checked as images.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 8, linear regression rows: precision of LIME and SHAP explanation sets.
+barChart("chart-linr", {
+  label: "Precision against the top-5% coefficient set, linear regression models",
+  groups: ["Bike", "Facebook", "Housing", "Real Estate", "Solar Flare", "Student", "Wine"],
+  series: [
+    { name: "LIME", color: "#0033A0", values: [1.00, 1.00, 0.53, 0.40, 1.00, 1.00, 0.43] },
+    { name: "SHAP (LinearSHAP)", color: "#F2A800", values: [1.00, 1.00, 0.44, 0.30, 0.16, 0.08, 0.34] }
+  ],
+  min: 0, max: 1.12, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 250, barMax: 34
+});
+
+// My averages over Tables 7-8: mean (precision - recall) per glass-box type.
+barChart("chart-gap", {
+  label: "Mean precision minus recall by glass-box type",
+  groups: ["decision tree (14)", "logistic regr. (7)", "linear regr. (7)", "naive Bayes (7)"],
+  series: [
+    { name: "LIME", color: "#0033A0", values: [0.55, 0.07, 0.02, -0.01] },
+    { name: "SHAP", color: "#F2A800", values: [0.60, 0.02, 0.24, 0.04] }
+  ],
+  min: -0.1, max: 0.72, ticks: [0, 0.2, 0.4, 0.6], tickFmt: t => t.toFixed(1), fmt: v => v.toFixed(2), height: 240, barMax: 46
+});
+
+// Demo: one linear model, two references, two explainers.
+(function demo() {
+  const x1In = need("demo-x1"), x2In = need("demo-x2"), refIn = need("demo-ref");
+  const x1Out = need("demo-x1-val"), x2Out = need("demo-x2-val"), text = need("demo-text"), box = need("demo-chart");
+  const w = [2.0, -1.5, 1.0, 0.3], mean = [0.5, 0.3, 0.6, 0.5];
+  function tauB(a, b) {
+    let nc = 0, nd = 0, ta = 0, tb = 0;
+    const n = a.length;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+      const da = Math.sign(a[i] - a[j]), db = Math.sign(b[i] - b[j]);
+      if (da === 0) ta++;
+      if (db === 0) tb++;
+      if (da !== 0 && db !== 0) { if (da === db) nc++; else nd++; }
+    }
+    const n0 = n * (n - 1) / 2, den = Math.sqrt((n0 - ta) * (n0 - tb));
+    if (den === 0) throw new Error("Kendall tau-b undefined: a ranking is all ties");
+    return (nc - nd) / den;
+  }
+  const norm = v => { const s = v.reduce((t, u) => t + u, 0); return v.map(u => u / s); };
+  const argmax = v => v.indexOf(Math.max(...v));
+  function render() {
+    const x = [Number(x1In.value) / 20, Number(x2In.value) / 20, 0.9, 0.2];
+    x1Out.textContent = x[0].toFixed(2);
+    x2Out.textContent = x[1].toFixed(2);
+    const lime = w.map(Math.abs);
+    const shap = w.map((wi, i) => Math.abs(wi * (x[i] - mean[i])));
+    const useCoef = refIn.value === "coef";
+    const ref = useCoef ? lime : shap;
+    const tL = tauB(ref, lime), tS = tauB(ref, shap);
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "Normalized importance: reference, LIME and SHAP",
+      groups: ["x1 (w = 2.0)", "x2 (w = -1.5)", "x3 (w = 1.0)", "x4 (w = 0.3)"],
+      series: [
+        { name: "reference", color: "#888888", values: norm(ref) },
+        { name: "LIME (idealized)", color: "#0033A0", values: norm(lime) },
+        { name: "SHAP (LinearSHAP)", color: "#F2A800", values: norm(shap) }
+      ],
+      min: 0, max: 1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 260, barMax: 30
+    });
+    const top = i => "x" + (i + 1);
+    text.textContent = "Against " + (useCoef ? "coefficient size" : "Shapley contributions") + ": LIME tau-b " + tL.toFixed(2) +
+      " (top feature " + top(argmax(lime)) + "), SHAP tau-b " + tS.toFixed(2) + " (top feature " + top(argmax(shap)) +
+      "); the reference's top feature is " + top(argmax(ref)) + ". Switch the reference and the winner switches; " +
+      "move x1 toward its mean 0.50 and SHAP rightly says x1 contributed little to this prediction, which the coefficient reference scores as an error.";
+  }
+  [x1In, x2In].forEach(el => el.addEventListener("input", render));
+  refIn.addEventListener("change", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

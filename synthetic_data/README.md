@@ -10,8 +10,14 @@ it has its own uv environment and scripts and does not depend on the TabPFN work
 xai_benchmark_pitch.pdf                    the benchmark proposal (8 slides)
 chatgpt_xai_ground_truth_benchmarks.md     saved ChatGPT conversation on ground-truth XAI benchmarks
 chatgpt_xai_ground_truth_benchmarks.json   the same, as data (11 visible messages)
-papers/                    the five core papers, read in full (XAI-BENCH, Islam et al. 2025, ARF, Advani et al., Karim)
-paper_explainers/          one standalone HTML explainer per core paper (critique, demo, link to the pitch)
+chatgpt_conference_submission_plan.md      saved ChatGPT conversation (2026-10-24): venues, related papers, modality
+chatgpt_conference_submission_plan.json    the same, as data (6 visible messages)
+papers/                    the five core papers, read in full (XAI-BENCH, Islam et al. 2025, ARF, Advani et al., Karim),
+                           four more must-reads, also read in full (OpenXAI, ITErpretability, Through the Looking Glass,
+                           Miro-Nicolau et al. 2026), four on data-fitted simulation and estimands (Athey et al. WGAN,
+                           Credence, RealCause, Chen et al. "True to the model or true to the data?"), and
+                           must_read_5_main_parts.pdf (main text of five, for printing)
+paper_explainers/          one standalone HTML explainer per paper in papers/ (critique, demo, link to this work)
 results/transfer_pilot/    transfer-pilot runs (<tag>.json) and the summaries and reports derived from them
 lit_review/
   synthetic_data_for_xai_evaluation_review.{md,pdf}   scoping review, 81 verified references

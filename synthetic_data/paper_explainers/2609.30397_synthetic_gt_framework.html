@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>Synthetic Ground-Truth Framework explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: Synthetic Ground-Truth Framework explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"A Synthetic Ground-Truth Framework for the Evaluation of Explainable AI Methods", explained</h1>
+<p class="sub">Miquel Miró-Nicolau (Universitat de les Illes Balears), Francesco Spinnato and Riccardo Guidotti (University of Pisa, ISTI-CNR). arXiv 2609.30397v1 (24 Sep 2026), "Preprint submitted to Elsevier"; 19 PDF pages (16 numbered pages plus 3 pages of figures). Code: github.com/miquelmn/fb2ts. Citations: 0 on OpenAlex (checked 2026-10-26), unsurprising one month after posting; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/mironicolau2026_synthetic_gt_framework.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: binary images</a></li>
+<li><a href="#f2">Finding 2: time series</a></li>
+<li><a href="#f3">Finding 3: tabular data</a></li>
+<li><a href="#demo">Try it: the step size picks the winner</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper. This is a preprint, not yet peer reviewed.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Most XAI evaluation checks whether an explanation reproduces the model's predictions, which says little about whether it reflects how the model decides. Intervention-based synthetic ground truth solves this for colour images (FunnyBirds, Hesse et al. 2023). Can the same idea work for binary images, time series and tabular data?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>Ground truth from the model.</b> A component's importance is the change in the model's output when that component is removed by an intervention that stays inside the training distribution: φ<sub>j</sub> = f(x) - f(x \ c<sub>j</sub>) (Eqs. 1, 5).</li>
+<li><b>Three instantiations.</b> Binary FunnyBirds silhouettes (47 classes; remove a body part). Time series traced from the silhouette's outline (distance to a fixed centroid, up to 1,251 steps; remove the part in the image, then re-trace). Tabular data: three features on a 100-level grid, where the intervention lowers one feature by one level and the label is a thresholded sum of sines (Eqs. 4-5, 9).</li>
+<li><b>Results.</b> Images: gradient methods top SIM at about 0.38, LIME and KernelSHAP top AUC<sub>borji</sub>. Time series: RISE best on every metric (SIM 0.522). Tabular: Gradient "near-perfect" (SIM 0.980), LORE second (0.784), LIME last (0.560) (Tables 5-7).</li>
+<li><b>Conclusion.</b> No method is best on all data types, in line with the "No Free Lunch Theorem for explanations" (Section 7).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> Model-level, intervention-based ground truth is the right kind, and the time-series construction is clever. But the tabular "first faithful local ground truth" is a one-step finite difference, essentially the gradient, so Gradient's near-perfect score is built in; the tabular task is three features with a deterministic label and repeated rows; and several tables have impossible or contradictory entries. Its future-work sentence describes your project.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>SAIG.</b> "Synthetic Artificial Intelligence Ground truth": datasets built so that the importance of each input component is known by design (a term from the first author's 2026 review, ref. [37]).</p>
+<p><b>Two kinds of ground truth</b> (Section 3). The paper distinguishes the data-generating process (which features truly drive the label) from the model's behaviour (which features the trained model uses), and targets the second, "even if the model relies on spurious or undesirable correlations". This is the same distinction OpenXAI makes (see that explainer).</p>
+<p><b>Intervention-based importance.</b> Remove a component in a realistic way and measure the output change. In FunnyBirds, a body part is replaced by the background it covered, and the training data already contain birds with parts removed, so the intervened images are not out of distribution (Section 4).</p>
+<svg class="schem" viewBox="0 0 720 150" aria-label="Three modalities from one source">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="44" width="140" height="62" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="76" y="70" text-anchor="middle" font-size="13">FunnyBirds</text>
+  <text x="76" y="89" text-anchor="middle" font-size="13">colour image</text>
+  <line x1="146" y1="75" x2="174" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="176" y="44" width="150" height="62" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="251" y="70" text-anchor="middle" font-size="13">binary silhouette</text>
+  <text x="251" y="89" text-anchor="middle" font-size="13">(47 classes)</text>
+  <line x1="326" y1="75" x2="354" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="356" y="44" width="170" height="62" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="441" y="70" text-anchor="middle" font-size="13">outline distance to a</text>
+  <text x="441" y="89" text-anchor="middle" font-size="13">fixed centroid: series</text>
+  <rect x="556" y="44" width="158" height="62" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="635" y="66" text-anchor="middle" font-size="13">tabular: separate,</text>
+  <text x="635" y="84" text-anchor="middle" font-size="13">3 features on a</text>
+  <text x="635" y="100" text-anchor="middle" font-size="13">100-level grid</text>
+  <text x="360" y="132" text-anchor="middle" font-size="12" style="fill:var(--muted)">removing a part in the image changes the silhouette and the series at the same place</text>
+</svg>
+<p class="caption">Sections 4.1-4.3. The tabular data are not derived from the birds; they use the ssin-2c function of Cortez and Embrechts (2013).</p>
+<p><b>The three scores</b> (Section 5.1), taken from the saliency literature. <b>SIM</b> is the overlap of two normalized importance maps, Σ min(g<sub>i</sub>, φ<sub>i</sub>), from 0 to 1. <b>KL<sub>div</sub></b> is the information lost when the explanation replaces the ground truth (lower is better). <b>AUC<sub>borji</sub></b> asks whether the explanation ranks important locations above randomly sampled ones (0.5 is chance); it is not used for tabular data.</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: binary images</h2></summary>
+<p><b>What they did.</b> Fine-tune ResNet50 (ImageNet weights, frozen backbone, new 128-unit head) on 47,470 binary silhouettes (precision 0.91, Table 1). Explain with RISE, LIME, Gradient, DeepLIFT, KernelSHAP and Integrated Gradients; LIME and KernelSHAP use Quickshift superpixels (Table 2).</p>
+<table id="tbl-img">
+<colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+<thead><tr><th>Method</th><th class="n">SIM (↑)</th><th class="n">AUC<sub>borji</sub> (↑)</th><th class="n">KL<sub>div</sub> (↓)</th></tr></thead>
+<tbody>
+<tr><td>RISE</td><td class="n">0.343 ± 0.382</td><td class="n">0.573 ± 0.273</td><td class="n">1.915 ± 1.505</td></tr>
+<tr><td>LIME</td><td class="n">0.293 ± 0.164</td><td class="n"><b>0.932</b> ± 0.083</td><td class="n"><b>1.217</b> ± 0.664</td></tr>
+<tr><td>Gradient</td><td class="n">0.378 ± 0.427</td><td class="n">0.500 ± 0.026</td><td class="n">1.903 ± 1.517</td></tr>
+<tr><td>DeepLIFT</td><td class="n"><b>0.380</b> ± 0.429</td><td class="n">0.555 ± 0.123</td><td class="n">1.895 ± 1.510</td></tr>
+<tr><td>KernelSHAP</td><td class="n">0.342 ± 1.210</td><td class="n">0.848 ± 0.165</td><td class="n">1.551 ± 1.210</td></tr>
+<tr><td>Integrated Gradients</td><td class="n"><b>0.380</b> ± 0.430</td><td class="n">0.510 ± 0.098</td><td class="n">1.905 ± 1.519</td></tr>
+</tbody>
+</table>
+<p class="caption">Table 5 as printed (mean ± standard deviation; bold as in the paper).</p>
+<p><b>The paper's reading.</b> The gradient methods top SIM but are "significantly below the theoretical optimum" and only marginally better than LIME; on AUC<sub>borji</sub> all but LIME and KernelSHAP are near chance, because Quickshift keeps their importance off the background.</p>
+<div class="take"><b>My take.</b> Four things in this table. (1) SIM between two normalized maps lies between 0 and 1, so KernelSHAP's standard deviation of 1.210 is impossible; the same 1.210 appears in its KL<sub>div</sub> cell, which looks like a copy error. (2) The SIM spread among five methods (0.342 to 0.380) is a tenth of their standard deviations (about 0.4); no test is reported, so "top-performing" is not resolved. (3) KernelSHAP is run with 25 samples on superpixel images, far too few for a sampling estimator, and that is not justified. (4) The head is described as "a single neuron with a Softmax activation" for 47 classes; a softmax over one neuron always outputs 1, so the description must be wrong. <span class="sure">How sure: high on (1), (2) and (4); medium on how much (3) matters.</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: time series</h2></summary>
+<p><b>What they did.</b> Trace each silhouette's outer contour and record its distance from a centroid fixed per original shape (Eq. 2), giving series up to 1,251 steps; removing a part in the image and re-tracing gives the intervened series. Classify with MultiRocket features and a calibrated ridge classifier (F1 0.63, Table 1). Explain with RISE, LIME, KernelSHAP and T-SHAP (ROI and Window).</p>
+<p><b>What they found</b> (Table 6). RISE is best on all three metrics (SIM 0.522 ± 0.136, AUC<sub>borji</sub> 0.709, KL<sub>div</sub> 0.790), LIME second (SIM 0.442), T-SHAP intermediate (0.386 and 0.424), KernelSHAP far behind (SIM 0.007, KL<sub>div</sub> 5.315). The authors suggest KernelSHAP "treats each time step as an independent feature" and that its small balanced-centroid background may hurt.</p>
+<div class="take"><b>My take.</b> Turning image interventions into time-series interventions through the outline is a neat way to get ground truth where none existed, and the fixed centroid keeps time indices aligned. KernelSHAP's near-zero score, though, mostly reflects running a sampling estimator on 1,251 separate features with a small "balanced centroid" background chosen "to maintain computational feasibility", which the authors half-acknowledge; it is a configuration result, not a property of the method. <span class="sure">How sure: medium.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: tabular data</h2></summary>
+<p><b>What they did</b> (Sections 4.3, 5.2). Three features on a grid of K = 100 levels. The label is ssin-2c(x) = [0.5·sin(π/2·x<sub>1</sub>) + 0.25·sin(π/2·x<sub>2</sub>) + 0.125·sin(π/2·x<sub>3</sub>)] &gt; 0.6 (Eq. 9). About 4 million samples, 10,000 held out; an MLP with three 128-unit layers, trained for 5,000 full-batch epochs, reaches precision, recall and F1 of 0.98. The ground truth for feature i is f(x) - f(x with x<sub>i</sub> one level lower) (Eq. 5), claimed as "the first faithful local ground truth construction for the evaluation of XAI methods in tabular data".</p>
+<div id="chart-tab"></div>
+<p class="caption">Table 7, SIM (higher is better). KL<sub>div</sub> follows the same order: Gradient 0.092, LORE 1.204, others 1.98 to 3.81.</p>
+<div class="take"><b>My take: the winner is built into the reference.</b> A one-level difference is a finite-difference derivative: f(x) - f(x - Δe<sub>i</sub>) ≈ Δ·∂f/∂x<sub>i</sub>, with the same Δ for every feature. After normalization it equals the normalized absolute gradient up to curvature terms, so Gradient (taken "in absolute value", Section 5.3) matches by construction. Integrated Gradients and DeepLIFT with a zero baseline, and KernelSHAP and LIME with occlusion value 0, all measure what happens when a feature is moved to 0, a large move on a thresholded, nonlinear function. Table 7 ranks perturbation sizes, not explanation quality. The demo below shows the same ranking flipping when only the reference's step changes.</div>
+<div class="take"><b>My take: the data and the text.</b>
+<ul class="tight">
+<li><b>Repeated rows.</b> 100 levels per feature allow at most 100³ = 1,000,000 distinct inputs (1,030,301 if levels run 0 to 100), but there are about 4 million samples, so at least 3 million are repeats, and a random test point almost surely appears in training. The 0.98 is not a held-out score. (The repeats are certain; how the test points were drawn is not stated.)</li>
+<li><b>Scale.</b> Eq. 4 defines levels as integers 0 to K; plugged into sin(π/2·x) they give only the values 0, 1, 0, -1. The features must be rescaled to [0, 1] first; the paper never says so.</li>
+<li><b>Boundary.</b> At level 0, "one level lower" leaves the domain; not addressed.</li>
+<li><b>Text versus table.</b> The results paragraph says KernelSHAP "performs slightly worse than the other two methods, which achieve values very close to the optimum", but its KL<sub>div</sub> (2.315) is far from LORE (1.204) and Gradient (0.092), and one sentence breaks off ("Integrated The KL<sub>div</sub> metric ...").</li>
+<li><b>"First".</b> XAI-BENCH (2021) already computes per-instance ground-truth Shapley values of the trained model on tabular data, yet the paper lists it (ref. [29]) among methods whose relevance "is determined globally by construction".</li>
+</ul>
+<span class="sure">How sure: high on all five.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: the step size picks the winner</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div class="controls">
+  <label>x1 <input id="demo-x1" type="range" min="0" max="20" step="1" value="18"> <b id="demo-x1-val"></b></label>
+  <label>x2 <input id="demo-x2" type="range" min="0" max="20" step="1" value="14"> <b id="demo-x2-val"></b></label>
+  <label>x3 <input id="demo-x3" type="range" min="0" max="20" step="1" value="6"> <b id="demo-x3-val"></b></label>
+  <label>Reference step <input id="demo-step" type="range" min="0" max="3" step="1" value="0"> <b id="demo-step-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">A stand-in, not the paper's model: f(x) = sigmoid(20·(s(x) - 0.6)) with s(x) the ssin-2c score of Eq. 9 on [0, 1], a smooth version of the thresholded label the MLP learns. The reference is f(x) - f(x with x_i lowered by the chosen step, or set to 0). Explainers: the analytic gradient (absolute value), Integrated Gradients from a zero baseline (200 steps) and occlusion to 0. Each bar is SIM between the normalized absolute explanation and the normalized absolute reference; the orange bar is the winner.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It commits to model-level ground truth and says why. It takes the in-distribution problem seriously in every modality (augmented images, re-traced outlines, a discrete grid). The time-series construction is original. It uses metrics from the saliency literature rather than inventing new ones, and releases code and trained weights.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>The tabular reference is a one-step finite difference, so the gradient wins by construction; the ranking reflects how far each method perturbs a feature.</td><td>Eq. 5, Table 7, Section 5.3</td><td>High</td></tr>
+<tr><td>2</td><td>About 4 million samples on at most about a million grid points: at least 3 million repeats, and the 0.98 test score is very likely on seen inputs.</td><td>Eq. 4, Section 5.2, Table 1</td><td>High (repeats), Medium (leakage size)</td></tr>
+<tr><td>3</td><td>KernelSHAP's SIM 0.342 ± 1.210 is impossible for a 0-to-1 score, and 1.210 is repeated in the next column.</td><td>Table 5</td><td>High</td></tr>
+<tr><td>4</td><td>Image SIM differences between the top five methods are a tenth of their standard deviations; nothing is resolved.</td><td>Table 5</td><td>High</td></tr>
+<tr><td>5</td><td>"First faithful local ground truth" for tabular data overlooks XAI-BENCH's per-instance model-level Shapley ground truth, which the paper calls global.</td><td>Sections 1, 2; ref. [29]</td><td>High</td></tr>
+<tr><td>6</td><td>Configuration choices are reported as method failures: KernelSHAP with 25 samples on superpixels, and on 1,251 separate time steps with a centroid background.</td><td>Tables 2-3, 5-6</td><td>Medium</td></tr>
+<tr><td>7</td><td>One model, one training run and one evaluation set per modality; no repetition or test anywhere.</td><td>Sections 5-6</td><td>High</td></tr>
+<tr><td>8</td><td>Editing slips: a one-neuron softmax for 47 classes, an unscaled Eq. 4, a broken sentence, text contradicting Table 7, "test set" in Table 5's caption against "validation set" in the text.</td><td>Sections 5.2, 6; Tables 5, 7</td><td>High (low impact)</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>Its future work is your project.</b> Section 7: "extending the proposed framework to more complex and realistic data generation processes, as well as exploring hybrid evaluation strategies that combine synthetic ground truth with real-world validation". Quote it in your motivation; their tabular benchmark is three features with a sine label, which is the gap your data-fitted worlds fill.</p>
+<p><b>Same principle, different estimand.</b> They define truth by the trained model's response to an intervention, as your pilot does with <code>err_model</code>. Their intervention is one feature moved one step; yours is interventional SHAP, an average over coalitions against a 1,000-row background (DECISIONS #24). Their Table 7 is the clearest demonstration in the set that the estimand decides the ranking, so cite it when you defend yours, and say that methods targeting other quantities are scored as estimators of interventional SHAP.</p>
+<p><b>The grid is a coincidence worth one sentence.</b> They discretize to keep interventions in distribution; you snap values to a 2^-12 grid so that TreeSHAP's float32 thresholds are exact (DECISIONS #24). Different reasons, but a reviewer who knows this paper may ask, so make the reason explicit.</p>
+<p><b>Your review already cites it</b> (<code>mironicolau2026a</code>, under "compute the model-level target exactly") as intervention-based ground truth. That description holds; if the review is revised, add that the tabular version is a finite-difference reference that favours gradients.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>SAIG</b></td><td>Synthetic Artificial Intelligence Ground truth: data built so component importance is known by design.</td></tr>
+<tr><td><b>Intervention</b></td><td>Removing or changing a component in a way that keeps the input realistic, then reading the output change.</td></tr>
+<tr><td><b>FunnyBirds</b></td><td>Rendered birds built from parts (beak, eye, feet, tail, wings, body) whose combination defines the class.</td></tr>
+<tr><td><b>SIM</b></td><td>Overlap of two normalized importance maps, the sum of element-wise minima; 1 means identical.</td></tr>
+<tr><td><b>KL divergence</b></td><td>Information lost when one distribution stands in for another; 0 means identical.</td></tr>
+<tr><td><b>AUC<sub>borji</sub></b></td><td>Area under the curve for separating important locations from randomly sampled ones; 0.5 is chance.</td></tr>
+<tr><td><b>RISE</b></td><td>Importance from the model's response to many random masks.</td></tr>
+<tr><td><b>LORE</b></td><td>Local rule-based explanations from a decision tree fitted to a synthetic neighbourhood.</td></tr>
+<tr><td><b>DeepLIFT</b></td><td>Backpropagates differences from a reference input instead of gradients.</td></tr>
+<tr><td><b>T-SHAP</b></td><td>Shapley values over windows or regions of a time series.</td></tr>
+<tr><td><b>MultiRocket</b></td><td>Random convolution features for time series, usually followed by a linear classifier.</td></tr>
+<tr><td><b>Finite difference</b></td><td>(f(x) - f(x - Δ)) / Δ, the slope over a small step; it approaches the derivative as Δ shrinks.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-4: motivation, related work and the two notions of ground truth (Section 3).</li>
+<li>Pages 4-6: the method for each data type (Sections 4.1-4.3, Eqs. 1-5).</li>
+<li>Pages 7-8: metrics and models, including Eq. 9 and the tabular data size.</li>
+<li>Pages 11-12: Tables 5-7 and the results text.</li>
+<li>Pages 17-19 (after the references): Figures 1-6; Fig. 1 and Fig. 4 explain the interventions best.</li>
+<li>Skip on a first read: the hyperparameter Tables 2-4.</li>
+</ol>
+<p class="caption">Written 2026-10-26 from the arXiv v1 PDF (19 pages, read in full). Tables 5-7 and Eq. 9 were checked as images because the text extraction garbles bold numbers and formulas.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Table 7 (tabular task): SIM of each explainer against the intervention-based ground truth.
+barChart("chart-tab", {
+  label: "SIM against the tabular ground truth, Table 7",
+  groups: ["LORE", "LIME", "Gradient", "DeepLIFT", "KernelSHAP", "Integrated Gradients"],
+  series: [{ name: "SIM", color: "#0033A0", values: [0.784, 0.560, 0.980, 0.636, 0.601, 0.642] }],
+  colorOf: gi => (gi === 2 ? "#F2A800" : "#0033A0"),
+  min: 0, max: 1.1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(3), height: 240, barMax: 60
+});
+
+// Demo: the reference's step size decides which explainer "wins". Stand-in model, not the paper's MLP.
+(function demo() {
+  const ins = ["demo-x1", "demo-x2", "demo-x3"].map(need), outs = ["demo-x1-val", "demo-x2-val", "demo-x3-val"].map(need);
+  const stepIn = need("demo-step"), text = need("demo-text"), box = need("demo-chart");
+  const W = [0.5, 0.25, 0.125], K = 20;
+  const steps = [{ v: 0.01, name: "one level (0.01), the paper" }, { v: 0.1, name: "0.1" }, { v: 0.3, name: "0.3" },
+                 { v: null, name: "remove: set to 0" }];
+  const score = x => W.reduce((s, w, i) => s + w * Math.sin(Math.PI / 2 * x[i]), 0);
+  const f = x => 1 / (1 + Math.exp(-K * (score(x) - 0.6)));
+  const grad = x => { const p = f(x); return W.map((w, i) => p * (1 - p) * K * w * (Math.PI / 2) * Math.cos(Math.PI / 2 * x[i])); };
+  const withX = (x, i, v) => x.map((u, j) => (j === i ? v : u));
+  function ig(x) {                                   // Integrated Gradients, zero baseline, 200-step midpoint rule
+    const out = [0, 0, 0], n = 200;
+    for (let s = 0; s < n; s++) {
+      const a = (s + 0.5) / n, g = grad(x.map(u => a * u));
+      for (let i = 0; i < 3; i++) out[i] += g[i] * x[i] / n;
+    }
+    return out;
+  }
+  const occl = x => x.map((u, i) => f(x) - f(withX(x, i, 0)));
+  const norm = v => { const a = v.map(Math.abs), s = a.reduce((t, u) => t + u, 0); return a.map(u => u / s); };
+  const sim = (p, q) => p.reduce((s, pi, i) => s + Math.min(pi, q[i]), 0);
+  function render() {
+    const x = ins.map(el => Number(el.value) / 20);
+    outs.forEach((o, i) => { o.textContent = x[i].toFixed(2); });
+    const st = steps[Number(stepIn.value)];
+    need("demo-step-val").textContent = st.name;
+    const ref = norm(x.map((u, i) => f(x) - f(withX(x, i, st.v === null ? 0 : Math.max(0, u - st.v)))));
+    const expl = { "Gradient": norm(grad(x)), "Integrated Gradients (zero baseline)": norm(ig(x)), "occlusion to 0": norm(occl(x)) };
+    const names = Object.keys(expl), sims = names.map(nm => sim(ref, expl[nm]));
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "SIM of three explainers against the chosen reference",
+      groups: names, series: [{ name: "SIM", color: "#0033A0", values: sims }],
+      colorOf: gi => (sims[gi] === Math.max(...sims) ? "#F2A800" : "#0033A0"),
+      min: 0, max: 1.1, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(3), height: 240, barMax: 80
+    });
+    const best = names[sims.indexOf(Math.max(...sims))];
+    text.textContent = "Model output f(x) = " + f(x).toFixed(3) + ". Reference step: " + st.name + ". Winner: " + best +
+      " (orange). Shrink the step and the reference becomes a derivative, so Gradient wins; make it a removal and occlusion wins. " +
+      "The explanations did not change, only the definition of the truth.";
+  }
+  ins.forEach(el => el.addEventListener("input", render));
+  stepIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Title: 2-4 words, e.g. "Bilos et al. explained". -->
+<title>RealCause explained</title>
+<style>
+:root {
+  --bg: #fbfaf7; --fg: #1d1f24; --muted: #5b6170; --card: #ffffff; --border: #dcdfe5;
+  --cell: #e6e9ef; --red: #D90012; --blue: #0033A0; --orange: #F2A800; --gray: #8a8f99;
+  --green: #1f8a4c; --take-bg: #fff5dc; --take-border: #F2A800; --code: #eff1f4; --link: #0033A0;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+    --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #16181d; --fg: #e3e5ea; --muted: #9aa1ad; --card: #1e2128; --border: #333842;
+  --cell: #2c3039; --blue: #4573e6; --green: #3fb873; --take-bg: #2a2415; --code: #262a32; --link: #8fb0ff;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); margin: 0; padding: 0 16px 80px;
+  font: 16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; }
+a { color: var(--link); }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 6px; }
+h2 { display: inline; font-size: 1.3rem; margin: 0; }
+h3 { font-size: 1.08rem; margin: 24px 0 6px; }
+.sub { color: var(--muted); margin: 0 0 14px; }
+.topbar { display: flex; justify-content: flex-end; padding-top: 12px; }
+button { font: inherit; font-size: 0.85rem; color: var(--fg); background: var(--card);
+  border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--orange); box-shadow: inset 0 0 0 1px var(--orange); font-weight: 600; }
+details.sec { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin: 18px 0; padding: 4px 18px 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 0; }
+details.sec > summary::marker { color: var(--muted); }
+.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 18px; }
+.toc ol { margin: 6px 0; padding-left: 22px; }
+.legendbox { font-size: 0.92rem; color: var(--muted); margin: 10px 0 0; }
+.take { background: var(--take-bg); border-left: 4px solid var(--take-border); border-radius: 6px; padding: 10px 14px; margin: 14px 0; }
+.take > b:first-child { color: var(--take-border); }
+.sure { font-size: 0.85rem; color: var(--muted); }
+.key { border-left: 4px solid var(--blue); padding: 4px 12px; margin: 12px 0; }
+.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1.08rem; text-align: center; margin: 10px 0; }
+code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 10px 0; font-size: 0.9rem; }
+th, td { border-bottom: 1px solid var(--border); padding: 6px 6px; vertical-align: top; overflow-wrap: anywhere; }
+th { text-align: left; color: var(--muted); font-weight: 600; }
+th.n, td.n { text-align: center; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 7px; border-radius: 9px; border: 1px solid var(--border); color: var(--muted); }
+svg { width: 100%; height: auto; display: block; }
+svg text { fill: var(--fg); font-family: inherit; }
+.schem { max-width: 720px; margin: 8px auto; }
+.chart .grid { stroke: var(--border); stroke-width: 1; }
+.chart .zero { stroke: var(--muted); stroke-width: 1.2; }
+.chart .ref { stroke-width: 1.5; stroke-dasharray: 5 4; }
+.chart .tick, .chart .xlab { font-size: 12px; fill: var(--muted); }
+.chart .val, .chart .reflab { font-size: 11.5px; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.85rem; color: var(--muted); margin: 4px 0 8px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+.demo { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.demo .controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 0.9rem; margin: 8px 0; }
+.demo input[type=range] { width: 180px; vertical-align: middle; }
+.caption { font-size: 0.86rem; color: var(--muted); margin: 2px 0 12px; }
+ul.tight li, ol.tight li { margin: 3px 0; }
+code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+<!--TITLE: RealCause explained-->
+<div class="topbar"><button id="theme-btn" type="button">Theme: auto</button></div>
+
+<h1>"RealCause: Realistic Causal Inference Benchmarking", explained</h1>
+<p class="sub">Brady Neal, Chin-Wei Huang, Sunand Raghupathi (Mila, Université de Montréal). arXiv 2011.15007v2 (29 Mar 2021), 40 pages (about 9 pages of main text, then appendices of plots and tables); the arXiv record lists no venue. Code and data: github.com/bradyneal/causal-benchmark. Citations: 18 on OpenAlex for the arXiv record only (checked 2026-10-26), certainly an undercount; Semantic Scholar rate-limited. Local PDF: <code>synthetic_data/papers/neal2020_realcause.pdf</code>.</p>
+
+<nav class="toc" aria-label="Contents">
+<b>Contents</b>
+<ol>
+<li><a href="#tldr">The paper in one minute</a></li>
+<li><a href="#background">Background you need first</a></li>
+<li><a href="#f1">Finding 1: does the generated data pass as real?</a></li>
+<li><a href="#f2">Finding 2: are the causal effects realistic?</a></li>
+<li><a href="#f3">Finding 3: predictive metrics pick causal hyperparameters</a></li>
+<li><a href="#demo">Try it: same data, opposite effects</a></li>
+<li><a href="#critique">My critique</a></li>
+<li><a href="#links">How it connects to your work</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#reading">How to read the actual paper</a></li>
+</ol>
+<p class="legendbox">Normal text = what the paper says. <span class="pill">My take</span> boxes = my own analysis, not in the paper.</p>
+</nav>
+
+<details class="sec" open id="tldr">
+<summary><h2>1. The paper in one minute</h2></summary>
+<p><b>The question.</b> Synthetic benchmarks for causal estimators have ground truth but are unrealistic; real data are realistic but have no ground truth. Can generative models fitted to real data give both?</p>
+<p><b>The answers.</b></p>
+<ol class="tight">
+<li><b>RealCause.</b> Keep the real covariates W, fit neural models of treatment given covariates and of the outcome given treatment and covariates, and sample treatment and outcome from them. Because the outcome model gives the expected outcome under both treatments, the true average and conditional effects are known (Section 4).</li>
+<li><b>Knobs.</b> Overlap, effect heterogeneity and effect size can be turned after fitting, to create related but different benchmarks (Eqs. 9-11).</li>
+<li><b>Realism is tested, not asserted.</b> Two-sample tests mostly fail to reject that generated and real data come from the same distribution (Table 1), while a linear Gaussian baseline is rejected on several datasets (Table 2); on semi-synthetic datasets the fitted models recover the known average effect (Table 3).</li>
+<li><b>A use.</b> Across more than 1,500 estimators, hyperparameters chosen by ordinary predictive cross-validation also give good causal accuracy within a model class (median Spearman 0.77 to 0.92 for outcome models), but much less across model classes (Tables 4-5).</li>
+</ol>
+<div class="take"><b>My take, one line.</b> The most careful realism argument in this group, because fidelity is tested rather than eyeballed. But failing to reject is weak evidence: the tests that include the covariates have little power, the tests with power on (T, Y) cannot see the treatment effects at all, and on IHDP the fitted model gets the average effect right while its individual effects are off by a root mean squared 51.5 against an average of 4.</div>
+</details>
+
+<details class="sec" open id="background">
+<summary><h2>2. Background you need first</h2></summary>
+<p><b>Effects.</b> With treatment T, outcome Y and covariates W, the average treatment effect is E[Y(1) - Y(0)] and the conditional effect τ(w) = μ(1, w) - μ(0, w), where μ(t, w) is the expected outcome. If W contains all common causes of T and Y (no unobserved confounding, assumed throughout), both are identified from observational data (Section 2). PEHE, the "precision in estimation of heterogeneous effects", is the root mean squared error of an estimate of τ(w) (Eq. 12).</p>
+<p><b>Four things an ideal benchmark needs</b> (Section 1): known true effects; data representative of real data; no unobserved confounders; and many different distributions, since "it is unlikely that rankings of causal estimators on a single problem will generalize". Fully synthetic benchmarks miss the second, semi-synthetic ones with real covariates and invented outcome functions (IHDP, ACIC, LBIDD) partly miss it, and RCT-based ones miss the first or third (Section 3, Appendix A.2).</p>
+<svg class="schem" viewBox="0 0 720 150" aria-label="The RealCause pipeline">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--muted)"/></marker></defs>
+  <rect x="6" y="40" width="120" height="70" rx="6" style="fill:var(--cell);stroke:var(--blue)" stroke-width="1.2"/>
+  <text x="66" y="66" text-anchor="middle" font-size="13">real covariates W</text>
+  <text x="66" y="86" text-anchor="middle" font-size="13">(sampled as is)</text>
+  <line x1="126" y1="75" x2="148" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="150" y="40" width="170" height="70" rx="6" style="fill:var(--cell);stroke:var(--orange)" stroke-width="1.2"/>
+  <text x="235" y="62" text-anchor="middle" font-size="13">fitted P(T | W) and</text>
+  <text x="235" y="80" text-anchor="middle" font-size="13">P(Y | T, W): shared net,</text>
+  <text x="235" y="98" text-anchor="middle" font-size="13">sigmoidal flows</text>
+  <line x1="320" y1="75" x2="342" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="344" y="40" width="160" height="70" rx="6" style="fill:var(--cell);stroke:var(--muted)" stroke-width="0.8"/>
+  <text x="424" y="62" text-anchor="middle" font-size="13">generated (W, T, Y)</text>
+  <text x="424" y="80" text-anchor="middle" font-size="13">plus μ(1, w), μ(0, w):</text>
+  <text x="424" y="98" text-anchor="middle" font-size="13">true effects known</text>
+  <line x1="504" y1="75" x2="526" y2="75" style="stroke:var(--muted)" stroke-width="1.4" marker-end="url(#ah)"/>
+  <rect x="528" y="40" width="186" height="70" rx="6" style="fill:var(--cell);stroke:var(--red)" stroke-width="1.2"/>
+  <text x="621" y="62" text-anchor="middle" font-size="13">two-sample tests (real?)</text>
+  <text x="621" y="80" text-anchor="middle" font-size="13">and estimator</text>
+  <text x="621" y="98" text-anchor="middle" font-size="13">benchmarking</text>
+</svg>
+<p class="caption">Section 4. The outcome model is a TARNet-style network (separate heads for treated and control) whose outputs parameterize sigmoidal flows, a flexible density model; the baseline is a linear Gaussian model. Data are split 50/10/40 for training, validation and test.</p>
+<p><b>Two-sample tests.</b> Given a real and a generated sample, test the null hypothesis that they come from the same distribution. The paper uses Kolmogorov-Smirnov and Epps-Singleton tests on T and on Y, and permutation tests (Wasserstein, Friedman-Rafsky, k-nearest-neighbour, energy) on (T, Y) and on (W, T, Y), each with 1,000 permutations (Section 5).</p>
+</details>
+
+<details class="sec" open id="f1">
+<summary><h2>3. Finding 1: does the generated data pass as real?</h2></summary>
+<p><b>What they did.</b> Fit RealCause to three real datasets (LaLonde PSID, LaLonde CPS, Twins) and five semi-synthetic ones (IHDP and four LBIDD variants). Grid-search the architecture and keep the model with the best validation likelihood "and with a p-value passing 0.05 on the validation set". Report test p-values (Table 1), and fit a linear Gaussian model to show that the tests can reject a worse model (Table 2).</p>
+<p><b>What they found.</b> Almost all RealCause p-values are well above 0.05, so the tests "fail to reject" sameness, "except the FR and kNN (T,Y) test on the LaLonde PSID dataset" (both 0.0). The linear baseline is rejected on PSID and the three nonlinear LBIDD datasets, mainly by the (T, Y) tests, and on CPS mainly by the (W, T, Y) tests. The authors note that tests on (W, T, Y) lose power in high dimensions (W has up to 177 columns) and that Twins and IHDP are fit well even by the linear model. Conclusion (Section 7): "we've rigorously shown that RealCause produces realistic DGPs".</p>
+<div class="take"><b>My take.</b> Testing is far better than looking at histograms, but the logic is one-sided. Failing to reject is not evidence of sameness when power is low, and here it often is: IHDP trains on 374 examples; the (W, T, Y) tests let the linear model pass on most datasets (Table 2); and IHDP's (W, T, Y) p-values are exactly 1.0 on all five tests, plausibly because generated samples reuse the real covariate rows. The tests with power, on (T, Y), ignore W, so they cannot check P(Y | T, W), which is what fixes the conditional effects; the demo below shows two processes they cannot tell apart. Selecting models by a validation p-value and then reporting test p-values is also a loop that favours passing. And PSID, which fails two of five bivariate tests at p = 0.0, is still used as a benchmark. <span class="sure">How sure: high, except the reason for the p = 1.0 values (medium).</span></div>
+</details>
+
+<details class="sec" open id="f2">
+<summary><h2>4. Finding 2: are the causal effects realistic?</h2></summary>
+<p><b>What they did.</b> On semi-synthetic datasets, where the true effects are known, compare the true average effect with the one implied by the fitted RealCause model (Table 3).</p>
+<table id="tbl-ate">
+<colgroup><col style="width:24%"><col style="width:19%"><col style="width:19%"><col style="width:19%"><col style="width:19%"></colgroup>
+<thead><tr><th>Dataset</th><th class="n">True ATE</th><th class="n">Model's ATE</th><th class="n">Abs. bias</th><th class="n">PEHE</th></tr></thead>
+<tbody>
+<tr><td>IHDP</td><td class="n">4.0161</td><td class="n">4.1908</td><td class="n">0.1747</td><td class="n"><b>51.5279</b></td></tr>
+<tr><td>LBIDD quadratic</td><td class="n">2.5437</td><td class="n">2.4910</td><td class="n">0.0527</td><td class="n">0.1554</td></tr>
+<tr><td>LBIDD exponential</td><td class="n">-0.6613</td><td class="n">-0.6608</td><td class="n">0.0004</td><td class="n">0.0225</td></tr>
+<tr><td>LBIDD logistic</td><td class="n">0.0549</td><td class="n">0.0555</td><td class="n">0.0005</td><td class="n">0.0151</td></tr>
+<tr><td>LBIDD linear</td><td class="n">1.8592</td><td class="n">1.7177</td><td class="n">0.1415</td><td class="n">0.1367</td></tr>
+</tbody>
+</table>
+<p class="caption">Table 3. PEHE is a root mean squared error of the conditional effects (Eq. 12).</p>
+<p><b>The paper's reading.</b> The values "indicate that our model accurately models the causal effects"; the IHDP PEHE is "relatively high" because "the training sample for IHDP is only 374 examples".</p>
+<div class="take"><b>My take.</b> On IHDP the average effect is right within 0.17, but the individual effects are off by a root mean squared 51.5, thirteen times the effect itself, while all of IHDP's realism tests pass (Table 1, p from 0.29 to 1.0). That is the clearest demonstration in the paper of what its tests cannot see: realistic-looking data with a wrong effect structure. For the LBIDD datasets the agreement is good. <span class="sure">How sure: high.</span></div>
+</details>
+
+<details class="sec" open id="f3">
+<summary><h2>5. Finding 3: predictive metrics pick causal hyperparameters</h2></summary>
+<p><b>What they did.</b> Benchmark over 1,500 estimators on RealCause versions of PSID, CPS and Twins: four meta-estimators from causallib (standardization or S-learner, stratified standardization or T-learner, inverse probability weighting, and weighting with trimming), about 15 scikit-learn models each, about 10 values of each model's most important hyperparameter (Section 6). Measure, within each model class, how well the predictive metric ranks hyperparameters by their causal error (Spearman, Kendall, and the probability that a better predictor is at least as good causally).</p>
+<div id="chart-pred"></div>
+<p class="caption">Tables 4-5: median Spearman correlation between predictive performance and causal error within a model class. Outcome models (standardization) against ATE RMSE and PEHE; propensity models (weighting) against ATE RMSE.</p>
+<p><b>What they found.</b> "In this setting, it is a fairly good idea to select hyperparameters for causal estimators based on predictive performance", with median probabilities of a better predictor being at least as good causally of about 80-95%. Choosing between model classes by predictive metrics is "much less positive and more dataset-specific" (Appendix D.3). The 1,568 estimators and 77 metrics are released as an open dataset. On the average over datasets, a standardization estimator with an RBF-kernel SVM has the lowest ATE RMSE (Fig. 2).</p>
+<div class="take"><b>My take.</b> Part of this is built into the setting. Without unobserved confounding, a standardization estimator's effect estimate is the difference of its two outcome predictions, and RealCause's true effect is the difference of the generator's own two outcome means; within one model class, predicting the generator's outcomes better is close to estimating its effects better. The result is useful, but it says more about the no-confounding setting than about realism. The released table of estimators by predictive and causal metrics is the most reusable part. <span class="sure">How sure: medium.</span></div>
+</details>
+
+<details class="sec" open id="demo">
+<summary><h2>6. Try it: same data, opposite effects</h2></summary>
+<div class="demo">
+<div id="demo-chart"></div>
+<div id="demo-chart2"></div>
+<div class="controls">
+  <label>Real effect slope a in τ(w) = a·w <input id="demo-a" type="range" min="-9" max="20" step="1" value="10"> <b id="demo-a-val"></b></label>
+</div>
+<p id="demo-text" class="caption"></p>
+<p class="caption">An exact counterexample I constructed, not from the paper: W ~ N(0, 1), randomized treatment, noise sd 0.5. Real process: Y = W + a·W·T + noise. Fitted process: Y = W - (2 + a)·W·T + noise. Under treatment the outcome is (1 + a)·W plus noise in one and -(1 + a)·W plus noise in the other, which have the same distribution because W is symmetric; without treatment they are identical. So every test on (T, Y), including RealCause's (T, Y) tests, has no power to tell them apart. A test that also uses W can.</p>
+</div>
+</details>
+
+<details class="sec" open id="critique">
+<summary><h2>7. My critique</h2></summary>
+<p><b>What's good.</b> It treats realism as a hypothesis to falsify, uses several kinds of two-sample tests, and shows with a linear baseline that the tests can reject a bad model. The knobs give controlled variation around a realistic fit, the code, models and a large table of estimator metrics are released, and the "many distributions" desideratum is exactly the right instinct about ranking generalization.</p>
+<table>
+<colgroup><col style="width:4%"><col style="width:54%"><col style="width:28%"><col style="width:14%"></colgroup>
+<thead><tr><th>#</th><th>Problem</th><th>Evidence</th><th>How sure</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Realism is concluded from failing to reject with low-power tests, and the same tests are used to select the models.</td><td>Sections 4-5, Tables 1-2</td><td>High</td></tr>
+<tr><td>2</td><td>Tests on (T, Y) cannot see the conditional effects; tests with W have little power. IHDP passes every test while its conditional effects are off by a PEHE of 51.5 against an ATE of 4.</td><td>Tables 1-3; demo</td><td>High</td></tr>
+<tr><td>3</td><td>LaLonde PSID fails two of five bivariate tests at p = 0.0 and is still used as a realistic benchmark.</td><td>Table 1, Section 6</td><td>High</td></tr>
+<tr><td>4</td><td>"Rigorously shown ... realistic" overstates what the tests show, given the authors' own power caveat.</td><td>Sections 5, 7</td><td>High</td></tr>
+<tr><td>5</td><td>Twins' treatment assignment is simulated, so one of the three "real" datasets has a synthetic selection mechanism.</td><td>Footnote 2</td><td>High (acknowledged)</td></tr>
+<tr><td>6</td><td>The predictive-to-causal correlation is partly built into standardization estimators without unobserved confounding.</td><td>Section 6.1</td><td>Medium</td></tr>
+<tr><td>7</td><td>Generated datasets reuse the real covariate rows, so sample size and the covariate distribution cannot be varied.</td><td>Section 4</td><td>Medium (design choice)</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="links">
+<summary><h2>8. How it connects to your work</h2></summary>
+<p>Everything in this section is my own analysis.</p>
+<p><b>The closest construction to your pitch.</b> Keep or learn the features, fit a model of the target, and declare the fitted model the truth: RealCause keeps W exactly (your bootstrap generator) and makes a neural network the truth (your MLP target). Its realism tests are the kind of evidence a reviewer will ask of your builders.</p>
+<p><b>Test fidelity where the truth lives.</b> For interventional SHAP of a model trained on a world, the truth depends on the feature distribution (training data and background) and on the target function. So the fidelity evidence worth reporting per generator is a test on the features, for example a classifier or energy two-sample test against D, and per target the fit to D's real labels. The pilot does not record that yet: its <code>r2_g_vs_f</code> is the trained model's fit to each world's own true function, so the target-to-D fit would be a cheap addition in <code>builder_worlds</code>. A (T, Y)-style marginal check is not enough, for the reason the demo shows.</p>
+<p><b>Fidelity is not the outcome.</b> IHDP is the cautionary case: realistic by every test, wrong in its effect structure. That is why your pilot scores ranking agreement with a known reality rather than fidelity, and it is a good example to cite when you argue that resemblance does not certify a benchmark (with Karim's Remark 5).</p>
+<p><b>Their Section 6.1 is your second study.</b> "Do predictive metrics track causal error?" is the same design as review implication 9, "do proxy metrics track ground-truth explanation error?". Their released table of 1,568 estimators by 77 metrics is a model for releasing an explainer x proxy metric x true error table from your harness.</p>
+</details>
+
+<details class="sec" open id="glossary">
+<summary><h2>9. Glossary</h2></summary>
+<table>
+<colgroup><col style="width:26%"><col style="width:74%"></colgroup>
+<tbody>
+<tr><td><b>CATE</b></td><td>Conditional average treatment effect τ(w) = μ(1, w) - μ(0, w).</td></tr>
+<tr><td><b>PEHE</b></td><td>Root mean squared error of an estimated CATE.</td></tr>
+<tr><td><b>Semi-synthetic benchmark</b></td><td>Real covariates with invented treatment and outcome functions (IHDP, ACIC, LBIDD).</td></tr>
+<tr><td><b>Two-sample test</b></td><td>Tests whether two samples come from the same distribution; failing to reject is not proof they do.</td></tr>
+<tr><td><b>Power</b></td><td>Probability that a test rejects when the null hypothesis is false.</td></tr>
+<tr><td><b>Sigmoidal flow</b></td><td>A flexible, invertible density model built from monotone sigmoid transformations.</td></tr>
+<tr><td><b>TARNet</b></td><td>A network with a shared representation and one outcome head per treatment arm.</td></tr>
+<tr><td><b>Standardization, IPW</b></td><td>Estimate effects from an outcome model (S- or T-learner), or by reweighting with the propensity score.</td></tr>
+</tbody>
+</table>
+</details>
+
+<details class="sec" open id="reading">
+<summary><h2>10. How to read the actual paper</h2></summary>
+<ol class="tight">
+<li>Pages 1-3: the four desiderata and the review of benchmark types. Read in full.</li>
+<li>Pages 3-4: the method and the knobs.</li>
+<li>Pages 4-6: Tables 1-3 and the discussion of test power. The heart of the paper.</li>
+<li>Pages 6-8: the estimator benchmark and Tables 4-5.</li>
+<li>Appendix A for related work; skim the per-dataset plots (Appendix B) and correlation tables (Appendices C-D).</li>
+</ol>
+<p class="caption">Written 2026-10-26 from arXiv v2 (40 pages: main text read in full, appendix prose read, per-dataset tables and plots skimmed). Tables 1 and 4-5 and Eq. 12 were checked against page images.</p>
+</details>
+
+</main>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+function mk(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function need(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error("Missing element #" + id);
+  return el;
+}
+function storeGet(k) { try { return localStorage.getItem(k); } catch (e) { console.warn("storage read failed", e); return null; } }
+function storeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { console.warn("storage write failed", e); } }
+
+// Theme toggle: auto follows the OS; the choice is remembered when storage works.
+(function theme() {
+  const btn = need("theme-btn");
+  const order = ["auto", "dark", "light"];
+  let cur = storeGet("explainer-theme") || "auto";
+  function apply() {
+    if (cur === "auto") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", cur);
+    btn.textContent = "Theme: " + cur;
+  }
+  btn.addEventListener("click", () => { cur = order[(order.indexOf(cur) + 1) % 3]; storeSet("explainer-theme", cur); apply(); });
+  apply();
+})();
+
+// Open a collapsed section when a contents link points at it.
+function openHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const t = id && document.getElementById(id);
+  if (t && t.tagName === "DETAILS") t.open = true;
+}
+window.addEventListener("hashchange", openHash);
+openHash();
+
+function legend(root, items) {
+  const d = document.createElement("div");
+  d.className = "legend";
+  for (const it of items) {
+    const sp = document.createElement("span");
+    const sw = document.createElement("i");
+    sw.style.background = it.color;
+    sp.appendChild(sw);
+    sp.appendChild(document.createTextNode(it.name));
+    d.appendChild(sp);
+  }
+  root.appendChild(d);
+}
+
+// Grouped bar chart. cfg: {label, groups, series:[{name,color,values}], min, max, ticks, tickFmt, fmt,
+//   refs:[{y,label,color}] (labels sit in a right margin), colorOf(gi,si) optional, width, height, barMax}.
+function barChart(id, cfg) {
+  const root = need(id);
+  const W = cfg.width || 760, H = cfg.height || 250;
+  const m = { l: 46, r: cfg.refs ? 150 : 14, t: 18, b: 34 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  const gw = (W - m.l - m.r) / cfg.groups.length;
+  const bw = Math.min(cfg.barMax || 46, (gw * 0.8) / cfg.series.length);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  if (cfg.min < 0) mk("line", { x1: m.l, x2: W - m.r, y1: y(0), y2: y(0), class: "zero" }, svg);
+  cfg.groups.forEach((g, gi) => {
+    const cx = m.l + gw * gi + gw / 2, x0 = cx - bw * cfg.series.length / 2;
+    cfg.series.forEach((s, si) => {
+      const v = s.values[gi], x = x0 + si * bw;
+      const top = y(Math.max(v, 0)), bot = y(Math.min(v, 0));
+      const color = (cfg.colorOf && cfg.colorOf(gi, si)) || s.color;
+      mk("rect", { x: x + 1.5, y: top, width: bw - 3, height: Math.max(bot - top, 1), rx: 2, style: `fill:${color}` }, svg);
+      mk("text", { x: x + bw / 2, y: v >= 0 ? top - 5 : bot + 13, class: "val", "text-anchor": "middle" }, svg, cfg.fmt(v));
+    });
+    mk("text", { x: cx, y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, g);
+  });
+  for (const r of cfg.refs || []) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(r.y), y2: y(r.y), class: "ref", style: `stroke:${r.color}` }, svg);
+    mk("text", { x: W - m.r + 6, y: y(r.y) + 4, class: "reflab", style: `fill:${r.color}` }, svg, r.label);
+  }
+  if (cfg.series.length > 1) legend(root, cfg.series);
+}
+
+// Line chart over x positions. cfg: {label, xLabels, series:[{name,color,values}], min, max, ticks, tickFmt, ref, refLabel}.
+function lineChart(id, cfg) {
+  const root = need(id);
+  root.replaceChildren();
+  const W = 760, H = 280, m = { l: 46, r: 84, t: 16, b: 36 };
+  const svg = mk("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": cfg.label }, root);
+  const n = cfg.xLabels.length;
+  const x = i => m.l + (n === 1 ? 0 : i * (W - m.l - m.r) / (n - 1));
+  const y = v => m.t + (cfg.max - v) / (cfg.max - cfg.min) * (H - m.t - m.b);
+  for (const t of cfg.ticks) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), class: "grid" }, svg);
+    mk("text", { x: m.l - 6, y: y(t) + 4, class: "tick", "text-anchor": "end" }, svg, cfg.tickFmt(t));
+  }
+  const step = n > 14 ? 3 : 1;
+  cfg.xLabels.forEach((lab, i) => { if (i % step === 0 || i === n - 1) mk("text", { x: x(i), y: H - m.b + 18, class: "xlab", "text-anchor": "middle" }, svg, lab); });
+  if (cfg.ref !== undefined) {
+    mk("line", { x1: m.l, x2: W - m.r, y1: y(cfg.ref), y2: y(cfg.ref), class: "ref", style: "stroke:var(--muted)" }, svg);
+    mk("text", { x: W - m.r + 6, y: y(cfg.ref) + 4, class: "reflab", style: "fill:var(--muted)" }, svg, cfg.refLabel || "");
+  }
+  for (const s of cfg.series) {
+    const d = s.values.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ");
+    mk("path", { d, fill: "none", style: `stroke:${s.color};stroke-width:3;stroke-linejoin:round` }, svg);
+    s.values.forEach((v, i) => mk("circle", { cx: x(i), cy: y(v), r: 3.5, style: `fill:${s.color}` }, svg));
+  }
+  legend(root, cfg.series);
+}
+
+// Diverging heat coloring for <td data-v="number"> cells in a table: green above the median, red below
+// (pass higherIsBetter=false to flip), background at the median, alpha capped at 0.4 so text stays readable.
+function heat(tableId, higherIsBetter = true) {
+  const cells = Array.from(need(tableId).querySelectorAll("td[data-v]"));
+  if (!cells.length) throw new Error("No heat cells in #" + tableId);
+  const vals = cells.map(c => parseFloat(c.dataset.v)).sort((a, b) => a - b);
+  const n = vals.length, med = n % 2 ? vals[(n - 1) / 2] : (vals[n / 2 - 1] + vals[n / 2]) / 2;
+  const lo = vals[0], hi = vals[n - 1];
+  for (const c of cells) {
+    const v = parseFloat(c.dataset.v);
+    const good = higherIsBetter ? v >= med : v <= med;
+    const span = v >= med ? (hi - med) : (med - lo);
+    const a = span > 0 ? 0.4 * Math.abs(v - med) / span : 0;
+    c.style.background = good ? `rgba(34,150,60,${a.toFixed(3)})` : `rgba(217,0,18,${a.toFixed(3)})`;
+  }
+}
+
+// Seeded random numbers for demos (seed 509), so a demo looks the same on every load.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---- Page-specific code below: chart calls (barChart("chart-x", {...})), heat("tbl-x"), the demo. ----
+// Tables 4-5: median Spearman correlation between predictive performance and causal error, within a model class.
+barChart("chart-pred", {
+  label: "Median Spearman correlation of predictive and causal performance",
+  groups: ["LaLonde PSID", "LaLonde CPS", "Twins"],
+  series: [
+    { name: "outcome models vs ATE RMSE", color: "#0033A0", values: [0.77, 0.81, 0.81] },
+    { name: "outcome models vs PEHE", color: "#F2A800", values: [0.92, 0.80, 0.91] },
+    { name: "propensity models vs ATE RMSE", color: "#D90012", values: [0.22, 0.51, 0.38] }
+  ],
+  min: 0, max: 1.05, ticks: [0, 0.25, 0.5, 0.75, 1], tickFmt: t => t.toFixed(2), fmt: v => v.toFixed(2), height: 240, barMax: 40
+});
+
+// Demo (my counterexample): identical (T, Y) distributions, opposite conditional effects.
+(function demo() {
+  const aIn = need("demo-a"), aOut = need("demo-a-val"), text = need("demo-text"), box = need("demo-chart");
+  const SD = 0.5, ws = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
+  function render() {
+    const a = Number(aIn.value) / 10, b = -(2 + a);
+    aOut.textContent = a.toFixed(1);
+    const varY1 = (1 + a) * (1 + a) + SD * SD, pehe = Math.abs(b - a);   // E[W^2] = 1
+    box.replaceChildren();
+    barChart("demo-chart", {
+      label: "What each check sees in the real and the fitted process",
+      groups: ["ATE", "variance of Y given treatment", "PEHE (error of the effects)"],
+      series: [
+        { name: "real process", color: "#0033A0", values: [0, varY1, 0] },
+        { name: "fitted process", color: "#F2A800", values: [0, varY1, pehe] }
+      ],
+      min: 0, max: Math.max(6.5, varY1, pehe) * 1.12, ticks: [0, 2, 4, 6, 8, 10].filter(t => t <= Math.max(6.5, varY1, pehe) * 1.1),
+      tickFmt: t => String(t), fmt: v => v.toFixed(2), height: 230, barMax: 60
+    });
+    const lim = Math.ceil(2 * Math.max(Math.abs(a), Math.abs(b)));
+    lineChart("demo-chart2", {
+      label: "Conditional effect as a function of w", xLabels: ws.map(w => "w = " + w),
+      series: [
+        { name: "real effect a·w", color: "#0033A0", values: ws.map(w => a * w) },
+        { name: "fitted effect -(2 + a)·w", color: "#F2A800", values: ws.map(w => b * w) }
+      ],
+      min: -lim, max: lim, ticks: [-lim, -lim / 2, 0, lim / 2, lim], tickFmt: t => t.toFixed(1)
+    });
+    text.textContent = "Both processes have ATE 0 and the same distribution of (T, Y), so the (T, Y) tests see nothing. Yet the fitted effect has slope " +
+      b.toFixed(1) + " against a real slope of " + a.toFixed(1) + (a > 0 ? ", pointing the opposite way," : "") +
+      " and the fitted effects are off by a PEHE of " + pehe.toFixed(2) + ".";
+  }
+  aIn.addEventListener("input", render);
+  render();
+})();
+
+</script>
+</body>
+</html>
