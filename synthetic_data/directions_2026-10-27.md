@@ -28,6 +28,30 @@ pilot already computes interventional truth for g and f (DECISIONS #24).
 **Open:** Q13: add an estimand-sensitivity table (ranking under 2-3 exact estimands) to the pilot or to the
 first paper?
 
+**Novelty check (Q18), web pass only, 2026-10-27.** The OpenAlex MCP was disconnected; its pass and citation
+chaining from XAI-BENCH, OpenXAI and Chen et al. are still to do. Six web searches found the following.
+
+- **The multiplicity of estimands is well known, but only conceptually:**
+  - Chen et al. 2020;
+  - Janzing et al. 2020 (AISTATS), arguing for interventional;
+  - Aas et al. 2021, arguing for conditional;
+  - Sundararajan and Najmi 2020;
+  - Kumar et al. 2020;
+  - most recently a taxonomy and reporting checklist that calls the value function "often the most consequential
+    modelling choice" (Sarpong and Commey, arXiv 2607.14271, July 2026). It has no experiments that vary it.
+- **Nearest empirical work:**
+  - Olsen et al. 2024 (Data Min. Knowl. Discov.) rank *estimators of one estimand* (conditional Shapley)
+    against its truth.
+  - Oliveira e Silva et al. 2026 (arXiv 2604.22662) compare eight Shapley variants against human utility,
+    not against alternative ground truths.
+  - Meta-evaluation work (MetaQuantus, Hedstrom et al. 2023; the disagreement problem, Krishna et al.; AXE, FAccT
+    2025) shows that metrics and explainers disagree without ground truth.
+- **Not found:**
+  - a study measuring that *benchmark rankings flip when the ground-truth estimand changes*;
+  - a reproducibility audit of OpenXAI or XAI-BENCH against their released code.
+
+Verdict so far: the gap looks open, but a web search is shallow. Do the OpenAlex pass before claiming it.
+
 ## 2. Data-fitted simulators agree where the data speak and disagree where they extrapolate
 
 RealCause, the WGAN package and Credence all fit LaLonde PSID (Credence then generated no treated units, so only

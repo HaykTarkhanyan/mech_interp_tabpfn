@@ -326,9 +326,26 @@ def main() -> None:
     n_total = args.k_reality + args.reps * n_worlds * args.k
     bar = tqdm(total=n_total, desc="tasks", file=sys.stdout)
     tasks, build_seconds = [], []
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out = OUT_DIR / f"{args.tag}.json"
+
+    def write(complete: bool) -> None:
+        """Checkpoint after reality and after every replicate, so a killed run keeps its finished replicates."""
+        out.write_text(json.dumps({
+            "created": time.strftime("%Y-%m-%d %H:%M:%S"), "complete": complete, "seed": SEED,
+            "reality": args.reality, "reps": args.reps, "k": args.k, "k_reality": args.k_reality,
+            "timing_mode": args.timing, "config": CONFIG, "features": names, "explainers": EXPLAINERS,
+            "generators": GENERATORS, "targets": TARGETS, "reality_noise_sd": reality.sigma,
+            "reality_signal_r2": signal_r2, "null_noise_sd": null.sigma,
+            "versions": {"shap": shap.__version__, "numpy": np.__version__, "sklearn": sklearn.__version__,
+                         "pandas": pd.__version__},
+            "runtime_s": round(time.time() - start, 1), "build_seconds": build_seconds, "tasks": tasks}, indent=1),
+            encoding="utf-8")
+
     for k in range(args.k_reality):
         tasks.append({"rep": None, "role": "reality", **run_task(reality, SEED + k)})
         bar.update()
+    write(complete=False)
     for rep in range(args.reps):
         rr = np.random.default_rng(SEED + 10_000 + rep)
         x_d = reality.sample(CONFIG["n_D"], rr, "train")
@@ -343,18 +360,8 @@ def main() -> None:
                 bar.update()
         elapsed = time.time() - start
         logging.info(f"rep {rep + 1}/{args.reps}: {elapsed:.0f}s elapsed, ~{elapsed / bar.n * (n_total - bar.n):.0f}s left")
+        write(complete=rep + 1 == args.reps)
     bar.close()
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / f"{args.tag}.json"
-    out.write_text(json.dumps({
-        "created": time.strftime("%Y-%m-%d %H:%M:%S"), "seed": SEED, "reality": args.reality, "reps": args.reps,
-        "k": args.k, "k_reality": args.k_reality, "timing_mode": args.timing, "config": CONFIG,
-        "features": names, "explainers": EXPLAINERS, "generators": GENERATORS, "targets": TARGETS,
-        "reality_noise_sd": reality.sigma, "reality_signal_r2": signal_r2, "null_noise_sd": null.sigma,
-        "versions": {"shap": shap.__version__, "numpy": np.__version__, "sklearn": sklearn.__version__,
-                     "pandas": pd.__version__},
-        "runtime_s": round(time.time() - start, 1), "build_seconds": build_seconds, "tasks": tasks}, indent=1),
-        encoding="utf-8")
     logging.info(f"Wrote {out}: {len(tasks)} tasks in {time.time() - start:.0f}s")
 
 
