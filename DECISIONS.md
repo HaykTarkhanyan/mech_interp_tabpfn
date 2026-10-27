@@ -4,6 +4,58 @@ Newest first. Never delete a superseded entry.
 
 ---
 
+## #26 - Transfer pilot v3: ask the transfer question under the conditional Shapley estimand
+
+**Date:** 2026-10-28
+**Status:** active (the user chose option (a) plus (c) of Q20 on 2026-10-28; (c), reporting the negative interventional
+result, is recorded in #24)
+
+**Decision:** `synthetic_data/scripts/transfer_pilot_v3_conditional.py` repeats v2's design with conditional
+(observational) SHAP as the ground truth:
+- **Reality** (default): a Gaussian copula with the real California marginals, the standardized features
+  dequantized (tied values jittered within half the gap between distinct values, so the marginal maps are
+  one-to-one and conditionals are exact), with v2's true function (a forest fitted to the real target) plus noise.
+  `--reality-family mixture` instead uses an 8-component Gaussian mixture.
+- **Builders:** worlds with exact conditionals only: independent columns, a Gaussian, mixtures with 3 and 8
+  components, and a Gaussian copula, all fitted to D. Targets are additive and forest (v2's families). The builder
+  of reality's own family (the copula, or the 8-component mixture under `--reality-family mixture`) is the explicit
+  same-family control: it can match reality by construction, as the forest target did in Tier 0, so "realism helps"
+  is read from the other generators.
+- **Ground truth:** all 2^d coalitions, each conditional expectation a Monte Carlo mean over 500 exact
+  conditional draws.
+- **Explainers:** two conditional ones are added (Gaussian-conditional SHAP after Aas et al. 2021, and
+  mixture-conditional SHAP), next to interventional TreeSHAP, path TreeSHAP, KernelSHAP, LIME and occlusion.
+- **Bonus:** reality tasks also score against interventional SHAP, which gives the estimand-sensitivity table (Q13)
+  for free.
+
+**Why:** Tier 0 of v2 (#24) found that for interventional SHAP every world, even a generic one, reproduces reality's
+ranking. Interventional SHAP uses the data only through a background sample; conditional SHAP depends on the joint
+distribution itself, so if realism matters anywhere, it is here.
+
+Real rows cannot be the reality for a conditional truth: their conditional distributions are unknown. A fitted
+copula (or mixture) keeps the nested known-truth design (Advani et al. 2019) with exact conditionals. The copula is the
+default because it keeps the real marginals (skewed, heavy-tailed) and is not a finite Gaussian mixture, so none of the
+mixture builders shares its family.
+
+The two conditional explainers are written here because no maintained Python package computes conditional Shapley
+values (shapr is R). The conditional machinery is tested in `tests/test_truth.py` (TestConditionalShap): it matches
+the closed form for a correlated Gaussian within 0.08 and the exact mixture conditional means.
+
+**Alternatives rejected:**
+- reality as real rows with an estimated conditional: the truth would itself be an estimate, so explainer error
+  could not be separated from truth error;
+- ARF as reality or builder: it needs conditional forging (`forge(evidence=...)`, Q9), not yet in the fork;
+- R shapr through rpy2: adds R and rpy2 to the env for one estimator family;
+- swapping only the explainer set (Q20 option (b)): it keeps the estimand that Tier 0 showed is world-invariant.
+
+**What would change this:**
+- Monte Carlo noise in the truth comparable to the gaps between explainers (two independent truths are compared in
+  the timing run);
+- the timing run making a probe of about 70 tasks unaffordable;
+- reality's mixture fitting the California features too poorly to be a credible stand-in.
+
+---
+
 ## #25 - Upstream benchmarks run in one shared env, from pinned clones with small committed patches
 
 **Date:** 2026-10-27

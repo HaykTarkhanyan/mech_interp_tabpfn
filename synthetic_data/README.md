@@ -39,7 +39,8 @@ scripts/
   lit_prisma.py      PRISMA figure from the count files
   lit_render.py      citations -> author-year, reference list, house-style checks, PDF via pandoc
   transfer_pilot_v2.py  first study (DECISIONS.md #22, #24): do data-fitted worlds reproduce reality's explainer ranking?
-  transfer_report_v2.py summary JSON + HTML report from a transfer_pilot_v2.py results file
+  transfer_pilot_v3_conditional.py  the same question under the conditional Shapley estimand (DECISIONS.md #26)
+  transfer_report_v2.py summary JSON + HTML report from a transfer_pilot_v2.py or v3 results file
   transfer_cost.py      wall-time estimate per study tier, from the --timing runs
   frontier_probe.py     how much of a real task exact-SHAP target families capture (~4 min); pairwise_truth
   frontier_report.py    HTML report from results/frontier/frontier.json (~2 s)

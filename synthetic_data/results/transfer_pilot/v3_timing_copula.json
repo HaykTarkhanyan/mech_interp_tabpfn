@@ -1,0 +1,610 @@
+{
+ "created": "2026-10-28 00:16:40",
+ "complete": true,
+ "estimand": "conditional",
+ "seed": 509,
+ "reality": "reality (rf, Gaussian copula with the real marginals)",
+ "reps": 1,
+ "k": 1,
+ "k_reality": 1,
+ "timing_mode": true,
+ "args": {
+  "reps": 1,
+  "k": 1,
+  "k_reality": 1,
+  "n_explain": 20,
+  "m_truth": 500,
+  "reality_family": "copula",
+  "reality_components": 8,
+  "timing": true,
+  "tag": "v3_timing_copula"
+ },
+ "config": {
+  "dataset": "california_housing (Gaussian-mixture stand-in)",
+  "grid": 0.000244140625,
+  "n_D": 2000,
+  "n_train": 1000,
+  "n_bg_explainer": 50,
+  "n_fit_conditional_explainer": 200,
+  "m_explainer": 50,
+  "n_bg_interventional_truth": 1000,
+  "kernel_nsamples": 200,
+  "lime_samples": 2000,
+  "null_rho": 0.5
+ },
+ "features": [
+  "MedInc",
+  "HouseAge",
+  "AveRooms",
+  "AveBedrms",
+  "Population",
+  "AveOccup",
+  "Latitude",
+  "Longitude"
+ ],
+ "explainers": [
+  "TreeSHAP-int (bg 50)",
+  "TreeSHAP-path",
+  "KernelSHAP (kmeans 10)",
+  "Gaussian-conditional SHAP",
+  "Mixture-conditional SHAP (3 comp.)",
+  "LIME",
+  "Occlusion (mean)"
+ ],
+ "generators": [
+  "independent",
+  "gaussian",
+  "mixture3",
+  "mixture8",
+  "copula"
+ ],
+ "targets": [
+  "additive",
+  "forest"
+ ],
+ "reality_noise_sd": 0.5483446233198812,
+ "reality_signal_r2": 0.7514955063094838,
+ "null_noise_sd": 1.8294040546035284,
+ "versions": {
+  "shap": "0.54.1",
+  "numpy": "2.5.4",
+  "sklearn": "1.9.1"
+ },
+ "runtime_s": 290.8,
+ "build_seconds": [
+  0.3
+ ],
+ "tasks": [
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6590690234383562,
+    "TreeSHAP-path": 0.6075893035425859,
+    "KernelSHAP (kmeans 10)": 0.6602638745325536,
+    "Gaussian-conditional SHAP": 0.29747308087986024,
+    "Mixture-conditional SHAP (3 comp.)": 0.32191060358562024,
+    "LIME": 0.7610206580448362,
+    "Occlusion (mean)": 0.8099649659156728
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7390765797175831,
+    "TreeSHAP-path": 0.6924160540763593,
+    "KernelSHAP (kmeans 10)": 0.7304872522710124,
+    "Gaussian-conditional SHAP": 0.41566412517371126,
+    "Mixture-conditional SHAP (3 comp.)": 0.4251016488009734,
+    "LIME": 0.7804692721481139,
+    "Occlusion (mean)": 0.8475535540689073
+   },
+   "model_gap": 0.28572550349364584,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.14844585484377376,
+    "TreeSHAP-path": 0.05786014275626452,
+    "KernelSHAP (kmeans 10)": 0.19919239946330702,
+    "Gaussian-conditional SHAP": 0.4897352313168929,
+    "Mixture-conditional SHAP (3 comp.)": 0.536897869376552,
+    "LIME": 0.4437422077692511,
+    "Occlusion (mean)": 0.40408360302399104
+   },
+   "estimand_gap": 0.6319438063049512,
+   "truth_mc_noise": 0.051232484274366726,
+   "seconds": {
+    "fit": 0.558,
+    "truth_model": 19.116,
+    "truth_data": 9.823,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.033,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.262,
+     "Gaussian-conditional SHAP": 1.035,
+     "Mixture-conditional SHAP (3 comp.)": 1.022,
+     "LIME": 0.189,
+     "Occlusion (mean)": 0.0
+    },
+    "total": 40.912
+   }
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4739859862534802,
+    "TreeSHAP-path": 0.4460883459532526,
+    "KernelSHAP (kmeans 10)": 0.49350638299008215,
+    "Gaussian-conditional SHAP": 0.2913635700405272,
+    "Mixture-conditional SHAP (3 comp.)": 0.2760593789157632,
+    "LIME": 0.5875059698166882,
+    "Occlusion (mean)": 0.5928843967577614
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.49891350261824813,
+    "TreeSHAP-path": 0.4896931515181806,
+    "KernelSHAP (kmeans 10)": 0.5164940479220711,
+    "Gaussian-conditional SHAP": 0.4048479930563843,
+    "Mixture-conditional SHAP (3 comp.)": 0.3892166396386689,
+    "LIME": 0.5769933128298558,
+    "Occlusion (mean)": 0.6188577887512583
+   },
+   "model_gap": 0.27398339985080755,
+   "seconds": {
+    "fit": 0.434,
+    "truth_model": 9.847,
+    "truth_data": 9.743,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.045,
+     "TreeSHAP-path": 0.005,
+     "KernelSHAP (kmeans 10)": 0.24,
+     "Gaussian-conditional SHAP": 0.785,
+     "Mixture-conditional SHAP (3 comp.)": 0.73,
+     "LIME": 0.197,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 22.034
+   }
+  },
+  {
+   "rep": 0,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4538297092897711,
+    "TreeSHAP-path": 0.42995877931677673,
+    "KernelSHAP (kmeans 10)": 0.504740242654199,
+    "Gaussian-conditional SHAP": 0.18856216988736235,
+    "Mixture-conditional SHAP (3 comp.)": 0.26781015088038657,
+    "LIME": 0.737177107102759,
+    "Occlusion (mean)": 0.7349502588014859
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5549082455188449,
+    "TreeSHAP-path": 0.5326289717773961,
+    "KernelSHAP (kmeans 10)": 0.5887042809517375,
+    "Gaussian-conditional SHAP": 0.2580663979989325,
+    "Mixture-conditional SHAP (3 comp.)": 0.27365260084901344,
+    "LIME": 0.7476250427976187,
+    "Occlusion (mean)": 0.7787762628012744
+   },
+   "model_gap": 0.23150624982948026,
+   "seconds": {
+    "fit": 0.388,
+    "truth_model": 6.431,
+    "truth_data": 0.674,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.028,
+     "TreeSHAP-path": 0.015,
+     "KernelSHAP (kmeans 10)": 0.264,
+     "Gaussian-conditional SHAP": 0.808,
+     "Mixture-conditional SHAP (3 comp.)": 0.831,
+     "LIME": 0.19,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 9.632
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.14261715208612968,
+    "TreeSHAP-path": 0.06152333427228212,
+    "KernelSHAP (kmeans 10)": 0.20109772850382007,
+    "Gaussian-conditional SHAP": 0.2458740198610886,
+    "Mixture-conditional SHAP (3 comp.)": 0.33628249194488663,
+    "LIME": 0.3435479800120108,
+    "Occlusion (mean)": 0.3915746393500731
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2802803096299605,
+    "TreeSHAP-path": 0.2395962240495514,
+    "KernelSHAP (kmeans 10)": 0.31699075292984025,
+    "Gaussian-conditional SHAP": 0.32262906721841755,
+    "Mixture-conditional SHAP (3 comp.)": 0.42376056537032597,
+    "LIME": 0.3229972493608632,
+    "Occlusion (mean)": 0.49364948788832014
+   },
+   "model_gap": 0.24313106553682137,
+   "seconds": {
+    "fit": 0.437,
+    "truth_model": 5.683,
+    "truth_data": 3.977,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.052,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.417,
+     "Gaussian-conditional SHAP": 1.204,
+     "Mixture-conditional SHAP (3 comp.)": 0.767,
+     "LIME": 0.186,
+     "Occlusion (mean)": 0.002
+    },
+    "total": 12.734
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.40669519583402425,
+    "TreeSHAP-path": 0.35699559685078386,
+    "KernelSHAP (kmeans 10)": 0.4034109857574624,
+    "Gaussian-conditional SHAP": 0.2156751795150461,
+    "Mixture-conditional SHAP (3 comp.)": 0.27670253698364117,
+    "LIME": 0.5768168680769333,
+    "Occlusion (mean)": 0.5615999078784378
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4388547014308242,
+    "TreeSHAP-path": 0.40809733381168195,
+    "KernelSHAP (kmeans 10)": 0.44953094327770166,
+    "Gaussian-conditional SHAP": 0.3279991709814286,
+    "Mixture-conditional SHAP (3 comp.)": 0.3796357362257962,
+    "LIME": 0.5520946660919588,
+    "Occlusion (mean)": 0.6178803228726988
+   },
+   "model_gap": 0.280849383312137,
+   "seconds": {
+    "fit": 0.41,
+    "truth_model": 6.782,
+    "truth_data": 4.671,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.033,
+     "TreeSHAP-path": 0.015,
+     "KernelSHAP (kmeans 10)": 0.25,
+     "Gaussian-conditional SHAP": 0.923,
+     "Mixture-conditional SHAP (3 comp.)": 0.991,
+     "LIME": 0.262,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 14.341
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4597586711813844,
+    "TreeSHAP-path": 0.4382740335532004,
+    "KernelSHAP (kmeans 10)": 0.46966281095394447,
+    "Gaussian-conditional SHAP": 0.26132565337915076,
+    "Mixture-conditional SHAP (3 comp.)": 0.2060778566266721,
+    "LIME": 0.6374264462697304,
+    "Occlusion (mean)": 0.5661403512450919
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4942071545202542,
+    "TreeSHAP-path": 0.47492196219964966,
+    "KernelSHAP (kmeans 10)": 0.5092075639200959,
+    "Gaussian-conditional SHAP": 0.3475094492887769,
+    "Mixture-conditional SHAP (3 comp.)": 0.33070439265331225,
+    "LIME": 0.5625240608343467,
+    "Occlusion (mean)": 0.6287777873014389
+   },
+   "model_gap": 0.24096944259036948,
+   "seconds": {
+    "fit": 0.572,
+    "truth_model": 8.804,
+    "truth_data": 4.082,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.035,
+     "TreeSHAP-path": 0.007,
+     "KernelSHAP (kmeans 10)": 0.253,
+     "Gaussian-conditional SHAP": 0.82,
+     "Mixture-conditional SHAP (3 comp.)": 0.782,
+     "LIME": 0.16,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 15.521
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.48908275403019946,
+    "TreeSHAP-path": 0.4557941537929411,
+    "KernelSHAP (kmeans 10)": 0.5428401728113095,
+    "Gaussian-conditional SHAP": 0.33763853994110427,
+    "Mixture-conditional SHAP (3 comp.)": 0.3372151220668101,
+    "LIME": 0.5593076912917201,
+    "Occlusion (mean)": 0.6050775192561034
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5155043038722503,
+    "TreeSHAP-path": 0.487976016971793,
+    "KernelSHAP (kmeans 10)": 0.5674222296411051,
+    "Gaussian-conditional SHAP": 0.3873572161971657,
+    "Mixture-conditional SHAP (3 comp.)": 0.3776654803209345,
+    "LIME": 0.5424194070239938,
+    "Occlusion (mean)": 0.6412841097749132
+   },
+   "model_gap": 0.20196170902852084,
+   "seconds": {
+    "fit": 0.348,
+    "truth_model": 5.714,
+    "truth_data": 4.6,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.051,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.247,
+     "Gaussian-conditional SHAP": 0.765,
+     "Mixture-conditional SHAP (3 comp.)": 0.854,
+     "LIME": 0.241,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 12.836
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4959335760010159,
+    "TreeSHAP-path": 0.45264162311266426,
+    "KernelSHAP (kmeans 10)": 0.48504959417113713,
+    "Gaussian-conditional SHAP": 0.2629341981101869,
+    "Mixture-conditional SHAP (3 comp.)": 0.3060785668095777,
+    "LIME": 0.6028952373933387,
+    "Occlusion (mean)": 0.5812747459759866
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5063810693492414,
+    "TreeSHAP-path": 0.4692047177169564,
+    "KernelSHAP (kmeans 10)": 0.5048584400240258,
+    "Gaussian-conditional SHAP": 0.33711637309849163,
+    "Mixture-conditional SHAP (3 comp.)": 0.3700513908058714,
+    "LIME": 0.5418985017619645,
+    "Occlusion (mean)": 0.6029107809276678
+   },
+   "model_gap": 0.24214896531435276,
+   "seconds": {
+    "fit": 0.437,
+    "truth_model": 8.082,
+    "truth_data": 5.019,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.032,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.234,
+     "Gaussian-conditional SHAP": 0.703,
+     "Mixture-conditional SHAP (3 comp.)": 0.849,
+     "LIME": 0.213,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 15.589
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.18975757404335217,
+    "TreeSHAP-path": 0.07094994352970709,
+    "KernelSHAP (kmeans 10)": 0.2744089381844576,
+    "Gaussian-conditional SHAP": 0.26436154143330015,
+    "Mixture-conditional SHAP (3 comp.)": 0.4245202986686779,
+    "LIME": 0.4255146840702542,
+    "Occlusion (mean)": 0.5043193798130987
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.32747667820561693,
+    "TreeSHAP-path": 0.2803675686747231,
+    "KernelSHAP (kmeans 10)": 0.38532210213796464,
+    "Gaussian-conditional SHAP": 0.3910259490266431,
+    "Mixture-conditional SHAP (3 comp.)": 0.5137166583406981,
+    "LIME": 0.4415536557787494,
+    "Occlusion (mean)": 0.5563976567358677
+   },
+   "model_gap": 0.29141928465859673,
+   "seconds": {
+    "fit": 0.356,
+    "truth_model": 6.136,
+    "truth_data": 7.13,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.036,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.317,
+     "Gaussian-conditional SHAP": 0.839,
+     "Mixture-conditional SHAP (3 comp.)": 0.895,
+     "LIME": 0.241,
+     "Occlusion (mean)": 0.002
+    },
+    "total": 15.961
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.29472177449718046,
+    "TreeSHAP-path": 0.29478017437376086,
+    "KernelSHAP (kmeans 10)": 0.3381784027821187,
+    "Gaussian-conditional SHAP": 0.20235396682712656,
+    "Mixture-conditional SHAP (3 comp.)": 0.2553384765960511,
+    "LIME": 0.49920340272149805,
+    "Occlusion (mean)": 0.48303072250826773
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3863645102718728,
+    "TreeSHAP-path": 0.35823636242665563,
+    "KernelSHAP (kmeans 10)": 0.38288096637045665,
+    "Gaussian-conditional SHAP": 0.29354289769391045,
+    "Mixture-conditional SHAP (3 comp.)": 0.3220425117529493,
+    "LIME": 0.45282574302533585,
+    "Occlusion (mean)": 0.5191156346750319
+   },
+   "model_gap": 0.25572726802930923,
+   "seconds": {
+    "fit": 0.508,
+    "truth_model": 16.054,
+    "truth_data": 14.102,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.128,
+     "TreeSHAP-path": 0.025,
+     "KernelSHAP (kmeans 10)": 0.873,
+     "Gaussian-conditional SHAP": 2.459,
+     "Mixture-conditional SHAP (3 comp.)": 3.193,
+     "LIME": 2.261,
+     "Occlusion (mean)": 0.038
+    },
+    "total": 39.64
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4276427646625689,
+    "TreeSHAP-path": 0.4278487657674752,
+    "KernelSHAP (kmeans 10)": 0.45009373875182146,
+    "Gaussian-conditional SHAP": 0.26644275973276166,
+    "Mixture-conditional SHAP (3 comp.)": 0.19270830099274489,
+    "LIME": 0.5492333970518779,
+    "Occlusion (mean)": 0.548407869955804
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.43355348393885396,
+    "TreeSHAP-path": 0.4391843680182329,
+    "KernelSHAP (kmeans 10)": 0.4547322213458114,
+    "Gaussian-conditional SHAP": 0.2886566009071224,
+    "Mixture-conditional SHAP (3 comp.)": 0.26484129796704436,
+    "LIME": 0.49764882934900695,
+    "Occlusion (mean)": 0.5599555743127982
+   },
+   "model_gap": 0.18562246544469907,
+   "seconds": {
+    "fit": 1.746,
+    "truth_model": 23.156,
+    "truth_data": 15.673,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.111,
+     "TreeSHAP-path": 0.032,
+     "KernelSHAP (kmeans 10)": 0.962,
+     "Gaussian-conditional SHAP": 2.93,
+     "Mixture-conditional SHAP (3 comp.)": 4.787,
+     "LIME": 0.716,
+     "Occlusion (mean)": 0.011
+    },
+    "total": 50.13
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4530782567244972,
+    "TreeSHAP-path": 0.4383121495673779,
+    "KernelSHAP (kmeans 10)": 0.5254866806614895,
+    "Gaussian-conditional SHAP": 0.35552778851219746,
+    "Mixture-conditional SHAP (3 comp.)": 0.333680455746194,
+    "LIME": 0.49810662669622324,
+    "Occlusion (mean)": 0.5793501697429847
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.47602626536198805,
+    "TreeSHAP-path": 0.46292373987711644,
+    "KernelSHAP (kmeans 10)": 0.5284683773029475,
+    "Gaussian-conditional SHAP": 0.38925545935753186,
+    "Mixture-conditional SHAP (3 comp.)": 0.37245562830102186,
+    "LIME": 0.4959292221242742,
+    "Occlusion (mean)": 0.5832406521493637
+   },
+   "model_gap": 0.1980284483314434,
+   "seconds": {
+    "fit": 1.3,
+    "truth_model": 10.757,
+    "truth_data": 4.66,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.036,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.251,
+     "Gaussian-conditional SHAP": 0.787,
+     "Mixture-conditional SHAP (3 comp.)": 0.821,
+     "LIME": 0.2,
+     "Occlusion (mean)": 0.01
+    },
+    "total": 18.835
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.44003780227940353,
+    "TreeSHAP-path": 0.42784940819580214,
+    "KernelSHAP (kmeans 10)": 0.44696839882551037,
+    "Gaussian-conditional SHAP": 0.27815527336438894,
+    "Mixture-conditional SHAP (3 comp.)": 0.29795039013993657,
+    "LIME": 0.5809036643866129,
+    "Occlusion (mean)": 0.5761476173409924
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.47826706714811773,
+    "TreeSHAP-path": 0.46595597108796566,
+    "KernelSHAP (kmeans 10)": 0.4820515253647191,
+    "Gaussian-conditional SHAP": 0.3498271162426741,
+    "Mixture-conditional SHAP (3 comp.)": 0.3581735608412187,
+    "LIME": 0.532692260904225,
+    "Occlusion (mean)": 0.605287052566446
+   },
+   "model_gap": 0.24862353247963215,
+   "seconds": {
+    "fit": 0.425,
+    "truth_model": 8.374,
+    "truth_data": 8.441,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.043,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.275,
+     "Gaussian-conditional SHAP": 0.743,
+     "Mixture-conditional SHAP (3 comp.)": 0.796,
+     "LIME": 0.236,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 19.35
+   }
+  }
+ ]
+}
