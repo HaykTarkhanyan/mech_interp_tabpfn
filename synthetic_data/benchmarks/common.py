@@ -22,7 +22,8 @@ SRC = HERE / "_src"            # upstream clones, made by setup_sources.sh (giti
 DATA = HERE / "_data"          # downloads and upstream working dirs (gitignored)
 RESULTS = HERE / "results"
 LOGS = HERE.parent / "logs"
-MIN_FREE_GB = 3.0              # C: had 4.9 GB free when this was set up (2026-10-27)
+MIN_FREE_GB = 2.0              # a run writes a few MB at most; C: had 4.9 GB free at setup, 2.8 GB later (2026-10-27)
+MIN_COMMIT_HEADROOM_GB = 1.5   # one run commits ~0.5 GB; below this Windows grows the pagefile into the scarce disk
 SEED = 509
 
 
@@ -47,6 +48,30 @@ def check_disk() -> None:
     free = shutil.disk_usage(HERE).free / 1e9
     if free < MIN_FREE_GB:
         raise RuntimeError(f"only {free:.1f} GB free on the disk; the runners stop below {MIN_FREE_GB} GB")
+    headroom = commit_headroom_gb()
+    if headroom is not None and headroom < MIN_COMMIT_HEADROOM_GB:
+        raise RuntimeError(f"only {headroom:.1f} GB of memory commit left (RAM + pagefile); the runners stop below "
+                           f"{MIN_COMMIT_HEADROOM_GB} GB. Close other programs first.")
+
+
+def commit_headroom_gb() -> float | None:
+    """Available commit (RAM + pagefile) on Windows via GlobalMemoryStatusEx; None on other systems."""
+    if platform.system() != "Windows":
+        return None
+    import ctypes
+
+    class MemoryStatusEx(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+
+    st = MemoryStatusEx()
+    st.dwLength = ctypes.sizeof(MemoryStatusEx)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st)):
+        raise OSError("GlobalMemoryStatusEx failed")
+    return st.ullAvailPageFile / 1e9
 
 
 def workdir(name: str) -> Path:

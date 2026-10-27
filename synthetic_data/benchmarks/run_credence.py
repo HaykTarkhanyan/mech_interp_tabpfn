@@ -51,7 +51,7 @@ logging.getLogger("lightning.pytorch").setLevel(logging.ERROR)
 
 from credence import Credence  # noqa: E402
 
-from run_realcause import estimators  # noqa: E402
+from run_realcause import estimate, estimators  # noqa: E402
 
 CAT = ["black", "hispanic", "married", "nodegree", "t"]
 NUM = ["age", "education", "re74", "re75", "re78"]
@@ -112,14 +112,11 @@ def run_arm(ds: str, real: pd.DataFrame, effect: str, f_val: float, args, log, s
         if t.nunique() < 2:
             raise RuntimeError(f"{arm}: generated data set {r} has a single treatment arm although the "
                                f"50,000-row sample had both")
+        true_att = float((d["y1"] - d["y0"])[d["t"] == 1].mean())
         for name, make in estimators().items():
-            if make is None:
-                est = float(y[t == 1].mean() - y[t == 0].mean())
-            else:
-                e = make()
-                e.fit(w, t, y)
-                est = float(e.estimate_ate())
-            rows.append({"rep": r, "estimator": name, "ate_true": true_ate, "ate_est": est})
+            ate, att, _ = estimate(make, w, t, y)
+            rows.append({"rep": r, "estimator": name, "ate_true": true_ate, "att_true": true_att,
+                         "ate_est": ate, "att_est": att})
     log.info(f"{arm}: {len(rows) // len(estimators())} estimator reps done, {time.time() - started:.0f}s elapsed")
     return {
         "data": ds, "n": int(len(real)), "target_effect": f_val, "standardized": standardize,

@@ -56,8 +56,10 @@ def main() -> None:
     for f in fams:
         vals = [d["families"][f]["r2_mean"] for d in ds]
         fig.add_bar(name=f, x=names, y=vals, marker_color=COLORS[f], text=[f"{v:.2f}" for v in vals],
-                    textposition="outside", error_y=dict(type="data", array=[d["families"][f]["r2_sd"] for d in ds]))
+                    textposition="outside", textangle=-90, textfont=dict(size=10),
+                    error_y=dict(type="data", array=[d["families"][f]["r2_sd"] for d in ds]))
     fig.update_layout(barmode="group", yaxis_title="held-out R^2 against the real labels (3-fold mean)",
+                      yaxis_range=[0, 1.18],
                       height=480, template="plotly_white", legend=dict(orientation="h", y=-0.25),
                       margin=dict(l=60, r=20, t=30, b=120))
     fig_r2 = pio.to_html(fig, full_html=False, include_plotlyjs="inline", config={"displaylogo": False})

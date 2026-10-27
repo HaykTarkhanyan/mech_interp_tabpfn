@@ -14,7 +14,8 @@ standardized difference between real and generated means of every variable withi
 Then, for each LaLonde sample (PSID, CPS controls with the experimental treated units, as in the paper):
 draw t from its empirical share, X | t from G_0, y(0) and y(1) from G_1; the true ATE is the mean of
 y(1) - y(0) over 100,000 draws. --reps simulated data sets of the real sample size are each given to
-seven estimators (the RealCause causallib wrappers used in run_realcause.py), scored by bias and RMSE.
+seven estimators (the RealCause causallib wrappers used in run_realcause.py), scored by bias and RMSE against
+the true ATE and the true ATT (the LaLonde literature's usual target).
 
 Usage (from synthetic_data/benchmarks/):
     .venv/Scripts/python.exe run_wgan.py                 # ~4 min (estimate)
@@ -37,7 +38,7 @@ warnings.filterwarnings("ignore")
 
 import wgan  # noqa: E402
 
-from run_realcause import estimators  # noqa: E402  (same estimator set as the RealCause run)
+from run_realcause import estimate, estimators  # noqa: E402  (same estimators as the RealCause run)
 
 WG = common.SRC / "ds-wgan"
 CONT0, CAT0 = ["age", "education", "re74", "re75"], ["black", "hispanic", "married", "nodegree"]
@@ -131,13 +132,8 @@ def main() -> None:
             d = simulate(models, n, p, rng)
             w, t, y = d[CONT0 + CAT0], d["t"].astype(int), d["re78"]
             for name, make in estimators().items():
-                if make is None:
-                    est = float(y[t == 1].mean() - y[t == 0].mean())
-                else:
-                    e = make()
-                    e.fit(w, t, y)
-                    est = float(e.estimate_ate())
-                rows.append({"rep": r, "estimator": name, "ate_est": est})
+                ate, att, _ = estimate(make, w, t, y)
+                rows.append({"rep": r, "estimator": name, "ate_est": ate, "att_est": att})
             if (r + 1) % 5 == 0:
                 el = time.time() - started
                 log.info(f"{tag}: rep {r + 1}/{args.reps}, {el:.0f}s elapsed")

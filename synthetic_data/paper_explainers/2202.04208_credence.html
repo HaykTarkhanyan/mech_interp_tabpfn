@@ -143,6 +143,24 @@ code { overflow-wrap: anywhere; }
 <p><b>The objective</b> (Eq. 1, Section 2.2). Minimize a distance between generated and observed data plus α times the deviation of the generated effect from f, plus β times the deviation of the generated confounding bias from g. In Credence the distance is the VAE's reconstruction-plus-KL loss, and the two penalties are applied per unit, which the authors note is tighter than the population version, chosen "to primarily ensure efficient computation". With α = 0 the effect is free; with β = 0 the confounding is free. The generated ground truth is the mean of the generated Y(1) - Y(0).</p>
 <p><b>Fit checks</b> (Appendix C). Correlation matrices of generated and real covariates look "visually extremely similar" for Lalonde and STAR (Fig. 5), presented as "convincing evidence", although the same appendix says comparing first and second moments "is not a sufficient metric of similarity".</p>
 <div class="take"><b>My take.</b> Letting the user state the effect and the confounding is the paper's real contribution: it separates "how the data look" (learned) from "what the truth is" (chosen), which is what a benchmark needs. Two caveats. The penalties are soft, so the generated effect only approximates f, and by how much is not reported. And the abstract's "virtually indistinguishable" rests on correlation matrices, with no test of the kind RealCause runs (see that explainer). <span class="sure">How sure: high.</span></div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> The paper does not link code;
+Amazon's <code>github.com/amzn/credence-to-causal-estimation</code> has a <code>credence-v2</code> package with the
+same three-VAE design. I fitted it to LaLonde PSID (6.9% treated) and to the NSW experiment (41.6% treated) with
+target effects 0 and +1,000 USD (CPU, fp32, 30 epochs instead of 100):
+<ul>
+<li>with its own settings (earnings in dollars, effect constraint weighted 1e20) training diverges: every
+generated effect is NaN;</li>
+<li>on standardized data it trains, but on PSID it generates <b>no treated units at all</b>: <code>sample()</code>
+turns the treatment decoder's output into 0/1 at 0.5 instead of drawing it, so a rare treatment disappears; on the
+experiment it generates 14.6% treated against 41.6%;</li>
+<li>the stated effect is not delivered: target +1,000 gave a generated mean effect of +3 USD (sd 592) on the
+experiment and +796 on PSID; target 0 gave -95 and -140.</li>
+</ul>
+Also in the code: <code>Credence.fit(batch_size=...)</code> is never passed on (every VAE trains with batch size
+10), and the bound constraint adds 1e20 times an indicator, which has no gradient. Details:
+<code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high that these are properties of the released code at commit 195cbf6; medium on how
+much more training or a GPU would change the last point.</span></div>
 </details>
 
 <details class="sec" open id="f2">

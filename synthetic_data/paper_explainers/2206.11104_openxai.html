@@ -182,6 +182,21 @@ code { overflow-wrap: anywhere; }
 <div id="chart-sa"></div>
 <div class="take"><b>My take: the perfect scores are built into the metric.</b> For a logistic regression f(x) = σ(w·x + b), the gradient is σ'(w·x + b)·w, a positive multiple of the coefficient vector at every input. Rank it, compare signs, take the top-K: it matches the coefficients exactly, always. SmoothGrad averages such gradients, and Integrated Gradients with <code>multiply_by_inputs=False</code> (v5 D.3) also averages them, so all three are perfect by algebra. SHAP and Gradient x Input are scored as poor because they return local contributions (for a linear model SHAP gives w_i(x_i - E[x_i])), which rank features by |w_i·(x_i - baseline)|, not by |w_i|. On German Credit, v5 reports SHAP's rank correlation with the "ground truth" as -0.001, no better than random (Table 17), for a method that is exact for linear models under its own definition. The benchmark is asking "which method returns the coefficient vector", not "which explanation is correct".
 <br><br>The NeurIPS sign agreement of 0.469 for gradients fits one specific bug: explaining the predicted class instead of a fixed class flips every sign whenever the prediction is class 0. HELOC is close to balanced, which would give about half. <span class="sure">How sure: high on the algebra; low on the cause of the NeurIPS numbers, which the papers never explain.</span></div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> I ran OpenXAI at commit a182886
+with its own explainer settings on the pretrained logistic regressions of all 8 datasets (50 test points each):
+<ul>
+<li>Gradient, Integrated Gradients and SmoothGrad score exactly 1.000 on all six ground-truth metrics on every
+dataset; on HELOC the gradient's sign agreement is 1.000, as in v5, not the NeurIPS 0.469;</li>
+<li>KernelSHAP and Input x Gradient, which attribute contributions rather than slopes, score near chance on
+several datasets (KernelSHAP's rank correlation with the coefficients: -0.09 on GMSC, -0.02 on German credit, 0.86
+on the synthetic data);</li>
+<li>the random control's feature agreement is 0.13 to 0.22 (v5 reports 0.149);</li>
+<li>the dataloader fits a separate MinMaxScaler on the test split, so test features are scaled with the test
+set's own minimum and maximum.</li>
+</ul>
+So the code matches v5, and the ground-truth metrics reward "proportional to the coefficients" by construction.
+Details: <code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high.</span></div>
 </details>
 
 <details class="sec" open id="f3">

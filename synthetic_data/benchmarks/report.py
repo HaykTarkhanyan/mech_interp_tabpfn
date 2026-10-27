@@ -331,13 +331,23 @@ def iterp_section(tag: str = "iterpretability") -> tuple:
     return section("iterp", "ITErpretability (Crabbe et al. 2022)", "".join(parts))
 
 
-def estimator_scores(rows: list, truth_key: str = "ate_true", truth: float | None = None) -> "pd.DataFrame":
-    """Bias and RMSE of each estimator against the per-data-set truth (or one fixed truth)."""
+def estimator_scores(rows: list, estimand: str = "ate", truth: float | None = None) -> "pd.DataFrame":
+    """Bias and RMSE of each estimator's <estimand>_est against the per-data-set <estimand>_true (or one fixed truth)."""
     import pandas as pd
     df = pd.DataFrame(rows)
-    df["err"] = df["ate_est"] - (df[truth_key] if truth is None else truth)
+    df["err"] = df[f"{estimand}_est"] - (df[f"{estimand}_true"] if truth is None else truth)
     return df.groupby("estimator").agg(bias=("err", "mean"), rmse=("err", lambda e: float(np.sqrt(np.mean(e ** 2)))),
                                        n=("err", "size")).sort_values("rmse")
+
+
+def att_ate_table(rows: list, true_ate: float | None = None, true_att: float | None = None, nd: int = 1) -> str:
+    """Estimators scored against the ATT (the LaLonde literature's target) and the ATE, sorted by ATT RMSE."""
+    att = estimator_scores(rows, "att", true_att)
+    ate = estimator_scores(rows, "ate", true_ate).reindex(att.index)
+    return table(["estimator", "ATT bias", "ATT RMSE", "ATE bias", "ATE RMSE", "data sets"],
+                 [[i, fmt(att.loc[i, "bias"], nd), fmt(att.loc[i, "rmse"], nd), fmt(ate.loc[i, "bias"], nd),
+                   fmt(ate.loc[i, "rmse"], nd), int(att.loc[i, "n"])] for i in att.index],
+                 ["32%", "13%", "13%", "13%", "13%", "16%"], {1, 2, 3, 4, 5})
 
 
 def realcause_section() -> tuple:
@@ -370,16 +380,14 @@ def realcause_section() -> tuple:
           "model tracks causal performance (0.77 to 0.92); predictive performance of the propensity model barely "
           "does (0.22 to 0.51).</div>",
         f"<h3>B. Seven estimators on {b['sample'].nunique()} of the pre-sampled data sets per real data set</h3>"
-        "<p>The estimators are RealCause's own causallib wrappers. The truth is each sampled data set's own ATE, "
-        "the mean of its <code>ite</code> column.</p>"
+        "<p>The estimators are RealCause's own causallib wrappers. The truth is each sampled data set's own ATT and "
+        "ATE, means of its <code>ite</code> column over the treated and over everyone.</p>"
         + table(["data set", "true ATE (mean)", "true ATT (mean)", "treated share"],
                 [[ds, fmt(r.ate, 1), fmt(r.att, 1), fmt(r.treated, 3)] for ds, r in truths.iterrows()],
                 ["34%", "22%", "22%", "22%"], {1, 2, 3})]
     for ds in ["lalonde_psid", "lalonde_cps", "twins"]:
-        sc = estimator_scores([x for x in d["part_b"] if x["dataset"] == ds])
-        parts.append(f"<p><b>{esc(ds)}</b>, sorted by RMSE</p>" + table(
-            ["estimator", "bias", "RMSE", "data sets"], [[i, fmt(r.bias, 2), fmt(r.rmse, 2), int(r.n)] for i, r in sc.iterrows()],
-            ["46%", "18%", "18%", "18%"], {1, 2, 3}))
+        parts.append(f"<p><b>{esc(ds)}</b>, sorted by ATT RMSE</p>"
+                     + att_ate_table([x for x in d["part_b"] if x["dataset"] == ds], nd=1 if ds != "twins" else 4))
     parts.append(
         '<div class="note warn"><b>Reading.</b> The LaLonde generators imply a large negative ATE '
         f"({truths.loc['lalonde_psid', 'ate']:.0f} USD for PSID) next to a small positive ATT "
@@ -412,10 +420,8 @@ def wgan_section(tag: str = "wgan") -> tuple:
                      "USD (100,000 draws).</p>")
         means = [[m["variable"], m["t"], fmt(m["real"], 2), fmt(m["generated"], 2)] for m in v["means_by_t"]]
         parts.append(table(["variable", "t", "real mean", "generated mean"], means, ["34%", "10%", "28%", "28%"], {1, 2, 3}))
-        sc = estimator_scores(v["rows"], truth=v["true_ate"])
-        parts.append("<p>Estimators against the generator's ATE, sorted by RMSE:</p>" + table(
-            ["estimator", "bias", "RMSE", "data sets"], [[i, fmt(x.bias, 1), fmt(x.rmse, 1), int(x.n)] for i, x in sc.iterrows()],
-            ["46%", "18%", "18%", "18%"], {1, 2, 3}))
+        parts.append("<p>Estimators against the generator's ATT and ATE, sorted by ATT RMSE:</p>"
+                     + att_ate_table(v["rows"], true_ate=v["true_ate"], true_att=v["true_att"]))
     parts.append("<h3>Explore further</h3><pre>.venv/Scripts/python.exe run_wgan.py --reps 100 --tag wgan_100</pre>")
     return section("wgan", "WGAN simulations (Athey et al. 2024)", "".join(parts))
 
@@ -441,10 +447,8 @@ def credence_section(tag: str = "credence") -> tuple:
                 ["24%", "10%", "6%", "8%", "8%", "13%", "11%", "9%", "11%"], {2, 6, 7, 8})]
     for name, v in d["arms"].items():
         if v["rows"]:
-            sc = estimator_scores(v["rows"])
-            parts.append(f"<p><b>{esc(name)}</b>: estimators against each generated data set's ATE</p>" + table(
-                ["estimator", "bias", "RMSE", "data sets"], [[i, fmt(x.bias, 1), fmt(x.rmse, 1), int(x.n)] for i, x in sc.iterrows()],
-                ["46%", "18%", "18%", "18%"], {1, 2, 3}))
+            parts.append(f"<p><b>{esc(name)}</b>: estimators against each generated data set's ATT and ATE</p>"
+                         + att_ate_table(v["rows"]))
     parts.append(
         '<div class="note warn"><b>Found while setting it up.</b> (1) With upstream settings (raw dollars, effect '
         "constraint weighted 1e20) training diverges: every generated effect is NaN. (2) <code>sample()</code> "
@@ -452,9 +456,13 @@ def credence_section(tag: str = "credence") -> tuple:
         "6.9% treated) can disappear from the generated data altogether, and the treated share is not reproduced "
         "even when the treatment is common. (3) <code>Credence.fit(batch_size=...)</code> is never passed on; every "
         "VAE trains with batch size 10. (4) The bound constraint adds 1e20 times an indicator, which has no "
-        "gradient, so bounds never shape training (negative earnings in the table). (5) The effect constraint is "
-        "an equality on each generated unit, so a constant f yields a near-constant generated effect: the "
-        "heterogeneity that makes estimators differ is removed by construction.</div>")
+        "gradient, so bounds never shape training (negative earnings in the table).</div>"
+        + '<div class="note"><b>Does the generator deliver the effect it promises?</b> '
+        + "; ".join(f"{esc(n)}: target {v['target_effect']:.0f}, generated mean {v['ite_mean']:.0f} (sd {v['ite_sd']:.0f})"
+                    for n, v in d["arms"].items() if v["ite_mean"] is not None)
+        + ". The constraint is enforced on the training batches through the encoder's latent codes; samples drawn "
+          "from the prior need not satisfy it, and in these runs (CPU, fp32, standardized data, "
+          f"{d['args']['max_epochs']} epochs) they often do not.</div>")
     return section("credence", "Credence (Parikh et al. 2022)", "".join(parts))
 
 
@@ -463,42 +471,52 @@ def causal_cross_section() -> tuple:
     from scipy.stats import kendalltau
     rc, wg = load("realcause"), load("wgan")
     cr = load("credence") if (RES / "credence.json").exists() else None
-    worlds = {}
+    worlds = {}   # name -> (ATT scores, ATE scores, true ATE, true ATT)
     b = [x for x in rc["part_b"] if x["dataset"] == "lalonde_psid"]
-    worlds["RealCause (PSID)"] = (estimator_scores(b), float(np.mean([x["ate_true"] for x in b])),
-                                  float(np.mean([x["att_true"] for x in b])))
+    worlds["RealCause (PSID)"] = (estimator_scores(b, "att"), estimator_scores(b, "ate"),
+                                  float(np.mean([x["ate_true"] for x in b])), float(np.mean([x["att_true"] for x in b])))
     v = wg["datasets"]["psid"]
-    worlds["WGAN (PSID)"] = (estimator_scores(v["rows"], truth=v["true_ate"]), v["true_ate"], v["true_att"])
+    worlds["WGAN (PSID)"] = (estimator_scores(v["rows"], "att", v["true_att"]),
+                             estimator_scores(v["rows"], "ate", v["true_ate"]), v["true_ate"], v["true_att"])
     if cr:
         for name, arm in cr["arms"].items():
             if arm["rows"] and arm["data"] == "psid":
-                worlds[f"Credence ({name})"] = (estimator_scores(arm["rows"]), arm["ite_mean"], None)
-    rows = [[w, fmt(ate, 0), fmt(att, 0) if att is not None else "n/a", sc.index[0], fmt(sc["rmse"].iloc[0], 0)]
-            for w, (sc, ate, att) in worlds.items()]
+                worlds[f"Credence ({name})"] = (estimator_scores(arm["rows"], "att"), estimator_scores(arm["rows"], "ate"),
+                                                float(np.mean([x["ate_true"] for x in arm["rows"]])),
+                                                float(np.mean([x["att_true"] for x in arm["rows"]])))
+    rows = [[w, fmt(ate, 0), fmt(att, 0), s_att.index[0], fmt(s_att["rmse"].iloc[0], 0), s_ate.index[0]]
+            for w, (s_att, s_ate, ate, att) in worlds.items()]
     names = list(worlds)
     tau_rows = []
     for i in range(len(names)):
         for j in range(i + 1, len(names)):
-            a, bb = worlds[names[i]][0]["rmse"], worlds[names[j]][0]["rmse"]
-            common = a.index.intersection(bb.index)
-            tau_rows.append([names[i], names[j], fmt(kendalltau(a[common], bb[common]).correlation, 2), len(common)])
-    rank = pd.DataFrame({w: sc["rmse"].rank() for w, (sc, _, _) in worlds.items()})
+            taus = []
+            for k in (0, 1):
+                a, bb = worlds[names[i]][k]["rmse"], worlds[names[j]][k]["rmse"]
+                common = a.index.intersection(bb.index)
+                taus.append(kendalltau(a[common], bb[common]).correlation)
+            tau_rows.append([names[i], names[j], fmt(taus[0], 2), fmt(taus[1], 2), len(common)])
+    rank = pd.DataFrame({w: s_att["rmse"].rank() for w, (s_att, _, _, _) in worlds.items()})
     body = (
         "<p>RealCause, the WGAN package and Credence are three different ways of fitting a simulator to the same "
         "LaLonde PSID data. If data-fitted simulators are a trustworthy benchmark, they should at least agree with "
         "each other on which estimator is best. This is the causal-inference version of the transfer pilot's "
         "question (DECISIONS.md #22). The same seven estimators were scored in each, against each generator's own "
-        "true ATE.</p>"
-        + table(["world", "true ATE (USD)", "true ATT (USD)", "best estimator (RMSE)", "its RMSE"], rows,
-                ["26%", "14%", "14%", "32%", "14%"], {1, 2, 4})
-        + "<h3>Estimator ranks (1 = lowest RMSE)</h3>" + heat_table(rank, False, 0, "estimator")
+        "true ATT (the usual LaLonde target) and true ATE.</p>"
+        + table(["world", "true ATE (USD)", "true ATT (USD)", "best for ATT", "its ATT RMSE", "best for ATE"], rows,
+                ["22%", "11%", "11%", "22%", "11%", "23%"], {1, 2, 4})
+        + "<h3>Estimator ranks by ATT RMSE (1 = best)</h3>" + heat_table(rank, False, 0, "estimator")
         + "<h3>Agreement between worlds (Kendall tau of the RMSE rankings)</h3>"
-        + table(["world A", "world B", "tau", "estimators"], tau_rows, ["36%", "36%", "14%", "14%"], {2, 3})
+        + table(["world A", "world B", "tau, ATT", "tau, ATE", "estimators"], tau_rows,
+                ["32%", "32%", "12%", "12%", "12%"], {2, 3, 4})
         + '<div class="note"><b>Reading.</b> The worlds disagree first about the truth itself: the ATE of the PSID '
           "population is set by how each generator extrapolates outcomes under treatment to the high-earning "
           "comparison group, where the data have almost no treated units. The ATT, where the data do say "
           "something, is much closer across generators. With different truths, agreement on the ranking of "
-          "estimators is not something the data can guarantee.</div>")
+          "estimators is not something the data can guarantee.</div>"
+        + ("" if any(k.startswith("Credence") for k in worlds) else
+           '<div class="note warn">Credence is missing from this comparison: fitted to PSID it generated no treated '
+           "units at all (see its section), so no estimator could be scored in its world.</div>"))
     return section("cross", "Do data-fitted causal simulators agree with each other?", body)
 
 

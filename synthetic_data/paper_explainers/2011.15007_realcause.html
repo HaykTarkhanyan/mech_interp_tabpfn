@@ -170,6 +170,15 @@ code { overflow-wrap: anywhere; }
 <p class="caption">Tables 4-5: median Spearman correlation between predictive performance and causal error within a model class. Outcome models (standardization) against ATE RMSE and PEHE; propensity models (weighting) against ATE RMSE.</p>
 <p><b>What they found.</b> "In this setting, it is a fairly good idea to select hyperparameters for causal estimators based on predictive performance", with median probabilities of a better predictor being at least as good causally of about 80-95%. Choosing between model classes by predictive metrics is "much less positive and more dataset-specific" (Appendix D.3). The 1,568 estimators and 77 metrics are released as an open dataset. On the average over datasets, a standardization estimator with an RBF-kernel SVM has the lowest ATE RMSE (Fig. 2).</p>
 <div class="take"><b>My take.</b> Part of this is built into the setting. Without unobserved confounding, a standardization estimator's effect estimate is the difference of its two outcome predictions, and RealCause's true effect is the difference of the generator's own two outcome means; within one model class, predicting the generator's outcomes better is close to estimating its effects better. The result is useful, but it says more about the no-confounding setting than about realism. The released table of estimators by predictive and causal metrics is the most reusable part. <span class="sure">How sure: medium.</span></div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> Recomputed from the repository's
+<code>causal-predictive-analysis.csv</code> with the logic of <code>experiments/uai_analysis.py</code>, all nine
+medians of Tables 4 and 5 match to two decimals (outcome models vs ATE RMSE 0.77 / 0.81 / 0.81, vs PEHE 0.92 /
+0.80 / 0.91; propensity models 0.22 / 0.51 / 0.38). On 20 of the shipped LaLonde PSID samples, the generator's
+true ATE is about -13,300 USD and its true ATT about +1,900 USD: the ATE is set by what the fitted outcome model
+says treatment would do to the high-earning comparison group, where almost no treated units exist. Which estimator
+looks best depends on the target: the difference in means is the worst ATT estimator (RMSE about 16,300) but the
+third-best ATE estimator (about 1,200). Details: <code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high.</span></div>
 </details>
 
 <details class="sec" open id="demo">

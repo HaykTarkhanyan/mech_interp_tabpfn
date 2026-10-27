@@ -7,7 +7,7 @@ A. Re-analysis of causal-predictive-analysis.csv (1,568 fitted estimators): with
    pandas' removed Series.append, so the same logic is restated here (Spearman only).
 B. RealCause's own estimator wrappers (causal_estimators/, causallib) on --n-samples of the 100 pre-sampled datasets
    per realistic dataset (realcause_datasets/, true potential outcomes included): ATE bias and RMSE against each
-   sample's true ATE (mean of ite), and PEHE for the outcome-model estimators.
+   sample's true ATE (mean of ite) and ATT (mean of ite over the treated), and PEHE for the outcome-model estimators.
 
 Usage (from synthetic_data/benchmarks/):
     .venv/Scripts/python.exe run_realcause.py              # ~3 min (estimate)
@@ -83,6 +83,29 @@ def estimators() -> dict:
     }
 
 
+def estimate(make, w: pd.DataFrame, t: pd.Series, y: pd.Series) -> tuple:
+    """(ATE estimate, ATT estimate, individual effects or None) for one estimator from estimators().
+
+    Outcome-model estimators average their individual effects over everyone (ATE) or over the treated (ATT). IPW's
+    ATE is causallib's; its ATT reweights the controls by p / (1 - p) with the same fitted, clipped propensity.
+    The difference in means is reported for both.
+    """
+    treated = (t == 1).to_numpy()
+    if make is None:
+        naive = float(y[t == 1].mean() - y[t == 0].mean())
+        return naive, naive, None
+    e = make()
+    e.fit(w, t, y)
+    if hasattr(e, "estimate_ite"):
+        ite = np.asarray(e.estimate_ite(), dtype=float)
+        return float(ite.mean()), float(ite[treated].mean()), ite
+    p = np.asarray(e.ipw.compute_propensity(w, t, treatment_values=1, clip_min=e.ipw.clip_min,
+                                            clip_max=e.ipw.clip_max), dtype=float)
+    odds = p[~treated] / (1 - p[~treated])
+    att = float(y[treated].mean() - np.sum(odds * y.to_numpy()[~treated]) / np.sum(odds))
+    return float(e.estimate_ate()), att, None
+
+
 def part_b(n_samples: int, log) -> list:
     rows = []
     for ds in DATASETS:
@@ -93,18 +116,11 @@ def part_b(n_samples: int, log) -> list:
             true_ate, true_att = float(ite.mean()), float(ite[t.to_numpy() == 1].mean())
             for name, make in estimators().items():
                 t0 = time.time()
-                pehe = None
-                if make is None:
-                    est = float(y[t == 1].mean() - y[t == 0].mean())
-                else:
-                    e = make()
-                    e.fit(w, t, y)
-                    est = float(e.estimate_ate())
-                    if hasattr(e, "estimate_ite"):
-                        pehe = float(np.sqrt(np.mean((np.asarray(e.estimate_ite(), dtype=float) - ite) ** 2)))
+                ate, att, ite_hat = estimate(make, w, t, y)
+                pehe = None if ite_hat is None else float(np.sqrt(np.mean((ite_hat - ite) ** 2)))
                 rows.append({"dataset": ds, "sample": s, "estimator": name, "ate_true": true_ate,
-                             "att_true": true_att, "treated_share": float(t.mean()), "ate_est": est,
-                             "pehe": pehe, "seconds": round(time.time() - t0, 2)})
+                             "att_true": true_att, "treated_share": float(t.mean()), "ate_est": ate,
+                             "att_est": att, "pehe": pehe, "seconds": round(time.time() - t0, 2)})
         log.info(f"{ds}: {n_samples} samples done")
     return rows
 
