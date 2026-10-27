@@ -1,0 +1,43 @@
+diff --git a/causal_estimators/doubly_robust_estimator.py b/causal_estimators/doubly_robust_estimator.py
+index 0965af2..bc33cf5 100644
+--- a/causal_estimators/doubly_robust_estimator.py
++++ b/causal_estimators/doubly_robust_estimator.py
+@@ -40,7 +40,7 @@ class DoublyRobustEstimator(BaseCausallibIteEstimator):
+ 
+         if trim_weights and trim_eps is None:
+             trim_eps = TRIM_EPS
+-        ipw = IPW(learner=prop_score_model, truncate_eps=trim_eps, use_stabilized=stabilized)
++        ipw = IPW(learner=prop_score_model, clip_min=trim_eps, clip_max=None if trim_eps is None else 1 - trim_eps, use_stabilized=stabilized)
+ 
+         standardization = STR_TO_STANDARDIZATION[standardization_type](outcome_model)
+         doubly_robust = STR_TO_DOUBLY_ROBUST[doubly_robust_type](
+diff --git a/causal_estimators/ipw_estimator.py b/causal_estimators/ipw_estimator.py
+index 9956c93..d2ff271 100644
+--- a/causal_estimators/ipw_estimator.py
++++ b/causal_estimators/ipw_estimator.py
+@@ -12,7 +12,7 @@ class IPWEstimator(BaseEstimator):
+     def __init__(self, prop_score_model=LogisticRegression(), trim_weights=False, trim_eps=None, stabilized=False):
+         if trim_weights and trim_eps is None:
+             trim_eps = TRIM_EPS
+-        self.ipw = IPW(learner=prop_score_model, truncate_eps=trim_eps, use_stabilized=stabilized)
++        self.ipw = IPW(learner=prop_score_model, clip_min=trim_eps, clip_max=None if trim_eps is None else 1 - trim_eps, use_stabilized=stabilized)
+         self.w = None
+         self.t = None
+         self.y = None
+diff --git a/utils.py b/utils.py
+index f26f032..9e8d6b0 100644
+--- a/utils.py
++++ b/utils.py
+@@ -102,9 +102,9 @@ def to_np_arrays(*args):
+         if isinstance(args[0], (tuple, list)):
+             args = args[0]
+         else:
+-            return np.array(args[0], dtype=np.float)
+-        return np.array(args[0], dtype=np.float)
+-    return tuple(np.array(arg, dtype=np.float) for arg in args)
++            return np.array(args[0], dtype=float)
++        return np.array(args[0], dtype=float)
++    return tuple(np.array(arg, dtype=float) for arg in args)
+ 
+ 
+ def to_np_vector(x, by_column=False, thin_interval=None, column_vector=False):

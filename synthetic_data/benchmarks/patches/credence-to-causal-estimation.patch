@@ -1,0 +1,55 @@
+diff --git a/credence-v2/src/credence/__init__.py b/credence-v2/src/credence/__init__.py
+index 40eb2eb..76d3976 100644
+--- a/credence-v2/src/credence/__init__.py
++++ b/credence-v2/src/credence/__init__.py
+@@ -67,11 +67,13 @@ class Credence:
+         )  # .to('cuda:0')
+         bar = pb.ProgressBar()
+         self.trainer_treat = pl.Trainer(
+-            gpus=1,
+-            precision=16,
++            accelerator="cpu",  # shared benchmark env patch: upstream gpus=1, precision=16 (CUDA only)
++            precision=32,
++            enable_progress_bar=False,
++            logger=False,
++            enable_checkpointing=False,
+             limit_train_batches=0.5,
+             max_epochs=max_epochs,
+-            callbacks=[bar],
+         )
+         self.trainer_treat.fit(
+             self.m_treat, self.m_treat.train_loader, self.m_treat.val_loader
+@@ -91,11 +93,13 @@ class Credence:
+ 
+         bar = pb.ProgressBar()
+         self.trainer_pre = pl.Trainer(
+-            gpus=1,
+-            precision=16,
++            accelerator="cpu",  # shared benchmark env patch: upstream gpus=1, precision=16 (CUDA only)
++            precision=32,
++            enable_progress_bar=False,
++            logger=False,
++            enable_checkpointing=False,
+             limit_train_batches=0.5,
+             max_epochs=max_epochs,
+-            callbacks=[bar],
+         )
+         self.trainer_pre.fit(self.m_pre, self.m_pre.train_loader, self.m_pre.val_loader)
+ 
+@@ -119,11 +123,13 @@ class Credence:
+ 
+         bar = pb.ProgressBar()
+         self.trainer_post = pl.Trainer(
+-            gpus=1,
+-            precision=16,
++            accelerator="cpu",  # shared benchmark env patch: upstream gpus=1, precision=16 (CUDA only)
++            precision=32,
++            enable_progress_bar=False,
++            logger=False,
++            enable_checkpointing=False,
+             limit_train_batches=0.5,
+             max_epochs=max_epochs,
+-            callbacks=[bar],
+         )
+         self.trainer_post.fit(
+             self.m_post, self.m_post.train_loader, self.m_post.val_loader

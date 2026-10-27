@@ -169,6 +169,28 @@ code { overflow-wrap: anywhere; }
 <div id="chart-tab"></div>
 <p class="caption">Table 7, SIM (higher is better). KL<sub>div</sub> follows the same order: Gradient 0.092, LORE 1.204, others 1.98 to 3.81.</p>
 <div class="take"><b>My take: the winner is built into the reference.</b> A one-level difference is a finite-difference derivative: f(x) - f(x - Δe<sub>i</sub>) ≈ Δ·∂f/∂x<sub>i</sub>, with the same Δ for every feature. After normalization it equals the normalized absolute gradient up to curvature terms, so Gradient (taken "in absolute value", Section 5.3) matches by construction. Integrated Gradients and DeepLIFT with a zero baseline, and KernelSHAP and LIME with occlusion value 0, all measure what happens when a feature is moved to 0, a large move on a thresholded, nonlinear function. Table 7 ranks perturbation sizes, not explanation quality. The demo below shows the same ranking flipping when only the reference's step changes.</div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> I ran the authors' notebook
+(github.com/miquelmn/fb2ts, commit d49d3a7: their MLP, training recipe and metric code) on CPU and scored the methods
+against both possible ground truths. The released notebook does not compute Eq. 5: it sets a feature to 0,
+f(x) - f(x<sub>i</sub> := 0). Against Eq. 5's one-level step, the numbers reproduce Table 7; against the notebook's
+own definition, the ranking inverts.
+<table>
+<colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+<thead><tr><th>Method</th><th class="n">SIM vs Eq. 5 (rerun)</th><th class="n">Table 7</th><th class="n">SIM vs code's x<sub>i</sub> := 0</th></tr></thead>
+<tbody>
+<tr><td>Gradient</td><td class="n">0.995</td><td class="n">0.980</td><td class="n">0.644</td></tr>
+<tr><td>DeepLIFT</td><td class="n">0.623</td><td class="n">0.636</td><td class="n">0.923</td></tr>
+<tr><td>Integrated Gradients</td><td class="n">0.635</td><td class="n">0.642</td><td class="n">0.927</td></tr>
+<tr><td>KernelSHAP</td><td class="n">0.632</td><td class="n">0.601</td><td class="n">0.947</td></tr>
+<tr><td>LIME</td><td class="n">0.529</td><td class="n">0.560</td><td class="n">0.318</td></tr>
+<tr><td>Random attribution</td><td class="n">0.468</td><td class="n">not reported</td><td class="n">0.494</td></tr>
+</tbody></table>
+A uniform random attribution scores 0.47 to 0.49, so the three middle methods are about 0.15 above chance. With
+three features, SIM's min-max scaling sends the smallest attribution to 0 and the largest to 1 whatever they are,
+which keeps the chance level high. The code also uses label weights 1/2, 1/4, 1/6 (the paper says 0.125 for the
+third), and <code>aixi-dataset/bin/daixi.py</code> draws continuous uniform data without seeding it
+(<code>np.random.seed = 42</code> assigns instead of calling). Details: <code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high (MLP test accuracy 0.983; 2,500 epochs instead of 5,000; 100 grid levels).</span></div>
 <div class="take"><b>My take: the data and the text.</b>
 <ul class="tight">
 <li><b>Repeated rows.</b> 100 levels per feature allow at most 100³ = 1,000,000 distinct inputs (1,030,301 if levels run 0 to 100), but there are about 4 million samples, so at least 3 million are repeats, and a random test point almost surely appears in training. The 0.98 is not a held-out score. (The repeats are certain; how the test points were drawn is not stated.)</li>

@@ -4,6 +4,51 @@ Newest first. Never delete a superseded entry.
 
 ---
 
+## #25 - Upstream benchmarks run in one shared env, from pinned clones with small committed patches
+
+**Date:** 2026-10-27
+**Status:** active
+
+**Decision:** Run the benchmarks of the papers in `synthetic_data/papers/` (OpenXAI, XAI-BENCH, ITErpretability,
+RealCause, the WGAN package of Athey et al., Credence-v2, fb2ts of Miro-Nicolau et al.) from `synthetic_data/benchmarks/`:
+- one shared uv env (Python 3.12, torch 2.14.0, numpy 2.5.4, pandas 2.3.3, scikit-learn 1.9.1, shap 0.54.1, all `==`);
+- upstream code cloned at pinned commits into the gitignored `_src/` by `setup_sources.sh`;
+- the minimum compatibility patches committed as `patches/<repo>.patch`;
+- one runner script per benchmark, each a deliberately small run with every cut listed in its docstring and its
+  results JSON.
+
+**Why:** The user chose one shared env (Q11, 2026-10-27) over one env per benchmark and over a folder outside the repo.
+torch 2.14.0 for cp312 was already in uv's cache, so the env cost about 0.7 GB of disk with 4.9 GB free on C:.
+Python 3.12 runs every repo once patched; fb2ts needs 3.11 or newer. The upstream pins are not installable here:
+XAI-BENCH pins numpy 1.19 and TensorFlow 2.5, OpenXAI pins torch 1.10. The patches change no method:
+- **OpenXAI:** EBP's torchray import made lazy;
+- **XAI-BENCH:** L2X and BreakDown imports made lazy, the removed `np.int`/`np.bool` replaced by the builtins they
+  aliased, SHAPR's weighted mean computed with one batched predict, and MAPLE's size-1 predictions taken with
+  `.item()` (numpy 2 refuses the old assignment);
+- **RealCause:** `np.float` replaced by `float`, and causallib 0.10's `clip_min`/`clip_max` used for the old
+  `truncate_eps` (same clipping to [eps, 1 - eps]);
+- **Credence-v2:** its trainers moved from `gpus=1, precision=16` to CPU fp32.
+
+`googledrivedownloader` is pinned to 0.4, because 1.x renamed the module that catenets (ITErpretability)
+imports. Two runner-level changes alter speed but not results:
+- OpenXAI's captum KernelSHAP evaluates its samples in one batch; checked equal to 2.4e-7 and 2.8e-6;
+- Credence is fitted on z-scored numeric columns, because upstream's raw-dollar setting diverges to NaN. The
+  raw setting is still recorded as its own arm.
+
+The user capped compute for this session at about 15 minutes per run on at most 2 cores. Every runner therefore
+uses fewer points, seeds or epochs than upstream.
+
+**Alternatives rejected:**
+- one env per benchmark (my recommendation): fewer patches and older libraries, but about 1 GB more disk for
+  uncached torch builds; not chosen by the user;
+- upstream pins: they do not install on Python 3.12;
+- vendoring the upstream code into git: it bloats a public repo, and the licenses differ.
+
+**What would change this:** a result that differs from its paper in a way traced to a library version, not to the
+cut-down settings. Then that benchmark gets its own env with upstream pins.
+
+---
+
 ## #24 - Transfer pilot v2: redesigned for noise, fairness and exact ground truth
 
 **Date:** 2026-10-20

@@ -1,0 +1,221 @@
+diff --git a/custom_explainers/__init__.py b/custom_explainers/__init__.py
+index 6d67ed7..963d66d 100644
+--- a/custom_explainers/__init__.py
++++ b/custom_explainers/__init__.py
+@@ -4,5 +4,19 @@ from .ground_truth_shap import GroundTruthShap, BruteForceKernelShap
+ from .random import Random
+ from .lime import Lime
+ from .maple import Maple
+-from .l2x import L2X
+-from .breakdown import BreakDown
+\ No newline at end of file
++
++
++def _missing(name, err):
++    def _raise(*args, **kwargs):
++        raise ImportError(f"{name} needs packages the shared benchmark env does not install") from err
++    return _raise
++
++
++try:
++    from .l2x import L2X
++except ImportError as _e:  # tensorflow 2.5 / keras 2.4 (2021) are not in the shared env
++    L2X = _missing("L2X", _e)
++try:
++    from .breakdown import BreakDown
++except ImportError as _e:  # pyBreakDown needs blist, which does not build on Python 3.12
++    BreakDown = _missing("BreakDown", _e)
+diff --git a/custom_explainers/maple.py b/custom_explainers/maple.py
+index bfbb876..f4303d3 100644
+--- a/custom_explainers/maple.py
++++ b/custom_explainers/maple.py
+@@ -249,7 +249,7 @@ class MAPLE:
+                 # Local linear model
+                 lr_model = Ridge(alpha=regularization)
+                 lr_model.fit(X_train_p, MR_train, weights)
+-                lr_predictions[i] = lr_model.predict(X_val_p[i].reshape(1, -1))
++                lr_predictions[i] = np.asarray(lr_model.predict(X_val_p[i].reshape(1, -1))).item()
+ 
+             rmse_curr = np.sqrt(mean_squared_error(lr_predictions, MR_val))
+ 
+@@ -328,7 +328,7 @@ class MAPLE:
+             lr_model = Ridge(alpha=self.regularization)
+             lr_model.fit(self.X_train, self.MR_train, weights)
+ 
+-            pred[i] = lr_model.predict(x)[0]
++            pred[i] = np.asarray(lr_model.predict(x)).ravel()[0]
+ 
+         return pred
+ 
+diff --git a/custom_explainers/shapr.py b/custom_explainers/shapr.py
+index 69d5fd6..549e5dd 100644
+--- a/custom_explainers/shapr.py
++++ b/custom_explainers/shapr.py
+@@ -31,14 +31,12 @@ def get_weights(X_data, s, x, sigma=0.4):
+ 
+ 
+ def get_weighted_mean(w_s, s, f, x, reference):
+-    w_s_sort_idx = np.argsort(w_s)[::-1]
+-    wp_sum, w_sum = 0.0, 0.0
+-    for idx in w_s_sort_idx:
+-        x_eval = reference[idx].copy()
+-        x_eval[s] = x[s]
+-        wp_sum += w_s[idx] * f(x_eval.reshape(1, -1))
+-        w_sum += w_s[idx]
+-    return wp_sum / w_sum
++    # Vectorized (shared benchmark env patch): the same weighted mean as the original loop over reference rows,
++    # with one batched f call instead of one call per row.
++    x_eval = reference.copy()
++    x_eval[:, s] = x[s]
++    preds = np.asarray(f(x_eval), dtype=float).reshape(len(reference))
++    return float(np.sum(w_s * preds) / np.sum(w_s))
+ 
+ 
+ def kernel_shapr(f, x, reference, M, sigma):
+diff --git a/src/explainer.py b/src/explainer.py
+index 29db67e..1bc799d 100644
+--- a/src/explainer.py
++++ b/src/explainer.py
+@@ -1,4 +1,3 @@
+-from custom_explainers.breakdown import BreakDown
+ import shap
+ import custom_explainers
+ 
+diff --git a/synthetic_datasets/synthetic_gaussian.py b/synthetic_datasets/synthetic_gaussian.py
+index c585778..f03f914 100644
+--- a/synthetic_datasets/synthetic_gaussian.py
++++ b/synthetic_datasets/synthetic_gaussian.py
+@@ -85,7 +85,7 @@ class MultivariateGaussian:
+             for i, s in enumerate(powerset(range(dim))):
+                 s = list(s)
+                 self.mask[i, s] = 1
+-                h = str(self.mask[i, :].astype(np.int))
++                h = str(self.mask[i, :].astype(int))
+                 self.mask_dict[h] = i
+             # print(self.mask)
+         if self.precompute:
+@@ -239,7 +239,7 @@ class GaussianLinearRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+@@ -303,7 +303,7 @@ class GaussianPiecewiseConstantRegression(CustomDataset):
+                     [-2, -1, 1, 2],
+                 )
+             elif i == 2:
+-                p = (2 * np.cos(x * np.pi)).astype(np.int)
++                p = (2 * np.cos(x * np.pi)).astype(int)
+                 p[np.where(p == 0)] = 1  # with small probability cos(x) == 0
+ 
+             p = np.expand_dims(p, axis=1)
+@@ -322,7 +322,7 @@ class GaussianPiecewiseConstantRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+         if x is None:
+             x = self.default_mask
+ 
+@@ -406,7 +406,7 @@ class GaussianNonlinearAdditiveRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+@@ -469,7 +469,7 @@ class GaussianLinearBinary(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+@@ -532,7 +532,7 @@ class GaussianPiecewiseConstantBinary(CustomDataset):
+                     [-2, -1, 1, 2],
+                 )
+             elif i == 2:
+-                p = (2 * np.cos(x * np.pi)).astype(np.int)
++                p = (2 * np.cos(x * np.pi)).astype(int)
+                 p[np.where(p == 0)] = 1  # with small probability cos(x) == 0
+ 
+             p = np.expand_dims(p, axis=1)
+@@ -552,7 +552,7 @@ class GaussianPiecewiseConstantBinary(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+         if x is None:
+             x = self.default_mask
+ 
+@@ -636,7 +636,7 @@ class GaussianNonlinearAdditiveBinary(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+diff --git a/synthetic_datasets/synthetic_mixture.py b/synthetic_datasets/synthetic_mixture.py
+index 07dd4f7..4ebdd1d 100644
+--- a/synthetic_datasets/synthetic_mixture.py
++++ b/synthetic_datasets/synthetic_mixture.py
+@@ -167,7 +167,7 @@ class GMLinearRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+@@ -235,7 +235,7 @@ class GMPiecewiseConstantRegression(CustomDataset):
+                     [-2, -1, 1, 2],
+                 )
+             elif i == 2:
+-                p = (2 * np.cos(x * np.pi)).astype(np.int)
++                p = (2 * np.cos(x * np.pi)).astype(int)
+                 p[np.where(p == 0)] = 1  # with small probability cos(x) == 0
+ 
+             p = np.expand_dims(p, axis=1)
+@@ -254,7 +254,7 @@ class GMPiecewiseConstantRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+         if x is None:
+             x = self.default_mask
+ 
+@@ -338,7 +338,7 @@ class GMNonlinearAdditiveRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.int)
++            mask = mask.astype(int)
+ 
+         if x is None:
+             x = self.default_mask
+diff --git a/synthetic_datasets/synthetic_multinomial.py b/synthetic_datasets/synthetic_multinomial.py
+index 09e3bf5..914b3f8 100644
+--- a/synthetic_datasets/synthetic_multinomial.py
++++ b/synthetic_datasets/synthetic_multinomial.py
+@@ -71,7 +71,7 @@ class MultinomialLinearRegression(CustomDataset):
+         if mask is None:
+             mask = self.default_mask
+         else:
+-            mask = mask.astype(np.bool)
++            mask = mask.astype(bool)
+ 
+         if x is None:
+             x = self.default_mask

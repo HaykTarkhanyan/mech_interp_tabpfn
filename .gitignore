@@ -223,3 +223,8 @@ __marimo__/
 # Git Bash crash dumps and raw run output captured next to the logs
 *.stackdump
 **/logs/*.out
+
+# Upstream benchmark clones and their downloaded data (synthetic_data/benchmarks/setup_sources.sh)
+synthetic_data/benchmarks/_src/
+synthetic_data/benchmarks/_data/
+synthetic_data/benchmarks/results/*_smoke.json

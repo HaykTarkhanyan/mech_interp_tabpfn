@@ -1,0 +1,195 @@
+{
+ "benchmark": "fb2ts_tabular",
+ "created": "2026-10-27 02:06:56",
+ "runtime_s": 2136.8,
+ "source": "github.com/miquelmn/fb2ts (tabular.ipynb, attr_functions.py); aixi-dataset/bin/daixi.py",
+ "commit": "d49d3a7905883ec6e2861a46488ad0b28cf6619f",
+ "args": {
+  "levels": 100,
+  "n": 50000,
+  "epochs": 2500,
+  "n_explain": 500,
+  "kernel_samples": 200,
+  "tag": "fb2ts_tabular"
+ },
+ "weights_used": [
+  0.5,
+  0.25,
+  0.16666666666666666
+ ],
+ "weights_paper": [
+  0.5,
+  0.25,
+  0.125
+ ],
+ "best_test_accuracy": 0.9830999970436096,
+ "n_explained": 500,
+ "n_correct": 492,
+ "paper_table7_sim": {
+  "Gradient": 0.98,
+  "LORE": 0.784,
+  "DeepLIFT": 0.636,
+  "Integrated Gradients": 0.642,
+  "KernelSHAP": 0.601,
+  "LIME": 0.56
+ },
+ "ground_truths_agreement": {
+  "kl": 1.9106680154800415,
+  "auc": 0.6489989837398374,
+  "sim": 0.644694983959198
+ },
+ "ground_truths_same_order_share": 0.4166666666666667,
+ "versions": {
+  "python": "3.12.11",
+  "torch": "2.14.0",
+  "captum": "0.9.0",
+  "lime": "0.2.0.1",
+  "numpy": "2.5.4"
+ },
+ "rows": [
+  {
+   "method": "Gradient",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 0.02,
+   "kl_mean": 1.942348532713486,
+   "auc_mean": 0.6489176829268294,
+   "sim_mean": 0.6442702182973697,
+   "kl_sd": 2.236360507924335,
+   "auc_sd": 0.17129992620489332,
+   "sim_sd": 0.23934170200979102,
+   "n": 492
+  },
+  {
+   "method": "Gradient",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 0.02,
+   "kl_mean": 0.0017781456778660895,
+   "auc_mean": 0.8011280487804878,
+   "sim_mean": 0.9946374291084646,
+   "kl_sd": 0.016414011568944127,
+   "auc_sd": 0.07073450745263392,
+   "sim_sd": 0.011725502494690012,
+   "n": 492
+  },
+  {
+   "method": "DeepLIFT",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 0.38,
+   "kl_mean": 0.1445053794876269,
+   "auc_mean": 0.757202743902439,
+   "sim_mean": 0.9227349875055677,
+   "kl_sd": 0.5780309802904238,
+   "auc_sd": 0.09151348487637745,
+   "sim_sd": 0.07638111435259959,
+   "n": 492
+  },
+  {
+   "method": "DeepLIFT",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 0.38,
+   "kl_mean": 2.4814423856853574,
+   "auc_mean": 0.6577693089430894,
+   "sim_mean": 0.6234751145204679,
+   "kl_sd": 3.024703417468577,
+   "auc_sd": 0.23210661193072776,
+   "sim_sd": 0.2549503203195836,
+   "n": 492
+  },
+  {
+   "method": "Integrated Gradients",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 0.31,
+   "kl_mean": 0.09885966385847747,
+   "auc_mean": 0.7597484756097561,
+   "sim_mean": 0.9268640359727348,
+   "kl_sd": 0.4529285142778151,
+   "auc_sd": 0.08843247833405016,
+   "sim_sd": 0.06470301293044652,
+   "n": 492
+  },
+  {
+   "method": "Integrated Gradients",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 0.31,
+   "kl_mean": 2.264095618729328,
+   "auc_mean": 0.6659019308943089,
+   "sim_mean": 0.6353377292577009,
+   "kl_sd": 2.9110550607436165,
+   "auc_sd": 0.2257578759606484,
+   "sim_sd": 0.25310078822878457,
+   "n": 492
+  },
+  {
+   "method": "KernelSHAP",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 76.23,
+   "kl_mean": 0.05695080248900685,
+   "auc_mean": 0.7609908536585367,
+   "sim_mean": 0.9467543948714326,
+   "kl_sd": 0.25466263424550994,
+   "auc_sd": 0.08557275892955644,
+   "sim_sd": 0.05132413178017611,
+   "n": 492
+  },
+  {
+   "method": "KernelSHAP",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 76.23,
+   "kl_mean": 2.2097510653245664,
+   "auc_mean": 0.6648221544715447,
+   "sim_mean": 0.6323945871638313,
+   "kl_sd": 2.9138394207353677,
+   "auc_sd": 0.21907235279509685,
+   "sim_sd": 0.2509753797255542,
+   "n": 492
+  },
+  {
+   "method": "LIME",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 11.17,
+   "kl_mean": 6.516420805173958,
+   "auc_mean": 0.35317581300813006,
+   "sim_mean": 0.3178172793998421,
+   "kl_sd": 2.8237052260707554,
+   "auc_sd": 0.19889288169405825,
+   "sim_sd": 0.22449711626601387,
+   "n": 492
+  },
+  {
+   "method": "LIME",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 11.17,
+   "kl_mean": 4.035763292929027,
+   "auc_mean": 0.5345045731707317,
+   "sim_mean": 0.5291183832670823,
+   "kl_sd": 3.651032627899629,
+   "auc_sd": 0.28106166748471656,
+   "sim_sd": 0.2930362722827089,
+   "n": 492
+  },
+  {
+   "method": "Random (uniform)",
+   "ground_truth": "code: f(x) - f(x_i := 0)",
+   "seconds": 0.0,
+   "kl_mean": 3.681374606153477,
+   "auc_mean": 0.5197408536585365,
+   "sim_mean": 0.49433072145774626,
+   "kl_sd": 3.225840628906426,
+   "auc_sd": 0.22057953605284314,
+   "sim_sd": 0.2514308480037921,
+   "n": 492
+  },
+  {
+   "method": "Random (uniform)",
+   "ground_truth": "paper Eq. 5: f(x) - f(x_i - 1 level)",
+   "seconds": 0.0,
+   "kl_mean": 3.6871752385525656,
+   "auc_mean": 0.5211407520325203,
+   "sim_mean": 0.4676333808662404,
+   "kl_sd": 3.5954918960026885,
+   "auc_sd": 0.24242681588010798,
+   "sim_sd": 0.2740167147755714,
+   "n": 492
+  }
+ ]
+}

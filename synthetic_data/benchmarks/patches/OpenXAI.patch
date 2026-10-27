@@ -1,0 +1,14 @@
+diff --git a/openxai/explainers/catalog/__init__.py b/openxai/explainers/catalog/__init__.py
+index 3a0fcba..afdf9c3 100644
+--- a/openxai/explainers/catalog/__init__.py
++++ b/openxai/explainers/catalog/__init__.py
+@@ -1,4 +1,8 @@
+-from .ebp import EBP
++try:
++    from .ebp import EBP
++except ImportError as _ebp_error:  # torchray is not in the shared benchmark env; EBP is not one of the 7 benchmarked methods
++    def EBP(*args, _err=_ebp_error, **kwargs):
++        raise ImportError("EBP needs torchray, which the shared benchmark env does not install") from _err
+ from .grad import Gradient
+ from .input_x_gradient import InputTimesGradient
+ from .integrated_gradients import IntegratedGradients
