@@ -1,0 +1,3 @@
+# Keep patches byte-exact (git apply) and shell scripts LF (bash) on Windows checkouts
+*.patch -text
+*.sh text eol=lf
