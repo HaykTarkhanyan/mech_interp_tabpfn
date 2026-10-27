@@ -32,8 +32,8 @@ Design (nested known truth, as v2, with known densities so that conditionals are
 Usage (from synthetic_data/; threads capped at 2):
     .venv/Scripts/python.exe scripts/transfer_pilot_v3_conditional.py --timing --tag v3_timing   # ~6 min (estimate)
     .venv/Scripts/python.exe scripts/transfer_pilot_v3_conditional.py --reps 2 --k 3 --k-reality 10 --tag v3_probe
-Writes results/transfer_pilot/<tag>.json in v2's format (transfer_report_v2.py reads it), checkpointed after
-reality and after every replicate.
+Writes results/transfer_pilot/<tag>.json in v2's format (transfer_report_v2.py reads it), checkpointed after every
+task. Every task is seeded, so rerunning an interrupted run with the same arguments resumes it.
 """
 
 import os
@@ -358,11 +358,21 @@ def main() -> None:
     reality = World(f"reality (rf, {label})", dist, v2_reality.f, v2_reality.sigma)
     null = null_world(len(names), signal_r2)
     logging.info(f"{reality.name} fitted to {len(x_real)} rows; noise sd {reality.sigma:.3f}")
-    n_total = args.k_reality + args.reps * (len(GENERATORS) * len(TARGETS) + 2) * args.k
-    bar = tqdm(total=n_total, desc="tasks", file=sys.stdout)
-    tasks, build_seconds = [], []
+    per_rep = (len(GENERATORS) * len(TARGETS) + 2) * args.k
+    n_total = args.k_reality + args.reps * per_rep
+    tasks, build_seconds, prior_s = [], [], 0.0
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"{args.tag}.json"
+    if out.exists():   # resume an interrupted run: tasks are seeded, so the finished ones need not rerun
+        old = json.loads(out.read_text(encoding="utf-8"))
+        if old["complete"]:
+            raise SystemExit(f"{out} is already complete; use a new --tag")
+        if old["args"] != vars(args):
+            raise SystemExit(f"{out} was started with other arguments {old['args']}; use a new --tag")
+        tasks, build_seconds, prior_s = old["tasks"], old["build_seconds"], old["runtime_s"]
+        logging.info(f"resuming {out}: {len(tasks)} of {n_total} tasks already done")
+    done = len(tasks)
+    bar = tqdm(total=n_total, initial=done, desc="tasks", file=sys.stdout)
 
     def write(complete: bool) -> None:
         out.write_text(json.dumps({
@@ -372,29 +382,37 @@ def main() -> None:
             "features": names, "explainers": EXPLAINERS, "generators": GENERATORS, "targets": TARGETS,
             "reality_noise_sd": reality.sigma, "reality_signal_r2": signal_r2, "null_noise_sd": null.sigma,
             "versions": {"shap": shap.__version__, "numpy": np.__version__, "sklearn": sklearn.__version__},
-            "runtime_s": round(time.time() - start, 1), "build_seconds": build_seconds, "tasks": tasks}, indent=1),
-            encoding="utf-8")
+            "runtime_s": round(prior_s + time.time() - start, 1), "build_seconds": build_seconds, "tasks": tasks},
+            indent=1), encoding="utf-8")
 
-    for k in range(args.k_reality):
-        tasks.append({"rep": None, "role": "reality", **run_task(reality, SEED + k, args, interventional=True)})
+    def add(task: dict) -> None:
+        tasks.append(task)
         bar.update()
-    write(complete=args.reps == 0)
+        write(complete=len(tasks) == n_total)
+
+    for k in range(done, args.k_reality):
+        add({"rep": None, "role": "reality", **run_task(reality, SEED + k, args, interventional=True)})
     for rep in range(args.reps):
+        first = args.k_reality + rep * per_rep   # index of this replicate's first task
+        if done >= first + per_rep:
+            continue
         rr = np.random.default_rng(SEED + 10_000 + rep)
         x_d = tp.snap(reality.dist.sample(CONFIG["n_D"], rr))
         y_d = reality.f.predict(x_d) + rr.normal(0.0, reality.sigma, len(x_d))
         t = time.time()
         worlds = builder_worlds(x_d, y_d, SEED + rep)
-        build_seconds.append(round(time.time() - t, 1))
-        for world, role in [(reality, "oracle"), (null, "null")] + [(w, "builder") for w in worlds]:
-            for k in range(args.k):
-                tasks.append({"rep": rep, "role": role, **run_task(world, SEED + 100_000 + rep * 1000 + k, args)})
-                bar.update()
+        if len(build_seconds) == rep:
+            build_seconds.append(round(time.time() - t, 1))
+        jobs = [(world, role, k) for world, role in [(reality, "oracle"), (null, "null")] + [(w, "builder") for w in worlds]
+                for k in range(args.k)]
+        for i, (world, role, k) in enumerate(jobs):
+            if first + i >= done:
+                add({"rep": rep, "role": role, **run_task(world, SEED + 100_000 + rep * 1000 + k, args)})
         elapsed = time.time() - start
-        logging.info(f"rep {rep + 1}/{args.reps}: {elapsed:.0f}s elapsed, ~{elapsed / bar.n * (n_total - bar.n):.0f}s left")
-        write(complete=rep + 1 == args.reps)
+        left = elapsed / (bar.n - done) * (n_total - bar.n)
+        logging.info(f"rep {rep + 1}/{args.reps}: {elapsed:.0f}s elapsed this session, ~{left:.0f}s left")
     bar.close()
-    logging.info(f"wrote {out}: {len(tasks)} tasks in {time.time() - start:.0f}s")
+    logging.info(f"wrote {out}: {len(tasks)} tasks, {time.time() - start:.0f}s this session")
 
 
 if __name__ == "__main__":
