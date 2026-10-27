@@ -1,0 +1,1296 @@
+{
+ "benchmark": "openxai_ann",
+ "created": "2026-10-27 14:04:55",
+ "runtime_s": 580.8,
+ "complete": false,
+ "source": "github.com/AI4LIFE-GROUP/OpenXAI",
+ "args": {
+  "datasets": [
+   "adult",
+   "compas",
+   "gaussian",
+   "german",
+   "gmsc",
+   "heart",
+   "heloc",
+   "pima"
+  ],
+  "models": [
+   "ann"
+  ],
+  "methods": [
+   "control",
+   "grad",
+   "ig",
+   "itg",
+   "sg",
+   "shap",
+   "lime"
+  ],
+  "metrics": [
+   "PRA",
+   "RC",
+   "FA",
+   "RA",
+   "SA",
+   "SRA",
+   "PGU",
+   "PGI",
+   "RIS",
+   "RRS",
+   "ROS"
+  ],
+  "n_test": 50,
+  "n_pg": 10,
+  "n_stab": 5,
+  "n_perturb": 10,
+  "tag": "openxai_ann"
+ },
+ "config_upstream": {
+  "explainers": {
+   "control": {
+    "seed": 0
+   },
+   "grad": {
+    "absolute_value": false
+   },
+   "ig": {
+    "method": "gausslegendre",
+    "multiply_by_inputs": false
+   },
+   "itg": {},
+   "sg": {
+    "n_samples": 100,
+    "standard_deviation": 0.1,
+    "seed": 0
+   },
+   "shap": {
+    "n_samples": 500,
+    "model_impl": "torch",
+    "seed": 0
+   },
+   "lime": {
+    "n_samples": 1000,
+    "kernel_width": 0.75,
+    "std": 0.1,
+    "mode": "tabular",
+    "sample_around_instance": true,
+    "discretize_continuous": false,
+    "seed": 0
+   }
+  },
+  "evaluators": {
+   "ground_truth_metrics": {
+    "k": 0.25,
+    "AUC": true
+   },
+   "prediction_metrics": {
+    "k": 0.25,
+    "AUC": true,
+    "std": 0.1,
+    "n_samples": 100,
+    "seed": -1,
+    "n_jobs": -1
+   },
+   "stability_metrics": {
+    "std": 1e-05,
+    "n_samples": 1000,
+    "n_perturbations": 100,
+    "p_norm": 2,
+    "seed": -1,
+    "n_jobs": -1
+   }
+  }
+ },
+ "versions": {
+  "python": "3.12.11",
+  "torch": "2.14.0",
+  "captum": "0.9.0",
+  "shap": "0.54.1",
+  "lime": "0.2.0.1",
+  "numpy": "2.5.4"
+ },
+ "models": [
+  {
+   "data": "adult",
+   "model": "ann",
+   "n_features": 13,
+   "n_train": 36177,
+   "n_test_all": 9045,
+   "test_accuracy": 0.8462134003639221
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "n_features": 7,
+   "n_train": 4937,
+   "n_test_all": 1235,
+   "test_accuracy": 0.8502024412155151
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "n_features": 20,
+   "n_train": 3750,
+   "n_test_all": 1250,
+   "test_accuracy": 0.9031999707221985
+  }
+ ],
+ "rows": [
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGU",
+   "mean": 0.14903714396059514,
+   "se": 0.022835416987894815,
+   "n": 10,
+   "seconds_metric": 0.24,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGI",
+   "mean": 0.05492192714920352,
+   "se": 0.03531440520479948,
+   "n": 10,
+   "seconds_metric": 0.26,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "control",
+   "metric": "RIS",
+   "mean": 373321.15625,
+   "se": 7676.304340748669,
+   "n": 5,
+   "seconds_metric": 0.22,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "control",
+   "metric": "RRS",
+   "mean": 176407.25,
+   "se": 3307.0493226000385,
+   "n": 5,
+   "seconds_metric": 0.12,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "control",
+   "metric": "ROS",
+   "mean": 714102.1875,
+   "se": 208457.60254657574,
+   "n": 5,
+   "seconds_metric": 0.13,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGU",
+   "mean": 0.03248563100110573,
+   "se": 0.022741118419767663,
+   "n": 10,
+   "seconds_metric": 0.28,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGI",
+   "mean": 0.1752809353172779,
+   "se": 0.03045361736557357,
+   "n": 10,
+   "seconds_metric": 0.35,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RIS",
+   "mean": 195.41558837890625,
+   "se": 41.06643380815877,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RRS",
+   "mean": 26.257232666015625,
+   "se": 5.719105818912237,
+   "n": 5,
+   "seconds_metric": 0.11,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "grad",
+   "metric": "ROS",
+   "mean": 15.88994026184082,
+   "se": 4.4572665356672845,
+   "n": 5,
+   "seconds_metric": 0.1,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGU",
+   "mean": 0.03378905660375438,
+   "se": 0.023972064035371842,
+   "n": 10,
+   "seconds_metric": 0.14,
+   "seconds_explain": 0.08
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGI",
+   "mean": 0.18454498499631883,
+   "se": 0.029959152910205802,
+   "n": 10,
+   "seconds_metric": 0.49,
+   "seconds_explain": 0.08
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RIS",
+   "mean": 17.99173355102539,
+   "se": 1.828140630766496,
+   "n": 5,
+   "seconds_metric": 1.13,
+   "seconds_explain": 0.08
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RRS",
+   "mean": 2.215655565261841,
+   "se": 0.08616301853278756,
+   "n": 5,
+   "seconds_metric": 0.39,
+   "seconds_explain": 0.08
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "ig",
+   "metric": "ROS",
+   "mean": 3.7606301307678223,
+   "se": 1.126457552137086,
+   "n": 5,
+   "seconds_metric": 0.45,
+   "seconds_explain": 0.08
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGU",
+   "mean": 0.17299469709396362,
+   "se": 0.035634169745324504,
+   "n": 10,
+   "seconds_metric": 0.34,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGI",
+   "mean": 0.0243573724704504,
+   "se": 0.010825188025434236,
+   "n": 10,
+   "seconds_metric": 0.21,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RIS",
+   "mean": 195.72021484375,
+   "se": 41.2269331908611,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RRS",
+   "mean": 26.264087677001953,
+   "se": 5.7731277934411205,
+   "n": 5,
+   "seconds_metric": 0.15,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "itg",
+   "metric": "ROS",
+   "mean": 18.455402374267578,
+   "se": 5.7126921115474465,
+   "n": 5,
+   "seconds_metric": 0.2,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGU",
+   "mean": 0.032579359426785005,
+   "se": 0.02258637574014536,
+   "n": 10,
+   "seconds_metric": 0.36,
+   "seconds_explain": 0.29
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGI",
+   "mean": 0.17625201791524886,
+   "se": 0.030390633580688428,
+   "n": 10,
+   "seconds_metric": 0.43,
+   "seconds_explain": 0.29
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RIS",
+   "mean": 100610.0546875,
+   "se": 28113.81263646347,
+   "n": 5,
+   "seconds_metric": 0.7,
+   "seconds_explain": 0.29
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RRS",
+   "mean": 28688.14453125,
+   "se": 9402.924453274596,
+   "n": 5,
+   "seconds_metric": 0.42,
+   "seconds_explain": 0.29
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "sg",
+   "metric": "ROS",
+   "mean": 56840.0625,
+   "se": 25672.178010494998,
+   "n": 5,
+   "seconds_metric": 0.4,
+   "seconds_explain": 0.29
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGU",
+   "mean": 0.17543950006365777,
+   "se": 0.03404939185079204,
+   "n": 10,
+   "seconds_metric": 0.08,
+   "seconds_explain": 60.85
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGI",
+   "mean": 0.026085726089921123,
+   "se": 0.012490768740911703,
+   "n": 10,
+   "seconds_metric": 0.13,
+   "seconds_explain": 60.85
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RIS",
+   "mean": 2579700.0,
+   "se": 2020292.134149146,
+   "n": 5,
+   "seconds_metric": 15.64,
+   "seconds_explain": 60.85
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RRS",
+   "mean": 847958.625,
+   "se": 673690.947702785,
+   "n": 5,
+   "seconds_metric": 22.59,
+   "seconds_explain": 60.85
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "shap",
+   "metric": "ROS",
+   "mean": 3592639.25,
+   "se": 2845999.6618677746,
+   "n": 5,
+   "seconds_metric": 23.27,
+   "seconds_explain": 60.85
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGU",
+   "mean": 0.034122754156297216,
+   "se": 0.023223491367696386,
+   "n": 10,
+   "seconds_metric": 0.19,
+   "seconds_explain": 0.93
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGI",
+   "mean": 0.175693379342556,
+   "se": 0.02996410245667407,
+   "n": 10,
+   "seconds_metric": 0.17,
+   "seconds_explain": 0.93
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RIS",
+   "mean": 45654.078125,
+   "se": 5377.669176503403,
+   "n": 5,
+   "seconds_metric": 1.25,
+   "seconds_explain": 0.93
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RRS",
+   "mean": 14572.0419921875,
+   "se": 1537.468200087646,
+   "n": 5,
+   "seconds_metric": 1.4,
+   "seconds_explain": 0.93
+  },
+  {
+   "data": "adult",
+   "model": "ann",
+   "method": "lime",
+   "metric": "ROS",
+   "mean": 105979.078125,
+   "se": 39153.993916817446,
+   "n": 5,
+   "seconds_metric": 1.33,
+   "seconds_explain": 0.93
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGU",
+   "mean": 0.10793373909239641,
+   "se": 0.03276866782139291,
+   "n": 10,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGI",
+   "mean": 0.04222271959377703,
+   "se": 0.023002930199937207,
+   "n": 10,
+   "seconds_metric": 0.13,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "control",
+   "metric": "RIS",
+   "mean": 473434.3125,
+   "se": 46917.84627585005,
+   "n": 5,
+   "seconds_metric": 0.07,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "control",
+   "metric": "RRS",
+   "mean": 422193.75,
+   "se": 37103.269019336425,
+   "n": 5,
+   "seconds_metric": 0.08,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "control",
+   "metric": "ROS",
+   "mean": 411836.4375,
+   "se": 122169.97078665742,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGU",
+   "mean": 0.06777175597725141,
+   "se": 0.02213599431137977,
+   "n": 10,
+   "seconds_metric": 0.08,
+   "seconds_explain": 0.05
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGI",
+   "mean": 0.1058953924268792,
+   "se": 0.03285882002226325,
+   "n": 10,
+   "seconds_metric": 0.08,
+   "seconds_explain": 0.05
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RIS",
+   "mean": 42.98814010620117,
+   "se": 6.871292739250826,
+   "n": 5,
+   "seconds_metric": 0.06,
+   "seconds_explain": 0.05
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RRS",
+   "mean": 24.405126571655273,
+   "se": 2.9672084535365686,
+   "n": 5,
+   "seconds_metric": 0.12,
+   "seconds_explain": 0.05
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "grad",
+   "metric": "ROS",
+   "mean": 14.456216812133789,
+   "se": 3.9327494613903524,
+   "n": 5,
+   "seconds_metric": 0.13,
+   "seconds_explain": 0.05
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGU",
+   "mean": 0.06777015393944161,
+   "se": 0.022136477215119,
+   "n": 10,
+   "seconds_metric": 0.24,
+   "seconds_explain": 0.42
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGI",
+   "mean": 0.10589591080102423,
+   "se": 0.032858654735178204,
+   "n": 10,
+   "seconds_metric": 0.15,
+   "seconds_explain": 0.42
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RIS",
+   "mean": 17.436782836914062,
+   "se": 8.631794807956961,
+   "n": 5,
+   "seconds_metric": 0.59,
+   "seconds_explain": 0.42
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RRS",
+   "mean": 8.759840965270996,
+   "se": 4.2583538770520155,
+   "n": 5,
+   "seconds_metric": 0.95,
+   "seconds_explain": 0.42
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "ig",
+   "metric": "ROS",
+   "mean": 2.213970899581909,
+   "se": 0.6070722062031434,
+   "n": 5,
+   "seconds_metric": 0.53,
+   "seconds_explain": 0.42
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGU",
+   "mean": 0.08997922729023741,
+   "se": 0.031085459177562814,
+   "n": 10,
+   "seconds_metric": 0.12,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGI",
+   "mean": 0.07281999028645388,
+   "se": 0.02832745932859274,
+   "n": 10,
+   "seconds_metric": 0.17,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RIS",
+   "mean": 42.365211486816406,
+   "se": 7.10905677269193,
+   "n": 5,
+   "seconds_metric": 0.06,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RRS",
+   "mean": 23.939311981201172,
+   "se": 2.8852550224409907,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "itg",
+   "metric": "ROS",
+   "mean": 17.453853607177734,
+   "se": 3.7914768359779796,
+   "n": 5,
+   "seconds_metric": 0.11,
+   "seconds_explain": 0.01
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGU",
+   "mean": 0.067547755761721,
+   "se": 0.022058340452136643,
+   "n": 10,
+   "seconds_metric": 0.11,
+   "seconds_explain": 0.17
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGI",
+   "mean": 0.10517200065556268,
+   "se": 0.03253558471920149,
+   "n": 10,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.17
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RIS",
+   "mean": 1801425.0,
+   "se": 961076.6571577636,
+   "n": 5,
+   "seconds_metric": 0.36,
+   "seconds_explain": 0.17
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RRS",
+   "mean": 1999508.25,
+   "se": 1027335.6335769494,
+   "n": 5,
+   "seconds_metric": 0.29,
+   "seconds_explain": 0.17
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "sg",
+   "metric": "ROS",
+   "mean": 2989887.0,
+   "se": 1238542.4080247243,
+   "n": 5,
+   "seconds_metric": 0.36,
+   "seconds_explain": 0.17
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGU",
+   "mean": 0.08992392014035033,
+   "se": 0.029810217712069088,
+   "n": 10,
+   "seconds_metric": 0.35,
+   "seconds_explain": 29.64
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGI",
+   "mean": 0.0842585931591124,
+   "se": 0.03206249707013376,
+   "n": 10,
+   "seconds_metric": 0.14,
+   "seconds_explain": 29.64
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RIS",
+   "mean": 21664.931640625,
+   "se": 5900.508790360142,
+   "n": 5,
+   "seconds_metric": 134.19,
+   "seconds_explain": 29.64
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RRS",
+   "mean": 23732.76953125,
+   "se": 6180.0727368178195,
+   "n": 5,
+   "seconds_metric": 56.65,
+   "seconds_explain": 29.64
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "shap",
+   "metric": "ROS",
+   "mean": 55077.76171875,
+   "se": 21429.208209151824,
+   "n": 5,
+   "seconds_metric": 51.27,
+   "seconds_explain": 29.64
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGU",
+   "mean": 0.06777205734702534,
+   "se": 0.02213590204540892,
+   "n": 10,
+   "seconds_metric": 0.14,
+   "seconds_explain": 0.77
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGI",
+   "mean": 0.10589527528155145,
+   "se": 0.032858857772094484,
+   "n": 10,
+   "seconds_metric": 0.12,
+   "seconds_explain": 0.77
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RIS",
+   "mean": 620902.375,
+   "se": 328053.16442564625,
+   "n": 5,
+   "seconds_metric": 2.39,
+   "seconds_explain": 0.77
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RRS",
+   "mean": 552571.0,
+   "se": 262021.3554601092,
+   "n": 5,
+   "seconds_metric": 1.67,
+   "seconds_explain": 0.77
+  },
+  {
+   "data": "compas",
+   "model": "ann",
+   "method": "lime",
+   "metric": "ROS",
+   "mean": 6566294.0,
+   "se": 4749895.010913665,
+   "n": 5,
+   "seconds_metric": 1.12,
+   "seconds_explain": 0.77
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGU",
+   "mean": 0.1596178943349514,
+   "se": 0.04423747558498594,
+   "n": 10,
+   "seconds_metric": 0.25,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "control",
+   "metric": "PGI",
+   "mean": 0.06668159929745343,
+   "se": 0.03376253938749178,
+   "n": 10,
+   "seconds_metric": 0.21,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "control",
+   "metric": "RIS",
+   "mean": 90572.4140625,
+   "se": 3000.211488535505,
+   "n": 5,
+   "seconds_metric": 0.04,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "control",
+   "metric": "RRS",
+   "mean": 33959.3046875,
+   "se": 3290.165993286327,
+   "n": 5,
+   "seconds_metric": 0.06,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "control",
+   "metric": "ROS",
+   "mean": 358338.0625,
+   "se": 136103.05567240846,
+   "n": 5,
+   "seconds_metric": 0.07,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGU",
+   "mean": 0.12049400552059523,
+   "se": 0.04398580180419849,
+   "n": 10,
+   "seconds_metric": 0.15,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "grad",
+   "metric": "PGI",
+   "mean": 0.14112491251271422,
+   "se": 0.0402642281514573,
+   "n": 10,
+   "seconds_metric": 0.21,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RIS",
+   "mean": 48.21097183227539,
+   "se": 10.323451619043055,
+   "n": 5,
+   "seconds_metric": 0.05,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "grad",
+   "metric": "RRS",
+   "mean": 15.021055221557617,
+   "se": 2.426186787669183,
+   "n": 5,
+   "seconds_metric": 0.07,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "grad",
+   "metric": "ROS",
+   "mean": 9.132062911987305,
+   "se": 1.8959291788747368,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGU",
+   "mean": 0.11410988073330372,
+   "se": 0.04236162588001141,
+   "n": 10,
+   "seconds_metric": 0.48,
+   "seconds_explain": 0.06
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "ig",
+   "metric": "PGI",
+   "mean": 0.1385805933629399,
+   "se": 0.03953415810188414,
+   "n": 10,
+   "seconds_metric": 1.44,
+   "seconds_explain": 0.06
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RIS",
+   "mean": 8.13244915008545,
+   "se": 2.2683962621298868,
+   "n": 5,
+   "seconds_metric": 1.23,
+   "seconds_explain": 0.06
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "ig",
+   "metric": "RRS",
+   "mean": 2.250527858734131,
+   "se": 0.5086667248369087,
+   "n": 5,
+   "seconds_metric": 0.7,
+   "seconds_explain": 0.06
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "ig",
+   "metric": "ROS",
+   "mean": 12.566462516784668,
+   "se": 4.677751204903905,
+   "n": 5,
+   "seconds_metric": 0.38,
+   "seconds_explain": 0.06
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGU",
+   "mean": 0.127218292831094,
+   "se": 0.04259599341017164,
+   "n": 10,
+   "seconds_metric": 0.29,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "itg",
+   "metric": "PGI",
+   "mean": 0.1306717198342085,
+   "se": 0.042551658884615186,
+   "n": 10,
+   "seconds_metric": 0.25,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RIS",
+   "mean": 48.52684783935547,
+   "se": 10.275862575999646,
+   "n": 5,
+   "seconds_metric": 0.06,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "itg",
+   "metric": "RRS",
+   "mean": 15.085850715637207,
+   "se": 2.38876539378505,
+   "n": 5,
+   "seconds_metric": 0.09,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "itg",
+   "metric": "ROS",
+   "mean": 11.956640243530273,
+   "se": 1.9958517915252387,
+   "n": 5,
+   "seconds_metric": 0.11,
+   "seconds_explain": 0.0
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGU",
+   "mean": 0.11021856786683201,
+   "se": 0.04225558855587298,
+   "n": 10,
+   "seconds_metric": 1.56,
+   "seconds_explain": 0.62
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "sg",
+   "metric": "PGI",
+   "mean": 0.14571746289730073,
+   "se": 0.04060784835149862,
+   "n": 10,
+   "seconds_metric": 0.53,
+   "seconds_explain": 0.62
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RIS",
+   "mean": 41078.17578125,
+   "se": 6931.079608238285,
+   "n": 5,
+   "seconds_metric": 0.58,
+   "seconds_explain": 0.62
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "sg",
+   "metric": "RRS",
+   "mean": 17265.654296875,
+   "se": 3538.12635319207,
+   "n": 5,
+   "seconds_metric": 0.34,
+   "seconds_explain": 0.62
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "sg",
+   "metric": "ROS",
+   "mean": 137065.53125,
+   "se": 33807.679818185505,
+   "n": 5,
+   "seconds_metric": 0.22,
+   "seconds_explain": 0.62
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGU",
+   "mean": 0.15378285281767604,
+   "se": 0.04474584728323663,
+   "n": 10,
+   "seconds_metric": 0.13,
+   "seconds_explain": 25.74
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "shap",
+   "metric": "PGI",
+   "mean": 0.06631183832942042,
+   "se": 0.02594049091685663,
+   "n": 10,
+   "seconds_metric": 0.15,
+   "seconds_explain": 25.74
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RIS",
+   "mean": 32169.380859375,
+   "se": 2789.0273074099605,
+   "n": 5,
+   "seconds_metric": 20.04,
+   "seconds_explain": 25.74
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "shap",
+   "metric": "RRS",
+   "mean": 13326.2080078125,
+   "se": 1981.5494534838492,
+   "n": 5,
+   "seconds_metric": 56.09,
+   "seconds_explain": 25.74
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "shap",
+   "metric": "ROS",
+   "mean": 87517.4140625,
+   "se": 24370.197927361074,
+   "n": 5,
+   "seconds_metric": 19.69,
+   "seconds_explain": 25.74
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGU",
+   "mean": 0.11226582721574233,
+   "se": 0.04233445759783142,
+   "n": 10,
+   "seconds_metric": 0.13,
+   "seconds_explain": 0.67
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "lime",
+   "metric": "PGI",
+   "mean": 0.14343426642781196,
+   "se": 0.03957777455176603,
+   "n": 10,
+   "seconds_metric": 0.12,
+   "seconds_explain": 0.67
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RIS",
+   "mean": 23151.74609375,
+   "se": 2769.5118179916185,
+   "n": 5,
+   "seconds_metric": 0.78,
+   "seconds_explain": 0.67
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "lime",
+   "metric": "RRS",
+   "mean": 8412.4921875,
+   "se": 1668.2905142578607,
+   "n": 5,
+   "seconds_metric": 1.39,
+   "seconds_explain": 0.67
+  },
+  {
+   "data": "gaussian",
+   "model": "ann",
+   "method": "lime",
+   "metric": "ROS",
+   "mean": 481080.9375,
+   "se": 353896.9268844094,
+   "n": 5,
+   "seconds_metric": 1.75,
+   "seconds_explain": 0.67
+  }
+ ]
+}

@@ -2,18 +2,23 @@
 addition: every explainer is also scored against the interventional Shapley reference.
 
 XAI-BENCH's ground-truth Shapley (custom_explainers/ground_truth_shap.py) is the *conditional* (observational) one:
-coalition values are means over 20,000 draws from the Gaussian conditional distribution. Its "brutekernelshap"
-explainer is exact *interventional* Shapley over 1,000 training rows. At rho > 0 the two estimands differ, so part
-of every interventional explainer's "error" is the estimand gap, not explainer failure (Chen et al. 2020). This run
-reports the upstream metrics and, from the same explanations, each explainer's MSE against brutekernelshap.
+coalition values are means over 20,000 draws (here --gt-samples, 5,000) from the Gaussian conditional distribution.
+Its "brutekernelshap" explainer is exact *interventional* Shapley over 1,000 training rows. At rho > 0 the two
+estimands differ, so part of every interventional explainer's "error" is the estimand gap, not explainer failure
+(Chen et al. 2020). This run reports the upstream metrics and, from the same explanations, each explainer's MSE
+against brutekernelshap.
 
 Changes from upstream (patches/xai-bench.patch): L2X (TensorFlow 2.5) and BreakDown (blist) are not installed and
 are skipped; removed numpy aliases (np.int, np.bool) replaced by the builtins; SHAPR's weighted mean evaluates the
 model once per coalition on all reference rows instead of once per row (same arithmetic). ROAR metrics (which
-retrain models) are left out. Validation points: --n-val (25) instead of 100.
+retrain models) are left out. Validation points: --n-val (25) instead of 100. Conditional draws per coalition for the
+ground truth: --gt-samples (5,000) instead of 20,000 (Monte Carlo error about 1-2% of the target's sd; with the MLP
+the 20,000 draws took ~7 min per condition). Grid: linear and nonlinear-additive targets at rho 0 and 0.9, the two
+ends of the estimand gap. Results are written after every condition ("complete": false until the last).
+A first full run (3 targets x 3 rhos, 20,000 draws) hit its 30-min timeout after 5 of 9 conditions (2026-10-27).
 
 Usage (from synthetic_data/benchmarks/):
-    .venv/Scripts/python.exe run_xaibench.py                                   # ~13 min (estimate from the smoke run)
+    .venv/Scripts/python.exe run_xaibench.py                                   # ~15 min (estimate)
     .venv/Scripts/python.exe run_xaibench.py --datasets gaussianLinear --rhos 0.5 --tag xaibench_smoke
 Writes results/<tag>.json.
 """
@@ -31,9 +36,10 @@ import numpy as np  # noqa: E402
 sys.path.insert(0, str(common.SRC / "xai-bench"))
 warnings.filterwarnings("ignore")
 
+from custom_explainers import ground_truth_shap  # noqa: E402
 from src import datasets, experiments, explainer, metric, model, parse_utils  # noqa: E402
 
-DATASETS = ["gaussianLinear", "gaussianNonLinearAdditive", "gaussianPiecewiseConstant"]
+DATASETS = ["gaussianLinear", "gaussianNonLinearAdditive"]
 MODELS = ["lr", "dtree", "mlp"]
 EXPLAINERS = [("random", {}), ("shap", {}), ("shapr", {"sigma": 0.4}), ("brutekernelshap", {}),
               ("maple", {"n_estimators": 200, "min_samples_leaf": 10}), ("lime", {"kernel_width": 0.5})]
@@ -49,8 +55,9 @@ def to_float(v):
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--datasets", nargs="+", default=DATASETS)
-    ap.add_argument("--rhos", nargs="+", type=float, default=[0.0, 0.5, 0.9])
+    ap.add_argument("--rhos", nargs="+", type=float, default=[0.0, 0.9])
     ap.add_argument("--n-val", type=int, default=25)
+    ap.add_argument("--gt-samples", type=int, default=5000, help="upstream GroundTruthShap default 20,000")
     ap.add_argument("--conditional", default="observational", choices=["observational", "interventional"],
                     help="reference expectation of the faithfulness and monotonicity metrics (upstream default)")
     ap.add_argument("--seed", type=int, default=7, help="upstream README default")
@@ -58,6 +65,8 @@ def main() -> None:
     args = ap.parse_args()
     log = common.setup(args.tag)
     started = time.time()
+    # experiments.py builds GroundTruthShap(f, dataset) with the default n; set that default
+    ground_truth_shap.GroundTruthShap.__init__.__defaults__ = (None, None, args.gt_samples)
     os.chdir(common.workdir("xaibench"))
     rows, perfs, gaps = [], [], []
     conditions = [(d, r) for d in args.datasets for r in args.rhos]
@@ -88,9 +97,14 @@ def main() -> None:
         el = time.time() - started
         log.info(f"{i + 1}/{len(conditions)} {data_name} rho={rho}: {el:.0f}s elapsed, "
                  f"~{el / (i + 1) * (len(conditions) - i - 1):.0f}s left")
+        save(args, started, perfs, gaps, rows, complete=i + 1 == len(conditions))
+
+
+def save(args, started: float, perfs: list, gaps: list, rows: list, complete: bool) -> None:
     common.save(args.tag, {
-        "source": "github.com/abacusai/xai-bench", "commit": "f0431a7c1628a8b66fd322ce86ddcba0d81201d5",
-        "args": vars(args), "explainers": [e for e, _ in EXPLAINERS], "metrics": METRICS + ["mse_vs_interventional"],
+        "complete": complete, "source": "github.com/abacusai/xai-bench",
+        "commit": "f0431a7c1628a8b66fd322ce86ddcba0d81201d5", "args": vars(args),
+        "explainers": [e for e, _ in EXPLAINERS], "metrics": METRICS + ["mse_vs_interventional"],
         "notes": {"shapley": "MSE against XAI-BENCH's conditional ground-truth Shapley (lower is better)",
                   "mse_vs_interventional": f"MSE against {REFERENCE} (exact interventional, 1,000 rows)",
                   "faithfulness": "higher is better", "monotonicity": "higher is better",

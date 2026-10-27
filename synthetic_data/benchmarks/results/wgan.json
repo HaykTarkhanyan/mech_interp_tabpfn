@@ -1,0 +1,2047 @@
+{
+ "benchmark": "wgan",
+ "created": "2026-10-27 02:42:48",
+ "runtime_s": 459.2,
+ "source": "github.com/gsbDBI/ds-wgan",
+ "commit": "ee7fa679dfda852cdb04cef211f2370599e657b6",
+ "args": {
+  "reps": 20,
+  "n_truth": 100000,
+  "tag": "wgan"
+ },
+ "datasets": {
+  "psid": {
+   "n": 2675,
+   "p_treat": 0.0691588785046729,
+   "chosen_config": [
+    "balanced",
+    "t + continuous + binary",
+    "balanced"
+   ],
+   "config_scores": [
+    {
+     "x_scaling": "raw",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.351663973026087
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.3323059059026177
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.3327230658156687
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.3421402207443531
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.11395696477658926
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.09687395878117472
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.11356376598816253
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.12460523788956507
+    }
+   ],
+   "means_by_t": [
+    {
+     "t": 0,
+     "variable": "age",
+     "real": 34.850602409638554,
+     "generated": 36.563507080078125
+    },
+    {
+     "t": 0,
+     "variable": "education",
+     "real": 12.116867469879518,
+     "generated": 11.487109184265137
+    },
+    {
+     "t": 0,
+     "variable": "re74",
+     "real": 19428.745842924098,
+     "generated": 18009.34765625
+    },
+    {
+     "t": 0,
+     "variable": "re75",
+     "real": 19063.33758698635,
+     "generated": 16544.837890625
+    },
+    {
+     "t": 0,
+     "variable": "black",
+     "real": 0.25060240963855424,
+     "generated": 0.29288235306739807
+    },
+    {
+     "t": 0,
+     "variable": "hispanic",
+     "real": 0.03253012048192771,
+     "generated": 0.027347447350621223
+    },
+    {
+     "t": 0,
+     "variable": "married",
+     "real": 0.8662650602409638,
+     "generated": 0.8546131253242493
+    },
+    {
+     "t": 0,
+     "variable": "nodegree",
+     "real": 0.30522088353413657,
+     "generated": 0.3351837396621704
+    },
+    {
+     "t": 0,
+     "variable": "re78",
+     "real": 21553.920998297184,
+     "generated": 19472.333984375
+    },
+    {
+     "t": 1,
+     "variable": "age",
+     "real": 25.816216216216215,
+     "generated": 27.032150268554688
+    },
+    {
+     "t": 1,
+     "variable": "education",
+     "real": 10.345945945945946,
+     "generated": 9.86169719696045
+    },
+    {
+     "t": 1,
+     "variable": "re74",
+     "real": 2095.573688648649,
+     "generated": 1438.5621337890625
+    },
+    {
+     "t": 1,
+     "variable": "re75",
+     "real": 1532.0553137837837,
+     "generated": 660.3910522460938
+    },
+    {
+     "t": 1,
+     "variable": "black",
+     "real": 0.8432432432432433,
+     "generated": 0.8566969633102417
+    },
+    {
+     "t": 1,
+     "variable": "hispanic",
+     "real": 0.05945945945945946,
+     "generated": 0.023836549371480942
+    },
+    {
+     "t": 1,
+     "variable": "married",
+     "real": 0.1891891891891892,
+     "generated": 0.17990919947624207
+    },
+    {
+     "t": 1,
+     "variable": "nodegree",
+     "real": 0.7081081081081081,
+     "generated": 0.7145289182662964
+    },
+    {
+     "t": 1,
+     "variable": "re78",
+     "real": 6349.143530270271,
+     "generated": 4893.18798828125
+    }
+   ],
+   "true_ate": -4265.298828125,
+   "true_att": 1264.2857666015625,
+   "rows": [
+    {
+     "rep": 0,
+     "estimator": "difference in means",
+     "ate_est": -14232.705078125,
+     "att_est": -14232.705078125
+    },
+    {
+     "rep": 0,
+     "estimator": "S-learner: linear",
+     "ate_est": 1899.8030035716383,
+     "att_est": 1899.8030035716383
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: linear",
+     "ate_est": -12867.636289153768,
+     "att_est": 1816.56400844029
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -13822.781118900526,
+     "att_est": 1795.9666720735322
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9671.30583647066,
+     "att_est": 1858.0292295333059
+    },
+    {
+     "rep": 0,
+     "estimator": "IPW: logistic",
+     "ate_est": -13357.6259765625,
+     "att_est": 1948.7289569277677
+    },
+    {
+     "rep": 0,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -13693.0859375,
+     "att_est": -174.39319878312926
+    },
+    {
+     "rep": 1,
+     "estimator": "difference in means",
+     "ate_est": -14360.23046875,
+     "att_est": -14360.23046875
+    },
+    {
+     "rep": 1,
+     "estimator": "S-learner: linear",
+     "ate_est": 2085.867217752377,
+     "att_est": 2085.8672177523767
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: linear",
+     "ate_est": -14709.427660813377,
+     "att_est": 1944.647144180689
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -13394.790414083709,
+     "att_est": 1854.064908678656
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9519.182769894043,
+     "att_est": 1443.6293573834146
+    },
+    {
+     "rep": 1,
+     "estimator": "IPW: logistic",
+     "ate_est": -14152.1875,
+     "att_est": 1309.8557454404872
+    },
+    {
+     "rep": 1,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -13741.5625,
+     "att_est": -671.074183239858
+    },
+    {
+     "rep": 2,
+     "estimator": "difference in means",
+     "ate_est": -14837.98046875,
+     "att_est": -14837.98046875
+    },
+    {
+     "rep": 2,
+     "estimator": "S-learner: linear",
+     "ate_est": 865.5881529480728,
+     "att_est": 865.5881529480727
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: linear",
+     "ate_est": -7437.833436496057,
+     "att_est": 906.5219853719076
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -9676.489256145367,
+     "att_est": 710.8941451933974
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9950.223776041974,
+     "att_est": 901.0661937449995
+    },
+    {
+     "rep": 2,
+     "estimator": "IPW: logistic",
+     "ate_est": -8665.833984375,
+     "att_est": 637.1358825462962
+    },
+    {
+     "rep": 2,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11269.7578125,
+     "att_est": -1142.0602398882265
+    },
+    {
+     "rep": 3,
+     "estimator": "difference in means",
+     "ate_est": -13953.6171875,
+     "att_est": -13953.6171875
+    },
+    {
+     "rep": 3,
+     "estimator": "S-learner: linear",
+     "ate_est": 1789.0459324053525,
+     "att_est": 1789.0459324053525
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: linear",
+     "ate_est": -2320.3208636189397,
+     "att_est": 1729.4610564403044
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -10421.73339577356,
+     "att_est": 2213.010642249653
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: random forest",
+     "ate_est": -10124.764172025061,
+     "att_est": 2334.2058239945145
+    },
+    {
+     "rep": 3,
+     "estimator": "IPW: logistic",
+     "ate_est": -11040.3310546875,
+     "att_est": 2397.8204733483526
+    },
+    {
+     "rep": 3,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11655.513671875,
+     "att_est": 575.0440375774178
+    },
+    {
+     "rep": 4,
+     "estimator": "difference in means",
+     "ate_est": -13996.970703125,
+     "att_est": -13996.970703125
+    },
+    {
+     "rep": 4,
+     "estimator": "S-learner: linear",
+     "ate_est": 2126.052268523686,
+     "att_est": 2126.0522685236865
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: linear",
+     "ate_est": -6872.637141592436,
+     "att_est": 2096.7729053986377
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -12057.655202309332,
+     "att_est": 1451.869553094855
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9196.591211351319,
+     "att_est": 1919.5115055688625
+    },
+    {
+     "rep": 4,
+     "estimator": "IPW: logistic",
+     "ate_est": -9763.224609375,
+     "att_est": 1701.6408324343456
+    },
+    {
+     "rep": 4,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -10681.2421875,
+     "att_est": -226.7962838139665
+    },
+    {
+     "rep": 5,
+     "estimator": "difference in means",
+     "ate_est": -14058.4169921875,
+     "att_est": -14058.4169921875
+    },
+    {
+     "rep": 5,
+     "estimator": "S-learner: linear",
+     "ate_est": 1959.7598175954088,
+     "att_est": 1959.759817595409
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: linear",
+     "ate_est": -6299.822912118501,
+     "att_est": 1894.135425827266
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -8325.81163825832,
+     "att_est": 1803.6597830093554
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: random forest",
+     "ate_est": -8745.676947886006,
+     "att_est": 1962.4774462787902
+    },
+    {
+     "rep": 5,
+     "estimator": "IPW: logistic",
+     "ate_est": -5369.9482421875,
+     "att_est": 2050.96115680129
+    },
+    {
+     "rep": 5,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -10620.54296875,
+     "att_est": 308.9653686157717
+    },
+    {
+     "rep": 6,
+     "estimator": "difference in means",
+     "ate_est": -15171.115234375,
+     "att_est": -15171.115234375
+    },
+    {
+     "rep": 6,
+     "estimator": "S-learner: linear",
+     "ate_est": 1352.4650257673393,
+     "att_est": 1352.4650257673395
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: linear",
+     "ate_est": -9821.140714989779,
+     "att_est": 1422.1499004560646
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -10761.210045248406,
+     "att_est": 1105.8183126576555
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: random forest",
+     "ate_est": -11644.943411111093,
+     "att_est": 625.3130600550157
+    },
+    {
+     "rep": 6,
+     "estimator": "IPW: logistic",
+     "ate_est": -11475.701171875,
+     "att_est": 614.3948229092457
+    },
+    {
+     "rep": 6,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11995.4091796875,
+     "att_est": -1401.6772131927764
+    },
+    {
+     "rep": 7,
+     "estimator": "difference in means",
+     "ate_est": -14715.599609375,
+     "att_est": -14715.599609375
+    },
+    {
+     "rep": 7,
+     "estimator": "S-learner: linear",
+     "ate_est": 1179.4196379331277,
+     "att_est": 1179.4196379331274
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: linear",
+     "ate_est": -9850.933650746569,
+     "att_est": 1091.2108373894262
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -8510.402717461544,
+     "att_est": 780.9574421669912
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9329.30284761346,
+     "att_est": 182.6167736918589
+    },
+    {
+     "rep": 7,
+     "estimator": "IPW: logistic",
+     "ate_est": -12086.33203125,
+     "att_est": 779.8377203588188
+    },
+    {
+     "rep": 7,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -12559.369140625,
+     "att_est": -1055.4450833693945
+    },
+    {
+     "rep": 8,
+     "estimator": "difference in means",
+     "ate_est": -15004.279296875,
+     "att_est": -15004.279296875
+    },
+    {
+     "rep": 8,
+     "estimator": "S-learner: linear",
+     "ate_est": 1066.355143763166,
+     "att_est": 1066.3551437631659
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: linear",
+     "ate_est": -7488.013470538844,
+     "att_est": 1027.554708090173
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -11706.157967788575,
+     "att_est": 1561.6250516749428
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: random forest",
+     "ate_est": -10950.312482137624,
+     "att_est": 1411.6794411166961
+    },
+    {
+     "rep": 8,
+     "estimator": "IPW: logistic",
+     "ate_est": -11668.640625,
+     "att_est": 1442.6772730077523
+    },
+    {
+     "rep": 8,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -12472.732421875,
+     "att_est": -697.2801482235391
+    },
+    {
+     "rep": 9,
+     "estimator": "difference in means",
+     "ate_est": -14196.771484375,
+     "att_est": -14196.771484375
+    },
+    {
+     "rep": 9,
+     "estimator": "S-learner: linear",
+     "ate_est": 1489.1921182822266,
+     "att_est": 1489.1921182822264
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: linear",
+     "ate_est": -10572.920232367114,
+     "att_est": 1407.7228212461366
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -9888.359501320416,
+     "att_est": 805.2488072023136
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9367.381259400663,
+     "att_est": 965.6238452815369
+    },
+    {
+     "rep": 9,
+     "estimator": "IPW: logistic",
+     "ate_est": -8652.2919921875,
+     "att_est": 1065.2074929164164
+    },
+    {
+     "rep": 9,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11680.775390625,
+     "att_est": -917.4841770171051
+    },
+    {
+     "rep": 10,
+     "estimator": "difference in means",
+     "ate_est": -15261.4150390625,
+     "att_est": -15261.4150390625
+    },
+    {
+     "rep": 10,
+     "estimator": "S-learner: linear",
+     "ate_est": 1130.3429660483696,
+     "att_est": 1130.3429660483698
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: linear",
+     "ate_est": -9299.520841030228,
+     "att_est": 1113.6291925265705
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -10812.461116742226,
+     "att_est": 921.8747090149366
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: random forest",
+     "ate_est": -11556.605204591639,
+     "att_est": 751.2791442099236
+    },
+    {
+     "rep": 10,
+     "estimator": "IPW: logistic",
+     "ate_est": -10454.5234375,
+     "att_est": 1547.079799795917
+    },
+    {
+     "rep": 10,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11854.1171875,
+     "att_est": -128.251596103044
+    },
+    {
+     "rep": 11,
+     "estimator": "difference in means",
+     "ate_est": -13910.466796875,
+     "att_est": -13910.466796875
+    },
+    {
+     "rep": 11,
+     "estimator": "S-learner: linear",
+     "ate_est": 1035.8139460779612,
+     "att_est": 1035.813946077961
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: linear",
+     "ate_est": -4152.8393486236855,
+     "att_est": 1052.3203981633771
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5574.597570310432,
+     "att_est": 1014.0895067964402
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9577.528723562496,
+     "att_est": 859.3172972350865
+    },
+    {
+     "rep": 11,
+     "estimator": "IPW: logistic",
+     "ate_est": 6089.814453125,
+     "att_est": 174.8586998652072
+    },
+    {
+     "rep": 11,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8486.7490234375,
+     "att_est": -1619.8614383537943
+    },
+    {
+     "rep": 12,
+     "estimator": "difference in means",
+     "ate_est": -14958.6484375,
+     "att_est": -14958.6484375
+    },
+    {
+     "rep": 12,
+     "estimator": "S-learner: linear",
+     "ate_est": 1175.7657791122358,
+     "att_est": 1175.765779112236
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: linear",
+     "ate_est": -6063.24191296729,
+     "att_est": 1231.8542108680997
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -9377.516895866182,
+     "att_est": 1329.2907735686572
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9831.168471319164,
+     "att_est": 947.123496662491
+    },
+    {
+     "rep": 12,
+     "estimator": "IPW: logistic",
+     "ate_est": -7314.642578125,
+     "att_est": 1594.5455765523961
+    },
+    {
+     "rep": 12,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -12706.66796875,
+     "att_est": -457.53010165342766
+    },
+    {
+     "rep": 13,
+     "estimator": "difference in means",
+     "ate_est": -14598.30859375,
+     "att_est": -14598.30859375
+    },
+    {
+     "rep": 13,
+     "estimator": "S-learner: linear",
+     "ate_est": 2307.351495890469,
+     "att_est": 2307.3514958904693
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: linear",
+     "ate_est": -6843.107434949073,
+     "att_est": 2339.8246703485047
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7155.706012740236,
+     "att_est": 2114.981235441932
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: random forest",
+     "ate_est": -9096.33367597236,
+     "att_est": 1908.6415067947883
+    },
+    {
+     "rep": 13,
+     "estimator": "IPW: logistic",
+     "ate_est": -3267.6708984375,
+     "att_est": 1571.167471782674
+    },
+    {
+     "rep": 13,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -13325.79296875,
+     "att_est": -668.7525419169742
+    },
+    {
+     "rep": 14,
+     "estimator": "difference in means",
+     "ate_est": -14436.5625,
+     "att_est": -14436.5625
+    },
+    {
+     "rep": 14,
+     "estimator": "S-learner: linear",
+     "ate_est": 1524.1136656036,
+     "att_est": 1524.1136656036
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: linear",
+     "ate_est": -7032.312162310163,
+     "att_est": 1491.2981638642132
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -10451.841046673446,
+     "att_est": 1694.0100468364853
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: random forest",
+     "ate_est": -10245.872639027986,
+     "att_est": 1900.8813222398185
+    },
+    {
+     "rep": 14,
+     "estimator": "IPW: logistic",
+     "ate_est": -10924.25,
+     "att_est": 776.7683207115838
+    },
+    {
+     "rep": 14,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11935.853515625,
+     "att_est": -1305.0735738693238
+    },
+    {
+     "rep": 15,
+     "estimator": "difference in means",
+     "ate_est": -13361.314453125,
+     "att_est": -13361.314453125
+    },
+    {
+     "rep": 15,
+     "estimator": "S-learner: linear",
+     "ate_est": 1925.375455277854,
+     "att_est": 1925.3754552778544
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: linear",
+     "ate_est": -7634.20537145882,
+     "att_est": 1967.301803023727
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7854.804646397834,
+     "att_est": 1947.7765805036172
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: random forest",
+     "ate_est": -7981.753189112121,
+     "att_est": 1553.0700419578402
+    },
+    {
+     "rep": 15,
+     "estimator": "IPW: logistic",
+     "ate_est": -10471.12109375,
+     "att_est": 1685.288427209116
+    },
+    {
+     "rep": 15,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11856.32421875,
+     "att_est": -172.7706805061207
+    },
+    {
+     "rep": 16,
+     "estimator": "difference in means",
+     "ate_est": -14745.595703125,
+     "att_est": -14745.595703125
+    },
+    {
+     "rep": 16,
+     "estimator": "S-learner: linear",
+     "ate_est": 1583.979548733247,
+     "att_est": 1583.9795487332467
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: linear",
+     "ate_est": -11251.772415440639,
+     "att_est": 1568.1494313040696
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -12382.81902533625,
+     "att_est": 1189.0598794839316
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: random forest",
+     "ate_est": -12014.311137279356,
+     "att_est": 1191.021163520422
+    },
+    {
+     "rep": 16,
+     "estimator": "IPW: logistic",
+     "ate_est": -10617.779296875,
+     "att_est": 934.3648825016066
+    },
+    {
+     "rep": 16,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -12296.986328125,
+     "att_est": -1077.4635077158746
+    },
+    {
+     "rep": 17,
+     "estimator": "difference in means",
+     "ate_est": -13927.03125,
+     "att_est": -13927.03125
+    },
+    {
+     "rep": 17,
+     "estimator": "S-learner: linear",
+     "ate_est": 1915.9822258088086,
+     "att_est": 1915.9822258088086
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: linear",
+     "ate_est": -5151.050707323306,
+     "att_est": 1903.2254138764881
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -12262.155075202698,
+     "att_est": 1796.6497101614927
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: random forest",
+     "ate_est": -10211.947077264469,
+     "att_est": 1524.6103580358624
+    },
+    {
+     "rep": 17,
+     "estimator": "IPW: logistic",
+     "ate_est": -10602.802734375,
+     "att_est": 1374.1644138259871
+    },
+    {
+     "rep": 17,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11219.1044921875,
+     "att_est": -273.40723011605405
+    },
+    {
+     "rep": 18,
+     "estimator": "difference in means",
+     "ate_est": -14959.9765625,
+     "att_est": -14959.9765625
+    },
+    {
+     "rep": 18,
+     "estimator": "S-learner: linear",
+     "ate_est": 1288.4903103870424,
+     "att_est": 1288.4903103870422
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: linear",
+     "ate_est": -6647.3476230286215,
+     "att_est": 1259.1629789004771
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -8994.216795490984,
+     "att_est": 1484.7477258803694
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: random forest",
+     "ate_est": -10119.835581660334,
+     "att_est": 1401.166050463035
+    },
+    {
+     "rep": 18,
+     "estimator": "IPW: logistic",
+     "ate_est": -9636.74609375,
+     "att_est": 739.2308224906669
+    },
+    {
+     "rep": 18,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -11298.58984375,
+     "att_est": -960.148985283
+    },
+    {
+     "rep": 19,
+     "estimator": "difference in means",
+     "ate_est": -14070.640625,
+     "att_est": -14070.640625
+    },
+    {
+     "rep": 19,
+     "estimator": "S-learner: linear",
+     "ate_est": 857.0829830329457,
+     "att_est": 857.0829830329454
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: linear",
+     "ate_est": -7134.0215917056075,
+     "att_est": 741.1030517578125
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -8898.147807392123,
+     "att_est": 1394.611794872345
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: random forest",
+     "ate_est": -8267.003551556874,
+     "att_est": 1588.9954005263685
+    },
+    {
+     "rep": 19,
+     "estimator": "IPW: logistic",
+     "ate_est": -9120.8857421875,
+     "att_est": 1469.7494147725547
+    },
+    {
+     "rep": 19,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -10315.138671875,
+     "att_est": -93.89911901370215
+    }
+   ]
+  },
+  "cps": {
+   "n": 16177,
+   "p_treat": 0.011435989367620697,
+   "chosen_config": [
+    "balanced",
+    "t + continuous + binary",
+    "balanced"
+   ],
+   "config_scores": [
+    {
+     "x_scaling": "raw",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.46747588100551973
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.4303460303971869
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.4490581738607307
+    },
+    {
+     "x_scaling": "raw",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.44859708371573404
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.07251174546191144
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + continuous + binary",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.04148961161174651
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "raw",
+     "mean_abs_std_diff": 0.07725043638741289
+    },
+    {
+     "x_scaling": "balanced",
+     "y_context": "t + covariates in data order",
+     "y_scaling": "balanced",
+     "mean_abs_std_diff": 0.07555927002238721
+    }
+   ],
+   "means_by_t": [
+    {
+     "t": 0,
+     "variable": "age",
+     "real": 33.2252376188094,
+     "generated": 33.101600646972656
+    },
+    {
+     "t": 0,
+     "variable": "education",
+     "real": 12.02751375687844,
+     "generated": 11.88235092163086
+    },
+    {
+     "t": 0,
+     "variable": "re74",
+     "real": 14016.800304192097,
+     "generated": 14474.6318359375
+    },
+    {
+     "t": 0,
+     "variable": "re75",
+     "real": 13650.803376072598,
+     "generated": 14166.2490234375
+    },
+    {
+     "t": 0,
+     "variable": "black",
+     "real": 0.0735367683841921,
+     "generated": 0.07736998796463013
+    },
+    {
+     "t": 0,
+     "variable": "hispanic",
+     "real": 0.0720360180090045,
+     "generated": 0.08405028283596039
+    },
+    {
+     "t": 0,
+     "variable": "married",
+     "real": 0.7117308654327164,
+     "generated": 0.7189821600914001
+    },
+    {
+     "t": 0,
+     "variable": "nodegree",
+     "real": 0.2958354177088544,
+     "generated": 0.2928601801395416
+    },
+    {
+     "t": 0,
+     "variable": "re78",
+     "real": 14846.659672907264,
+     "generated": 15491.6298828125
+    },
+    {
+     "t": 1,
+     "variable": "age",
+     "real": 25.816216216216215,
+     "generated": 25.368255615234375
+    },
+    {
+     "t": 1,
+     "variable": "education",
+     "real": 10.345945945945946,
+     "generated": 10.063344955444336
+    },
+    {
+     "t": 1,
+     "variable": "re74",
+     "real": 2095.573688648649,
+     "generated": 1861.8492431640625
+    },
+    {
+     "t": 1,
+     "variable": "re75",
+     "real": 1532.0553137837837,
+     "generated": 1270.7647705078125
+    },
+    {
+     "t": 1,
+     "variable": "black",
+     "real": 0.8432432432432433,
+     "generated": 0.8469218015670776
+    },
+    {
+     "t": 1,
+     "variable": "hispanic",
+     "real": 0.05945945945945946,
+     "generated": 0.05490848422050476
+    },
+    {
+     "t": 1,
+     "variable": "married",
+     "real": 0.1891891891891892,
+     "generated": 0.19301164150238037
+    },
+    {
+     "t": 1,
+     "variable": "nodegree",
+     "real": 0.7081081081081081,
+     "generated": 0.762063205242157
+    },
+    {
+     "t": 1,
+     "variable": "re78",
+     "real": 6349.143530270271,
+     "generated": 5537.529296875
+    }
+   ],
+   "true_ate": -2212.71337890625,
+   "true_att": 983.7244873046875,
+   "rows": [
+    {
+     "rep": 0,
+     "estimator": "difference in means",
+     "ate_est": -8853.33203125,
+     "att_est": -8853.33203125
+    },
+    {
+     "rep": 0,
+     "estimator": "S-learner: linear",
+     "ate_est": 1503.8695973672382,
+     "att_est": 1503.8695973672384
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: linear",
+     "ate_est": -2518.708706458847,
+     "att_est": 1493.7272022736379
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7856.6626364964795,
+     "att_est": 1781.961927598253
+    },
+    {
+     "rep": 0,
+     "estimator": "T-learner: random forest",
+     "ate_est": -4901.621606380152,
+     "att_est": 1852.0329744811831
+    },
+    {
+     "rep": 0,
+     "estimator": "IPW: logistic",
+     "ate_est": -5030.037109375,
+     "att_est": 1596.163065085625
+    },
+    {
+     "rep": 0,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -6647.1279296875,
+     "att_est": -2671.340272843692
+    },
+    {
+     "rep": 1,
+     "estimator": "difference in means",
+     "ate_est": -9454.103515625,
+     "att_est": -9454.103515625
+    },
+    {
+     "rep": 1,
+     "estimator": "S-learner: linear",
+     "ate_est": 808.3071612408647,
+     "att_est": 808.3071612408648
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: linear",
+     "ate_est": -5340.788258090069,
+     "att_est": 743.0237935384115
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7174.8417320710705,
+     "att_est": 1259.9739209822121
+    },
+    {
+     "rep": 1,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6241.24899739441,
+     "att_est": 1161.8485435682915
+    },
+    {
+     "rep": 1,
+     "estimator": "IPW: logistic",
+     "ate_est": -6747.9619140625,
+     "att_est": 1286.424310872926
+    },
+    {
+     "rep": 1,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -6302.185546875,
+     "att_est": -3454.0710744822973
+    },
+    {
+     "rep": 2,
+     "estimator": "difference in means",
+     "ate_est": -9748.8828125,
+     "att_est": -9748.8828125
+    },
+    {
+     "rep": 2,
+     "estimator": "S-learner: linear",
+     "ate_est": 289.2852712341659,
+     "att_est": 289.2852712341659
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: linear",
+     "ate_est": -3586.27456813505,
+     "att_est": 244.0149169921875
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5111.255350600052,
+     "att_est": 510.1616890226305
+    },
+    {
+     "rep": 2,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6099.234027601721,
+     "att_est": 701.7992297888899
+    },
+    {
+     "rep": 2,
+     "estimator": "IPW: logistic",
+     "ate_est": -5125.236328125,
+     "att_est": 748.345548133655
+    },
+    {
+     "rep": 2,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7391.19677734375,
+     "att_est": -3580.5577899194122
+    },
+    {
+     "rep": 3,
+     "estimator": "difference in means",
+     "ate_est": -9391.70703125,
+     "att_est": -9391.70703125
+    },
+    {
+     "rep": 3,
+     "estimator": "S-learner: linear",
+     "ate_est": 869.2525495924148,
+     "att_est": 869.2525495924147
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: linear",
+     "ate_est": -3375.177564388109,
+     "att_est": 838.6169054100551
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5811.824527757617,
+     "att_est": 1102.4031420076838
+    },
+    {
+     "rep": 3,
+     "estimator": "T-learner: random forest",
+     "ate_est": -7892.701911134264,
+     "att_est": 1177.491930774887
+    },
+    {
+     "rep": 3,
+     "estimator": "IPW: logistic",
+     "ate_est": -7441.59912109375,
+     "att_est": 1393.6322314124254
+    },
+    {
+     "rep": 3,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7306.220703125,
+     "att_est": -2848.648029572276
+    },
+    {
+     "rep": 4,
+     "estimator": "difference in means",
+     "ate_est": -8663.857421875,
+     "att_est": -8663.857421875
+    },
+    {
+     "rep": 4,
+     "estimator": "S-learner: linear",
+     "ate_est": 1277.16217868447,
+     "att_est": 1277.1621786844696
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: linear",
+     "ate_est": -3120.856967474921,
+     "att_est": 1251.6598440701844
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5925.819302041367,
+     "att_est": 1629.9315385979128
+    },
+    {
+     "rep": 4,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6048.936116350488,
+     "att_est": 1959.6556062415061
+    },
+    {
+     "rep": 4,
+     "estimator": "IPW: logistic",
+     "ate_est": -7562.1748046875,
+     "att_est": 1764.6202386109208
+    },
+    {
+     "rep": 4,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7196.5673828125,
+     "att_est": -2573.016359486801
+    },
+    {
+     "rep": 5,
+     "estimator": "difference in means",
+     "ate_est": -9861.90625,
+     "att_est": -9861.90625
+    },
+    {
+     "rep": 5,
+     "estimator": "S-learner: linear",
+     "ate_est": 823.9401220440965,
+     "att_est": 823.9401220440965
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: linear",
+     "ate_est": -7028.922841043491,
+     "att_est": 806.174083891369
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7084.734789377056,
+     "att_est": 1514.6155726966895
+    },
+    {
+     "rep": 5,
+     "estimator": "T-learner: random forest",
+     "ate_est": -7004.071751769238,
+     "att_est": 1577.507927762467
+    },
+    {
+     "rep": 5,
+     "estimator": "IPW: logistic",
+     "ate_est": -8232.4033203125,
+     "att_est": 1088.4440701988224
+    },
+    {
+     "rep": 5,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8804.59375,
+     "att_est": -4117.203853018333
+    },
+    {
+     "rep": 6,
+     "estimator": "difference in means",
+     "ate_est": -8882.830078125,
+     "att_est": -8882.830078125
+    },
+    {
+     "rep": 6,
+     "estimator": "S-learner: linear",
+     "ate_est": 1316.9767577367195,
+     "att_est": 1316.9767577367195
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: linear",
+     "ate_est": -1187.7266329864183,
+     "att_est": 1285.5120697812094
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5248.812565690083,
+     "att_est": 1699.2477512447783
+    },
+    {
+     "rep": 6,
+     "estimator": "T-learner: random forest",
+     "ate_est": -7513.144648348377,
+     "att_est": 1829.3289391998458
+    },
+    {
+     "rep": 6,
+     "estimator": "IPW: logistic",
+     "ate_est": -2310.9169921875,
+     "att_est": 1800.230047919541
+    },
+    {
+     "rep": 6,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -6630.5244140625,
+     "att_est": -2556.3581801167275
+    },
+    {
+     "rep": 7,
+     "estimator": "difference in means",
+     "ate_est": -10122.677734375,
+     "att_est": -10122.677734375
+    },
+    {
+     "rep": 7,
+     "estimator": "S-learner: linear",
+     "ate_est": 177.64600586141714,
+     "att_est": 177.6460058614172
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: linear",
+     "ate_est": -3922.063414218127,
+     "att_est": 123.52459309895833
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -9826.36836792335,
+     "att_est": 482.6905440782293
+    },
+    {
+     "rep": 7,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6225.2865571344655,
+     "att_est": 566.0300116324114
+    },
+    {
+     "rep": 7,
+     "estimator": "IPW: logistic",
+     "ate_est": -7841.673828125,
+     "att_est": 267.1571244789611
+    },
+    {
+     "rep": 7,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7521.6103515625,
+     "att_est": -3901.112148318458
+    },
+    {
+     "rep": 8,
+     "estimator": "difference in means",
+     "ate_est": -9382.458984375,
+     "att_est": -9382.458984375
+    },
+    {
+     "rep": 8,
+     "estimator": "S-learner: linear",
+     "ate_est": 876.4559616826618,
+     "att_est": 876.455961682662
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: linear",
+     "ate_est": -4879.663964433252,
+     "att_est": 842.4980967531922
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -9059.40175332165,
+     "att_est": 1008.7550894661834
+    },
+    {
+     "rep": 8,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6088.311949810824,
+     "att_est": 1287.8986112864582
+    },
+    {
+     "rep": 8,
+     "estimator": "IPW: logistic",
+     "ate_est": -9468.5537109375,
+     "att_est": -118.01977847733906
+    },
+    {
+     "rep": 8,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -9256.03515625,
+     "att_est": -5021.920892468983
+    },
+    {
+     "rep": 9,
+     "estimator": "difference in means",
+     "ate_est": -9759.1015625,
+     "att_est": -9759.1015625
+    },
+    {
+     "rep": 9,
+     "estimator": "S-learner: linear",
+     "ate_est": 540.9145817148728,
+     "att_est": 540.914581714873
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: linear",
+     "ate_est": -6056.686738979097,
+     "att_est": 501.08419557601684
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7350.853983801081,
+     "att_est": 954.5283029480224
+    },
+    {
+     "rep": 9,
+     "estimator": "T-learner: random forest",
+     "ate_est": -7367.891407929912,
+     "att_est": 947.6386757407067
+    },
+    {
+     "rep": 9,
+     "estimator": "IPW: logistic",
+     "ate_est": -10006.35546875,
+     "att_est": 850.1048764738753
+    },
+    {
+     "rep": 9,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8117.1298828125,
+     "att_est": -3481.8021271984762
+    },
+    {
+     "rep": 10,
+     "estimator": "difference in means",
+     "ate_est": -9782.740234375,
+     "att_est": -9782.740234375
+    },
+    {
+     "rep": 10,
+     "estimator": "S-learner: linear",
+     "ate_est": 399.4607101965792,
+     "att_est": 399.4607101965792
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: linear",
+     "ate_est": -7366.310584996977,
+     "att_est": 365.8432003500683
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -6338.292634590579,
+     "att_est": 665.0830894942186
+    },
+    {
+     "rep": 10,
+     "estimator": "T-learner: random forest",
+     "ate_est": -5655.719709247549,
+     "att_est": 998.305802265584
+    },
+    {
+     "rep": 10,
+     "estimator": "IPW: logistic",
+     "ate_est": -7241.30615234375,
+     "att_est": 879.5322401809417
+    },
+    {
+     "rep": 10,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8460.517578125,
+     "att_est": -4018.057905512831
+    },
+    {
+     "rep": 11,
+     "estimator": "difference in means",
+     "ate_est": -10389.103515625,
+     "att_est": -10389.103515625
+    },
+    {
+     "rep": 11,
+     "estimator": "S-learner: linear",
+     "ate_est": 26.921669683638363,
+     "att_est": 26.921669683638353
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: linear",
+     "ate_est": -1932.2308864618267,
+     "att_est": 3.03310646018401
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -4601.61900743358,
+     "att_est": 146.3416207579278
+    },
+    {
+     "rep": 11,
+     "estimator": "T-learner: random forest",
+     "ate_est": -5985.527842676137,
+     "att_est": 298.4650950681609
+    },
+    {
+     "rep": 11,
+     "estimator": "IPW: logistic",
+     "ate_est": -7163.9560546875,
+     "att_est": 176.75602660577442
+    },
+    {
+     "rep": 11,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8288.541015625,
+     "att_est": -4047.4455243284356
+    },
+    {
+     "rep": 12,
+     "estimator": "difference in means",
+     "ate_est": -9760.037109375,
+     "att_est": -9760.037109375
+    },
+    {
+     "rep": 12,
+     "estimator": "S-learner: linear",
+     "ate_est": 500.79842090513534,
+     "att_est": 500.79842090513523
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: linear",
+     "ate_est": -5445.513004906416,
+     "att_est": 459.8918745799731
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -5543.099607142971,
+     "att_est": 988.4569517676431
+    },
+    {
+     "rep": 12,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6397.729914147922,
+     "att_est": 812.5639476424391
+    },
+    {
+     "rep": 12,
+     "estimator": "IPW: logistic",
+     "ate_est": -7032.1904296875,
+     "att_est": 423.6611791596979
+    },
+    {
+     "rep": 12,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7819.94482421875,
+     "att_est": -3874.7612808404374
+    },
+    {
+     "rep": 13,
+     "estimator": "difference in means",
+     "ate_est": -9493.650390625,
+     "att_est": -9493.650390625
+    },
+    {
+     "rep": 13,
+     "estimator": "S-learner: linear",
+     "ate_est": 827.7553340186579,
+     "att_est": 827.7553340186579
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: linear",
+     "ate_est": -4576.953982412458,
+     "att_est": 801.6549126519097
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -12721.015742780917,
+     "att_est": 1030.4836424125695
+    },
+    {
+     "rep": 13,
+     "estimator": "T-learner: random forest",
+     "ate_est": -5450.665365897064,
+     "att_est": 1310.8067383504338
+    },
+    {
+     "rep": 13,
+     "estimator": "IPW: logistic",
+     "ate_est": -7850.9501953125,
+     "att_est": 1180.6338466436328
+    },
+    {
+     "rep": 13,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7831.6708984375,
+     "att_est": -3718.5686460070374
+    },
+    {
+     "rep": 14,
+     "estimator": "difference in means",
+     "ate_est": -9636.6796875,
+     "att_est": -9636.6796875
+    },
+    {
+     "rep": 14,
+     "estimator": "S-learner: linear",
+     "ate_est": 630.2951352923801,
+     "att_est": 630.29513529238
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: linear",
+     "ate_est": -4019.834044787618,
+     "att_est": 585.439774576823
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -8267.339315134222,
+     "att_est": 1049.590796405051
+    },
+    {
+     "rep": 14,
+     "estimator": "T-learner: random forest",
+     "ate_est": -5077.883098224833,
+     "att_est": 821.6096864410363
+    },
+    {
+     "rep": 14,
+     "estimator": "IPW: logistic",
+     "ate_est": -7692.884765625,
+     "att_est": 950.1548253989149
+    },
+    {
+     "rep": 14,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7471.69677734375,
+     "att_est": -3276.6274375263692
+    },
+    {
+     "rep": 15,
+     "estimator": "difference in means",
+     "ate_est": -9544.798828125,
+     "att_est": -9544.798828125
+    },
+    {
+     "rep": 15,
+     "estimator": "S-learner: linear",
+     "ate_est": 874.9996112562152,
+     "att_est": 874.9996112562153
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: linear",
+     "ate_est": -5790.8193365411735,
+     "att_est": 850.8896509287308
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -7856.222669956859,
+     "att_est": 1178.4868637647164
+    },
+    {
+     "rep": 15,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6781.934160102528,
+     "att_est": 1311.8763123541394
+    },
+    {
+     "rep": 15,
+     "estimator": "IPW: logistic",
+     "ate_est": -8646.1650390625,
+     "att_est": 1230.1804895477408
+    },
+    {
+     "rep": 15,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8463.8369140625,
+     "att_est": -3027.7589529462057
+    },
+    {
+     "rep": 16,
+     "estimator": "difference in means",
+     "ate_est": -9960.203125,
+     "att_est": -9960.203125
+    },
+    {
+     "rep": 16,
+     "estimator": "S-learner: linear",
+     "ate_est": 501.6930034123861,
+     "att_est": 501.69300341238613
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: linear",
+     "ate_est": -1267.873313155348,
+     "att_est": 458.21568539268094
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -6253.832989561668,
+     "att_est": 1170.1682315429262
+    },
+    {
+     "rep": 16,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6247.512360287787,
+     "att_est": 1181.349829047119
+    },
+    {
+     "rep": 16,
+     "estimator": "IPW: logistic",
+     "ate_est": -6730.94921875,
+     "att_est": 697.099345731689
+    },
+    {
+     "rep": 16,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7130.2255859375,
+     "att_est": -3551.9029925868035
+    },
+    {
+     "rep": 17,
+     "estimator": "difference in means",
+     "ate_est": -9177.33203125,
+     "att_est": -9177.33203125
+    },
+    {
+     "rep": 17,
+     "estimator": "S-learner: linear",
+     "ate_est": 1321.9556269591571,
+     "att_est": 1321.9556269591574
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: linear",
+     "ate_est": -1799.1304953901083,
+     "att_est": 1311.951912172379
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -6617.389014046375,
+     "att_est": 1523.5596956993736
+    },
+    {
+     "rep": 17,
+     "estimator": "T-learner: random forest",
+     "ate_est": -4347.924161617777,
+     "att_est": 1724.9867939287753
+    },
+    {
+     "rep": 17,
+     "estimator": "IPW: logistic",
+     "ate_est": -7929.7529296875,
+     "att_est": 1460.9746037641435
+    },
+    {
+     "rep": 17,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7995.3037109375,
+     "att_est": -2990.2622248781827
+    },
+    {
+     "rep": 18,
+     "estimator": "difference in means",
+     "ate_est": -10225.90625,
+     "att_est": -10225.90625
+    },
+    {
+     "rep": 18,
+     "estimator": "S-learner: linear",
+     "ate_est": 139.30540309721107,
+     "att_est": 139.30540309721104
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: linear",
+     "ate_est": -5051.555725018424,
+     "att_est": 120.77276244450137
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -6815.49590333834,
+     "att_est": 331.5550516469316
+    },
+    {
+     "rep": 18,
+     "estimator": "T-learner: random forest",
+     "ate_est": -6210.275742218793,
+     "att_est": 468.6092999601481
+    },
+    {
+     "rep": 18,
+     "estimator": "IPW: logistic",
+     "ate_est": -7000.056640625,
+     "att_est": 308.6330898381557
+    },
+    {
+     "rep": 18,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -8186.68310546875,
+     "att_est": -3961.872811209365
+    },
+    {
+     "rep": 19,
+     "estimator": "difference in means",
+     "ate_est": -9701.7080078125,
+     "att_est": -9701.7080078125
+    },
+    {
+     "rep": 19,
+     "estimator": "S-learner: linear",
+     "ate_est": 532.5902951718613,
+     "att_est": 532.5902951718613
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: linear",
+     "ate_est": -6523.969683958248,
+     "att_est": 490.0659443963434
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: gradient boosting",
+     "ate_est": -6654.2968038946565,
+     "att_est": 938.7151513420079
+    },
+    {
+     "rep": 19,
+     "estimator": "T-learner: random forest",
+     "ate_est": -8719.28314182551,
+     "att_est": 752.7143923399317
+    },
+    {
+     "rep": 19,
+     "estimator": "IPW: logistic",
+     "ate_est": -7542.7265625,
+     "att_est": 745.3657217848877
+    },
+    {
+     "rep": 19,
+     "estimator": "IPW: logistic, trimmed 0.01",
+     "ate_est": -7648.35888671875,
+     "att_est": -3415.9732650531187
+    }
+   ]
+  }
+ },
+ "versions": {
+  "python": "3.12.11",
+  "torch": "2.14.0",
+  "causallib": "0.10.0",
+  "scikit-learn": "1.9.1",
+  "pandas": "2.3.3"
+ }
+}

@@ -134,10 +134,12 @@ def main() -> None:
             done = i * len(args.models) + args.models.index(model_name) + 1
             el = time.time() - started
             log.info(f"{done}/{n_jobs_total} model-data pairs, {el:.0f}s elapsed, ~{el / done * (n_jobs_total - done):.0f}s left")
-    common.save(args.tag, {"source": "github.com/AI4LIFE-GROUP/OpenXAI", "args": vars(args),
-                           "config_upstream": {k: config[k] for k in ("explainers", "evaluators")},
-                           "versions": common.pkg_versions("torch", "captum", "shap", "lime", "numpy"),
-                           "models": models_info, "rows": rows}, started)
+            # written after every model-data pair, so a timeout keeps what is done
+            common.save(args.tag, {"complete": done == n_jobs_total, "source": "github.com/AI4LIFE-GROUP/OpenXAI",
+                                   "args": vars(args),
+                                   "config_upstream": {k: config[k] for k in ("explainers", "evaluators")},
+                                   "versions": common.pkg_versions("torch", "captum", "shap", "lime", "numpy"),
+                                   "models": models_info, "rows": rows}, started)
 
 
 if __name__ == "__main__":

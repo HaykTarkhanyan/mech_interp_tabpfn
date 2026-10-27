@@ -169,6 +169,24 @@ Faithfulness and ROAR agree well. Monotonicity does not agree at all (its values
 <p><b>What they did.</b> Vary the pairwise feature correlation ρ from 0 to 0.99 (all off-diagonal covariance entries equal to ρ), for linear, nonlinear-additive and piecewise-constant labels and for three model types, and track faithfulness (Figs. 2, 3; all metrics in Appendix G, Figs. 6-10).</p>
 <p><b>What they found.</b> "A general trend is that explainers become less faithful as feature correlation increases." At ρ = 0 on the linear dataset, most methods sit above 0.9. LIME's faithfulness drops by as much as about 90% at ρ = 0.99. MAPLE stays relatively stable on the nonlinear-additive and piecewise-constant datasets. Most explainers do well for linear regression up to ρ = 0.75, and MAPLE does markedly worse on the decision tree (Fig. 3).</p>
 <div class="take"><b>My take.</b> These curves are the evidence your review uses for "dependence is the main driver of explainer failure". Note what kind of dependence it is: a single number ρ shared by every pair of Gaussian features. Real tables have uneven, nonlinear and mixed-type dependence; how explainers behave under that is what the curves cannot tell you, and what a data-fitted generator could. <span class="sure">How sure: high.</span></div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> I ran XAI-BENCH (commit f0431a7) on
+the linear and nonlinear-additive Gaussian targets at rho 0 and 0.9 (LR, decision tree and MLP; 25 validation
+points; 5,000 instead of 20,000 conditional draws for the ground truth) and also scored every explainer against
+exact <i>interventional</i> Shapley values (the "brutekernelshap" explainer over 1,000 rows).
+<ul>
+<li>At rho 0 the two estimands coincide, and SHAP, brute-force KernelSHAP and SHAPR all have error near 0.</li>
+<li>At rho 0.9 they come apart: the squared gap between conditional and interventional Shapley is 0.34 to 4.2
+times the size of the ground truth itself. SHAP's "error" against XAI-BENCH's conditional ground truth (MSE about
+0.036) equals that gap, while against the interventional reference it is 0.000. SHAPR, which targets the
+conditional quantity, wins under the first (about 0.010) and loses under the second (0.007 to 0.009 vs 0.000).</li>
+<li>So much of "correlation breaks explainers" is the choice of estimand. In the code SHAPR also conditions only
+coalitions of two or more features (<code>if len(s) &gt; 1</code>): singletons are marginal, so its estimand is a
+hybrid.</li>
+<li><code>generatetarget</code> standardizes Y with each batch's own mean and sd, so training and validation labels
+are different functions of X: a linear regression on linear data with noise 0.01 has a test MSE of 0.04 to 0.06.</li>
+</ul>
+Details: <code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high.</span></div>
 </details>
 
 <details class="sec" open id="f3">

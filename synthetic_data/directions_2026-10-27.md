@@ -30,10 +30,21 @@ first paper?
 
 ## 2. Data-fitted simulators agree where the data speak and disagree where they extrapolate
 
-RealCause, the WGAN package and Credence all fit LaLonde PSID. On that sample, the RealCause and WGAN generators
-imply very different ATEs (RealCause about -13,900 USD; WGAN, see report) but similar ATTs (about +870 and
-+1,100 USD). The ATE depends on what treatment would do to high earners, a region with almost no treated rows,
-so each generator's extrapolation decides it.
+RealCause, the WGAN package and Credence all fit LaLonde PSID (Credence then generated no treated units, so only
+two worlds remain). Final runs:
+
+| World | True ATE | True ATT |
+|---|---|---|
+| RealCause, mean of 20 shipped samples | about -13,300 USD | about +1,930 USD |
+| WGAN, 100,000 draws | about -4,270 USD | about +1,260 USD |
+
+The ATEs differ by a factor of three. The ATTs differ by 35-50%: closer, but not close. The ATE depends on what
+treatment would do to high earners, a region with almost no treated rows, so each generator's extrapolation
+decides it. The ATT is better supported by the data, yet the two generators still disagree noticeably.
+
+**Estimator rankings.** By ATT RMSE the two worlds agree at Kendall tau 0.62, against -0.52 for the ATE. The same
+estimator is best for the ATT in both worlds (the gradient-boosted T-learner), and the same two are worst. This
+rests on 7 estimators in one data set, so treat it as an illustration, not a measurement.
 
 **For the transfer pilot:** builders' worlds and reality may disagree mainly off the support of D. Restricting
 explained points and truth backgrounds to the support of the real rows (or reporting agreement on- vs

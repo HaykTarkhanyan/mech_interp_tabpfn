@@ -8,11 +8,16 @@ from here so that it can also record:
 - prognostic accuracy as upstream computes it and at top-k: get_prognostic_features() returns the tuple from np.where,
   so attribution_accuracy takes len(tuple) = 1 as the number of important features (a top-1 hit rate).
 Upstream defaults kept: num_important_features 8 for Twins (the paper's rule floor(0.2 d) gives 7), noise sd 0.1,
-n_iter 1000, 80/20 split by row order. Each learner is seeded before fitting (upstream seeds once per scale).
-Smaller than upstream: one seed (upstream 30), --explainer-limit test rows explained (upstream 1,000), --scales.
+80/20 split by row order. Each learner is seeded before fitting (upstream seeds once per scale).
+Smaller than upstream: one seed (upstream 30), --explainer-limit (50) test rows explained (upstream 1,000), --scales
+(0.01 and 2, the no-effect and strong-effect ends; upstream 6 values from 1e-3 to 2), --n-iter (300; upstream 1,000)
+and --explainers (Integrated Gradients, the paper's main method, and feature ablation; upstream also feature
+permutation and Shapley value sampling). Measured 2026-10-27 next to another session's job: at upstream settings
+one T-learner took 302 s (227 s fit, 75 s explain), so the first full run was stopped. Results are written after
+every scale ("complete": false until the last).
 
 Usage (from synthetic_data/benchmarks/):
-    .venv/Scripts/python.exe run_iterpretability.py                       # ~15 min (estimate from the smoke run)
+    .venv/Scripts/python.exe run_iterpretability.py                       # ~15 min (estimate)
     .venv/Scripts/python.exe run_iterpretability.py --scales 1 --tag iterp_smoke
 Writes results/<tag>.json. Twins downloads (bitbucket, ~1 MB) into the clone's catenets/datasets/data/.
 """
@@ -52,12 +57,12 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dataset", default="twins")
     ap.add_argument("--n-important", type=int, default=8, help="upstream run_experiments.py default for twins")
-    ap.add_argument("--scales", nargs="+", type=float, default=[0.01, 0.5, 2.0], help="upstream 1e-3 .. 2 (6 values)")
+    ap.add_argument("--scales", nargs="+", type=float, default=[0.01, 2.0], help="upstream 1e-3 .. 2 (6 values)")
     ap.add_argument("--seed", type=int, default=1, help="upstream seed_list starts at 1")
     ap.add_argument("--explainer-limit", type=int, default=50)
-    ap.add_argument("--n-iter", type=int, default=1000)
-    ap.add_argument("--explainers", nargs="+",
-                    default=["feature_ablation", "feature_permutation", "integrated_gradients", "shapley_value_sampling"])
+    ap.add_argument("--n-iter", type=int, default=300, help="upstream 1000")
+    ap.add_argument("--explainers", nargs="+", default=["integrated_gradients", "feature_ablation"],
+                    help="upstream: feature_ablation feature_permutation integrated_gradients shapley_value_sampling")
     ap.add_argument("--tag", default="iterpretability")
     args = ap.parse_args()
     log = common.setup(args.tag)
@@ -105,13 +110,14 @@ def main() -> None:
                      + (f", IG pred acc {ig[0]['pred_acc']:.3f}" if ig else ""))
         el = time.time() - started
         log.info(f"{i + 1}/{len(args.scales)} scales, {el:.0f}s elapsed, ~{el / (i + 1) * (len(args.scales) - i - 1):.0f}s left")
-    common.save(args.tag, {
-        "source": "github.com/vanderschaarlab/ITErpretability", "commit": "8121b9f78c766e0a4a41c4c03e6378a6b8f5c20d",
-        "args": vars(args), "d": int(d), "n_predictive": int(len(pred_f)), "n_prognostic": int(len(prog_f)),
-        "chance_pred_acc_code_rule": float(len(pred_f) / d),
-        "chance_pred_acc_paper_rule": float(2 * int(0.2 * d) / d),
-        "random_baseline": chance,
-        "versions": common.pkg_versions("torch", "captum", "numpy", "pandas"), "rows": rows}, started)
+        common.save(args.tag, {
+            "complete": i + 1 == len(args.scales), "source": "github.com/vanderschaarlab/ITErpretability",
+            "commit": "8121b9f78c766e0a4a41c4c03e6378a6b8f5c20d",
+            "args": vars(args), "d": int(d), "n_predictive": int(len(pred_f)), "n_prognostic": int(len(prog_f)),
+            "chance_pred_acc_code_rule": float(len(pred_f) / d),
+            "chance_pred_acc_paper_rule": float(2 * int(0.2 * d) / d),
+            "random_baseline": chance,
+            "versions": common.pkg_versions("torch", "captum", "numpy", "pandas"), "rows": rows}, started)
 
 
 if __name__ == "__main__":

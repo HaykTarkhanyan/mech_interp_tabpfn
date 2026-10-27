@@ -38,6 +38,14 @@ def setup(name: str) -> logging.Logger:
         torch.set_num_threads(2)
     except ImportError:
         pass
+    if platform.system() == "Windows":   # yield to interactive work and other jobs
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        k32.GetCurrentProcess.restype = ctypes.c_void_p      # a pointer-sized pseudo-handle, not a 32-bit int
+        k32.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        below_normal = 0x4000
+        if not k32.SetPriorityClass(k32.GetCurrentProcess(), below_normal):
+            raise ctypes.WinError()
     check_disk()
     log = logging.getLogger(name)
     log.info(f"start {name}")

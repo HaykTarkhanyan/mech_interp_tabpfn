@@ -147,7 +147,11 @@ def openxai_section() -> tuple:
         f"<code>experiment_config.json</code>, on the first {a['n_test']} test points of each dataset (upstream "
         f"1,000); PGI and PGU on {a['n_pg']} points; stability on {a['n_stab']} points with {a['n_perturb']} kept "
         f"perturbations each (upstream 100). LR run {lr['runtime_s'] / 60:.0f} min"
-        + (f", ANN run {ann['runtime_s'] / 60:.0f} min." if ann else "; the ANN run had not finished when this page was built."))
+        + (f", ANN run {ann['runtime_s'] / 60:.0f} min (stability on {ann['args']['n_stab']} points)." if ann
+           else "; the ANN run had not finished when this page was built.")
+        + ("" if not ann or ann.get("complete", True) else
+           " <b>The ANN run stopped early</b>; it covers "
+           + ", ".join(sorted({m['data'] for m in ann['models']})) + "."))
     parts.append("<h3>Pretrained models: accuracy on the full test split</h3>" + heat_table(acc.round(4), True, 3, "dataset"))
     gt_metrics = ["FA", "RA", "SA", "SRA", "PRA", "RC"]
     mean_gt = r[r.metric.isin(gt_metrics)].groupby(["method", "metric"])["mean"].mean().unstack()[gt_metrics]
@@ -211,7 +215,8 @@ def xaibench_section(tag: str = "xaibench") -> tuple:
         "explanations are scored against ground-truth Shapley values computed from the known distribution, plus "
         "faithfulness, monotonicity and infidelity.</p>"
         f"<p><b>What ran.</b> Upstream Experiment (commit f0431a7), regression, weights [4, 3, 2, 1, 0], noise 0.01, "
-        f"1,000 training rows, {a['n_val']} validation points (upstream 100), rho in {a['rhos']}, models LR / "
+        f"1,000 training rows, {a['n_val']} validation points (upstream 100), ground truth from "
+        f"{a.get('gt_samples', 20000):,} conditional draws per coalition (upstream 20,000), rho in {a['rhos']}, models LR / "
         "decision tree / MLP, explainers random, SHAP, SHAPR, brute-force KernelSHAP, MAPLE, LIME. Not run: L2X "
         f"(TensorFlow 2.5), BreakDown (blist), the ROAR metrics. Runtime {d['runtime_s'] / 60:.0f} min.</p>"]
     gap = pd.DataFrame(d["estimand_gap"])
@@ -221,7 +226,7 @@ def xaibench_section(tag: str = "xaibench") -> tuple:
     for i, rho in enumerate(g.columns):
         fig.add_bar(name=f"rho = {rho}", x=list(g.index), y=g[rho], marker_color=[GRAY, ORANGE, RED, BLUE][i % 4],
                     text=[f"{v:.2f}" for v in g[rho]], textposition="outside")
-    fig.update_layout(barmode="group", yaxis_title="MSE(conditional GT, interventional) / mean square of GT")
+    fig.update_layout(barmode="group", yaxis_title="relative estimand gap")
     parts.append("<h3>How far apart are the two Shapley estimands?</h3><p>XAI-BENCH's ground truth is the conditional "
                  "(observational) Shapley value; brute-force KernelSHAP computes the exact interventional one on 1,000 "
                  "training rows. Their squared difference relative to the size of the ground truth, mean over the "
@@ -301,8 +306,9 @@ def iterp_section(tag: str = "iterpretability") -> tuple:
         fig.add_bar(name=f"predictive scale {s}", x=list(ig.index), y=ig[s], marker_color=[GRAY, ORANGE, BLUE, RED][i % 4],
                     text=[f"{v:.2f}" for v in ig[s]], textposition="outside")
     chance = d["chance_pred_acc_code_rule"]
-    fig.add_hline(y=chance, line_dash="dash", line_color=RED,
-                  annotation_text=f"chance {chance:.2f} ({d['n_predictive']} of {d['d']})")
+    fig.add_hline(y=chance, line_dash="dash", line_color=RED)
+    fig.add_scatter(x=[None], y=[None], mode="lines", line=dict(color=RED, dash="dash"),
+                    name=f"chance {chance:.2f} ({d['n_predictive']} of {d['d']} features)")
     fig.update_layout(barmode="group", yaxis_title="predictive-feature accuracy (Integrated Gradients)",
                       yaxis_range=[0, 1.05])
     parts.append("<h3>Integrated Gradients: share of top features that are predictive</h3>" + fig_html(fig, 400))
@@ -509,11 +515,13 @@ def causal_cross_section() -> tuple:
         + "<h3>Agreement between worlds (Kendall tau of the RMSE rankings)</h3>"
         + table(["world A", "world B", "tau, ATT", "tau, ATE", "estimators"], tau_rows,
                 ["32%", "32%", "12%", "12%", "12%"], {2, 3, 4})
-        + '<div class="note"><b>Reading.</b> The worlds disagree first about the truth itself: the ATE of the PSID '
+        + '<div class="note"><b>Reading.</b> The worlds disagree first about the truth itself. The ATE of the PSID '
           "population is set by how each generator extrapolates outcomes under treatment to the high-earning "
-          "comparison group, where the data have almost no treated units. The ATT, where the data do say "
-          "something, is much closer across generators. With different truths, agreement on the ranking of "
-          "estimators is not something the data can guarantee.</div>"
+          "comparison group, where the data have almost no treated units; the ATEs above differ several-fold. The "
+          "ATT, which the data support better, is closer but still differs noticeably between generators. "
+          "Ranking agreement is higher for the ATT than for the ATE, but with 7 estimators and one data set it is "
+          "an illustration, not a measurement. With different truths, agreement on the ranking of estimators is not "
+          "something the data can guarantee.</div>"
         + ("" if any(k.startswith("Credence") for k in worlds) else
            '<div class="note warn">Credence is missing from this comparison: fitted to PSID it generated no treated '
            "units at all (see its section), so no estimator could be scored in its world.</div>"))
@@ -562,14 +570,16 @@ def setup_section() -> tuple:
         if p.stem.endswith("_smoke"):
             continue
         d = json.loads(p.read_text(encoding="utf-8"))
-        rows.append([p.stem, d.get("created", ""), fmt(d.get("runtime_s", float("nan")) / 60, 1),
+        status = "complete" if d.get("complete", True) else "PARTIAL (stopped early; see its section)"
+        rows.append([p.stem, d.get("created", ""), fmt(d.get("runtime_s", float("nan")) / 60, 1), status,
                      esc(", ".join(f"{k} {v}" for k, v in d.get("versions", {}).items()))])
     body = ("<p>All runs used one shared uv environment (Python 3.12; DECISIONS.md #25), upstream code at pinned "
             "commits with the patches in <code>patches/</code>, at most 2 threads, one run at a time. Each run is "
             "deliberately smaller than upstream; the cuts are listed in each runner's docstring and in its section "
             "here. A gap from a paper's number can come from the newer libraries or from the cuts before it comes "
             "from the paper.</p>"
-            + table(["result file", "created", "minutes", "versions"], rows, ["16%", "18%", "9%", "57%"], {2})
+            + table(["result file", "created", "minutes", "status", "versions"], rows,
+                    ["15%", "16%", "8%", "15%", "46%"], {2})
             + "<pre>bash setup_sources.sh   # clones + patches\nbash run_all.sh         # every run, one at a time (~80 min)\n"
               ".venv/Scripts/python.exe report.py</pre>")
     return section("setup", "Setup, runtimes and versions", body)

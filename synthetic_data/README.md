@@ -18,7 +18,11 @@ papers/                    the five core papers, read in full (XAI-BENCH, Islam 
                            Credence, RealCause, Chen et al. "True to the model or true to the data?"), and
                            must_read_5_main_parts.pdf (main text of five, for printing)
 paper_explainers/          one standalone HTML explainer per paper in papers/ (critique, demo, link to this work)
+benchmarks/                the papers' own benchmarks, runnable here (shared env, pinned clones, patches, one runner
+                           each); start at benchmarks/report.html and benchmarks/README.md (DECISIONS.md #25)
+directions_2026-10-27.md   directions found while running them, with open questions Q13-Q16
 results/transfer_pilot/    transfer-pilot runs (<tag>.json) and the summaries and reports derived from them
+results/frontier/          realism-tractability probe: frontier.json and frontier_report.html
 lit_review/
   synthetic_data_for_xai_evaluation_review.{md,pdf}   scoping review, 81 verified references
   review_source.md          review text with [@key] citation markers (edit this, then re-render)
@@ -37,8 +41,10 @@ scripts/
   transfer_pilot_v2.py  first study (DECISIONS.md #22, #24): do data-fitted worlds reproduce reality's explainer ranking?
   transfer_report_v2.py summary JSON + HTML report from a transfer_pilot_v2.py results file
   transfer_cost.py      wall-time estimate per study tier, from the --timing runs
+  frontier_probe.py     how much of a real task exact-SHAP target families capture (~4 min); pairwise_truth
+  frontier_report.py    HTML report from results/frontier/frontier.json (~2 s)
   archive/              v1 pilot scripts (see archive/README.md)
-tests/test_truth.py  ground-truth shortcuts vs exact enumeration or closed forms (~2 s)
+tests/test_truth.py  ground-truth shortcuts (pilot and frontier) vs exact enumeration or closed forms (~25 s, mostly imports)
 logs/                per-script logs
 ```
 
@@ -59,7 +65,7 @@ From `synthetic_data/` (environment: `uv sync`; Python 3.12, `requests==2.34.2`,
 ## Transfer pilot
 
 ```
-.venv/Scripts/python.exe -m unittest tests.test_truth                                  # ~2 s
+.venv/Scripts/python.exe -m unittest tests.test_truth                                  # ~25 s (1.8 s of tests)
 .venv/Scripts/python.exe scripts/transfer_pilot_v2.py --timing --reality rf --tag timing_rf   # ~5 min; 2 threads
 .venv/Scripts/python.exe scripts/transfer_cost.py                                      # < 1 s, from the timing JSONs
 .venv/Scripts/python.exe scripts/transfer_report_v2.py --tag timing_rf                 # a few s, from the JSON

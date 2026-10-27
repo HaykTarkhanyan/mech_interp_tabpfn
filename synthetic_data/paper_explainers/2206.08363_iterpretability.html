@@ -147,6 +147,22 @@ code { overflow-wrap: anywhere; }
 <div id="chart-f1"></div>
 <p class="caption">Attr<sub>pred</sub> at ω<sub>pred</sub> = 1, read off Fig. 2 (approx.): the best learner and the S-learner, against the score of an attribution spread evenly over all covariates (my computation, 2·floor(0.2·d)/d).</p>
 <div class="take"><b>My take: the floor is about 0.4, not 0.</b> The paper says Attr<sub>pred</sub> = 0 "corresponds to a model that does not identify any predictive covariate". But by construction 40% of the covariates are predictive (2·n<sub>I</sub> of d: 40/100 for TCGA and News, 22/55 for ACIC2016, 14/39 = 0.36 for Twins), so an attribution spread evenly scores 0.40. At ω<sub>pred</sub> ≤ 0.01 every learner sits at about 0.36 to 0.40 (approx.), which is chance. On ACIC2016 even the best learner reaches only about 0.50 at the strongest effect, ten points above an explainer that knows nothing. The direction of every finding survives, but the effect sizes are much smaller than the 0-to-1 scale suggests. <span class="sure">How sure: high on the arithmetic; the plotted values are approx.</span></div>
+<!--RERUN-2026-10-27--><div class="take"><b>Rerun of the released code (2026-10-27).</b> I ran the predictive-sensitivity
+experiment on Twins with the authors' simulator, the five catenets learners and their attribution score (commit
+8121b9f; one seed, 300 training iterations instead of 1,000, 50 explained rows, Integrated Gradients and feature
+ablation). Two things in the code change the chance level and one metric:
+<ul>
+<li><code>run_experiments.py</code> uses 8 important features for Twins and 10 for ACIC, where the paper's rule
+floor(0.2 d) gives 7 and 11. With the code's value the chance level for Twins is 16/39 = 0.41 (random attributions
+scored 0.42 here), not the 0.36 computed above from the paper's rule;</li>
+<li><code>get_prognostic_features()</code> returns the tuple from <code>np.where</code>, so the prognostic score is a
+top-1 hit rate, not top-k (for the S-learner at the weakest effect: 0.60 as computed upstream, 0.25 at top-k).</li>
+</ul>
+Predictive-feature accuracy with Integrated Gradients: at predictive scale 0.01 every learner scores 0.43 to 0.50,
+which is chance; at scale 2 the T-learner, TARNet and DR-learner reach 0.64 to 0.65, the X-learner 0.61 and the
+S-learner 0.49. The noise sd, which the paper does not state, is 0.1 in <code>synthetic_simulate.py</code>. Details:
+<code>synthetic_data/benchmarks/report.html</code>.
+<span class="sure">How sure: high on the code facts; medium on the accuracies (one seed, shortened training).</span></div>
 </details>
 
 <details class="sec" open id="f2">

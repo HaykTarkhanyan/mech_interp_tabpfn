@@ -1,0 +1,3709 @@
+{
+ "benchmark": "xaibench",
+ "created": "2026-10-27 15:01:55",
+ "runtime_s": 819.6,
+ "complete": true,
+ "source": "github.com/abacusai/xai-bench",
+ "commit": "f0431a7c1628a8b66fd322ce86ddcba0d81201d5",
+ "args": {
+  "datasets": [
+   "gaussianLinear",
+   "gaussianNonLinearAdditive"
+  ],
+  "rhos": [
+   0.0,
+   0.9
+  ],
+  "n_val": 25,
+  "gt_samples": 5000,
+  "conditional": "observational",
+  "seed": 7,
+  "tag": "xaibench"
+ },
+ "explainers": [
+  "random",
+  "shap",
+  "shapr",
+  "brutekernelshap",
+  "maple",
+  "lime"
+ ],
+ "metrics": [
+  "faithfulness",
+  "monotonicity",
+  "shapley",
+  "shapley_corr",
+  "infidelity",
+  "mse_vs_interventional"
+ ],
+ "notes": {
+  "shapley": "MSE against XAI-BENCH's conditional ground-truth Shapley (lower is better)",
+  "mse_vs_interventional": "MSE against brutekernelshap (exact interventional, 1,000 rows)",
+  "faithfulness": "higher is better",
+  "monotonicity": "higher is better",
+  "infidelity": "lower is better",
+  "shapley_corr": "higher is better"
+ },
+ "versions": {
+  "python": "3.12.11",
+  "shap": "0.54.1",
+  "lime": "0.2.0.1",
+  "scikit-learn": "1.9.1",
+  "numpy": "2.5.4",
+  "pandas": "2.3.3"
+ },
+ "model_perfs": [
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "mse_train_test": [
+    "0.00",
+    "0.04"
+   ]
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "mse_train_test": [
+    "0.00",
+    "0.14"
+   ]
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "mse_train_test": [
+    "0.00",
+    "0.04"
+   ]
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "mse_train_test": [
+    "0.00",
+    "0.06"
+   ]
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "mse_train_test": [
+    "0.00",
+    "0.07"
+   ]
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "mse_train_test": [
+    "0.00",
+    "0.06"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "mse_train_test": [
+    "0.58",
+    "0.40"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "mse_train_test": [
+    "0.00",
+    "0.24"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "mse_train_test": [
+    "0.02",
+    "0.11"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "mse_train_test": [
+    "0.84",
+    "1.44"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "mse_train_test": [
+    "0.00",
+    "0.24"
+   ]
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "mse_train_test": [
+    "0.06",
+    "0.21"
+   ]
+  }
+ ],
+ "estimand_gap": [
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "mse_conditional_gt_vs_interventional": 0.00023001460646626784,
+   "mean_sq_conditional_gt": 0.15447937994083358
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "mse_conditional_gt_vs_interventional": 0.00017117519283313005,
+   "mean_sq_conditional_gt": 0.1389274017594196
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "mse_conditional_gt_vs_interventional": 0.0002277581548726392,
+   "mean_sq_conditional_gt": 0.15324288834573566
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "mse_conditional_gt_vs_interventional": 0.023989057451290673,
+   "mean_sq_conditional_gt": 0.05374318696326743
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "mse_conditional_gt_vs_interventional": 0.06170883725627619,
+   "mean_sq_conditional_gt": 0.05362721349178052
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "mse_conditional_gt_vs_interventional": 0.01824162261290177,
+   "mean_sq_conditional_gt": 0.053603036740077464
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "mse_conditional_gt_vs_interventional": 2.2497793239303217e-05,
+   "mean_sq_conditional_gt": 0.07661593429548566
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "mse_conditional_gt_vs_interventional": 3.493582192618732e-05,
+   "mean_sq_conditional_gt": 0.0817065170372374
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "mse_conditional_gt_vs_interventional": 4.130768220678589e-05,
+   "mean_sq_conditional_gt": 0.11317612051636863
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "mse_conditional_gt_vs_interventional": 0.04642899149306134,
+   "mean_sq_conditional_gt": 0.01104988468819334
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "mse_conditional_gt_vs_interventional": 0.029118417423021754,
+   "mean_sq_conditional_gt": 0.026494541602782817
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "mse_conditional_gt_vs_interventional": 0.027820019618751447,
+   "mean_sq_conditional_gt": 0.02962108003359932
+  }
+ ],
+ "rows": [
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": -0.03488549890558848
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.48
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.2728842497307926
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.12188915363747192
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.11338712941165471
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.2759143781529578
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.9638683779191344
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.37
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.002245672975722101
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.9867330020223919
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.008902435296403898
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0011347169050920994
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.9774188637373322
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.46
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.00043992712097482624
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.9964027385892116
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.00859210129546789
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.00016701960388159848
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.9873813465867181
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.00023001460646626784
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.9983193437461791
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.008527673318884915
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.9776061128209662
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.45
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.0002299861897413766
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.9983194009329126
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.00854876504705874
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 3.144566224109765e-11
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.8818563045062155
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.055885897475523846
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.9495923980412906
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.009150312284016275
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.05581524525258568
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": -0.10928937593469844
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.49
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.2632736965427176
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.09189434897975389
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.1937759819719031
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.2676641520354024
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.8985546720987597
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.002232853469193221
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.9890362333389743
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.044786017887432986
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0012818890560786216
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.8832062520992633
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.37
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.0003967044075224792
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.997722167196051
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.04390077460831268
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.000211309109842234
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.894297564845205
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.00017117519283313005
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.9990056008271708
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.0439050012011749
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.7830598010387096
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.011802477682724917
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.9691225103664967
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.046636809213946855
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.011605667423850474
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.7921564750828206
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.37
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.058051030558325244
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.9280432922019695
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.04422118798821376
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.05747144844641277
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.12979198032080952
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.0852048276960706
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.10639449732052703
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.08573116019782578
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0873281072922758
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.9610788829036406
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.0023722659193075885
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.9877948727183704
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.010359135812553577
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0012337133606724112
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.9745461999351477
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.0004333163445560398
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.9971248328693438
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.01011476755906747
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.0001684994977385215
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.9764509261296175
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.36
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.0002277581548726392
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.9987024947332296
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.010003672705978581
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.9630299612192168
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.43
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.0005675265774542134
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.9987356343585511
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.010224918789535874
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.0004897920939715246
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.8865032146659013
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.051776743225728665
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.9496858794632143
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.010802014453112008
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.05174518535441581
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.18886548858310967
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.34
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.328529028272221
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.14162099875827958
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.11504496221951506
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.3722439171782133
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.632026817380287
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.4
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.024539255650268
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.4491209817158051
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.0014769185257714995
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0002223629116650434
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.5042440669126177
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.008095769840237566
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.7429933577733692
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.001943974410423211
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.004678591897882275
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.6144919881894891
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.023989057451290673
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.4457080109324225
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.0014007101350835898
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.5892508600556163
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.37
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.023986681368039116
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.4457204418297159
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.0014174916098059864
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 1.5837950090301374e-10
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.534245875422598
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.35
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.048171808608249114
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.3976947159046878
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.0018885277066064726
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.021298685043481886
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.040153571194858205
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 0.882056584221222
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.05024562890287263
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.046053477167120674
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 0.9671863761739018
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.5776462100094798
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.06463428756974351
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.254455701516411
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.004301728289531481
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.00041549401068803675
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.459538883025351
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.014190875542472565
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.6247417830599697
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.0029646439555861426
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.01858730236957577
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.5758268135277846
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.06170883725627619
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.2597859339694579
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.0039685816195793
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.588832018489252
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.024802931213042032
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.45494425894322016
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.002744643465782199
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.020270558163945584
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.46383022576133237
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.36
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.11877449034375097
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.22251680494969836
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.0049793455006328065
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.04087725370904483
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.026329267430937713
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 0.8953294106368208
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.0007914204670715242
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.09209211567018333
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 0.9016038556182121
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.5368212729717815
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.01834775458227629
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.5202443538249905
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.0018421619278265425
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0001850190530834205
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.4406770071114991
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.4
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.0067318229244463824
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.779874017585029
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.002019261711372191
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.0031813111936357923
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.5440751197488249
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.01824162261290177
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.5144007288235399
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.0015136243652914938
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.5717184278548703
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.019330281979434965
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.48762485452714516
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.0014903427489812342
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.001033895598153145
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.38067789809501823
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.03605518439028783
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.42366559729828634
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.001805292022138734
+  },
+  {
+   "data": "gaussianLinear",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.018355509198562533
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.13002949883705994
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.48
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.0885098250261922
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.0018625307837362515
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.09830675619899328
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0857830460616722
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.9772189477701113
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.5
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.00010430220281402322
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.9985059905514982
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.028522318784840392
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 6.56494434277148e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.969574936036638
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.48
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.0001298867142519018
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.9975414507381626
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.03714610044386824
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 7.768265015514944e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.9873092627304697
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.49
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 2.2497793239303217e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.9995728150993206
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.03177327688547653
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.9908157183066093
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.5
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 2.25078125905801e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.9995727684603406
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.031151520123410662
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 2.0938631621196228e-11
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.9305390665065651
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.48
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.033152757057694826
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.960769206293998
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.01175762798813286
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.03337357584044711
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": -0.10234198107192459
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.53
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.0134553738385512
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.05942384592816253
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.03728395366137073
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0136809031144542
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.8850446749194576
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.52
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.00023728541647861397
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.995638326306532
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.05525901121343799
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.00016585566053150337
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.8395443247612319
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.56
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.00028457401468253487
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.9956926799106859
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.1172146844873107
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.00028661728521448655
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.8606882583287168
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.55
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 3.493582192618732e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.999289405149582
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.06372244737547138
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.5860913782831638
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.6
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.1325292429783317
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.6195472433433836
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.037910331671797554
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.13234218876026022
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.7081197360570034
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.57
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.08260442973240853
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.813876297729324
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.028661159834947655
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.08270390831189317
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.061051803693186565
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 1.0822959241616354
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.22997006295410052
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.09387295436484307
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0822139990837334
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.9319766884144352
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.55
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.0008511607577865461
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.9858101367870854
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.13973686879825542
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.000745844790509908
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.9363698987343756
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.51
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.00029558414299621003
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.9953609245060848
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.1775731483691789
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.00024288122018856033
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.9584569073874935
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.53
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 4.130768220678589e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.9992635832099939
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.1261373507442812
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.5544003914390254
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.52
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.11437553950432973
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.6415664545616648
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.03959886039957532
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.11330082698473774
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.7540438650245429
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.57
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.1047521118898744
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.8485748601450593
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.03671387583254782
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.0,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.10428666867858945
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": 0.14392050209958154
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.38
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 0.9897971622974465
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": -0.0917381642582685
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.008262829852199711
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0295278251498752
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.6349663544239849
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.42
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.04740472416785122
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.2565978582842019
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.002220912244779298
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 9.640258529648237e-05
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.6447063949329706
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.5
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.010494110682104794
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.503154198149963
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.002877692003935578
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.012967544040606462
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.6281646092800337
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.37
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.04642899149306134
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.26162229283438304
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.002075022579774314
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.5993837096678298
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.45
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.0464219159162245
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.26162983185400124
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.00200586187005396
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 3.7668361459013476e-10
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.691061001921988
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.46
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.10031450933582407
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.32049883901587384
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.002247521941744322
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "lr",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.030673691011354764
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": -0.05542487141616499
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.39
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 0.9555277639417827
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.12018067217088321
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.01676169976797888
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 1.0133828080899212
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.3199064320355905
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.5
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.031154239685537505
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.4457804109155411
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.029334712134384978
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.000572154700754792
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.2823259359283679
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.011456569404062412
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.7473304484576582
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.020487318593625202
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.005022142756194086
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.3203496439156266
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.47
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.029118417423021754
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.4737909652257528
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.03417177571279572
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.46968091179249716
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.20270468872701733
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.34412989556660634
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.009610449731437534
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.13792923224734666
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.41770621124003016
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.45
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.06536581085434966
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.4207269357511271
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.02010331606241681
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "dtree",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.056476653693102674
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "faithfulness",
+   "value": -0.03798488142749123
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "monotonicity",
+   "value": 0.45
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley",
+   "value": 0.9000656851616514
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "shapley_corr",
+   "value": 0.0505448358902538
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "infidelity",
+   "value": 0.02252429366832785
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "random",
+   "metric": "mse_vs_interventional",
+   "value": 0.9042735058006832
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "faithfulness",
+   "value": 0.315964849656329
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "monotonicity",
+   "value": 0.46
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley",
+   "value": 0.028953892435034965
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "shapley_corr",
+   "value": 0.43475664969201416
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "infidelity",
+   "value": 0.0148374559669687
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0003487935419128518
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "faithfulness",
+   "value": 0.35851194664143304
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "monotonicity",
+   "value": 0.44
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley",
+   "value": 0.012164656443365613
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "shapley_corr",
+   "value": 0.6485848050656684
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "infidelity",
+   "value": 0.022357266499833526
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "shapr",
+   "metric": "mse_vs_interventional",
+   "value": 0.004162260119998478
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "faithfulness",
+   "value": 0.35200077796955226
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "monotonicity",
+   "value": 0.46
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley",
+   "value": 0.027820019618751447
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "shapley_corr",
+   "value": 0.43119612819947484
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "infidelity",
+   "value": 0.026360461637379488
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "brutekernelshap",
+   "metric": "mse_vs_interventional",
+   "value": 0.0
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "faithfulness",
+   "value": 0.4661300630666448
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "monotonicity",
+   "value": 0.4
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley",
+   "value": 0.16347715745563288
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "shapley_corr",
+   "value": 0.4090450949208805
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "infidelity",
+   "value": 0.0021002038891692596
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "maple",
+   "metric": "mse_vs_interventional",
+   "value": 0.10144557371796432
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "faithfulness",
+   "value": 0.262130906146373
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "monotonicity",
+   "value": 0.41
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley",
+   "value": 0.051106102723027784
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "shapley_corr",
+   "value": 0.3534652474460407
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "infidelity",
+   "value": 0.07920263761780535
+  },
+  {
+   "data": "gaussianNonLinearAdditive",
+   "rho": 0.9,
+   "model": "mlp",
+   "explainer": "lime",
+   "metric": "mse_vs_interventional",
+   "value": 0.030052385874194405
+  }
+ ]
+}
