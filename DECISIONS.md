@@ -52,7 +52,15 @@ cut-down settings. Then that benchmark gets its own env with upstream pins.
 ## #24 - Transfer pilot v2: redesigned for noise, fairness and exact ground truth
 
 **Date:** 2026-10-20
-**Status:** active (supersedes the design part of #22; the question in #22 is unchanged)
+**Status:** active (supersedes the design part of #22; the question in #22 is unchanged). Revisited 2026-10-27:
+Tier 0 (`results/transfer_pilot/v2_rf_tier0_*`, 254 tasks, 82 min) met this entry's own revisit condition, "the null
+matching builders":
+- **Model level:** the generic null world agrees with reality on 0.98 [0.95, 1.00] of the resolved pairs; the
+  oracle 0.94 [0.91, 0.97]; every builder 0.91 to 0.98.
+- **Data level:** null 0.98, oracle 0.96. Builders vary mostly by target family (forest 0.96, additive 0.88, MLP
+  0.75 on average), not by generator (independent columns 0.92, real-row bootstrap 0.79).
+
+The next design is the user's call; options are in `synthetic_data/directions_2026-10-27.md`.
 
 **Decision:** Replace `transfer_pilot.py` by `transfer_pilot_v2.py`:
 - every world's ranking is the mean over K tasks, the oracle is K fresh reality tasks, and reality's reference

@@ -44,7 +44,14 @@ done = """
   size <= 2 (pairwise_truth, tested vs shap's exact enumeration to 2.7e-13).
 - directions_2026-10-27.md: estimand choice flips rankings in 4 benchmarks; simulators agree on-support, disagree
   off-support; chance levels; frontier; parked items.
-- Explainer pages for Miro-Nicolau, Credence, OpenXAI and RealCause got "rerun of the released code" boxes.
+- Explainer pages for Miro-Nicolau, Credence, OpenXAI, RealCause, XAI-BENCH and ITErpretability got "rerun of the
+  released code" boxes.
+- Novelty check (Q18), web plus OpenAlex: no paper measures existing benchmarks' rankings flipping with the
+  ground-truth estimand; the closest analogue is Wickstrom, Hohne and Hedstrom 2025 (proxy-metric hyperparameters).
+- Tier 0 of the transfer pilot (Q19; 254 tasks, 82 min, below-normal priority; checkpointing added): at model level
+  every world, including the generic null, reproduces reality's explainer ranking (null 0.98, oracle 0.94, builders
+  0.91-0.98); at data level the target family matters (forest 0.96, additive 0.88, MLP 0.75) and the generator
+  does not help (independent columns 0.92, real-row bootstrap 0.79). DECISIONS #24 marked revisited.
 - Learnings: Springer OA PDF via Playwright blob download; OpenXAI version drift.
 """
 
@@ -53,7 +60,7 @@ pending = """
   when the CPU is free (~15-20 min).
 - Explainer pages were rebuilt from bodies in the session scratchpad (insert_reruns.py); the page HTML in the repo
   is the source of truth now.
-- Review Q13-Q16 in directions_2026-10-27.md.
+- Review Q13-Q16 in directions_2026-10-27.md, and Q20: what the pilot does next after Tier 0.
 """
 
 next = """

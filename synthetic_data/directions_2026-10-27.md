@@ -158,10 +158,44 @@ model the script checks that third-order Moebius terms vanish.
 - Q16: `interpret`'s EBM is the standard GA2M. Use it instead of constrained sklearn boosting? It would be a new
   dependency.
 
-## 5. Parked (not run, with the reason)
+## 5. Tier 0 of the transfer pilot (run 2026-10-27, Q19)
 
-- **Q6** (random-target arm) and **Q8** (agreement by generator vs target): both need the Tier 0 pilot run
-  (~1.3 h), which is above this session's compute cap.
+Setup: forest reality, 4 replicates x 4 tasks per world, 30 reality tasks, 254 tasks in 82 minutes. Files:
+`results/transfer_pilot/v2_rf_tier0.json`, `_summary.json`, `_report.html`.
+
+- **Model level:** every world reproduces reality's explainer ranking.
+  - Agreement on reality's 33 of 36 resolved pairs: generic null 0.98 [0.95, 1.00], oracle 0.94 [0.91, 0.97],
+    builders 0.91 to 0.98.
+  - The ranking (path TreeSHAP > interventional TreeSHAP ~ permutation ~ Owen > Saabas > KernelSHAP > LIME >
+    mean-baseline > occlusion) orders how well each method estimates interventional SHAP of the model. That is a
+    property of the estimators, not of the data, so any world reproduces it.
+- **Data level:** worlds differ, but realism does not help.
+  - The null is still best (0.98, oracle 0.96).
+  - The target family drives agreement: forest 0.96 (the same family as reality, so projection by construction),
+    additive 0.88, MLP 0.75.
+  - Among generators the least realistic does best and the most realistic worst: independent columns 0.92,
+    Gaussian and ARF 0.87, the real-row bootstrap 0.79. The bootstrap-MLP world is the worst cell (0.55).
+- **Reading.** For the interventional estimand, benchmark realism does not change which explainer looks best on
+  this data, and the null-world condition in DECISIONS #24 is met. That is consistent with section 1: the data
+  distribution enters interventional SHAP only through the background sample. Under a *conditional*
+  (observational) estimand it enters the definition itself, so that is where realism should matter if it matters
+  anywhere.
+- **Limits:** one dataset (California), one reality family, 4 replicates, 9 explainers dominated by
+  SHAP estimators.
+
+**Open: Q20, what should the pilot do next?**
+- (a) Rerun the transfer question under the conditional estimand. Builders need a conditional sampler: Gaussian
+  conditionals, or ARF conditional forging (Q9).
+- (b) Swap in explainers whose quality depends on the data distribution (conditional or observational SHAP
+  estimators, LIME with data-based sampling, conditional permutation importance).
+- (c) Take the negative result as a finding: for model-level interventional attribution, rankings are
+  world-invariant, so realism buys nothing. Pair it with the estimand-sensitivity results from the benchmarks.
+- My recommendation: (c) as a finding, plus (a) as the experiment that can still show realism mattering.
+
+## 6. Parked (not run, with the reason)
+
+- **Q6** (random-target arm): needs another pilot run; **Q8** (agreement by generator vs target) is now answered in
+  section 5.
 - **Q9** (observational estimand via ARF conditional sampling): needs `forge(evidence=...)` in the arfpy fork.
   Section 1 makes it more valuable: conditional SHAP is the estimand XAI-BENCH uses.
 - **Q3** (add ITErpretability, Looking Glass, Credence, RealCause, Athey et al. and Chen et al. to the review):
