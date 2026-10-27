@@ -52,6 +52,41 @@ chaining from XAI-BENCH, OpenXAI and Chen et al. are still to do. Six web search
 
 Verdict so far: the gap looks open, but a web search is shallow. Do the OpenAlex pass before claiming it.
 
+**OpenAlex pass (2026-10-27, after the MCP reconnect).**
+
+What was run:
+- a meaning-based search (50 hits);
+- a structured search for attribution AND ground truth AND (interventional / conditional / estimand / value
+  function / baseline / reference distribution), 27 hits;
+- citation chaining, keeping citing works that mention benchmarks, evaluation or ground truth: Chen et al. 2020
+  (21), XAI-BENCH (all 19 citing works), OpenXAI (31).
+
+Findings:
+- **Closest analogue, which must be cited:** Wickstrom, Hohne and Hedstrom 2025, "From Flexibility to
+  Manipulation: The Slippery Slope of XAI Evaluation" (arXiv 2412.05592). They show that the *hyperparameters of
+  proxy metrics* (no ground truth) change evaluation outcomes a lot, and they propose ranking across
+  hyperparameters. Our claim would be its ground-truth counterpart: even *with* a ground truth, its definition
+  acts like a hyperparameter, and rankings flip with it.
+- **Debates about ground-truth definitions:**
+  - the Haufe group (suppressor variables; XAI-TRIS, Machine Learning 2024; the EXACT platform, 2025);
+  - "The Blame Problem in Evaluating Local Explanations" (Rahnama 2024), on the model-vs-explainer error that our
+    pilot measures as the model gap;
+  - BEAM (2026): exact ground truth for synthetic image models, with a single definition.
+- **The conceptual estimand literature:**
+  - Sundararajan and Najmi 2020; Janzing et al. 2020; Merrick and Taly 2020; Chen et al. 2020;
+  - Yeh et al. 2022 (on- vs off-manifold value functions);
+  - Filom et al. 2024 (marginal attributions of tree models).
+- **Not read yet:**
+  - Rapach et al. 2026 (SSRN 7617258), "Interventional and Observational Shapley Values in the Presence of
+    Correlated Features": no abstract in OpenAlex;
+  - Khan et al. 2026, a survey of XAI benchmarks in Computer Science Review: closed access.
+  Check both before claiming novelty.
+
+**Verdict.** No paper found that measures existing benchmarks' rankings flipping with the ground-truth estimand,
+and no reproducibility audit of OpenXAI or XAI-BENCH. The gap looks open but narrow: it sits between Wickstrom et
+al. 2025 (proxy-metric hyperparameters) and the conceptual estimand papers. The framing should be: "ground truth
+does not remove the evaluator's degrees of freedom; it moves them into the definition of the ground truth."
+
 ## 2. Data-fitted simulators agree where the data speak and disagree where they extrapolate
 
 RealCause, the WGAN package and Credence all fit LaLonde PSID (Credence then generated no treated units, so only
