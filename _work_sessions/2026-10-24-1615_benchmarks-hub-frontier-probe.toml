@@ -84,7 +84,7 @@ files = [
   "_learnings/2026-10-27-0123_openxai-results-changed-between-versions.md",
 ]
 
-commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272"]
+commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272", "618dd25", "5ac19f2", "b8b3105", "92578e2"]
 
 notes = """
 - Compute: the user capped runs at ~15 min, 2 cores, one at a time. fb2ts overran (36 min) because the notebook's
