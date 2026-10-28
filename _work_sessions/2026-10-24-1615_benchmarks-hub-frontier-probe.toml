@@ -71,10 +71,14 @@ pending = """
 """
 
 next = """
-- Decide Q13 (estimand-sensitivity table), Q14 (on/off-support split in the pilot), Q15/Q16 (pairwise target family,
-  EBM or constrained sklearn boosting) from directions_2026-10-27.md.
-- Tier 0 of the transfer pilot (~1.3 h, needs an explicit OK), which also unblocks Q6 and Q8.
+- Decide Q21 (memo section 5b): (a) widen the pool with more conditional estimators (empirical/kNN, copula,
+  regression), (b) mixture-reality rerun, (c) stop the pilot and write the finding. Recommended: (c), plus (a) only
+  if the thesis needs a positive case for realism.
+- Decide Q13 (estimand-sensitivity table), Q14 (on/off-support split), Q15/Q16 (pairwise target family) and Q17
+  (save learnings: captum batched KernelSHAP, ctypes SetPriorityClass handle, pagefile growth eating disk, and
+  ArrayMemoryError on a tiny array = machine-wide commit exhausted).
 - Q9: conditional estimand via ARF conditional sampling (arfpy forge(evidence=...)).
+- Read Rapach et al. 2026 (SSRN 7617258) and the Khan et al. 2026 survey for the novelty check (Q18).
 """
 
 files = [
@@ -94,7 +98,7 @@ files = [
   "_learnings/2026-10-27-0123_openxai-results-changed-between-versions.md",
 ]
 
-commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272", "618dd25", "5ac19f2", "b8b3105", "92578e2", "cd8ffb3", "d179fbd", "030a9a4"]
+commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272", "618dd25", "5ac19f2", "b8b3105", "92578e2", "cd8ffb3", "d179fbd", "030a9a4", "26f723a"]
 
 notes = """
 - Compute: the user capped runs at ~15 min, 2 cores, one at a time. fb2ts overran (36 min) because the notebook's
