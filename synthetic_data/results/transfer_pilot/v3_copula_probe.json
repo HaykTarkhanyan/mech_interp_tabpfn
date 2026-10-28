@@ -1,0 +1,3470 @@
+{
+ "created": "2026-10-28 01:33:04",
+ "complete": true,
+ "estimand": "conditional",
+ "seed": 509,
+ "reality": "reality (rf, Gaussian copula with the real marginals)",
+ "reps": 2,
+ "k": 3,
+ "k_reality": 10,
+ "timing_mode": false,
+ "args": {
+  "reps": 2,
+  "k": 3,
+  "k_reality": 10,
+  "n_explain": 20,
+  "m_truth": 500,
+  "reality_family": "copula",
+  "reality_components": 8,
+  "timing": false,
+  "tag": "v3_copula_probe"
+ },
+ "config": {
+  "dataset": "california_housing (Gaussian-mixture stand-in)",
+  "grid": 0.000244140625,
+  "n_D": 2000,
+  "n_train": 1000,
+  "n_bg_explainer": 50,
+  "n_fit_conditional_explainer": 200,
+  "m_explainer": 50,
+  "n_bg_interventional_truth": 1000,
+  "kernel_nsamples": 200,
+  "lime_samples": 2000,
+  "null_rho": 0.5
+ },
+ "features": [
+  "MedInc",
+  "HouseAge",
+  "AveRooms",
+  "AveBedrms",
+  "Population",
+  "AveOccup",
+  "Latitude",
+  "Longitude"
+ ],
+ "explainers": [
+  "TreeSHAP-int (bg 50)",
+  "TreeSHAP-path",
+  "KernelSHAP (kmeans 10)",
+  "Gaussian-conditional SHAP",
+  "Mixture-conditional SHAP (3 comp.)",
+  "LIME",
+  "Occlusion (mean)"
+ ],
+ "generators": [
+  "independent",
+  "gaussian",
+  "mixture3",
+  "mixture8",
+  "copula"
+ ],
+ "targets": [
+  "additive",
+  "forest"
+ ],
+ "reality_noise_sd": 0.5483446233198812,
+ "reality_signal_r2": 0.7514955063094838,
+ "null_noise_sd": 1.8294040546035284,
+ "versions": {
+  "shap": "0.54.1",
+  "numpy": "2.5.4",
+  "sklearn": "1.9.1"
+ },
+ "runtime_s": 3144.2,
+ "build_seconds": [
+  1.8,
+  0.6
+ ],
+ "tasks": [
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6590690234383562,
+    "TreeSHAP-path": 0.6075893035425859,
+    "KernelSHAP (kmeans 10)": 0.6602638745325536,
+    "Gaussian-conditional SHAP": 0.29747308087986024,
+    "Mixture-conditional SHAP (3 comp.)": 0.32191060358562024,
+    "LIME": 0.7610206580448362,
+    "Occlusion (mean)": 0.8099649659156728
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7390765797175831,
+    "TreeSHAP-path": 0.6924160540763593,
+    "KernelSHAP (kmeans 10)": 0.7304872522710124,
+    "Gaussian-conditional SHAP": 0.41566412517371126,
+    "Mixture-conditional SHAP (3 comp.)": 0.4251016488009734,
+    "LIME": 0.7804692721481139,
+    "Occlusion (mean)": 0.8475535540689073
+   },
+   "model_gap": 0.28572550349364584,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.14844585484377376,
+    "TreeSHAP-path": 0.05786014275626452,
+    "KernelSHAP (kmeans 10)": 0.19919239946330702,
+    "Gaussian-conditional SHAP": 0.4897352313168929,
+    "Mixture-conditional SHAP (3 comp.)": 0.536897869376552,
+    "LIME": 0.4437422077692511,
+    "Occlusion (mean)": 0.40408360302399104
+   },
+   "estimand_gap": 0.6319438063049512,
+   "truth_mc_noise": 0.051232484274366726,
+   "seconds": {
+    "fit": 1.021,
+    "truth_model": 31.101,
+    "truth_data": 15.299,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.084,
+     "TreeSHAP-path": 0.017,
+     "KernelSHAP (kmeans 10)": 0.823,
+     "Gaussian-conditional SHAP": 2.254,
+     "Mixture-conditional SHAP (3 comp.)": 2.523,
+     "LIME": 0.477,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 65.205
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6049659425451355,
+    "TreeSHAP-path": 0.5056898603706392,
+    "KernelSHAP (kmeans 10)": 0.6200806605985562,
+    "Gaussian-conditional SHAP": 0.5941822857577184,
+    "Mixture-conditional SHAP (3 comp.)": 0.42059400043225986,
+    "LIME": 0.659939779226865,
+    "Occlusion (mean)": 0.8963478584374869
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6540718778253488,
+    "TreeSHAP-path": 0.5831077872405174,
+    "KernelSHAP (kmeans 10)": 0.6741529697056308,
+    "Gaussian-conditional SHAP": 0.6207585130330664,
+    "Mixture-conditional SHAP (3 comp.)": 0.49847366666561227,
+    "LIME": 0.6634839148364724,
+    "Occlusion (mean)": 0.9499737201046516
+   },
+   "model_gap": 0.3138842152757811,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.3709654872252216,
+    "TreeSHAP-path": 0.07363634543634308,
+    "KernelSHAP (kmeans 10)": 0.37733103711912197,
+    "Gaussian-conditional SHAP": 0.5772977053703963,
+    "Mixture-conditional SHAP (3 comp.)": 0.5032234091492057,
+    "LIME": 0.3779916164383206,
+    "Occlusion (mean)": 0.6444843130553016
+   },
+   "estimand_gap": 0.5617378225009658,
+   "truth_mc_noise": 0.05659070528699682,
+   "seconds": {
+    "fit": 0.989,
+    "truth_model": 11.036,
+    "truth_data": 10.008,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.048,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.292,
+     "Gaussian-conditional SHAP": 1.065,
+     "Mixture-conditional SHAP (3 comp.)": 1.125,
+     "LIME": 0.285,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 41.978
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4579458595824171,
+    "TreeSHAP-path": 0.4349169055604706,
+    "KernelSHAP (kmeans 10)": 0.5042900962175766,
+    "Gaussian-conditional SHAP": 0.321697154775633,
+    "Mixture-conditional SHAP (3 comp.)": 0.2900562761173229,
+    "LIME": 0.5477554555688364,
+    "Occlusion (mean)": 0.6189947887653214
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5231320170564506,
+    "TreeSHAP-path": 0.5064438702313386,
+    "KernelSHAP (kmeans 10)": 0.5549646906320856,
+    "Gaussian-conditional SHAP": 0.3859208507955751,
+    "Mixture-conditional SHAP (3 comp.)": 0.37525847470068635,
+    "LIME": 0.5563775994964771,
+    "Occlusion (mean)": 0.6729875454800844
+   },
+   "model_gap": 0.2692474910650456,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.08415293559052728,
+    "TreeSHAP-path": 0.10040768052671911,
+    "KernelSHAP (kmeans 10)": 0.1708356578784762,
+    "Gaussian-conditional SHAP": 0.40209156815670805,
+    "Mixture-conditional SHAP (3 comp.)": 0.43895824341673895,
+    "LIME": 0.3953342293198325,
+    "Occlusion (mean)": 0.3129056245277238
+   },
+   "estimand_gap": 0.454558079822997,
+   "truth_mc_noise": 0.04124569414913411,
+   "seconds": {
+    "fit": 0.579,
+    "truth_model": 11.876,
+    "truth_data": 10.323,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.057,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.427,
+     "Gaussian-conditional SHAP": 1.284,
+     "Mixture-conditional SHAP (3 comp.)": 1.356,
+     "LIME": 0.271,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 38.002
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 512,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6643177507605867,
+    "TreeSHAP-path": 0.6128844608930958,
+    "KernelSHAP (kmeans 10)": 0.6868809804855898,
+    "Gaussian-conditional SHAP": 0.28598597084827615,
+    "Mixture-conditional SHAP (3 comp.)": 0.2833386009091111,
+    "LIME": 0.6836485163623085,
+    "Occlusion (mean)": 0.8779287141421144
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6934756768719588,
+    "TreeSHAP-path": 0.6363164211656818,
+    "KernelSHAP (kmeans 10)": 0.7178434585281068,
+    "Gaussian-conditional SHAP": 0.41170474342431695,
+    "Mixture-conditional SHAP (3 comp.)": 0.39688834554399294,
+    "LIME": 0.6535744279973509,
+    "Occlusion (mean)": 0.8989761105336328
+   },
+   "model_gap": 0.27236466095839057,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.08957178419415424,
+    "TreeSHAP-path": 0.06747511951477018,
+    "KernelSHAP (kmeans 10)": 0.24903753932971906,
+    "Gaussian-conditional SHAP": 0.45228720102115555,
+    "Mixture-conditional SHAP (3 comp.)": 0.5035710587048946,
+    "LIME": 0.3336053760302578,
+    "Occlusion (mean)": 0.4264553686464835
+   },
+   "estimand_gap": 0.6463542934318882,
+   "truth_mc_noise": 0.03991550047323626,
+   "seconds": {
+    "fit": 0.747,
+    "truth_model": 14.22,
+    "truth_data": 21.955,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.111,
+     "TreeSHAP-path": 0.028,
+     "KernelSHAP (kmeans 10)": 0.91,
+     "Gaussian-conditional SHAP": 2.581,
+     "Mixture-conditional SHAP (3 comp.)": 3.101,
+     "LIME": 0.312,
+     "Occlusion (mean)": 0.014
+    },
+    "total": 54.425
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 513,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.710837925663797,
+    "TreeSHAP-path": 0.6085092566807029,
+    "KernelSHAP (kmeans 10)": 0.7403885075333768,
+    "Gaussian-conditional SHAP": 0.42739445875805165,
+    "Mixture-conditional SHAP (3 comp.)": 0.4765529155075696,
+    "LIME": 0.7928317509754725,
+    "Occlusion (mean)": 1.0410389927866304
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7225610439757778,
+    "TreeSHAP-path": 0.6375906332566147,
+    "KernelSHAP (kmeans 10)": 0.7554754794623619,
+    "Gaussian-conditional SHAP": 0.5112250742064751,
+    "Mixture-conditional SHAP (3 comp.)": 0.5698300220793708,
+    "LIME": 0.7475522880507937,
+    "Occlusion (mean)": 1.0185933615804221
+   },
+   "model_gap": 0.33665059103237743,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.36754994800499136,
+    "TreeSHAP-path": 0.07110726782290086,
+    "KernelSHAP (kmeans 10)": 0.3753049308830069,
+    "Gaussian-conditional SHAP": 0.5240728352066222,
+    "Mixture-conditional SHAP (3 comp.)": 0.6299001475069023,
+    "LIME": 0.4491603952340836,
+    "Occlusion (mean)": 0.7399335581837412
+   },
+   "estimand_gap": 0.6542609189231899,
+   "truth_mc_noise": 0.06417220843072809,
+   "seconds": {
+    "fit": 0.58,
+    "truth_model": 22.483,
+    "truth_data": 9.027,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.042,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.388,
+     "Gaussian-conditional SHAP": 1.683,
+     "Mixture-conditional SHAP (3 comp.)": 1.487,
+     "LIME": 0.421,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 48.002
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 514,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.689353289897018,
+    "TreeSHAP-path": 0.6012029577091271,
+    "KernelSHAP (kmeans 10)": 0.780870389053362,
+    "Gaussian-conditional SHAP": 0.37568058244666136,
+    "Mixture-conditional SHAP (3 comp.)": 0.408627126080143,
+    "LIME": 0.7361063239152453,
+    "Occlusion (mean)": 0.8275412789669414
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7780384060473946,
+    "TreeSHAP-path": 0.6915959659916839,
+    "KernelSHAP (kmeans 10)": 0.8796955158051101,
+    "Gaussian-conditional SHAP": 0.483776046006057,
+    "Mixture-conditional SHAP (3 comp.)": 0.4922935294983843,
+    "LIME": 0.763886439801322,
+    "Occlusion (mean)": 0.900520752548278
+   },
+   "model_gap": 0.3306298331386343,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.07199832167230867,
+    "TreeSHAP-path": 0.05948286030970789,
+    "KernelSHAP (kmeans 10)": 0.3010623456827717,
+    "Gaussian-conditional SHAP": 0.4674539175768761,
+    "Mixture-conditional SHAP (3 comp.)": 0.4848813489560659,
+    "LIME": 0.38956792958201775,
+    "Occlusion (mean)": 0.35875607794187225
+   },
+   "estimand_gap": 0.6502180215266138,
+   "truth_mc_noise": 0.048204864819721256,
+   "seconds": {
+    "fit": 0.842,
+    "truth_model": 18.341,
+    "truth_data": 9.725,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.05,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.363,
+     "Gaussian-conditional SHAP": 0.976,
+     "Mixture-conditional SHAP (3 comp.)": 2.479,
+     "LIME": 1.242,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 54.746
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 515,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4852507620490887,
+    "TreeSHAP-path": 0.4418825396504348,
+    "KernelSHAP (kmeans 10)": 0.49629159397144296,
+    "Gaussian-conditional SHAP": 0.31767178641520444,
+    "Mixture-conditional SHAP (3 comp.)": 0.2535415182387464,
+    "LIME": 0.6300926645296208,
+    "Occlusion (mean)": 0.619140396334762
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5717341129991788,
+    "TreeSHAP-path": 0.5497841692621497,
+    "KernelSHAP (kmeans 10)": 0.5747938618711327,
+    "Gaussian-conditional SHAP": 0.45823811352208826,
+    "Mixture-conditional SHAP (3 comp.)": 0.4065110319043187,
+    "LIME": 0.6852363470593089,
+    "Occlusion (mean)": 0.6914434806137197
+   },
+   "model_gap": 0.28200473011889854,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.08895641405685935,
+    "TreeSHAP-path": 0.04036413287381278,
+    "KernelSHAP (kmeans 10)": 0.1406330177372622,
+    "Gaussian-conditional SHAP": 0.2746022470911665,
+    "Mixture-conditional SHAP (3 comp.)": 0.30011161173556244,
+    "LIME": 0.3190283765931231,
+    "Occlusion (mean)": 0.2761375222989388
+   },
+   "estimand_gap": 0.4553042724671962,
+   "truth_mc_noise": 0.03700859010966178,
+   "seconds": {
+    "fit": 0.614,
+    "truth_model": 26.836,
+    "truth_data": 10.093,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.042,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.29,
+     "Gaussian-conditional SHAP": 0.756,
+     "Mixture-conditional SHAP (3 comp.)": 0.781,
+     "LIME": 0.238,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 48.229
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 516,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6643647876351342,
+    "TreeSHAP-path": 0.5954730373274164,
+    "KernelSHAP (kmeans 10)": 0.7116398724403209,
+    "Gaussian-conditional SHAP": 0.25460820237895176,
+    "Mixture-conditional SHAP (3 comp.)": 0.3049552642756213,
+    "LIME": 0.7810083890857009,
+    "Occlusion (mean)": 0.8505787237237309
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6854803209292613,
+    "TreeSHAP-path": 0.6250567296206739,
+    "KernelSHAP (kmeans 10)": 0.7156528630766782,
+    "Gaussian-conditional SHAP": 0.35543753777242704,
+    "Mixture-conditional SHAP (3 comp.)": 0.40492243723269333,
+    "LIME": 0.7588371645691364,
+    "Occlusion (mean)": 0.8319233272610401
+   },
+   "model_gap": 0.2716645821246183,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.15795824868133956,
+    "TreeSHAP-path": 0.05575477866712148,
+    "KernelSHAP (kmeans 10)": 0.26891432104050805,
+    "Gaussian-conditional SHAP": 0.5325926563456942,
+    "Mixture-conditional SHAP (3 comp.)": 0.5828782388324936,
+    "LIME": 0.5427807228963129,
+    "Occlusion (mean)": 0.4345343470526871
+   },
+   "estimand_gap": 0.6135836196356427,
+   "truth_mc_noise": 0.037471518494197165,
+   "seconds": {
+    "fit": 0.436,
+    "truth_model": 21.848,
+    "truth_data": 31.392,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.137,
+     "TreeSHAP-path": 0.037,
+     "KernelSHAP (kmeans 10)": 1.821,
+     "Gaussian-conditional SHAP": 2.596,
+     "Mixture-conditional SHAP (3 comp.)": 3.486,
+     "LIME": 1.633,
+     "Occlusion (mean)": 0.129
+    },
+    "total": 125.737
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 517,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5769412058665924,
+    "TreeSHAP-path": 0.5440268889708034,
+    "KernelSHAP (kmeans 10)": 0.6289916896137198,
+    "Gaussian-conditional SHAP": 0.42112656501800216,
+    "Mixture-conditional SHAP (3 comp.)": 0.3988702187768492,
+    "LIME": 0.723648633883701,
+    "Occlusion (mean)": 0.8101468695918763
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6573571958949831,
+    "TreeSHAP-path": 0.6337447685095631,
+    "KernelSHAP (kmeans 10)": 0.6826181235265413,
+    "Gaussian-conditional SHAP": 0.5159107904908388,
+    "Mixture-conditional SHAP (3 comp.)": 0.5097024356592819,
+    "LIME": 0.7258830792811407,
+    "Occlusion (mean)": 0.8254736350505213
+   },
+   "model_gap": 0.2844331989420838,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.13191414621828226,
+    "TreeSHAP-path": 0.09304017588191618,
+    "KernelSHAP (kmeans 10)": 0.26734521033118724,
+    "Gaussian-conditional SHAP": 0.3387168991615873,
+    "Mixture-conditional SHAP (3 comp.)": 0.43170308185309697,
+    "LIME": 0.3801525633216027,
+    "Occlusion (mean)": 0.5048626969630526
+   },
+   "estimand_gap": 0.5717777351338713,
+   "truth_mc_noise": 0.04169331231258724,
+   "seconds": {
+    "fit": 3.082,
+    "truth_model": 54.388,
+    "truth_data": 52.259,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.093,
+     "TreeSHAP-path": 0.061,
+     "KernelSHAP (kmeans 10)": 1.108,
+     "Gaussian-conditional SHAP": 1.344,
+     "Mixture-conditional SHAP (3 comp.)": 1.524,
+     "LIME": 0.302,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 247.805
+   }
+  },
+  {
+   "rep": null,
+   "role": "reality",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 518,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6015312061461637,
+    "TreeSHAP-path": 0.5657754040991759,
+    "KernelSHAP (kmeans 10)": 0.6654128090337299,
+    "Gaussian-conditional SHAP": 0.37566779796546335,
+    "Mixture-conditional SHAP (3 comp.)": 0.3408282759716427,
+    "LIME": 0.6625818311140583,
+    "Occlusion (mean)": 0.7788747925022584
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6286016061649289,
+    "TreeSHAP-path": 0.5968074842164323,
+    "KernelSHAP (kmeans 10)": 0.6760334156893366,
+    "Gaussian-conditional SHAP": 0.4575107006274577,
+    "Mixture-conditional SHAP (3 comp.)": 0.43780344457999343,
+    "LIME": 0.6540130766792179,
+    "Occlusion (mean)": 0.7459130149088203
+   },
+   "model_gap": 0.3294333035144911,
+   "err_model_interventional": {
+    "TreeSHAP-int (bg 50)": 0.1230129966611756,
+    "TreeSHAP-path": 0.08008414909736991,
+    "KernelSHAP (kmeans 10)": 0.2833332327127068,
+    "Gaussian-conditional SHAP": 0.4047066264432336,
+    "Mixture-conditional SHAP (3 comp.)": 0.45704006586132545,
+    "LIME": 0.26507509697127624,
+    "Occlusion (mean)": 0.45619908416460925
+   },
+   "estimand_gap": 0.5858867291213699,
+   "truth_mc_noise": 0.042441255154176905,
+   "seconds": {
+    "fit": 0.965,
+    "truth_model": 18.913,
+    "truth_data": 14.996,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.116,
+     "TreeSHAP-path": 0.085,
+     "KernelSHAP (kmeans 10)": 2.071,
+     "Gaussian-conditional SHAP": 2.038,
+     "Mixture-conditional SHAP (3 comp.)": 1.906,
+     "LIME": 0.576,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 61.867
+   }
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4739859862534802,
+    "TreeSHAP-path": 0.4460883459532526,
+    "KernelSHAP (kmeans 10)": 0.49350638299008215,
+    "Gaussian-conditional SHAP": 0.2913635700405272,
+    "Mixture-conditional SHAP (3 comp.)": 0.2760593789157632,
+    "LIME": 0.5875059698166882,
+    "Occlusion (mean)": 0.5928843967577614
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.49891350261824813,
+    "TreeSHAP-path": 0.4896931515181806,
+    "KernelSHAP (kmeans 10)": 0.5164940479220711,
+    "Gaussian-conditional SHAP": 0.4048479930563843,
+    "Mixture-conditional SHAP (3 comp.)": 0.3892166396386689,
+    "LIME": 0.5769933128298558,
+    "Occlusion (mean)": 0.6188577887512583
+   },
+   "model_gap": 0.27398339985080755,
+   "seconds": {
+    "fit": 3.453,
+    "truth_model": 22.065,
+    "truth_data": 15.351,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.035,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.358,
+     "Gaussian-conditional SHAP": 0.866,
+     "Mixture-conditional SHAP (3 comp.)": 1.051,
+     "LIME": 0.267,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 43.465
+   }
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6582431437338775,
+    "TreeSHAP-path": 0.5829063090974741,
+    "KernelSHAP (kmeans 10)": 0.669431766800335,
+    "Gaussian-conditional SHAP": 0.7387219950105858,
+    "Mixture-conditional SHAP (3 comp.)": 0.436455198914641,
+    "LIME": 0.7055239827882657,
+    "Occlusion (mean)": 0.8130143935010032
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6536405123889444,
+    "TreeSHAP-path": 0.6091771963409757,
+    "KernelSHAP (kmeans 10)": 0.6809988437461396,
+    "Gaussian-conditional SHAP": 0.6883021938859677,
+    "Mixture-conditional SHAP (3 comp.)": 0.48717527268400906,
+    "LIME": 0.6945727524722835,
+    "Occlusion (mean)": 0.7939247690816312
+   },
+   "model_gap": 0.23986286640401275,
+   "seconds": {
+    "fit": 0.635,
+    "truth_model": 22.078,
+    "truth_data": 9.517,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.034,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.314,
+     "Gaussian-conditional SHAP": 0.829,
+     "Mixture-conditional SHAP (3 comp.)": 0.884,
+     "LIME": 0.352,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 34.664
+   }
+  },
+  {
+   "rep": 0,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5303372361100523,
+    "TreeSHAP-path": 0.48440374964105504,
+    "KernelSHAP (kmeans 10)": 0.5591561625500874,
+    "Gaussian-conditional SHAP": 0.31618488627403885,
+    "Mixture-conditional SHAP (3 comp.)": 0.3162285123898944,
+    "LIME": 0.6661628414233943,
+    "Occlusion (mean)": 0.7070932338755924
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5739943343565517,
+    "TreeSHAP-path": 0.5296278317928901,
+    "KernelSHAP (kmeans 10)": 0.574887296598564,
+    "Gaussian-conditional SHAP": 0.41435065197342846,
+    "Mixture-conditional SHAP (3 comp.)": 0.3999954609960785,
+    "LIME": 0.6684297612081499,
+    "Occlusion (mean)": 0.6809271820196195
+   },
+   "model_gap": 0.237743554927629,
+   "seconds": {
+    "fit": 0.665,
+    "truth_model": 10.531,
+    "truth_data": 9.27,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.058,
+     "TreeSHAP-path": 0.02,
+     "KernelSHAP (kmeans 10)": 0.564,
+     "Gaussian-conditional SHAP": 1.522,
+     "Mixture-conditional SHAP (3 comp.)": 2.637,
+     "LIME": 0.732,
+     "Occlusion (mean)": 0.013
+    },
+    "total": 26.013
+   }
+  },
+  {
+   "rep": 0,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4538297092897711,
+    "TreeSHAP-path": 0.42995877931677673,
+    "KernelSHAP (kmeans 10)": 0.504740242654199,
+    "Gaussian-conditional SHAP": 0.18856216988736235,
+    "Mixture-conditional SHAP (3 comp.)": 0.26781015088038657,
+    "LIME": 0.737177107102759,
+    "Occlusion (mean)": 0.7349502588014859
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5549082455188449,
+    "TreeSHAP-path": 0.5326289717773961,
+    "KernelSHAP (kmeans 10)": 0.5887042809517375,
+    "Gaussian-conditional SHAP": 0.2580663979989325,
+    "Mixture-conditional SHAP (3 comp.)": 0.27365260084901344,
+    "LIME": 0.7476250427976187,
+    "Occlusion (mean)": 0.7787762628012744
+   },
+   "model_gap": 0.23150624982948026,
+   "seconds": {
+    "fit": 1.005,
+    "truth_model": 17.615,
+    "truth_data": 1.162,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.046,
+     "TreeSHAP-path": 0.016,
+     "KernelSHAP (kmeans 10)": 0.474,
+     "Gaussian-conditional SHAP": 1.093,
+     "Mixture-conditional SHAP (3 comp.)": 1.208,
+     "LIME": 0.246,
+     "Occlusion (mean)": 0.011
+    },
+    "total": 22.876
+   }
+  },
+  {
+   "rep": 0,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4922915466389494,
+    "TreeSHAP-path": 0.43110270654757743,
+    "KernelSHAP (kmeans 10)": 0.5054080579722591,
+    "Gaussian-conditional SHAP": 0.16502855981038225,
+    "Mixture-conditional SHAP (3 comp.)": 0.27505267282243395,
+    "LIME": 0.7652003632071818,
+    "Occlusion (mean)": 0.8062829720115093
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5534180309494503,
+    "TreeSHAP-path": 0.5192575685903679,
+    "KernelSHAP (kmeans 10)": 0.5840884942141015,
+    "Gaussian-conditional SHAP": 0.3164296040653121,
+    "Mixture-conditional SHAP (3 comp.)": 0.4010892609542338,
+    "LIME": 0.7838393963858966,
+    "Occlusion (mean)": 0.8759985385111908
+   },
+   "model_gap": 0.2434577317568439,
+   "seconds": {
+    "fit": 0.776,
+    "truth_model": 14.253,
+    "truth_data": 1.223,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.084,
+     "TreeSHAP-path": 0.027,
+     "KernelSHAP (kmeans 10)": 0.601,
+     "Gaussian-conditional SHAP": 1.749,
+     "Mixture-conditional SHAP (3 comp.)": 2.864,
+     "LIME": 0.522,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 22.106
+   }
+  },
+  {
+   "rep": 0,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.40870250073286785,
+    "TreeSHAP-path": 0.3631708312044063,
+    "KernelSHAP (kmeans 10)": 0.46013728163586226,
+    "Gaussian-conditional SHAP": 0.14695988488118342,
+    "Mixture-conditional SHAP (3 comp.)": 0.21322809693033148,
+    "LIME": 0.8054659971327354,
+    "Occlusion (mean)": 0.8532915562888512
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4622830245167531,
+    "TreeSHAP-path": 0.42841726823508197,
+    "KernelSHAP (kmeans 10)": 0.5299297569369931,
+    "Gaussian-conditional SHAP": 0.26531444579038943,
+    "Mixture-conditional SHAP (3 comp.)": 0.3102863469616862,
+    "LIME": 0.8118233776315558,
+    "Occlusion (mean)": 0.9068933887920047
+   },
+   "model_gap": 0.22392179838878679,
+   "seconds": {
+    "fit": 1.581,
+    "truth_model": 12.66,
+    "truth_data": 0.702,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.032,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.351,
+     "Gaussian-conditional SHAP": 0.831,
+     "Mixture-conditional SHAP (3 comp.)": 1.104,
+     "LIME": 0.241,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 17.515
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.14261715208612968,
+    "TreeSHAP-path": 0.06152333427228212,
+    "KernelSHAP (kmeans 10)": 0.20109772850382007,
+    "Gaussian-conditional SHAP": 0.2458740198610886,
+    "Mixture-conditional SHAP (3 comp.)": 0.33628249194488663,
+    "LIME": 0.3435479800120108,
+    "Occlusion (mean)": 0.3915746393500731
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2802803096299605,
+    "TreeSHAP-path": 0.2395962240495514,
+    "KernelSHAP (kmeans 10)": 0.31699075292984025,
+    "Gaussian-conditional SHAP": 0.32262906721841755,
+    "Mixture-conditional SHAP (3 comp.)": 0.42376056537032597,
+    "LIME": 0.3229972493608632,
+    "Occlusion (mean)": 0.49364948788832014
+   },
+   "model_gap": 0.24313106553682137,
+   "seconds": {
+    "fit": 0.547,
+    "truth_model": 7.746,
+    "truth_data": 15.87,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.166,
+     "TreeSHAP-path": 0.105,
+     "KernelSHAP (kmeans 10)": 1.059,
+     "Gaussian-conditional SHAP": 2.35,
+     "Mixture-conditional SHAP (3 comp.)": 1.341,
+     "LIME": 0.245,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 29.435
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.05732626053502945,
+    "TreeSHAP-path": 0.02447058868260829,
+    "KernelSHAP (kmeans 10)": 0.16999201263142064,
+    "Gaussian-conditional SHAP": 0.17788109131695073,
+    "Mixture-conditional SHAP (3 comp.)": 0.2270024541577798,
+    "LIME": 0.22635887562820442,
+    "Occlusion (mean)": 0.2884225632024238
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.1653796090725812,
+    "TreeSHAP-path": 0.15836395554591642,
+    "KernelSHAP (kmeans 10)": 0.22528162630081064,
+    "Gaussian-conditional SHAP": 0.21209447171211152,
+    "Mixture-conditional SHAP (3 comp.)": 0.2686952482919983,
+    "LIME": 0.21617263444619925,
+    "Occlusion (mean)": 0.3296168099427516
+   },
+   "model_gap": 0.15698269979764903,
+   "seconds": {
+    "fit": 0.702,
+    "truth_model": 12.429,
+    "truth_data": 4.905,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.028,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.275,
+     "Gaussian-conditional SHAP": 0.793,
+     "Mixture-conditional SHAP (3 comp.)": 0.889,
+     "LIME": 0.177,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 20.211
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.19365321953502174,
+    "TreeSHAP-path": 0.031215308434832983,
+    "KernelSHAP (kmeans 10)": 0.2513920990576676,
+    "Gaussian-conditional SHAP": 0.24470738194420194,
+    "Mixture-conditional SHAP (3 comp.)": 0.27734307423744736,
+    "LIME": 0.3658082880080911,
+    "Occlusion (mean)": 0.3130990527820783
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2862740449217677,
+    "TreeSHAP-path": 0.2086664008341891,
+    "KernelSHAP (kmeans 10)": 0.313489930424813,
+    "Gaussian-conditional SHAP": 0.3012608392426995,
+    "Mixture-conditional SHAP (3 comp.)": 0.3313274424983703,
+    "LIME": 0.3735574022551041,
+    "Occlusion (mean)": 0.36995464319898136
+   },
+   "model_gap": 0.208431962047068,
+   "seconds": {
+    "fit": 0.448,
+    "truth_model": 10.144,
+    "truth_data": 5.039,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.043,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.399,
+     "Gaussian-conditional SHAP": 1.466,
+     "Mixture-conditional SHAP (3 comp.)": 1.44,
+     "LIME": 0.296,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 19.296
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.40669519583402425,
+    "TreeSHAP-path": 0.35699559685078386,
+    "KernelSHAP (kmeans 10)": 0.4034109857574624,
+    "Gaussian-conditional SHAP": 0.2156751795150461,
+    "Mixture-conditional SHAP (3 comp.)": 0.27670253698364117,
+    "LIME": 0.5768168680769333,
+    "Occlusion (mean)": 0.5615999078784378
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4388547014308242,
+    "TreeSHAP-path": 0.40809733381168195,
+    "KernelSHAP (kmeans 10)": 0.44953094327770166,
+    "Gaussian-conditional SHAP": 0.3279991709814286,
+    "Mixture-conditional SHAP (3 comp.)": 0.3796357362257962,
+    "LIME": 0.5520946660919588,
+    "Occlusion (mean)": 0.6178803228726988
+   },
+   "model_gap": 0.280849383312137,
+   "seconds": {
+    "fit": 1.237,
+    "truth_model": 17.028,
+    "truth_data": 8.648,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.057,
+     "TreeSHAP-path": 0.014,
+     "KernelSHAP (kmeans 10)": 0.473,
+     "Gaussian-conditional SHAP": 1.033,
+     "Mixture-conditional SHAP (3 comp.)": 0.958,
+     "LIME": 0.222,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 29.674
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5111738620366376,
+    "TreeSHAP-path": 0.41398798203091,
+    "KernelSHAP (kmeans 10)": 0.5104175851006619,
+    "Gaussian-conditional SHAP": 0.13008026420297583,
+    "Mixture-conditional SHAP (3 comp.)": 0.1926815360480864,
+    "LIME": 0.5932889181791322,
+    "Occlusion (mean)": 0.6461458957664253
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5427645243850674,
+    "TreeSHAP-path": 0.4661579843356176,
+    "KernelSHAP (kmeans 10)": 0.532427791607652,
+    "Gaussian-conditional SHAP": 0.2596024240006258,
+    "Mixture-conditional SHAP (3 comp.)": 0.29548037391446275,
+    "LIME": 0.5550511401013017,
+    "Occlusion (mean)": 0.6613727204342543
+   },
+   "model_gap": 0.238940011986934,
+   "seconds": {
+    "fit": 0.497,
+    "truth_model": 9.082,
+    "truth_data": 7.507,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.078,
+     "TreeSHAP-path": 0.022,
+     "KernelSHAP (kmeans 10)": 0.536,
+     "Gaussian-conditional SHAP": 1.905,
+     "Mixture-conditional SHAP (3 comp.)": 4.014,
+     "LIME": 0.796,
+     "Occlusion (mean)": 0.011
+    },
+    "total": 24.447
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.36426353814087764,
+    "TreeSHAP-path": 0.3062176461556094,
+    "KernelSHAP (kmeans 10)": 0.4734602058701308,
+    "Gaussian-conditional SHAP": 0.16181653166722024,
+    "Mixture-conditional SHAP (3 comp.)": 0.2656252197174709,
+    "LIME": 0.5321294500322762,
+    "Occlusion (mean)": 0.5682822361221961
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.43738591538633015,
+    "TreeSHAP-path": 0.38725586038369225,
+    "KernelSHAP (kmeans 10)": 0.5001175119062269,
+    "Gaussian-conditional SHAP": 0.27517352767442305,
+    "Mixture-conditional SHAP (3 comp.)": 0.3544460026467678,
+    "LIME": 0.5385744908709991,
+    "Occlusion (mean)": 0.6069539331755167
+   },
+   "model_gap": 0.22930640486375256,
+   "seconds": {
+    "fit": 2.24,
+    "truth_model": 43.792,
+    "truth_data": 14.129,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.13,
+     "TreeSHAP-path": 0.023,
+     "KernelSHAP (kmeans 10)": 1.166,
+     "Gaussian-conditional SHAP": 2.785,
+     "Mixture-conditional SHAP (3 comp.)": 1.576,
+     "LIME": 0.266,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 66.112
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4597586711813844,
+    "TreeSHAP-path": 0.4382740335532004,
+    "KernelSHAP (kmeans 10)": 0.46966281095394447,
+    "Gaussian-conditional SHAP": 0.26132565337915076,
+    "Mixture-conditional SHAP (3 comp.)": 0.2060778566266721,
+    "LIME": 0.6374264462697304,
+    "Occlusion (mean)": 0.5661403512450919
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4942071545202542,
+    "TreeSHAP-path": 0.47492196219964966,
+    "KernelSHAP (kmeans 10)": 0.5092075639200959,
+    "Gaussian-conditional SHAP": 0.3475094492887769,
+    "Mixture-conditional SHAP (3 comp.)": 0.33070439265331225,
+    "LIME": 0.5625240608343467,
+    "Occlusion (mean)": 0.6287777873014389
+   },
+   "model_gap": 0.24096944259036948,
+   "seconds": {
+    "fit": 0.508,
+    "truth_model": 9.669,
+    "truth_data": 4.398,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.031,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.6,
+     "Gaussian-conditional SHAP": 1.894,
+     "Mixture-conditional SHAP (3 comp.)": 2.116,
+     "LIME": 0.378,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 19.61
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5332652329134872,
+    "TreeSHAP-path": 0.4414486523659115,
+    "KernelSHAP (kmeans 10)": 0.5567467073126406,
+    "Gaussian-conditional SHAP": 0.2899615623631611,
+    "Mixture-conditional SHAP (3 comp.)": 0.23061475298152703,
+    "LIME": 0.5831671667705417,
+    "Occlusion (mean)": 0.7182644340211239
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6126036227994314,
+    "TreeSHAP-path": 0.5375500172813826,
+    "KernelSHAP (kmeans 10)": 0.6279541781387041,
+    "Gaussian-conditional SHAP": 0.41614007764856,
+    "Mixture-conditional SHAP (3 comp.)": 0.3285129295071572,
+    "LIME": 0.6009508792945982,
+    "Occlusion (mean)": 0.7640685927028739
+   },
+   "model_gap": 0.2636714877542625,
+   "seconds": {
+    "fit": 0.81,
+    "truth_model": 7.48,
+    "truth_data": 11.088,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.082,
+     "TreeSHAP-path": 0.023,
+     "KernelSHAP (kmeans 10)": 0.579,
+     "Gaussian-conditional SHAP": 2.09,
+     "Mixture-conditional SHAP (3 comp.)": 1.906,
+     "LIME": 0.63,
+     "Occlusion (mean)": 0.017
+    },
+    "total": 24.708
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.46931276839018676,
+    "TreeSHAP-path": 0.4244890661393354,
+    "KernelSHAP (kmeans 10)": 0.5639129595236081,
+    "Gaussian-conditional SHAP": 0.3215802437967902,
+    "Mixture-conditional SHAP (3 comp.)": 0.2987435581510748,
+    "LIME": 0.639464438581321,
+    "Occlusion (mean)": 0.6128460462243716
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.49943665203380916,
+    "TreeSHAP-path": 0.4605171555964171,
+    "KernelSHAP (kmeans 10)": 0.5779748283953621,
+    "Gaussian-conditional SHAP": 0.3744757003944811,
+    "Mixture-conditional SHAP (3 comp.)": 0.38006534737919717,
+    "LIME": 0.6159792268055596,
+    "Occlusion (mean)": 0.6424149545054455
+   },
+   "model_gap": 0.2160205677825703,
+   "seconds": {
+    "fit": 1.723,
+    "truth_model": 10.115,
+    "truth_data": 8.902,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.038,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.377,
+     "Gaussian-conditional SHAP": 1.082,
+     "Mixture-conditional SHAP (3 comp.)": 1.723,
+     "LIME": 0.32,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 24.297
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.48908275403019946,
+    "TreeSHAP-path": 0.4557941537929411,
+    "KernelSHAP (kmeans 10)": 0.5428401728113095,
+    "Gaussian-conditional SHAP": 0.33763853994110427,
+    "Mixture-conditional SHAP (3 comp.)": 0.3372151220668101,
+    "LIME": 0.5593076912917201,
+    "Occlusion (mean)": 0.6050775192561034
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5155043038722503,
+    "TreeSHAP-path": 0.487976016971793,
+    "KernelSHAP (kmeans 10)": 0.5674222296411051,
+    "Gaussian-conditional SHAP": 0.3873572161971657,
+    "Mixture-conditional SHAP (3 comp.)": 0.3776654803209345,
+    "LIME": 0.5424194070239938,
+    "Occlusion (mean)": 0.6412841097749132
+   },
+   "model_gap": 0.20196170902852084,
+   "seconds": {
+    "fit": 0.562,
+    "truth_model": 8.757,
+    "truth_data": 6.556,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.069,
+     "TreeSHAP-path": 0.013,
+     "KernelSHAP (kmeans 10)": 0.504,
+     "Gaussian-conditional SHAP": 1.805,
+     "Mixture-conditional SHAP (3 comp.)": 2.529,
+     "LIME": 0.492,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 21.298
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6568050933589522,
+    "TreeSHAP-path": 0.5949299459025594,
+    "KernelSHAP (kmeans 10)": 0.6476682624407429,
+    "Gaussian-conditional SHAP": 0.34947288994918946,
+    "Mixture-conditional SHAP (3 comp.)": 0.26768256211415925,
+    "LIME": 0.610072113348591,
+    "Occlusion (mean)": 0.6982847232822004
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7293423021010447,
+    "TreeSHAP-path": 0.6769401683316206,
+    "KernelSHAP (kmeans 10)": 0.7167087545472166,
+    "Gaussian-conditional SHAP": 0.45042079613191127,
+    "Mixture-conditional SHAP (3 comp.)": 0.37678871478390635,
+    "LIME": 0.6795651476784831,
+    "Occlusion (mean)": 0.7769420301723183
+   },
+   "model_gap": 0.21372039242059934,
+   "seconds": {
+    "fit": 0.94,
+    "truth_model": 14.769,
+    "truth_data": 5.109,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.067,
+     "TreeSHAP-path": 0.021,
+     "KernelSHAP (kmeans 10)": 0.451,
+     "Gaussian-conditional SHAP": 1.162,
+     "Mixture-conditional SHAP (3 comp.)": 1.558,
+     "LIME": 0.287,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 24.369
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5938734101444854,
+    "TreeSHAP-path": 0.5025429430052183,
+    "KernelSHAP (kmeans 10)": 0.6460112658040844,
+    "Gaussian-conditional SHAP": 0.3713727580039618,
+    "Mixture-conditional SHAP (3 comp.)": 0.32014446783086825,
+    "LIME": 0.6375839215811058,
+    "Occlusion (mean)": 0.6836911175097783
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6109969653499363,
+    "TreeSHAP-path": 0.5151808559919079,
+    "KernelSHAP (kmeans 10)": 0.6550107588119732,
+    "Gaussian-conditional SHAP": 0.4065485255224348,
+    "Mixture-conditional SHAP (3 comp.)": 0.3765371823952732,
+    "LIME": 0.6224598605758054,
+    "Occlusion (mean)": 0.7211417027761567
+   },
+   "model_gap": 0.22991350125543222,
+   "seconds": {
+    "fit": 0.938,
+    "truth_model": 18.515,
+    "truth_data": 36.147,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.098,
+     "TreeSHAP-path": 0.023,
+     "KernelSHAP (kmeans 10)": 2.195,
+     "Gaussian-conditional SHAP": 3.83,
+     "Mixture-conditional SHAP (3 comp.)": 13.695,
+     "LIME": 0.718,
+     "Occlusion (mean)": 0.01
+    },
+    "total": 76.171
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4959335760010159,
+    "TreeSHAP-path": 0.45264162311266426,
+    "KernelSHAP (kmeans 10)": 0.48504959417113713,
+    "Gaussian-conditional SHAP": 0.2629341981101869,
+    "Mixture-conditional SHAP (3 comp.)": 0.3060785668095777,
+    "LIME": 0.6028952373933387,
+    "Occlusion (mean)": 0.5812747459759866
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5063810693492414,
+    "TreeSHAP-path": 0.4692047177169564,
+    "KernelSHAP (kmeans 10)": 0.5048584400240258,
+    "Gaussian-conditional SHAP": 0.33711637309849163,
+    "Mixture-conditional SHAP (3 comp.)": 0.3700513908058714,
+    "LIME": 0.5418985017619645,
+    "Occlusion (mean)": 0.6029107809276678
+   },
+   "model_gap": 0.24214896531435276,
+   "seconds": {
+    "fit": 2.054,
+    "truth_model": 24.752,
+    "truth_data": 9.443,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.054,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.304,
+     "Gaussian-conditional SHAP": 0.835,
+     "Mixture-conditional SHAP (3 comp.)": 1.301,
+     "LIME": 0.239,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 38.996
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6926733770404465,
+    "TreeSHAP-path": 0.5884409590353504,
+    "KernelSHAP (kmeans 10)": 0.7318153613230025,
+    "Gaussian-conditional SHAP": 0.5710126273796992,
+    "Mixture-conditional SHAP (3 comp.)": 0.436357745700901,
+    "LIME": 0.753682917050046,
+    "Occlusion (mean)": 0.7816704105114561
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7314040914930817,
+    "TreeSHAP-path": 0.6470952344249145,
+    "KernelSHAP (kmeans 10)": 0.7687261429238087,
+    "Gaussian-conditional SHAP": 0.5813758866513272,
+    "Mixture-conditional SHAP (3 comp.)": 0.4632080743317089,
+    "LIME": 0.7509727214390564,
+    "Occlusion (mean)": 0.8236831057598365
+   },
+   "model_gap": 0.21798477349721684,
+   "seconds": {
+    "fit": 0.619,
+    "truth_model": 43.845,
+    "truth_data": 17.047,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.049,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.343,
+     "Gaussian-conditional SHAP": 1.251,
+     "Mixture-conditional SHAP (3 comp.)": 1.464,
+     "LIME": 0.285,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 64.922
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5495145077843236,
+    "TreeSHAP-path": 0.48627773568201066,
+    "KernelSHAP (kmeans 10)": 0.5833329195707306,
+    "Gaussian-conditional SHAP": 0.31166044028761336,
+    "Mixture-conditional SHAP (3 comp.)": 0.2826421368505208,
+    "LIME": 0.6454270799663252,
+    "Occlusion (mean)": 0.6521777986649144
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.591913281019848,
+    "TreeSHAP-path": 0.5217170365836095,
+    "KernelSHAP (kmeans 10)": 0.6011858784201259,
+    "Gaussian-conditional SHAP": 0.37568525572038697,
+    "Mixture-conditional SHAP (3 comp.)": 0.35237672603043857,
+    "LIME": 0.6105931522112805,
+    "Occlusion (mean)": 0.6711228665373395
+   },
+   "model_gap": 0.23459420768124575,
+   "seconds": {
+    "fit": 10.491,
+    "truth_model": 56.227,
+    "truth_data": 10.463,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.09,
+     "TreeSHAP-path": 0.024,
+     "KernelSHAP (kmeans 10)": 0.801,
+     "Gaussian-conditional SHAP": 1.042,
+     "Mixture-conditional SHAP (3 comp.)": 1.289,
+     "LIME": 0.424,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 80.857
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.18975757404335217,
+    "TreeSHAP-path": 0.07094994352970709,
+    "KernelSHAP (kmeans 10)": 0.2744089381844576,
+    "Gaussian-conditional SHAP": 0.26436154143330015,
+    "Mixture-conditional SHAP (3 comp.)": 0.4245202986686779,
+    "LIME": 0.4255146840702542,
+    "Occlusion (mean)": 0.5043193798130987
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.32747667820561693,
+    "TreeSHAP-path": 0.2803675686747231,
+    "KernelSHAP (kmeans 10)": 0.38532210213796464,
+    "Gaussian-conditional SHAP": 0.3910259490266431,
+    "Mixture-conditional SHAP (3 comp.)": 0.5137166583406981,
+    "LIME": 0.4415536557787494,
+    "Occlusion (mean)": 0.5563976567358677
+   },
+   "model_gap": 0.29141928465859673,
+   "seconds": {
+    "fit": 0.571,
+    "truth_model": 88.662,
+    "truth_data": 39.567,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.197,
+     "TreeSHAP-path": 0.049,
+     "KernelSHAP (kmeans 10)": 3.087,
+     "Gaussian-conditional SHAP": 3.496,
+     "Mixture-conditional SHAP (3 comp.)": 8.146,
+     "LIME": 1.008,
+     "Occlusion (mean)": 0.041
+    },
+    "total": 144.827
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.06761906229373821,
+    "TreeSHAP-path": 0.024301114000967582,
+    "KernelSHAP (kmeans 10)": 0.18375784026822425,
+    "Gaussian-conditional SHAP": 0.17767270526153553,
+    "Mixture-conditional SHAP (3 comp.)": 0.20296781063391411,
+    "LIME": 0.29361710351603987,
+    "Occlusion (mean)": 0.3248121275673418
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.20288223691558552,
+    "TreeSHAP-path": 0.19300898185261262,
+    "KernelSHAP (kmeans 10)": 0.26610622910216103,
+    "Gaussian-conditional SHAP": 0.242265820079041,
+    "Mixture-conditional SHAP (3 comp.)": 0.26633803005034046,
+    "LIME": 0.3051185094135256,
+    "Occlusion (mean)": 0.34792034425666435
+   },
+   "model_gap": 0.19553272965610444,
+   "seconds": {
+    "fit": 1.51,
+    "truth_model": 13.449,
+    "truth_data": 23.135,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.075,
+     "TreeSHAP-path": 0.025,
+     "KernelSHAP (kmeans 10)": 0.64,
+     "Gaussian-conditional SHAP": 2.951,
+     "Mixture-conditional SHAP (3 comp.)": 9.31,
+     "LIME": 1.299,
+     "Occlusion (mean)": 0.016
+    },
+    "total": 52.411
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.2155496759311569,
+    "TreeSHAP-path": 0.029429563905632585,
+    "KernelSHAP (kmeans 10)": 0.21015878314403444,
+    "Gaussian-conditional SHAP": 0.27366580263746726,
+    "Mixture-conditional SHAP (3 comp.)": 0.3158888112523405,
+    "LIME": 0.3613569035731396,
+    "Occlusion (mean)": 0.340408530789227
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.32498781653840825,
+    "TreeSHAP-path": 0.21620437878106175,
+    "KernelSHAP (kmeans 10)": 0.30056780811935024,
+    "Gaussian-conditional SHAP": 0.3555005850898388,
+    "Mixture-conditional SHAP (3 comp.)": 0.3900683562638712,
+    "LIME": 0.39639429296467793,
+    "Occlusion (mean)": 0.39121657948185634
+   },
+   "model_gap": 0.2163459576116834,
+   "seconds": {
+    "fit": 1.339,
+    "truth_model": 20.722,
+    "truth_data": 8.875,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.045,
+     "TreeSHAP-path": 0.009,
+     "KernelSHAP (kmeans 10)": 0.425,
+     "Gaussian-conditional SHAP": 1.017,
+     "Mixture-conditional SHAP (3 comp.)": 1.029,
+     "LIME": 0.256,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 33.723
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.29472177449718046,
+    "TreeSHAP-path": 0.29478017437376086,
+    "KernelSHAP (kmeans 10)": 0.3381784027821187,
+    "Gaussian-conditional SHAP": 0.20235396682712656,
+    "Mixture-conditional SHAP (3 comp.)": 0.2553384765960511,
+    "LIME": 0.49920340272149805,
+    "Occlusion (mean)": 0.48303072250826773
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3863645102718728,
+    "TreeSHAP-path": 0.35823636242665563,
+    "KernelSHAP (kmeans 10)": 0.38288096637045665,
+    "Gaussian-conditional SHAP": 0.29354289769391045,
+    "Mixture-conditional SHAP (3 comp.)": 0.3220425117529493,
+    "LIME": 0.45282574302533585,
+    "Occlusion (mean)": 0.5191156346750319
+   },
+   "model_gap": 0.25572726802930923,
+   "seconds": {
+    "fit": 0.639,
+    "truth_model": 9.804,
+    "truth_data": 4.616,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.036,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.259,
+     "Gaussian-conditional SHAP": 0.647,
+     "Mixture-conditional SHAP (3 comp.)": 0.865,
+     "LIME": 0.181,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 17.057
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4168805854948359,
+    "TreeSHAP-path": 0.3559459118017051,
+    "KernelSHAP (kmeans 10)": 0.46193508796830385,
+    "Gaussian-conditional SHAP": 0.12731701924494712,
+    "Mixture-conditional SHAP (3 comp.)": 0.183999865478842,
+    "LIME": 0.45759490294004634,
+    "Occlusion (mean)": 0.5622242843098452
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.44741334085026263,
+    "TreeSHAP-path": 0.4110222836703123,
+    "KernelSHAP (kmeans 10)": 0.49599661334341283,
+    "Gaussian-conditional SHAP": 0.19387996671946212,
+    "Mixture-conditional SHAP (3 comp.)": 0.24272992963136408,
+    "LIME": 0.49044470933085493,
+    "Occlusion (mean)": 0.6115063886421193
+   },
+   "model_gap": 0.17894729665141784,
+   "seconds": {
+    "fit": 0.455,
+    "truth_model": 10.571,
+    "truth_data": 7.344,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.05,
+     "TreeSHAP-path": 0.013,
+     "KernelSHAP (kmeans 10)": 0.444,
+     "Gaussian-conditional SHAP": 0.927,
+     "Mixture-conditional SHAP (3 comp.)": 0.992,
+     "LIME": 0.233,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 21.036
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.3200697083209313,
+    "TreeSHAP-path": 0.26434172707485915,
+    "KernelSHAP (kmeans 10)": 0.4706258057994975,
+    "Gaussian-conditional SHAP": 0.15044181111021535,
+    "Mixture-conditional SHAP (3 comp.)": 0.24820211289525299,
+    "LIME": 0.48111038702683473,
+    "Occlusion (mean)": 0.5860781989950328
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.36660008686889833,
+    "TreeSHAP-path": 0.3192829971313516,
+    "KernelSHAP (kmeans 10)": 0.4805201839555517,
+    "Gaussian-conditional SHAP": 0.23289738155691378,
+    "Mixture-conditional SHAP (3 comp.)": 0.31828793531038974,
+    "LIME": 0.4732354161251213,
+    "Occlusion (mean)": 0.5864372412583768
+   },
+   "model_gap": 0.18157116942008916,
+   "seconds": {
+    "fit": 0.609,
+    "truth_model": 6.647,
+    "truth_data": 9.875,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.087,
+     "TreeSHAP-path": 0.021,
+     "KernelSHAP (kmeans 10)": 0.76,
+     "Gaussian-conditional SHAP": 1.965,
+     "Mixture-conditional SHAP (3 comp.)": 2.232,
+     "LIME": 0.529,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 22.734
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4276427646625689,
+    "TreeSHAP-path": 0.4278487657674752,
+    "KernelSHAP (kmeans 10)": 0.45009373875182146,
+    "Gaussian-conditional SHAP": 0.26644275973276166,
+    "Mixture-conditional SHAP (3 comp.)": 0.19270830099274489,
+    "LIME": 0.5492333970518779,
+    "Occlusion (mean)": 0.548407869955804
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.43355348393885396,
+    "TreeSHAP-path": 0.4391843680182329,
+    "KernelSHAP (kmeans 10)": 0.4547322213458114,
+    "Gaussian-conditional SHAP": 0.2886566009071224,
+    "Mixture-conditional SHAP (3 comp.)": 0.26484129796704436,
+    "LIME": 0.49764882934900695,
+    "Occlusion (mean)": 0.5599555743127982
+   },
+   "model_gap": 0.18562246544469907,
+   "seconds": {
+    "fit": 0.832,
+    "truth_model": 11.941,
+    "truth_data": 5.615,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.04,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.271,
+     "Gaussian-conditional SHAP": 0.891,
+     "Mixture-conditional SHAP (3 comp.)": 1.092,
+     "LIME": 0.275,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 20.971
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4841679390978794,
+    "TreeSHAP-path": 0.4152331950714833,
+    "KernelSHAP (kmeans 10)": 0.49129199692356545,
+    "Gaussian-conditional SHAP": 0.29374528238662356,
+    "Mixture-conditional SHAP (3 comp.)": 0.22664100434265905,
+    "LIME": 0.5230750006846465,
+    "Occlusion (mean)": 0.6760349092933501
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5321119989753128,
+    "TreeSHAP-path": 0.4919494684087116,
+    "KernelSHAP (kmeans 10)": 0.5707835688125312,
+    "Gaussian-conditional SHAP": 0.36149109027600806,
+    "Mixture-conditional SHAP (3 comp.)": 0.2830946705757484,
+    "LIME": 0.574300839724111,
+    "Occlusion (mean)": 0.7509855004507233
+   },
+   "model_gap": 0.23474121209962903,
+   "seconds": {
+    "fit": 0.553,
+    "truth_model": 19.252,
+    "truth_data": 17.293,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.086,
+     "TreeSHAP-path": 0.023,
+     "KernelSHAP (kmeans 10)": 0.687,
+     "Gaussian-conditional SHAP": 2.191,
+     "Mixture-conditional SHAP (3 comp.)": 3.391,
+     "LIME": 0.723,
+     "Occlusion (mean)": 0.013
+    },
+    "total": 44.213
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.38159101452390454,
+    "TreeSHAP-path": 0.34611329999580925,
+    "KernelSHAP (kmeans 10)": 0.4734209622530099,
+    "Gaussian-conditional SHAP": 0.3037787568587227,
+    "Mixture-conditional SHAP (3 comp.)": 0.2912911653330084,
+    "LIME": 0.5126965835937748,
+    "Occlusion (mean)": 0.6103091653900422
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.42946449840865675,
+    "TreeSHAP-path": 0.39711335637396117,
+    "KernelSHAP (kmeans 10)": 0.4898999720283184,
+    "Gaussian-conditional SHAP": 0.37582443270205973,
+    "Mixture-conditional SHAP (3 comp.)": 0.37205052602088967,
+    "LIME": 0.49451999169375,
+    "Occlusion (mean)": 0.5755798789895463
+   },
+   "model_gap": 0.21545850022104504,
+   "seconds": {
+    "fit": 1.94,
+    "truth_model": 21.436,
+    "truth_data": 15.513,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.167,
+     "TreeSHAP-path": 0.025,
+     "KernelSHAP (kmeans 10)": 1.586,
+     "Gaussian-conditional SHAP": 2.969,
+     "Mixture-conditional SHAP (3 comp.)": 20.279,
+     "LIME": 1.063,
+     "Occlusion (mean)": 0.014
+    },
+    "total": 64.992
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4530782567244972,
+    "TreeSHAP-path": 0.4383121495673779,
+    "KernelSHAP (kmeans 10)": 0.5254866806614895,
+    "Gaussian-conditional SHAP": 0.35552778851219746,
+    "Mixture-conditional SHAP (3 comp.)": 0.333680455746194,
+    "LIME": 0.49810662669622324,
+    "Occlusion (mean)": 0.5793501697429847
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.47602626536198805,
+    "TreeSHAP-path": 0.46292373987711644,
+    "KernelSHAP (kmeans 10)": 0.5284683773029475,
+    "Gaussian-conditional SHAP": 0.38925545935753186,
+    "Mixture-conditional SHAP (3 comp.)": 0.37245562830102186,
+    "LIME": 0.4959292221242742,
+    "Occlusion (mean)": 0.5832406521493637
+   },
+   "model_gap": 0.1980284483314434,
+   "seconds": {
+    "fit": 1.531,
+    "truth_model": 12.911,
+    "truth_data": 13.68,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.088,
+     "TreeSHAP-path": 0.02,
+     "KernelSHAP (kmeans 10)": 0.715,
+     "Gaussian-conditional SHAP": 1.856,
+     "Mixture-conditional SHAP (3 comp.)": 2.011,
+     "LIME": 0.334,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 33.153
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6108961604720872,
+    "TreeSHAP-path": 0.5670966839449201,
+    "KernelSHAP (kmeans 10)": 0.6035525658434837,
+    "Gaussian-conditional SHAP": 0.3699604017788039,
+    "Mixture-conditional SHAP (3 comp.)": 0.2661638043809059,
+    "LIME": 0.6109145628522579,
+    "Occlusion (mean)": 0.6794804491397299
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6494427335326228,
+    "TreeSHAP-path": 0.611641439974961,
+    "KernelSHAP (kmeans 10)": 0.6432772812163565,
+    "Gaussian-conditional SHAP": 0.44473207356072125,
+    "Mixture-conditional SHAP (3 comp.)": 0.34423912829951425,
+    "LIME": 0.6559901869950312,
+    "Occlusion (mean)": 0.6879418197452425
+   },
+   "model_gap": 0.19903939605296142,
+   "seconds": {
+    "fit": 0.632,
+    "truth_model": 14.588,
+    "truth_data": 7.943,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.047,
+     "TreeSHAP-path": 0.009,
+     "KernelSHAP (kmeans 10)": 0.299,
+     "Gaussian-conditional SHAP": 1.122,
+     "Mixture-conditional SHAP (3 comp.)": 1.064,
+     "LIME": 0.3,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 26.009
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4620327956495939,
+    "TreeSHAP-path": 0.422350736033197,
+    "KernelSHAP (kmeans 10)": 0.5281302678204659,
+    "Gaussian-conditional SHAP": 0.35192166740290687,
+    "Mixture-conditional SHAP (3 comp.)": 0.3004952223922331,
+    "LIME": 0.5369285312967377,
+    "Occlusion (mean)": 0.6983910144993717
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.48832098271917057,
+    "TreeSHAP-path": 0.45260483083866265,
+    "KernelSHAP (kmeans 10)": 0.5433140476155368,
+    "Gaussian-conditional SHAP": 0.3957299047573583,
+    "Mixture-conditional SHAP (3 comp.)": 0.3476036062479366,
+    "LIME": 0.5435131857653936,
+    "Occlusion (mean)": 0.7021116461556677
+   },
+   "model_gap": 0.19887464845872513,
+   "seconds": {
+    "fit": 0.485,
+    "truth_model": 10.613,
+    "truth_data": 9.079,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.046,
+     "TreeSHAP-path": 0.013,
+     "KernelSHAP (kmeans 10)": 0.344,
+     "Gaussian-conditional SHAP": 1.307,
+     "Mixture-conditional SHAP (3 comp.)": 1.488,
+     "LIME": 0.592,
+     "Occlusion (mean)": 0.012
+    },
+    "total": 23.981
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 100509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.44003780227940353,
+    "TreeSHAP-path": 0.42784940819580214,
+    "KernelSHAP (kmeans 10)": 0.44696839882551037,
+    "Gaussian-conditional SHAP": 0.27815527336438894,
+    "Mixture-conditional SHAP (3 comp.)": 0.29795039013993657,
+    "LIME": 0.5809036643866129,
+    "Occlusion (mean)": 0.5761476173409924
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.47826706714811773,
+    "TreeSHAP-path": 0.46595597108796566,
+    "KernelSHAP (kmeans 10)": 0.4820515253647191,
+    "Gaussian-conditional SHAP": 0.3498271162426741,
+    "Mixture-conditional SHAP (3 comp.)": 0.3581735608412187,
+    "LIME": 0.532692260904225,
+    "Occlusion (mean)": 0.605287052566446
+   },
+   "model_gap": 0.24862353247963215,
+   "seconds": {
+    "fit": 0.69,
+    "truth_model": 21.067,
+    "truth_data": 8.829,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.035,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.45,
+     "Gaussian-conditional SHAP": 1.608,
+     "Mixture-conditional SHAP (3 comp.)": 1.444,
+     "LIME": 0.337,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 34.48
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 100510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6401141117817913,
+    "TreeSHAP-path": 0.5640968560919826,
+    "KernelSHAP (kmeans 10)": 0.6643357497654455,
+    "Gaussian-conditional SHAP": 0.5197647804411029,
+    "Mixture-conditional SHAP (3 comp.)": 0.40062482526621657,
+    "LIME": 0.7310728007991341,
+    "Occlusion (mean)": 0.724140664853094
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6563846083587219,
+    "TreeSHAP-path": 0.6029997309222539,
+    "KernelSHAP (kmeans 10)": 0.6820902092597048,
+    "Gaussian-conditional SHAP": 0.5084888246354206,
+    "Mixture-conditional SHAP (3 comp.)": 0.40575516564452574,
+    "LIME": 0.7208232135946258,
+    "Occlusion (mean)": 0.7511217185426025
+   },
+   "model_gap": 0.19186925693452747,
+   "seconds": {
+    "fit": 0.877,
+    "truth_model": 11.568,
+    "truth_data": 9.505,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.059,
+     "TreeSHAP-path": 0.019,
+     "KernelSHAP (kmeans 10)": 0.519,
+     "Gaussian-conditional SHAP": 2.749,
+     "Mixture-conditional SHAP (3 comp.)": 2.379,
+     "LIME": 0.56,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 28.247
+   }
+  },
+  {
+   "rep": 0,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 100511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.49628821585931565,
+    "TreeSHAP-path": 0.45370434180217467,
+    "KernelSHAP (kmeans 10)": 0.5311755064617939,
+    "Gaussian-conditional SHAP": 0.28412856791238694,
+    "Mixture-conditional SHAP (3 comp.)": 0.26672546866551045,
+    "LIME": 0.6282677261789023,
+    "Occlusion (mean)": 0.7027320909087786
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5485030885816506,
+    "TreeSHAP-path": 0.5057422813653307,
+    "KernelSHAP (kmeans 10)": 0.5568331475127931,
+    "Gaussian-conditional SHAP": 0.3767017996049551,
+    "Mixture-conditional SHAP (3 comp.)": 0.35933875030225126,
+    "LIME": 0.6211207519196109,
+    "Occlusion (mean)": 0.669340745605401
+   },
+   "model_gap": 0.2501786663471412,
+   "seconds": {
+    "fit": 1.371,
+    "truth_model": 11.769,
+    "truth_data": 11.407,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.193,
+     "TreeSHAP-path": 0.066,
+     "KernelSHAP (kmeans 10)": 1.341,
+     "Gaussian-conditional SHAP": 3.38,
+     "Mixture-conditional SHAP (3 comp.)": 4.037,
+     "LIME": 2.75,
+     "Occlusion (mean)": 0.035
+    },
+    "total": 36.361
+   }
+  },
+  {
+   "rep": 1,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6875373306174561,
+    "TreeSHAP-path": 0.609972673913972,
+    "KernelSHAP (kmeans 10)": 0.6868976577864269,
+    "Gaussian-conditional SHAP": 0.49428704706050364,
+    "Mixture-conditional SHAP (3 comp.)": 0.3463172127608989,
+    "LIME": 0.7371952740309833,
+    "Occlusion (mean)": 0.8454911617367339
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7803556456677374,
+    "TreeSHAP-path": 0.7182537315292623,
+    "KernelSHAP (kmeans 10)": 0.7894345657022089,
+    "Gaussian-conditional SHAP": 0.5776594899719917,
+    "Mixture-conditional SHAP (3 comp.)": 0.4538421946820414,
+    "LIME": 0.7854744949019746,
+    "Occlusion (mean)": 0.9833122359030764
+   },
+   "model_gap": 0.3393065566223776,
+   "seconds": {
+    "fit": 0.846,
+    "truth_model": 16.955,
+    "truth_data": 43.639,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.074,
+     "TreeSHAP-path": 0.021,
+     "KernelSHAP (kmeans 10)": 0.886,
+     "Gaussian-conditional SHAP": 3.534,
+     "Mixture-conditional SHAP (3 comp.)": 11.157,
+     "LIME": 3.851,
+     "Occlusion (mean)": 0.153
+    },
+    "total": 81.122
+   }
+  },
+  {
+   "rep": 1,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5852377846888384,
+    "TreeSHAP-path": 0.541629894486284,
+    "KernelSHAP (kmeans 10)": 0.6380462335811437,
+    "Gaussian-conditional SHAP": 0.4281776140514891,
+    "Mixture-conditional SHAP (3 comp.)": 0.45732415699736245,
+    "LIME": 0.8204257034654177,
+    "Occlusion (mean)": 0.8609280570632848
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6459821819993998,
+    "TreeSHAP-path": 0.6069120079093455,
+    "KernelSHAP (kmeans 10)": 0.6767006545444343,
+    "Gaussian-conditional SHAP": 0.4882608623703214,
+    "Mixture-conditional SHAP (3 comp.)": 0.5247330193301355,
+    "LIME": 0.8052310714271594,
+    "Occlusion (mean)": 0.8619097561807125
+   },
+   "model_gap": 0.27465508907293834,
+   "seconds": {
+    "fit": 2.304,
+    "truth_model": 18.617,
+    "truth_data": 18.604,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.058,
+     "TreeSHAP-path": 0.02,
+     "KernelSHAP (kmeans 10)": 0.576,
+     "Gaussian-conditional SHAP": 1.717,
+     "Mixture-conditional SHAP (3 comp.)": 2.86,
+     "LIME": 0.372,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 45.148
+   }
+  },
+  {
+   "rep": 1,
+   "role": "oracle",
+   "world": "reality (rf, Gaussian copula with the real marginals)",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.526414486651696,
+    "TreeSHAP-path": 0.5169399114748617,
+    "KernelSHAP (kmeans 10)": 0.6474446250540299,
+    "Gaussian-conditional SHAP": 0.2953365723127223,
+    "Mixture-conditional SHAP (3 comp.)": 0.2968384992838111,
+    "LIME": 0.759537854410016,
+    "Occlusion (mean)": 0.8089582205523091
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5975511138606625,
+    "TreeSHAP-path": 0.6005240579823533,
+    "KernelSHAP (kmeans 10)": 0.6892995207742408,
+    "Gaussian-conditional SHAP": 0.4359075698782304,
+    "Mixture-conditional SHAP (3 comp.)": 0.4441960253577588,
+    "LIME": 0.7514969713306218,
+    "Occlusion (mean)": 0.8545327862962537
+   },
+   "model_gap": 0.30704494990218556,
+   "seconds": {
+    "fit": 0.964,
+    "truth_model": 11.332,
+    "truth_data": 19.436,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.428,
+     "TreeSHAP-path": 0.115,
+     "KernelSHAP (kmeans 10)": 0.811,
+     "Gaussian-conditional SHAP": 0.851,
+     "Mixture-conditional SHAP (3 comp.)": 1.012,
+     "LIME": 0.195,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 35.152
+   }
+  },
+  {
+   "rep": 1,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5124966562008418,
+    "TreeSHAP-path": 0.452225648496122,
+    "KernelSHAP (kmeans 10)": 0.5328373034056627,
+    "Gaussian-conditional SHAP": 0.17621080493133465,
+    "Mixture-conditional SHAP (3 comp.)": 0.1995273321060308,
+    "LIME": 0.8087492671003603,
+    "Occlusion (mean)": 0.8103819979396455
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5610492150315864,
+    "TreeSHAP-path": 0.5071769175284425,
+    "KernelSHAP (kmeans 10)": 0.5822611213519702,
+    "Gaussian-conditional SHAP": 0.2679650986259364,
+    "Mixture-conditional SHAP (3 comp.)": 0.30342979088340005,
+    "LIME": 0.8328713569702202,
+    "Occlusion (mean)": 0.8326202234180471
+   },
+   "model_gap": 0.21451261809480243,
+   "seconds": {
+    "fit": 0.45,
+    "truth_model": 10.079,
+    "truth_data": 1.155,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.052,
+     "TreeSHAP-path": 0.013,
+     "KernelSHAP (kmeans 10)": 0.818,
+     "Gaussian-conditional SHAP": 2.186,
+     "Mixture-conditional SHAP (3 comp.)": 2.118,
+     "LIME": 0.37,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 17.249
+   }
+  },
+  {
+   "rep": 1,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.45392044139361104,
+    "TreeSHAP-path": 0.41990975619133825,
+    "KernelSHAP (kmeans 10)": 0.5299378230024258,
+    "Gaussian-conditional SHAP": 0.15291983768637793,
+    "Mixture-conditional SHAP (3 comp.)": 0.23772782455963035,
+    "LIME": 0.7715662727836596,
+    "Occlusion (mean)": 0.7763464201489608
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5476227039006436,
+    "TreeSHAP-path": 0.5139310125779425,
+    "KernelSHAP (kmeans 10)": 0.6054730478836626,
+    "Gaussian-conditional SHAP": 0.2889508919150887,
+    "Mixture-conditional SHAP (3 comp.)": 0.3250545603075872,
+    "LIME": 0.7697451376231051,
+    "Occlusion (mean)": 0.8158856570219248
+   },
+   "model_gap": 0.27668248741863777,
+   "seconds": {
+    "fit": 0.585,
+    "truth_model": 13.355,
+    "truth_data": 1.737,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.079,
+     "TreeSHAP-path": 0.026,
+     "KernelSHAP (kmeans 10)": 1.372,
+     "Gaussian-conditional SHAP": 2.472,
+     "Mixture-conditional SHAP (3 comp.)": 3.432,
+     "LIME": 2.557,
+     "Occlusion (mean)": 0.013
+    },
+    "total": 25.629
+   }
+  },
+  {
+   "rep": 1,
+   "role": "null",
+   "world": "null (generic, ignores D)",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.47370230171246647,
+    "TreeSHAP-path": 0.3992586219859046,
+    "KernelSHAP (kmeans 10)": 0.4568389829032162,
+    "Gaussian-conditional SHAP": 0.13905481580226559,
+    "Mixture-conditional SHAP (3 comp.)": 0.18829317079861133,
+    "LIME": 0.8378737656336817,
+    "Occlusion (mean)": 0.841002727680402
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.49553365876516975,
+    "TreeSHAP-path": 0.45275456889306803,
+    "KernelSHAP (kmeans 10)": 0.4967407593208188,
+    "Gaussian-conditional SHAP": 0.2854425623755822,
+    "Mixture-conditional SHAP (3 comp.)": 0.3128514617824635,
+    "LIME": 0.818128427382379,
+    "Occlusion (mean)": 0.8586722070002373
+   },
+   "model_gap": 0.23003384234245666,
+   "seconds": {
+    "fit": 1.509,
+    "truth_model": 13.071,
+    "truth_data": 1.77,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.112,
+     "TreeSHAP-path": 0.02,
+     "KernelSHAP (kmeans 10)": 0.76,
+     "Gaussian-conditional SHAP": 2.345,
+     "Mixture-conditional SHAP (3 comp.)": 1.862,
+     "LIME": 1.175,
+     "Occlusion (mean)": 0.021
+    },
+    "total": 22.647
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.09382498400076404,
+    "TreeSHAP-path": 0.03238755179835086,
+    "KernelSHAP (kmeans 10)": 0.20152140258392554,
+    "Gaussian-conditional SHAP": 0.20829684356341263,
+    "Mixture-conditional SHAP (3 comp.)": 0.2817744162711693,
+    "LIME": 0.31909369889305256,
+    "Occlusion (mean)": 0.39374314600274785
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.2521895224236434,
+    "TreeSHAP-path": 0.24926720573328068,
+    "KernelSHAP (kmeans 10)": 0.29635249875603054,
+    "Gaussian-conditional SHAP": 0.2783577673360985,
+    "Mixture-conditional SHAP (3 comp.)": 0.334204335057281,
+    "LIME": 0.3229666836346102,
+    "Occlusion (mean)": 0.4602003090370692
+   },
+   "model_gap": 0.24799634088570935,
+   "seconds": {
+    "fit": 1.006,
+    "truth_model": 10.448,
+    "truth_data": 7.524,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.07,
+     "TreeSHAP-path": 0.02,
+     "KernelSHAP (kmeans 10)": 0.89,
+     "Gaussian-conditional SHAP": 1.176,
+     "Mixture-conditional SHAP (3 comp.)": 2.597,
+     "LIME": 1.209,
+     "Occlusion (mean)": 0.024
+    },
+    "total": 24.967
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.13173359625534417,
+    "TreeSHAP-path": 0.04669823135549919,
+    "KernelSHAP (kmeans 10)": 0.21607917828588974,
+    "Gaussian-conditional SHAP": 0.20533587985222174,
+    "Mixture-conditional SHAP (3 comp.)": 0.19190053685407815,
+    "LIME": 0.33440194634542597,
+    "Occlusion (mean)": 0.37824687590555417
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.22573524610037643,
+    "TreeSHAP-path": 0.20048232735024427,
+    "KernelSHAP (kmeans 10)": 0.30197417071989885,
+    "Gaussian-conditional SHAP": 0.28950781045386964,
+    "Mixture-conditional SHAP (3 comp.)": 0.2880728625757831,
+    "LIME": 0.2903588496239873,
+    "Occlusion (mean)": 0.45986982908244095
+   },
+   "model_gap": 0.20110179436591386,
+   "seconds": {
+    "fit": 3.172,
+    "truth_model": 17.557,
+    "truth_data": 7.061,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.12,
+     "TreeSHAP-path": 0.046,
+     "KernelSHAP (kmeans 10)": 0.836,
+     "Gaussian-conditional SHAP": 1.813,
+     "Mixture-conditional SHAP (3 comp.)": 2.416,
+     "LIME": 1.058,
+     "Occlusion (mean)": 0.03
+    },
+    "total": 34.111
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|additive",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.15708518829050197,
+    "TreeSHAP-path": 0.030769531044532852,
+    "KernelSHAP (kmeans 10)": 0.12938257345346277,
+    "Gaussian-conditional SHAP": 0.40576877899481373,
+    "Mixture-conditional SHAP (3 comp.)": 0.3052328884127601,
+    "LIME": 0.37208429590721037,
+    "Occlusion (mean)": 0.3507725427505026
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.26481765143919406,
+    "TreeSHAP-path": 0.23195614479504406,
+    "KernelSHAP (kmeans 10)": 0.250178060423393,
+    "Gaussian-conditional SHAP": 0.44186393573824784,
+    "Mixture-conditional SHAP (3 comp.)": 0.36936796456377513,
+    "LIME": 0.31930660053375975,
+    "Occlusion (mean)": 0.41827303250837283
+   },
+   "model_gap": 0.23215239093020312,
+   "seconds": {
+    "fit": 0.95,
+    "truth_model": 9.83,
+    "truth_data": 9.174,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.068,
+     "TreeSHAP-path": 0.018,
+     "KernelSHAP (kmeans 10)": 0.643,
+     "Gaussian-conditional SHAP": 1.927,
+     "Mixture-conditional SHAP (3 comp.)": 2.385,
+     "LIME": 0.569,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 25.572
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.36316105342679794,
+    "TreeSHAP-path": 0.3184852150607146,
+    "KernelSHAP (kmeans 10)": 0.4382704088228944,
+    "Gaussian-conditional SHAP": 0.17554972460996882,
+    "Mixture-conditional SHAP (3 comp.)": 0.2549221521600754,
+    "LIME": 0.5828196797738181,
+    "Occlusion (mean)": 0.7758621335093705
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4458633198707722,
+    "TreeSHAP-path": 0.40830120090247507,
+    "KernelSHAP (kmeans 10)": 0.51332755832337,
+    "Gaussian-conditional SHAP": 0.30359319812749297,
+    "Mixture-conditional SHAP (3 comp.)": 0.34894686207189635,
+    "LIME": 0.6311362498777838,
+    "Occlusion (mean)": 0.8502903742048248
+   },
+   "model_gap": 0.2473131949325005,
+   "seconds": {
+    "fit": 0.773,
+    "truth_model": 8.996,
+    "truth_data": 6.165,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.069,
+     "TreeSHAP-path": 0.014,
+     "KernelSHAP (kmeans 10)": 0.504,
+     "Gaussian-conditional SHAP": 1.393,
+     "Mixture-conditional SHAP (3 comp.)": 1.547,
+     "LIME": 0.379,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 19.849
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.30515288919339667,
+    "TreeSHAP-path": 0.25309197846700077,
+    "KernelSHAP (kmeans 10)": 0.4166740557231655,
+    "Gaussian-conditional SHAP": 0.19975656673442088,
+    "Mixture-conditional SHAP (3 comp.)": 0.22748216493882573,
+    "LIME": 0.5083152258214788,
+    "Occlusion (mean)": 0.7015918065566706
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3705880577628591,
+    "TreeSHAP-path": 0.3205015656346544,
+    "KernelSHAP (kmeans 10)": 0.44452916106516543,
+    "Gaussian-conditional SHAP": 0.26138693327681356,
+    "Mixture-conditional SHAP (3 comp.)": 0.2936833666381464,
+    "LIME": 0.5175268254518515,
+    "Occlusion (mean)": 0.7048307411631629
+   },
+   "model_gap": 0.21141829732730139,
+   "seconds": {
+    "fit": 0.819,
+    "truth_model": 8.359,
+    "truth_data": 27.314,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.091,
+     "TreeSHAP-path": 0.031,
+     "KernelSHAP (kmeans 10)": 0.991,
+     "Gaussian-conditional SHAP": 4.296,
+     "Mixture-conditional SHAP (3 comp.)": 6.769,
+     "LIME": 1.162,
+     "Occlusion (mean)": 0.011
+    },
+    "total": 49.847
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|additive",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.2806182057392173,
+    "TreeSHAP-path": 0.25612279525455245,
+    "KernelSHAP (kmeans 10)": 0.5139454237317569,
+    "Gaussian-conditional SHAP": 0.13551196707012675,
+    "Mixture-conditional SHAP (3 comp.)": 0.203696801510632,
+    "LIME": 0.5303060036504527,
+    "Occlusion (mean)": 0.8028364860881164
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3243196894620847,
+    "TreeSHAP-path": 0.2954774283185489,
+    "KernelSHAP (kmeans 10)": 0.5529667689161143,
+    "Gaussian-conditional SHAP": 0.247549054945381,
+    "Mixture-conditional SHAP (3 comp.)": 0.308747862255359,
+    "LIME": 0.545176370604218,
+    "Occlusion (mean)": 0.8352541405200665
+   },
+   "model_gap": 0.21332655727082145,
+   "seconds": {
+    "fit": 1.151,
+    "truth_model": 16.211,
+    "truth_data": 7.296,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.066,
+     "TreeSHAP-path": 0.016,
+     "KernelSHAP (kmeans 10)": 0.499,
+     "Gaussian-conditional SHAP": 1.472,
+     "Mixture-conditional SHAP (3 comp.)": 0.987,
+     "LIME": 0.303,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 28.008
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6056221646128556,
+    "TreeSHAP-path": 0.5346165200635112,
+    "KernelSHAP (kmeans 10)": 0.6046296765463938,
+    "Gaussian-conditional SHAP": 0.48282319450614813,
+    "Mixture-conditional SHAP (3 comp.)": 0.3923030954591985,
+    "LIME": 0.8105347551537131,
+    "Occlusion (mean)": 0.6621930660111911
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6588357855477536,
+    "TreeSHAP-path": 0.5984828077103764,
+    "KernelSHAP (kmeans 10)": 0.6636722754046154,
+    "Gaussian-conditional SHAP": 0.5484809556676454,
+    "Mixture-conditional SHAP (3 comp.)": 0.4730276879945675,
+    "LIME": 0.790657150267181,
+    "Occlusion (mean)": 0.7545070594573243
+   },
+   "model_gap": 0.26971529718388043,
+   "seconds": {
+    "fit": 0.553,
+    "truth_model": 10.006,
+    "truth_data": 5.102,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.046,
+     "TreeSHAP-path": 0.008,
+     "KernelSHAP (kmeans 10)": 0.391,
+     "Gaussian-conditional SHAP": 1.331,
+     "Mixture-conditional SHAP (3 comp.)": 1.445,
+     "LIME": 0.534,
+     "Occlusion (mean)": 0.008
+    },
+    "total": 19.426
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4851831145436142,
+    "TreeSHAP-path": 0.4466956191388034,
+    "KernelSHAP (kmeans 10)": 0.5538196466385328,
+    "Gaussian-conditional SHAP": 0.3506745370852475,
+    "Mixture-conditional SHAP (3 comp.)": 0.3740687765686037,
+    "LIME": 0.6586336621291806,
+    "Occlusion (mean)": 0.6939952847836792
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5211600820630492,
+    "TreeSHAP-path": 0.4815854182400763,
+    "KernelSHAP (kmeans 10)": 0.5856241911069118,
+    "Gaussian-conditional SHAP": 0.4017775469896725,
+    "Mixture-conditional SHAP (3 comp.)": 0.43642723302423275,
+    "LIME": 0.6328595555223483,
+    "Occlusion (mean)": 0.7320664389105083
+   },
+   "model_gap": 0.21715886085130318,
+   "seconds": {
+    "fit": 0.858,
+    "truth_model": 15.803,
+    "truth_data": 8.958,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.201,
+     "TreeSHAP-path": 0.019,
+     "KernelSHAP (kmeans 10)": 0.846,
+     "Gaussian-conditional SHAP": 2.163,
+     "Mixture-conditional SHAP (3 comp.)": 2.468,
+     "LIME": 0.358,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 31.686
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|additive",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5281985517659998,
+    "TreeSHAP-path": 0.531386751959543,
+    "KernelSHAP (kmeans 10)": 0.6266750202409458,
+    "Gaussian-conditional SHAP": 0.3944751361905244,
+    "Mixture-conditional SHAP (3 comp.)": 0.3398848454107256,
+    "LIME": 0.7722541936040829,
+    "Occlusion (mean)": 0.7922011591494655
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5913427964041519,
+    "TreeSHAP-path": 0.5842045211859781,
+    "KernelSHAP (kmeans 10)": 0.7041723784988354,
+    "Gaussian-conditional SHAP": 0.45589695245737627,
+    "Mixture-conditional SHAP (3 comp.)": 0.4127029822430177,
+    "LIME": 0.7620518033390475,
+    "Occlusion (mean)": 0.869339970742465
+   },
+   "model_gap": 0.28078367622395956,
+   "seconds": {
+    "fit": 0.656,
+    "truth_model": 9.946,
+    "truth_data": 9.887,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.067,
+     "TreeSHAP-path": 0.013,
+     "KernelSHAP (kmeans 10)": 0.681,
+     "Gaussian-conditional SHAP": 2.624,
+     "Mixture-conditional SHAP (3 comp.)": 1.63,
+     "LIME": 0.306,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 25.817
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6895200967144893,
+    "TreeSHAP-path": 0.6169234147854082,
+    "KernelSHAP (kmeans 10)": 0.753755679645599,
+    "Gaussian-conditional SHAP": 0.4786139147779125,
+    "Mixture-conditional SHAP (3 comp.)": 0.39419776453678385,
+    "LIME": 0.8336191416584668,
+    "Occlusion (mean)": 0.7992522164496945
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7506404352469084,
+    "TreeSHAP-path": 0.682967423353381,
+    "KernelSHAP (kmeans 10)": 0.8234167124344826,
+    "Gaussian-conditional SHAP": 0.5578785513734046,
+    "Mixture-conditional SHAP (3 comp.)": 0.47261542743086016,
+    "LIME": 0.816968878700121,
+    "Occlusion (mean)": 0.8864045537589479
+   },
+   "model_gap": 0.2728019230622348,
+   "seconds": {
+    "fit": 0.739,
+    "truth_model": 11.315,
+    "truth_data": 9.635,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.084,
+     "TreeSHAP-path": 0.055,
+     "KernelSHAP (kmeans 10)": 0.774,
+     "Gaussian-conditional SHAP": 1.576,
+     "Mixture-conditional SHAP (3 comp.)": 1.424,
+     "LIME": 0.319,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 25.93
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5327202986465014,
+    "TreeSHAP-path": 0.4683051896441511,
+    "KernelSHAP (kmeans 10)": 0.6003426992544421,
+    "Gaussian-conditional SHAP": 0.3552028961083668,
+    "Mixture-conditional SHAP (3 comp.)": 0.26922769572693817,
+    "LIME": 0.7159579472441563,
+    "Occlusion (mean)": 0.6649108298210459
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6008511781593692,
+    "TreeSHAP-path": 0.5233125416572861,
+    "KernelSHAP (kmeans 10)": 0.6603863160786055,
+    "Gaussian-conditional SHAP": 0.4022749562897267,
+    "Mixture-conditional SHAP (3 comp.)": 0.35390168080734535,
+    "LIME": 0.656672203981489,
+    "Occlusion (mean)": 0.7381540801072404
+   },
+   "model_gap": 0.2688012140988958,
+   "seconds": {
+    "fit": 0.525,
+    "truth_model": 12.275,
+    "truth_data": 4.094,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.037,
+     "TreeSHAP-path": 0.009,
+     "KernelSHAP (kmeans 10)": 0.262,
+     "Gaussian-conditional SHAP": 0.742,
+     "Mixture-conditional SHAP (3 comp.)": 0.838,
+     "LIME": 0.216,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 19.002
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|additive",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.4517364943564428,
+    "TreeSHAP-path": 0.44923374329639026,
+    "KernelSHAP (kmeans 10)": 0.5476417098508244,
+    "Gaussian-conditional SHAP": 0.47208818440507194,
+    "Mixture-conditional SHAP (3 comp.)": 0.2593778819940719,
+    "LIME": 0.6675494746625958,
+    "Occlusion (mean)": 0.689905682232171
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5421885958644322,
+    "TreeSHAP-path": 0.5398666788399319,
+    "KernelSHAP (kmeans 10)": 0.6270035036579886,
+    "Gaussian-conditional SHAP": 0.5282383028854216,
+    "Mixture-conditional SHAP (3 comp.)": 0.3716539421839114,
+    "LIME": 0.6820439283859078,
+    "Occlusion (mean)": 0.7752008074180474
+   },
+   "model_gap": 0.3104654208644428,
+   "seconds": {
+    "fit": 0.437,
+    "truth_model": 6.319,
+    "truth_data": 4.999,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.04,
+     "TreeSHAP-path": 0.009,
+     "KernelSHAP (kmeans 10)": 0.313,
+     "Gaussian-conditional SHAP": 0.936,
+     "Mixture-conditional SHAP (3 comp.)": 0.895,
+     "LIME": 0.205,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 14.158
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6800029124908633,
+    "TreeSHAP-path": 0.5910764499045505,
+    "KernelSHAP (kmeans 10)": 0.7009764924464893,
+    "Gaussian-conditional SHAP": 0.4937279780921122,
+    "Mixture-conditional SHAP (3 comp.)": 0.29239017774058684,
+    "LIME": 0.7161281761125752,
+    "Occlusion (mean)": 0.8054055775491314
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.8173798467818861,
+    "TreeSHAP-path": 0.7326500163348434,
+    "KernelSHAP (kmeans 10)": 0.8379595876505787,
+    "Gaussian-conditional SHAP": 0.6101300456148414,
+    "Mixture-conditional SHAP (3 comp.)": 0.39767943723380317,
+    "LIME": 0.7759352965469134,
+    "Occlusion (mean)": 0.9709533629052578
+   },
+   "model_gap": 0.31108903600337096,
+   "seconds": {
+    "fit": 0.534,
+    "truth_model": 12.836,
+    "truth_data": 7.882,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.242,
+     "TreeSHAP-path": 0.028,
+     "KernelSHAP (kmeans 10)": 0.96,
+     "Gaussian-conditional SHAP": 1.444,
+     "Mixture-conditional SHAP (3 comp.)": 2.098,
+     "LIME": 0.608,
+     "Occlusion (mean)": 0.014
+    },
+    "total": 26.654
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6106209011581993,
+    "TreeSHAP-path": 0.523360954014077,
+    "KernelSHAP (kmeans 10)": 0.6584168037399502,
+    "Gaussian-conditional SHAP": 0.4346631120198458,
+    "Mixture-conditional SHAP (3 comp.)": 0.3522864158290592,
+    "LIME": 0.7811520267269736,
+    "Occlusion (mean)": 0.7740403892352128
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6502499659942352,
+    "TreeSHAP-path": 0.5696909978147459,
+    "KernelSHAP (kmeans 10)": 0.6872989077888626,
+    "Gaussian-conditional SHAP": 0.4777058176504952,
+    "Mixture-conditional SHAP (3 comp.)": 0.4288336455240776,
+    "LIME": 0.7480794669647858,
+    "Occlusion (mean)": 0.8136448598753103
+   },
+   "model_gap": 0.22437190008690278,
+   "seconds": {
+    "fit": 0.936,
+    "truth_model": 15.202,
+    "truth_data": 11.113,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.07,
+     "TreeSHAP-path": 0.024,
+     "KernelSHAP (kmeans 10)": 0.57,
+     "Gaussian-conditional SHAP": 1.765,
+     "Mixture-conditional SHAP (3 comp.)": 1.686,
+     "LIME": 0.407,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 31.782
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|additive",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.524099429422679,
+    "TreeSHAP-path": 0.49451522556619265,
+    "KernelSHAP (kmeans 10)": 0.6376099505365436,
+    "Gaussian-conditional SHAP": 0.28591162726111596,
+    "Mixture-conditional SHAP (3 comp.)": 0.2821124813347892,
+    "LIME": 0.6598835701888869,
+    "Occlusion (mean)": 0.7028529029056481
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5451013332366031,
+    "TreeSHAP-path": 0.5251000130913083,
+    "KernelSHAP (kmeans 10)": 0.6589394432733755,
+    "Gaussian-conditional SHAP": 0.35287626670135763,
+    "Mixture-conditional SHAP (3 comp.)": 0.3600747879263873,
+    "LIME": 0.6445740431303498,
+    "Occlusion (mean)": 0.7486551474525752
+   },
+   "model_gap": 0.25643883807229106,
+   "seconds": {
+    "fit": 0.802,
+    "truth_model": 9.84,
+    "truth_data": 7.683,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.032,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.345,
+     "Gaussian-conditional SHAP": 0.816,
+     "Mixture-conditional SHAP (3 comp.)": 1.618,
+     "LIME": 0.272,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 21.421
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.12008059484179186,
+    "TreeSHAP-path": 0.03786815832106152,
+    "KernelSHAP (kmeans 10)": 0.22602739394491414,
+    "Gaussian-conditional SHAP": 0.204239743273165,
+    "Mixture-conditional SHAP (3 comp.)": 0.26115490589775,
+    "LIME": 0.2927088541692442,
+    "Occlusion (mean)": 0.503316763156147
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.28568501262975665,
+    "TreeSHAP-path": 0.26515822024217134,
+    "KernelSHAP (kmeans 10)": 0.3338171645913036,
+    "Gaussian-conditional SHAP": 0.3079294462877265,
+    "Mixture-conditional SHAP (3 comp.)": 0.35826963681139273,
+    "LIME": 0.33695186601053195,
+    "Occlusion (mean)": 0.5433672962261643
+   },
+   "model_gap": 0.26602312587373034,
+   "seconds": {
+    "fit": 0.901,
+    "truth_model": 14.816,
+    "truth_data": 10.2,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.043,
+     "TreeSHAP-path": 0.009,
+     "KernelSHAP (kmeans 10)": 0.307,
+     "Gaussian-conditional SHAP": 1.136,
+     "Mixture-conditional SHAP (3 comp.)": 1.155,
+     "LIME": 0.249,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 28.821
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.12234889436473936,
+    "TreeSHAP-path": 0.05536767372861349,
+    "KernelSHAP (kmeans 10)": 0.248883475330063,
+    "Gaussian-conditional SHAP": 0.22606748185297618,
+    "Mixture-conditional SHAP (3 comp.)": 0.22103493778370062,
+    "LIME": 0.3514238023988641,
+    "Occlusion (mean)": 0.4771220306466661
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.26690612648734896,
+    "TreeSHAP-path": 0.24490584500768514,
+    "KernelSHAP (kmeans 10)": 0.3596688881541733,
+    "Gaussian-conditional SHAP": 0.3343752744803177,
+    "Mixture-conditional SHAP (3 comp.)": 0.347901579872471,
+    "LIME": 0.3711854017947539,
+    "Occlusion (mean)": 0.5772786528191247
+   },
+   "model_gap": 0.23926118207167799,
+   "seconds": {
+    "fit": 0.526,
+    "truth_model": 6.799,
+    "truth_data": 12.354,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.059,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.397,
+     "Gaussian-conditional SHAP": 0.913,
+     "Mixture-conditional SHAP (3 comp.)": 0.963,
+     "LIME": 0.21,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 22.237
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "independent|forest",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.11456418510774717,
+    "TreeSHAP-path": 0.02710699647557866,
+    "KernelSHAP (kmeans 10)": 0.175195020542902,
+    "Gaussian-conditional SHAP": 0.3562765645863948,
+    "Mixture-conditional SHAP (3 comp.)": 0.31337803097582506,
+    "LIME": 0.3358704017779776,
+    "Occlusion (mean)": 0.3811834394633238
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.257421928048813,
+    "TreeSHAP-path": 0.2353297066634328,
+    "KernelSHAP (kmeans 10)": 0.2549106260288544,
+    "Gaussian-conditional SHAP": 0.4239906853383873,
+    "Mixture-conditional SHAP (3 comp.)": 0.3852935426796437,
+    "LIME": 0.3488637377240195,
+    "Occlusion (mean)": 0.38071775762661825
+   },
+   "model_gap": 0.23363375778162832,
+   "seconds": {
+    "fit": 0.441,
+    "truth_model": 7.339,
+    "truth_data": 7.507,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.058,
+     "TreeSHAP-path": 0.017,
+     "KernelSHAP (kmeans 10)": 0.69,
+     "Gaussian-conditional SHAP": 1.507,
+     "Mixture-conditional SHAP (3 comp.)": 1.879,
+     "LIME": 0.265,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 19.711
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.34225647649392926,
+    "TreeSHAP-path": 0.3038005389260429,
+    "KernelSHAP (kmeans 10)": 0.3606296933670879,
+    "Gaussian-conditional SHAP": 0.17037459019806786,
+    "Mixture-conditional SHAP (3 comp.)": 0.22752385868753716,
+    "LIME": 0.5279077551465081,
+    "Occlusion (mean)": 0.7321587992801943
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.4315723250328319,
+    "TreeSHAP-path": 0.40236805962700467,
+    "KernelSHAP (kmeans 10)": 0.4541749916083924,
+    "Gaussian-conditional SHAP": 0.26803466795545955,
+    "Mixture-conditional SHAP (3 comp.)": 0.3080383269140537,
+    "LIME": 0.570885578031196,
+    "Occlusion (mean)": 0.8112340767541485
+   },
+   "model_gap": 0.21322940762423476,
+   "seconds": {
+    "fit": 1.099,
+    "truth_model": 8.704,
+    "truth_data": 5.534,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.048,
+     "TreeSHAP-path": 0.012,
+     "KernelSHAP (kmeans 10)": 0.366,
+     "Gaussian-conditional SHAP": 1.3,
+     "Mixture-conditional SHAP (3 comp.)": 0.986,
+     "LIME": 0.229,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 18.284
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.30577285784145836,
+    "TreeSHAP-path": 0.26349641773901933,
+    "KernelSHAP (kmeans 10)": 0.2883112279370569,
+    "Gaussian-conditional SHAP": 0.22252257204633902,
+    "Mixture-conditional SHAP (3 comp.)": 0.24772088771501635,
+    "LIME": 0.48585199956587477,
+    "Occlusion (mean)": 0.6878520774352401
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.38526936562575326,
+    "TreeSHAP-path": 0.3515950981378081,
+    "KernelSHAP (kmeans 10)": 0.36269450019626986,
+    "Gaussian-conditional SHAP": 0.27518211086541094,
+    "Mixture-conditional SHAP (3 comp.)": 0.29253425462430416,
+    "LIME": 0.5299337653140396,
+    "Occlusion (mean)": 0.6939343163849113
+   },
+   "model_gap": 0.21402523539541887,
+   "seconds": {
+    "fit": 0.553,
+    "truth_model": 15.542,
+    "truth_data": 7.797,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.048,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.286,
+     "Gaussian-conditional SHAP": 0.822,
+     "Mixture-conditional SHAP (3 comp.)": 0.887,
+     "LIME": 0.241,
+     "Occlusion (mean)": 0.005
+    },
+    "total": 26.19
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "gaussian|forest",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.2943760323961661,
+    "TreeSHAP-path": 0.2824935186567174,
+    "KernelSHAP (kmeans 10)": 0.4678460636990098,
+    "Gaussian-conditional SHAP": 0.13564790874001864,
+    "Mixture-conditional SHAP (3 comp.)": 0.2118521193399295,
+    "LIME": 0.549195720203109,
+    "Occlusion (mean)": 0.8008884609557755
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.3703918262868774,
+    "TreeSHAP-path": 0.3721680946608358,
+    "KernelSHAP (kmeans 10)": 0.4973573055943949,
+    "Gaussian-conditional SHAP": 0.26685589047031005,
+    "Mixture-conditional SHAP (3 comp.)": 0.31796394164358377,
+    "LIME": 0.5922744733449696,
+    "Occlusion (mean)": 0.8181314046323874
+   },
+   "model_gap": 0.25991912262865124,
+   "seconds": {
+    "fit": 0.476,
+    "truth_model": 14.282,
+    "truth_data": 18.926,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.082,
+     "TreeSHAP-path": 0.022,
+     "KernelSHAP (kmeans 10)": 0.798,
+     "Gaussian-conditional SHAP": 2.471,
+     "Mixture-conditional SHAP (3 comp.)": 2.995,
+     "LIME": 0.648,
+     "Occlusion (mean)": 0.01
+    },
+    "total": 40.711
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5677618419183076,
+    "TreeSHAP-path": 0.527222269698599,
+    "KernelSHAP (kmeans 10)": 0.5746382341308283,
+    "Gaussian-conditional SHAP": 0.42178009619424106,
+    "Mixture-conditional SHAP (3 comp.)": 0.3168519862520368,
+    "LIME": 0.7686306767896173,
+    "Occlusion (mean)": 0.7152213490983854
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6242804933276208,
+    "TreeSHAP-path": 0.5899577415806075,
+    "KernelSHAP (kmeans 10)": 0.6348627490113783,
+    "Gaussian-conditional SHAP": 0.47935907561359614,
+    "Mixture-conditional SHAP (3 comp.)": 0.40150245124472767,
+    "LIME": 0.7746579767299018,
+    "Occlusion (mean)": 0.8135712760231288
+   },
+   "model_gap": 0.25721178054922567,
+   "seconds": {
+    "fit": 0.864,
+    "truth_model": 10.082,
+    "truth_data": 7.831,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.069,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.384,
+     "Gaussian-conditional SHAP": 1.206,
+     "Mixture-conditional SHAP (3 comp.)": 1.313,
+     "LIME": 0.219,
+     "Occlusion (mean)": 0.004
+    },
+    "total": 21.982
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5175656456117741,
+    "TreeSHAP-path": 0.48916994468450986,
+    "KernelSHAP (kmeans 10)": 0.5580602198603976,
+    "Gaussian-conditional SHAP": 0.4011733267806213,
+    "Mixture-conditional SHAP (3 comp.)": 0.38631108118290935,
+    "LIME": 0.7478175815378916,
+    "Occlusion (mean)": 0.8201132836420636
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5022331248693205,
+    "TreeSHAP-path": 0.4754578299705554,
+    "KernelSHAP (kmeans 10)": 0.5365669962732237,
+    "Gaussian-conditional SHAP": 0.421657057810794,
+    "Mixture-conditional SHAP (3 comp.)": 0.4225226485451947,
+    "LIME": 0.6893329268296718,
+    "Occlusion (mean)": 0.7757808002143065
+   },
+   "model_gap": 0.2413473000093422,
+   "seconds": {
+    "fit": 0.579,
+    "truth_model": 9.694,
+    "truth_data": 5.799,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.033,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.261,
+     "Gaussian-conditional SHAP": 0.778,
+     "Mixture-conditional SHAP (3 comp.)": 0.815,
+     "LIME": 0.21,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 18.181
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture3|forest",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5211178126506906,
+    "TreeSHAP-path": 0.5395574210793769,
+    "KernelSHAP (kmeans 10)": 0.609466070442815,
+    "Gaussian-conditional SHAP": 0.36127486012258364,
+    "Mixture-conditional SHAP (3 comp.)": 0.32210116400657657,
+    "LIME": 0.7629245712514106,
+    "Occlusion (mean)": 0.8289325779419195
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5711450193405907,
+    "TreeSHAP-path": 0.5902936523065188,
+    "KernelSHAP (kmeans 10)": 0.6312838213197725,
+    "Gaussian-conditional SHAP": 0.4587782637982919,
+    "Mixture-conditional SHAP (3 comp.)": 0.41708290151429334,
+    "LIME": 0.781817469354635,
+    "Occlusion (mean)": 0.8627582903201708
+   },
+   "model_gap": 0.26571737227986464,
+   "seconds": {
+    "fit": 0.434,
+    "truth_model": 6.302,
+    "truth_data": 4.765,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.039,
+     "TreeSHAP-path": 0.011,
+     "KernelSHAP (kmeans 10)": 0.314,
+     "Gaussian-conditional SHAP": 0.77,
+     "Mixture-conditional SHAP (3 comp.)": 0.818,
+     "LIME": 0.181,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 13.639
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6217218195820404,
+    "TreeSHAP-path": 0.5963611279563116,
+    "KernelSHAP (kmeans 10)": 0.7076089303326079,
+    "Gaussian-conditional SHAP": 0.433039328762875,
+    "Mixture-conditional SHAP (3 comp.)": 0.3494939489229104,
+    "LIME": 0.8349697071365424,
+    "Occlusion (mean)": 0.7956009193810368
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6906089261592118,
+    "TreeSHAP-path": 0.6724534270356026,
+    "KernelSHAP (kmeans 10)": 0.7801740556700253,
+    "Gaussian-conditional SHAP": 0.5280861014925844,
+    "Mixture-conditional SHAP (3 comp.)": 0.4750373089163244,
+    "LIME": 0.8366848742491856,
+    "Occlusion (mean)": 0.8863288595233453
+   },
+   "model_gap": 0.3017640219973201,
+   "seconds": {
+    "fit": 0.436,
+    "truth_model": 6.077,
+    "truth_data": 5.176,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.044,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.311,
+     "Gaussian-conditional SHAP": 0.844,
+     "Mixture-conditional SHAP (3 comp.)": 0.767,
+     "LIME": 0.178,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 13.849
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5274448666132906,
+    "TreeSHAP-path": 0.47656782575861045,
+    "KernelSHAP (kmeans 10)": 0.6484997912461569,
+    "Gaussian-conditional SHAP": 0.35770616395247185,
+    "Mixture-conditional SHAP (3 comp.)": 0.2782812589761535,
+    "LIME": 0.7294450361136433,
+    "Occlusion (mean)": 0.8089193815712801
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5943708535002176,
+    "TreeSHAP-path": 0.528211061042183,
+    "KernelSHAP (kmeans 10)": 0.69708473459359,
+    "Gaussian-conditional SHAP": 0.3899285845572597,
+    "Mixture-conditional SHAP (3 comp.)": 0.36519209183230966,
+    "LIME": 0.6906211180860724,
+    "Occlusion (mean)": 0.7988004120062437
+   },
+   "model_gap": 0.28310563763312946,
+   "seconds": {
+    "fit": 0.495,
+    "truth_model": 6.036,
+    "truth_data": 5.37,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.027,
+     "TreeSHAP-path": 0.01,
+     "KernelSHAP (kmeans 10)": 0.268,
+     "Gaussian-conditional SHAP": 0.75,
+     "Mixture-conditional SHAP (3 comp.)": 1.067,
+     "LIME": 0.177,
+     "Occlusion (mean)": 0.003
+    },
+    "total": 14.205
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "mixture8|forest",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.415963151243698,
+    "TreeSHAP-path": 0.4372530702721425,
+    "KernelSHAP (kmeans 10)": 0.4901081880290177,
+    "Gaussian-conditional SHAP": 0.3906264937114923,
+    "Mixture-conditional SHAP (3 comp.)": 0.24403433227827442,
+    "LIME": 0.7878771458764492,
+    "Occlusion (mean)": 0.6999256187219136
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.46812267628999726,
+    "TreeSHAP-path": 0.4931985016795069,
+    "KernelSHAP (kmeans 10)": 0.5121945833911757,
+    "Gaussian-conditional SHAP": 0.4893714362941039,
+    "Mixture-conditional SHAP (3 comp.)": 0.35694070628260893,
+    "LIME": 0.76266771825512,
+    "Occlusion (mean)": 0.74966353369711
+   },
+   "model_gap": 0.29209701076431166,
+   "seconds": {
+    "fit": 0.406,
+    "truth_model": 7.288,
+    "truth_data": 8.813,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.048,
+     "TreeSHAP-path": 0.014,
+     "KernelSHAP (kmeans 10)": 0.529,
+     "Gaussian-conditional SHAP": 1.349,
+     "Mixture-conditional SHAP (3 comp.)": 2.067,
+     "LIME": 0.54,
+     "Occlusion (mean)": 0.007
+    },
+    "total": 21.063
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 101509,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.6752475656048363,
+    "TreeSHAP-path": 0.6137974436934082,
+    "KernelSHAP (kmeans 10)": 0.6753759124233949,
+    "Gaussian-conditional SHAP": 0.5229632769021798,
+    "Mixture-conditional SHAP (3 comp.)": 0.2988390242913617,
+    "LIME": 0.728631202952927,
+    "Occlusion (mean)": 0.8619974676028933
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.7868733709395171,
+    "TreeSHAP-path": 0.7306558134125649,
+    "KernelSHAP (kmeans 10)": 0.7914328789571465,
+    "Gaussian-conditional SHAP": 0.6182809114871645,
+    "Mixture-conditional SHAP (3 comp.)": 0.39831989883794605,
+    "LIME": 0.79982757548666,
+    "Occlusion (mean)": 0.986885175620249
+   },
+   "model_gap": 0.30233827048316203,
+   "seconds": {
+    "fit": 0.767,
+    "truth_model": 13.344,
+    "truth_data": 14.729,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.177,
+     "TreeSHAP-path": 0.028,
+     "KernelSHAP (kmeans 10)": 0.753,
+     "Gaussian-conditional SHAP": 1.858,
+     "Mixture-conditional SHAP (3 comp.)": 2.366,
+     "LIME": 0.38,
+     "Occlusion (mean)": 0.012
+    },
+    "total": 34.417
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 101510,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5881167288104575,
+    "TreeSHAP-path": 0.5289803287818942,
+    "KernelSHAP (kmeans 10)": 0.6379334181851808,
+    "Gaussian-conditional SHAP": 0.446764594395176,
+    "Mixture-conditional SHAP (3 comp.)": 0.3719856171052224,
+    "LIME": 0.8084515092486545,
+    "Occlusion (mean)": 0.8598451293293324
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.6791014841502602,
+    "TreeSHAP-path": 0.6311454386670803,
+    "KernelSHAP (kmeans 10)": 0.7030741720815764,
+    "Gaussian-conditional SHAP": 0.5238099571836226,
+    "Mixture-conditional SHAP (3 comp.)": 0.46751530489386994,
+    "LIME": 0.8135384247761178,
+    "Occlusion (mean)": 0.8787126603669827
+   },
+   "model_gap": 0.28311209412335614,
+   "seconds": {
+    "fit": 0.885,
+    "truth_model": 18.7,
+    "truth_data": 15.428,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.064,
+     "TreeSHAP-path": 0.018,
+     "KernelSHAP (kmeans 10)": 0.5,
+     "Gaussian-conditional SHAP": 1.255,
+     "Mixture-conditional SHAP (3 comp.)": 1.605,
+     "LIME": 0.489,
+     "Occlusion (mean)": 0.009
+    },
+    "total": 38.956
+   }
+  },
+  {
+   "rep": 1,
+   "role": "builder",
+   "world": "copula|forest",
+   "seed": 101511,
+   "err_model": {
+    "TreeSHAP-int (bg 50)": 0.5003541763840249,
+    "TreeSHAP-path": 0.5053675996574374,
+    "KernelSHAP (kmeans 10)": 0.5863892827664592,
+    "Gaussian-conditional SHAP": 0.31077784931705654,
+    "Mixture-conditional SHAP (3 comp.)": 0.2907375951728296,
+    "LIME": 0.7160638719088832,
+    "Occlusion (mean)": 0.7704307150742201
+   },
+   "err_data": {
+    "TreeSHAP-int (bg 50)": 0.5601817488245935,
+    "TreeSHAP-path": 0.571250527864909,
+    "KernelSHAP (kmeans 10)": 0.6307486579955387,
+    "Gaussian-conditional SHAP": 0.4137878930172669,
+    "Mixture-conditional SHAP (3 comp.)": 0.3997435535181073,
+    "LIME": 0.7106110268564433,
+    "Occlusion (mean)": 0.8434583065112312
+   },
+   "model_gap": 0.30315586728477556,
+   "seconds": {
+    "fit": 0.8,
+    "truth_model": 10.683,
+    "truth_data": 23.167,
+    "explainers": {
+     "TreeSHAP-int (bg 50)": 0.199,
+     "TreeSHAP-path": 0.031,
+     "KernelSHAP (kmeans 10)": 2.396,
+     "Gaussian-conditional SHAP": 2.596,
+     "Mixture-conditional SHAP (3 comp.)": 3.488,
+     "LIME": 0.541,
+     "Occlusion (mean)": 0.006
+    },
+    "total": 43.909
+   }
+  }
+ ]
+}

@@ -103,6 +103,30 @@ def summarize(res: dict, level: str) -> dict:
     }
 
 
+def estimand_sensitivity(res: dict) -> dict | None:
+    """v3 runs: reality tasks scored against both conditional (err_model) and interventional SHAP of the model."""
+    real = [t for t in res["tasks"] if t["role"] == "reality" and "err_model_interventional" in t]
+    if not real:
+        return None
+    ex = res["explainers"]
+    cond = np.array([[t["err_model"][e] for e in ex] for t in real])
+    intv = np.array([[t["err_model_interventional"][e] for e in ex] for t in real])
+    p_cond, p_int = resolved_pairs(cond), resolved_pairs(intv)
+    both = set(p_cond) & set(p_int)
+    flips = sorted(f"{ex[a]} vs {ex[b]}" for a, b in both if p_cond[(a, b)] != p_int[(a, b)])
+    return {
+        "n_reality_tasks": len(real),
+        "mean_error_conditional": dict(zip(ex, map(float, cond.mean(0)))),
+        "mean_error_interventional": dict(zip(ex, map(float, intv.mean(0)))),
+        "ranking_conditional": [ex[i] for i in np.argsort(cond.mean(0))],
+        "ranking_interventional": [ex[i] for i in np.argsort(intv.mean(0))],
+        "kendall_tau_between_rankings": float(kendalltau(cond.mean(0), intv.mean(0)).statistic),
+        "pairs_resolved_under_both": len(both), "pairs_flipped": len(flips), "flipped_pairs": flips,
+        "estimand_gap_mean": float(np.mean([t["estimand_gap"] for t in real])),
+        "truth_mc_noise_mean": float(np.mean([t["truth_mc_noise"] for t in real])) if "truth_mc_noise" in real[0] else None,
+    }
+
+
 def timing(res: dict) -> dict:
     out = {}
     for t in res["tasks"]:
@@ -116,7 +140,8 @@ def bar_ci(names, metric, data, title, ytitle, ref=None, ref_label=None):
     lo = [data["worlds"][w][metric]["mean"] - data["worlds"][w][metric]["ci95"][0] for w in names]
     hi = [data["worlds"][w][metric]["ci95"][1] - data["worlds"][w][metric]["mean"] for w in names]
     colors = [GRAY if w.startswith("oracle") else ORANGE if w.startswith("null") else
-              {"independent": RED, "gaussian": "#7a5cc4", "bootstrap": BLUE, "arf": "#1f8a4c"}.get(w.split("|")[0], BLUE) for w in names]
+              {"independent": RED, "gaussian": "#7a5cc4", "bootstrap": BLUE, "arf": "#1f8a4c", "mixture3": "#2a9d8f",
+               "mixture8": "#1f8a4c", "copula": "#8d6e63"}.get(w.split("|")[0], BLUE) for w in names]
     fig = go.Figure(go.Bar(x=names, y=vals, marker_color=colors, text=[f"{v:.2f}" for v in vals], textposition="outside",
                            error_y=dict(type="data", symmetric=False, array=hi, arrayminus=lo)))
     if ref is not None:
@@ -165,6 +190,23 @@ def build_html(res: dict, summ: dict, tag: str) -> str:
     secs = [("design", "1. Design", design), ("reality", "2. Reality's ranking", divs[0]),
             ("agreement", "3. Primary result: do worlds reproduce reality's resolved pairs?", divs[1] + table),
             ("regret", "4. What a wrong pick costs", divs[2])]
+    est = summ.get("estimand_sensitivity")
+    if est:
+        rows = "".join(
+            f"<tr><td>{e}</td><td>{est['mean_error_conditional'][e]:.3f}</td>"
+            f"<td>{est['ranking_conditional'].index(e) + 1}</td><td>{est['mean_error_interventional'][e]:.3f}</td>"
+            f"<td>{est['ranking_interventional'].index(e) + 1}</td></tr>" for e in est["ranking_conditional"])
+        noise = (f" Two independent Monte Carlo estimates of the conditional truth differ by "
+                 f"{est['truth_mc_noise_mean']:.3f} on average (the truth's noise floor)." if est["truth_mc_noise_mean"] else "")
+        body = (f"<p>Reality's {est['n_reality_tasks']} tasks, each explainer scored against conditional and against "
+                f"interventional SHAP of the same model. The two truths differ by {est['estimand_gap_mean']:.2f} "
+                f"(relative error).{noise} Kendall tau between the two rankings: {est['kendall_tau_between_rankings']:+.2f}; "
+                f"of the {est['pairs_resolved_under_both']} explainer pairs resolved under both, "
+                f"{est['pairs_flipped']} flip order.</p>"
+                '<table><colgroup><col style="width:40%"><col style="width:15%"><col style="width:15%"><col style="width:15%">'
+                '<col style="width:15%"></colgroup><thead><tr><th>explainer</th><th>error vs conditional</th><th>rank</th>'
+                f'<th>error vs interventional</th><th>rank</th></tr></thead><tbody>{rows}</tbody></table>')
+        secs.append(("estimand", "5. Estimand sensitivity: the same explainers against two ground truths", body))
     toc = "".join(f'<li><a href="#{s}">{t}</a></li>' for s, t, _ in secs)
     css = ("body{font:16px/1.55 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;max-width:1000px;margin:0 auto;padding:0 16px 60px;"
            "background:#fbfaf7;color:#1d1f24}details{background:#fff;border:1px solid #dcdfe5;border-radius:10px;margin:16px 0;"
@@ -173,7 +215,9 @@ def build_html(res: dict, summ: dict, tag: str) -> str:
            "overflow-wrap:anywhere}nav{background:#fff;border:1px solid #dcdfe5;border-radius:10px;padding:8px 16px}")
     return (f"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, "
             f"initial-scale=1'><title>Transfer pilot v2 {tag}</title><style>{css}</style></head><body>"
-            f"<h1>Do data-fitted benchmarks reproduce explainer rankings? Pilot v2: {tag}</h1><nav><b>Contents</b><ol>{toc}</ol></nav>"
+            f"<h1>Do data-fitted benchmarks reproduce explainer rankings? "
+            f"{'Pilot v3, conditional estimand' if res.get('estimand') == 'conditional' else 'Pilot v2'}: {tag}</h1>"
+            f"<nav><b>Contents</b><ol>{toc}</ol></nav>"
             + "".join(f'<details open id="{s}"><summary><h2>{t}</h2></summary>{b}</details>' for s, t, b in secs)
             + "</body></html>")
 
@@ -187,6 +231,9 @@ def main() -> None:
     res = json.loads((OUT_DIR / f"{args.tag}.json").read_text(encoding="utf-8"))
     summ = {"source": f"{args.tag}.json", "model_level": summarize(res, "err_model"),
             "data_level": summarize(res, "err_data"), "seconds_per_task": timing(res)}
+    est = estimand_sensitivity(res)
+    if est:
+        summ["estimand_sensitivity"] = est
     (OUT_DIR / f"{args.tag}_summary.json").write_text(json.dumps(summ, indent=1), encoding="utf-8")
     (OUT_DIR / f"{args.tag}_report.html").write_text(build_html(res, summ, args.tag), encoding="utf-8")
     m = summ["model_level"]

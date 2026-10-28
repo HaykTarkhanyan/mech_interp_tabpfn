@@ -53,6 +53,12 @@ done = """
   0.91-0.98); at data level the target family matters (forest 0.96, additive 0.88, MLP 0.75) and the generator
   does not help (independent columns 0.92, real-row bootstrap 0.79). DECISIONS #24 marked revisited.
 - Learnings: Springer OA PDF via Playwright blob download; OpenXAI version drift.
+- Pilot v3 (Q20 answer (a)+(c), DECISIONS #26): conditional SHAP as ground truth, copula reality with the real
+  marginals, exact Gaussian/mixture/copula conditionals (tested), two conditional explainers. Copula probe (82
+  tasks, 52 min): the generic null still reproduces reality's ranking (pairs 1.00, tau-b 0.90); only independent
+  columns fail (0.70); on the same reality tasks the conditional vs interventional rankings have tau 0.05 (7 of 16
+  resolved pairs flip; truth gap 0.58 vs MC noise 0.046). transfer_report_v2.py got an estimand-sensitivity
+  section. Directions memo section 5b, Q21.
 """
 
 pending = """
@@ -60,7 +66,8 @@ pending = """
   when the CPU is free (~15-20 min).
 - Explainer pages were rebuilt from bodies in the session scratchpad (insert_reruns.py); the page HTML in the repo
   is the source of truth now.
-- Review Q13-Q16 in directions_2026-10-27.md, and Q20: what the pilot does next after Tier 0.
+- Review Q13-Q16 and Q21 (what the pilot does after v3) in directions_2026-10-27.md.
+- Optional: v3 with the mixture reality (`--reality-family mixture`, ~52 min) as a robustness check.
 """
 
 next = """
@@ -79,12 +86,15 @@ files = [
   "synthetic_data/paper_explainers/",
   "synthetic_data/papers/",
   "synthetic_data/tests/test_truth.py",
+  "synthetic_data/scripts/transfer_pilot_v3_conditional.py",
+  "synthetic_data/scripts/transfer_report_v2.py",
+  "synthetic_data/results/transfer_pilot/",
   "DECISIONS.md",
   "_learnings/2026-10-27-0120_springer-oa-pdf-via-playwright-blob-download.md",
   "_learnings/2026-10-27-0123_openxai-results-changed-between-versions.md",
 ]
 
-commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272", "618dd25", "5ac19f2", "b8b3105", "92578e2"]
+commits = ["0bf533c", "3d2c630", "b69bd3f", "c8f3cc0", "e374272", "618dd25", "5ac19f2", "b8b3105", "92578e2", "cd8ffb3", "d179fbd", "030a9a4"]
 
 notes = """
 - Compute: the user capped runs at ~15 min, 2 cores, one at a time. fb2ts overran (36 min) because the notebook's
@@ -98,4 +108,7 @@ notes = """
   now save after every condition or scale; OpenXAI saves after every dataset.
 - 2026-10-27 afternoon: the runners run at below-normal priority; another session's gate_ebm.py job used ~4 cores,
   which starved the OpenXAI ANN run.
+- 2026-10-28 00:18: the first v3 copula probe died with numpy's ArrayMemoryError on a 1.2 MiB array: the machine's
+  commit (RAM + pagefile, 33.3 GB) was used up by other programs (Chrome 7.5 GB in 60 processes, 7 Claude sessions
+  5.7 GB, node 2.4 GB), not by the probe. v3 now checkpoints after every task and resumes a rerun of the same tag.
 """

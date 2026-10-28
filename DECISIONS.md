@@ -8,7 +8,9 @@ Newest first. Never delete a superseded entry.
 
 **Date:** 2026-10-28
 **Status:** active (the user chose option (a) plus (c) of Q20 on 2026-10-28; (c), reporting the negative interventional
-result, is recorded in #24)
+result, is recorded in #24); revisited 2026-10-28 with the copula probe's result: the generic null still reproduces
+reality's ranking (pairs 1.00, tau-b 0.90), and only independent columns fail (0.70); see directions memo section 5b
+and Q21
 
 **Decision:** `synthetic_data/scripts/transfer_pilot_v3_conditional.py` repeats v2's design with conditional
 (observational) SHAP as the ground truth:

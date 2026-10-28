@@ -1,0 +1,909 @@
+{
+ "source": "v3_copula_probe.json",
+ "model_level": {
+  "reality_mean_error": {
+   "TreeSHAP-int (bg 50)": 0.6114577753584289,
+   "TreeSHAP-path": 0.5517950614804452,
+   "KernelSHAP (kmeans 10)": 0.6495110473480229,
+   "Gaussian-conditional SHAP": 0.3671487885243822,
+   "Mixture-conditional SHAP (3 comp.)": 0.3499274799894886,
+   "LIME": 0.6978634002706645,
+   "Occlusion (mean)": 0.8130557381166794
+  },
+  "reality_error_se": {
+   "TreeSHAP-int (bg 50)": 0.026797694362681736,
+   "TreeSHAP-path": 0.02173912697022265,
+   "KernelSHAP (kmeans 10)": 0.02924826657665687,
+   "Gaussian-conditional SHAP": 0.031065169942392747,
+   "Mixture-conditional SHAP (3 comp.)": 0.022868691047201028,
+   "LIME": 0.024050556994428957,
+   "Occlusion (mean)": 0.039607717170600465
+  },
+  "reality_ranking": [
+   "Mixture-conditional SHAP (3 comp.)",
+   "Gaussian-conditional SHAP",
+   "TreeSHAP-path",
+   "TreeSHAP-int (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "LIME",
+   "Occlusion (mean)"
+  ],
+  "n_pairs": 21,
+  "n_resolved_pairs": 20,
+  "best_resolved": false,
+  "random_regret": 0.6496313102235973,
+  "worlds": {
+   "oracle (fresh reality tasks)": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "null (generic, ignores D)": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.04921393580010043,
+     "ci95": [
+      0.04921393580010043,
+      0.04921393580010043
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "independent|additive": {
+    "pair_agreement": {
+     "mean": 0.7,
+     "ci95": [
+      0.7,
+      0.7
+     ]
+    },
+    "tau_b": {
+     "mean": 0.380952380952381,
+     "ci95": [
+      0.33333333333333337,
+      0.4285714285714286
+     ]
+    },
+    "regret": {
+     "mean": 0.5768840489378556,
+     "ci95": [
+      0.5768840489378556,
+      0.5768840489378556
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "gaussian|additive": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.04921393580010043,
+     "ci95": [
+      0.04921393580010043,
+      0.04921393580010043
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture3|additive": {
+    "pair_agreement": {
+     "mean": 0.975,
+     "ci95": [
+      0.95,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9523809523809524,
+     "ci95": [
+      0.9047619047619049,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture8|additive": {
+    "pair_agreement": {
+     "mean": 0.95,
+     "ci95": [
+      0.95,
+      0.95
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "copula|additive": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "independent|forest": {
+    "pair_agreement": {
+     "mean": 0.7,
+     "ci95": [
+      0.7,
+      0.7
+     ]
+    },
+    "tau_b": {
+     "mean": 0.33333333333333337,
+     "ci95": [
+      0.33333333333333337,
+      0.33333333333333337
+     ]
+    },
+    "regret": {
+     "mean": 0.5768840489378556,
+     "ci95": [
+      0.5768840489378556,
+      0.5768840489378556
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "gaussian|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.04921393580010043,
+     "ci95": [
+      0.04921393580010043,
+      0.04921393580010043
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture3|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture8|forest": {
+    "pair_agreement": {
+     "mean": 0.95,
+     "ci95": [
+      0.95,
+      0.95
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "copula|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   }
+  }
+ },
+ "data_level": {
+  "reality_mean_error": {
+   "TreeSHAP-int (bg 50)": 0.6653528837482866,
+   "TreeSHAP-path": 0.6152863883571015,
+   "KernelSHAP (kmeans 10)": 0.6961717630567996,
+   "Gaussian-conditional SHAP": 0.4616146495052013,
+   "Mixture-conditional SHAP (3 comp.)": 0.4516785036665308,
+   "LIME": 0.6989313609919334,
+   "Occlusion (mean)": 0.8383358502150078
+  },
+  "reality_error_se": {
+   "TreeSHAP-int (bg 50)": 0.024297939277597207,
+   "TreeSHAP-path": 0.01845782480438402,
+   "KernelSHAP (kmeans 10)": 0.02886188195214829,
+   "Gaussian-conditional SHAP": 0.024235186765528032,
+   "Mixture-conditional SHAP (3 comp.)": 0.019757694584861665,
+   "LIME": 0.02195633079704064,
+   "Occlusion (mean)": 0.03500014624613866
+  },
+  "reality_ranking": [
+   "Mixture-conditional SHAP (3 comp.)",
+   "Gaussian-conditional SHAP",
+   "TreeSHAP-path",
+   "TreeSHAP-int (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "LIME",
+   "Occlusion (mean)"
+  ],
+  "n_pairs": 21,
+  "n_resolved_pairs": 19,
+  "best_resolved": false,
+  "random_regret": 0.40029163082064995,
+  "worlds": {
+   "oracle (fresh reality tasks)": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "null (generic, ignores D)": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.02199827035825968,
+     "ci95": [
+      0.02199827035825968,
+      0.02199827035825968
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "independent|additive": {
+    "pair_agreement": {
+     "mean": 0.631578947368421,
+     "ci95": [
+      0.5789473684210527,
+      0.6842105263157895
+     ]
+    },
+    "tau_b": {
+     "mean": 0.28571428571428575,
+     "ci95": [
+      0.23809523809523814,
+      0.33333333333333337
+     ]
+    },
+    "regret": {
+     "mean": 0.36222198613056106,
+     "ci95": [
+      0.36222198613056106,
+      0.36222198613056106
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "gaussian|additive": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.02199827035825968,
+     "ci95": [
+      0.02199827035825968,
+      0.02199827035825968
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture3|additive": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture8|additive": {
+    "pair_agreement": {
+     "mean": 0.9736842105263157,
+     "ci95": [
+      0.9473684210526315,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.8095238095238096,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "copula|additive": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9523809523809524,
+     "ci95": [
+      0.9047619047619049,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "independent|forest": {
+    "pair_agreement": {
+     "mean": 0.6052631578947368,
+     "ci95": [
+      0.5789473684210527,
+      0.631578947368421
+     ]
+    },
+    "tau_b": {
+     "mean": 0.19047619047619052,
+     "ci95": [
+      0.14285714285714288,
+      0.23809523809523814
+     ]
+    },
+    "regret": {
+     "mean": 0.36222198613056106,
+     "ci95": [
+      0.36222198613056106,
+      0.36222198613056106
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "gaussian|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9047619047619049,
+     "ci95": [
+      0.9047619047619049,
+      0.9047619047619049
+     ]
+    },
+    "regret": {
+     "mean": 0.02199827035825968,
+     "ci95": [
+      0.02199827035825968,
+      0.02199827035825968
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture3|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "mixture8|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 0.9523809523809524,
+     "ci95": [
+      0.9047619047619049,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   },
+   "copula|forest": {
+    "pair_agreement": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "tau_b": {
+     "mean": 1.0,
+     "ci95": [
+      1.0,
+      1.0
+     ]
+    },
+    "regret": {
+     "mean": 0.0,
+     "ci95": [
+      0.0,
+      0.0
+     ]
+    },
+    "top1": {
+     "mean": NaN,
+     "ci95": [
+      NaN,
+      NaN
+     ]
+    },
+    "n_reps": 2,
+    "k_tasks": 3
+   }
+  }
+ },
+ "seconds_per_task": {
+  "reality": 78.59959999999998,
+  "oracle": 44.26066666666667,
+  "null": 21.337,
+  "independent|additive": 25.59866666666667,
+  "gaussian|additive": 36.322833333333335,
+  "mixture3|additive": 24.257333333333335,
+  "mixture8|additive": 30.154666666666667,
+  "copula|additive": 44.105333333333334,
+  "independent|forest": 50.28833333333335,
+  "gaussian|forest": 24.335333333333335,
+  "mixture3|forest": 30.663,
+  "mixture8|forest": 22.043333333333333,
+  "copula|forest": 36.06166666666667
+ },
+ "estimand_sensitivity": {
+  "n_reality_tasks": 10,
+  "mean_error_conditional": {
+   "TreeSHAP-int (bg 50)": 0.6114577753584289,
+   "TreeSHAP-path": 0.5517950614804452,
+   "KernelSHAP (kmeans 10)": 0.6495110473480229,
+   "Gaussian-conditional SHAP": 0.3671487885243822,
+   "Mixture-conditional SHAP (3 comp.)": 0.3499274799894886,
+   "LIME": 0.6978634002706645,
+   "Occlusion (mean)": 0.8130557381166794
+  },
+  "mean_error_interventional": {
+   "TreeSHAP-int (bg 50)": 0.16345261371486336,
+   "TreeSHAP-path": 0.06992126528869261,
+   "KernelSHAP (kmeans 10)": 0.2632989692178067,
+   "Gaussian-conditional SHAP": 0.4463556887690333,
+   "Mixture-conditional SHAP (3 comp.)": 0.48691650753928384,
+   "LIME": 0.3896438514156078,
+   "Occlusion (mean)": 0.45583521958584006
+  },
+  "ranking_conditional": [
+   "Mixture-conditional SHAP (3 comp.)",
+   "Gaussian-conditional SHAP",
+   "TreeSHAP-path",
+   "TreeSHAP-int (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "LIME",
+   "Occlusion (mean)"
+  ],
+  "ranking_interventional": [
+   "TreeSHAP-path",
+   "TreeSHAP-int (bg 50)",
+   "KernelSHAP (kmeans 10)",
+   "LIME",
+   "Gaussian-conditional SHAP",
+   "Occlusion (mean)",
+   "Mixture-conditional SHAP (3 comp.)"
+  ],
+  "kendall_tau_between_rankings": 0.04761904761904762,
+  "pairs_resolved_under_both": 16,
+  "pairs_flipped": 7,
+  "flipped_pairs": [
+   "KernelSHAP (kmeans 10) vs Gaussian-conditional SHAP",
+   "KernelSHAP (kmeans 10) vs Mixture-conditional SHAP (3 comp.)",
+   "Mixture-conditional SHAP (3 comp.) vs LIME",
+   "TreeSHAP-int (bg 50) vs Gaussian-conditional SHAP",
+   "TreeSHAP-int (bg 50) vs Mixture-conditional SHAP (3 comp.)",
+   "TreeSHAP-path vs Gaussian-conditional SHAP",
+   "TreeSHAP-path vs Mixture-conditional SHAP (3 comp.)"
+  ],
+  "estimand_gap_mean": 0.5825625298868686,
+  "truth_mc_noise_mean": 0.04599761335048063
+ }
+}

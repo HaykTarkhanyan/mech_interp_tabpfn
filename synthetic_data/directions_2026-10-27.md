@@ -191,6 +191,57 @@ Setup: forest reality, 4 replicates x 4 tasks per world, 30 reality tasks, 254 t
 - (c) Take the negative result as a finding: for model-level interventional attribution, rankings are
   world-invariant, so realism buys nothing. Pair it with the estimand-sensitivity results from the benchmarks.
 - My recommendation: (c) as a finding, plus (a) as the experiment that can still show realism mattering.
+- **Answer (2026-10-28):** (c) plus (a). (a) became pilot v3 (DECISIONS #26), section 5b.
+
+## 5b. Pilot v3: the same question under the conditional estimand (run 2026-10-28)
+
+Setup: copula reality (the real California marginals joined by a Gaussian copula), 2 replicates x 3 tasks per world,
+10 reality tasks, 82 tasks in 52 minutes. Files: `results/transfer_pilot/v3_copula_probe.json`, `_summary.json`,
+`_report.html`.
+
+- **Reality's ranking** (model level, mean relative error against conditional SHAP of the model): mixture-conditional
+  0.350, Gaussian-conditional 0.367, path TreeSHAP 0.552, interventional TreeSHAP 0.611, KernelSHAP 0.650, LIME
+  0.698, occlusion 0.813. 20 of 21 pairs are resolved; the top pair (mixture vs Gaussian conditional) is not.
+- **Transfer, model level** (agreement on reality's resolved pairs, Kendall tau-b):
+
+  | World | Pairs | tau-b |
+  |---|---|---|
+  | oracle (fresh reality tasks) | 1.00 | 1.00 |
+  | generic null (Gaussian, rho 0.5, ignores D) | 1.00 | 0.90 |
+  | copula, same family as reality | 1.00 | 1.00 |
+  | Gaussian fitted to D | 1.00 | 0.90 |
+  | mixtures with 3 and 8 components | 0.95-1.00 | 0.90-1.00 |
+  | independent columns | 0.70 | 0.33-0.38 |
+
+  The data level reads the same (null 1.00, independent columns 0.61-0.63).
+- **Reading.** The conditional estimand does not make realism matter either. The generic null still reproduces
+  reality's ranking. The one world that fails is the one without dependence: with independent columns, conditional
+  SHAP equals interventional SHAP, so that world rewards the interventional explainers. What transfers is a coarse
+  property, "the features are correlated", not the fine shape of the distribution. The null, the Gaussian and the
+  mixtures differ from reality only in the order of the two conditional explainers, and reality cannot resolve that
+  order itself.
+- **Estimand sensitivity on the same reality tasks** (Q13): Kendall tau between the conditional and interventional
+  rankings is 0.05, and 7 of the 16 pairs resolved under both flip. The mean gap between the two truths is 0.58
+  relative error, against a Monte Carlo noise floor of 0.046. Choosing the estimand moves the ranking far more than
+  choosing the world does (null tau 0.90).
+- **Limits:** 2 replicates, so the bootstrap intervals in the report are degenerate (for example [1.0, 1.0]) and
+  carry no information. One dataset and one reality family. The pool has only two conditional explainers, so the
+  only ranking question that realism could plausibly decide (which conditional assumption fits best) has just one
+  pair, and that pair is unresolved.
+
+**Open: Q21, what next?**
+- (a) Widen the pool along the axis that realism affects: more conditional estimators with different distribution
+  assumptions (empirical or kNN conditioning, copula-conditional, a separate-model regression estimator), so the
+  ranking among conditional explainers becomes the question. My understanding of the shapr literature (Aas et al.
+  2021; Olsen et al.'s comparison study) is that this ranking does depend on the data distribution; I have not
+  re-checked that in this session. About 1 to 1.5 hours of compute for a probe of this size.
+- (b) Rerun v3 with the mixture reality (`--reality-family mixture`, about 52 minutes) as a robustness check. I
+  expect the same picture, so the value is low.
+- (c) Stop the pilot and write the finding: at both estimands, a generic correlated world reproduces the explainer
+  ranking that a realistic one gives, while the estimand choice flips it.
+- My recommendation: (c) as the finding, and (a) only if the thesis needs a positive case for realism. In (a),
+  realism would decide the order of explainers that all aim at the same estimand, which is a narrower but honest
+  claim.
 
 ## 6. Parked (not run, with the reason)
 
